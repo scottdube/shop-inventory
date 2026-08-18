@@ -47,6 +47,19 @@ terms a loan is just a stock transfer to a location named after the borrower —
 which means the "who has my stuff" report is free. In the commons model it's
 a `notes` column and honor.
 
+## The founding rule: opt-in only
+
+Nothing enters the commons except by a member's deliberate export. This one
+rule does most of the privacy work:
+
+- **Opt-in membership** — participating means running (or handing over) an
+  export; not participating means doing nothing. There is no "your data was
+  included by default" conversation.
+- **Opt-in rows** — the export script filters by category, so a participating
+  member shares exactly the shelves they intend to and nothing else.
+- **Revocable** — remove your file from the repo and your data is gone from
+  the next merge.
+
 ## Privacy defaults worth agreeing up front
 
 - Export part identity, quantity, and owner — **not** purchase prices, not
