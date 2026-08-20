@@ -1,11 +1,18 @@
-"""Shop Status — dashboard widgets showing this shop's OPEN LOOPS.
+"""Shop Status — dashboard widgets and a part panel for this shop's OPEN LOOPS.
 
 Not inventory statistics ("you have 800 parts" is trivia) but the to-do list:
 what arrived and needs a drawer, what the imports claim exists but nobody has
 found, what is lost, what is on order, and how each project's parts are
 tracking. All computed server-side and passed as context, so the JS is pure
 rendering with no extra API round-trip.
+
+Also a "Where to Buy" panel on the part page, answering the question actually
+asked standing at the bench with an empty drawer: where did this come from
+last, and who else sells it.
 """
+
+import re
+from urllib.parse import quote
 
 from django.utils.translation import gettext_lazy as _
 
@@ -16,13 +23,44 @@ from plugin.mixins import UserInterfaceMixin
 # what fits without scrolling is what actually gets acted on.
 PREVIEW = 4
 
+# Half this catalogue is machine tooling, where component distributors are dead
+# weight — nobody looks up a boring bar on Octopart. Routing is by the part's
+# ROOT category, because the tree splits cleanly at the top level and a single
+# ancestor lookup is easy to retune later.
+TOOLING_ROOTS = {'Tooling', 'Equipment', 'Shop', 'Tools', 'Materials', 'Pneumatic'}
+
+# Aggregator first where there is one: it is the link that actually compares
+# vendors. Amazon is in both sets because it is where this shop mostly buys.
+VENDORS = {
+    'electronics': [
+        ('Octopart', 'https://octopart.com/search?q={q}'),
+        ('LCSC', 'https://www.lcsc.com/search?q={q}'),
+        ('DigiKey', 'https://www.digikey.com/en/products/result?keywords={q}'),
+        ('Mouser', 'https://www.mouser.com/c/?q={q}'),
+        ('Amazon', 'https://www.amazon.com/s?k={q}'),
+    ],
+    'tooling': [
+        ('Shars', 'https://www.shars.com/catalogsearch/result/?q={q}'),
+        ('Lakeshore', 'https://lakeshorecarbide.com/catalogsearch/result/?q={q}'),
+        ('Haas', 'https://www.haastooling.com/search?q={q}'),
+        ('MSC', 'https://www.mscdirect.com/browse/tn?searchterm={q}'),
+        ('Tormach', 'https://tormach.com/catalogsearch/result/?q={q}'),
+        ('Amazon', 'https://www.amazon.com/s?k={q}'),
+    ],
+}
+
+# A part number worth searching: mixed letters and digits, no spaces.
+# "MB10S", "2N7002", "AO3400A", "LM2596" pass; "Capacitor", "Resistor" do not.
+PN = re.compile(r'^[A-Za-z0-9][A-Za-z0-9\-./]{2,24}$')
+
+
 
 class ShopStatusPlugin(UserInterfaceMixin, InvenTreePlugin):
     NAME = 'ShopStatus'
     SLUG = 'shopstatus'
     TITLE = _('Shop Status')
     DESCRIPTION = _('Open loops: put-away queue, unfiled items, lost stock, orders, projects')
-    VERSION = '1.1.0'
+    VERSION = '1.2.0'
     AUTHOR = 'Scott Dube'
 
     def _rows(self, qs):
@@ -43,6 +81,223 @@ class ShopStatusPlugin(UserInterfaceMixin, InvenTreePlugin):
         if len(locations) == 1:
             return f'/web/stock/location/{locations[0].pk}/'
         return '/web/stock/'
+
+    def _vendor_set(self, part):
+        """Which vendors to offer, from the part's ROOT category.
+
+        Falls back to electronics for an unrecognised or missing root — that is
+        the larger half of the catalogue, so an unclassified part is more likely
+        a component than a boring bar.
+        """
+        cat = part.category
+        if not cat:
+            return 'electronics'
+        root = cat.get_root() if hasattr(cat, 'get_root') else cat
+        return 'tooling' if (root.name in TOOLING_ROOTS) else 'electronics'
+
+    def _search_term(self, part):
+        """What to search other vendors for, and how much to trust it.
+
+        A real MPN is the only thing that finds the SAME component elsewhere, so
+        it wins outright — but only 4 parts have one. Failing that, guess from
+        the name: shop convention puts the part number first ("MB10S Bridge
+        Rectifier ..."). If the first token is not part-number shaped, fall back
+        to the opening words, which at least lands on a category.
+
+        The caller shows which rule fired, so a 'guess' reads as a starting
+        point rather than an answer.
+        """
+        from company.models import ManufacturerPart
+
+        mp = ManufacturerPart.objects.filter(part=part).exclude(MPN='').first()
+        if mp and mp.MPN:
+            return mp.MPN, 'MPN'
+
+        words = (part.name or '').split()
+        first = words[0] if words else ''
+        if PN.match(first) and any(c.isdigit() for c in first) \
+                and any(c.isalpha() for c in first):
+            return first, 'name'
+
+        return ' '.join(words[:4]), 'guess'
+
+    def _last_bought(self, part):
+        """Most recent purchase — real orders first, notes table second.
+
+        Most of this catalogue predates the purchase-order pipeline; its buying
+        history is a markdown table the Amazon import wrote into Part.notes.
+        Reading only PurchaseOrderLineItem would report "never bought" for
+        hundreds of parts that plainly were.
+
+        'src' says which source answered, so a note-derived price is never
+        mistaken for a receipted one.
+        """
+        from order.models import PurchaseOrderLineItem
+
+        # PLACED and COMPLETE only. A PENDING order is a shopping list — the
+        # TO-ORDER list would otherwise report itself as the most recent
+        # purchase, which is the opposite of the truth.
+        best = None
+        for li in (PurchaseOrderLineItem.objects
+                   .filter(part__part=part, order__status__in=[20, 30])
+                   .select_related('order', 'order__supplier')):
+            o = li.order
+            # issue_date is when it was ORDERED; creation_date is when the row
+            # was typed in, which for back-filled history is months later and
+            # would report the bookkeeping date as the purchase date.
+            when = o.issue_date or o.complete_date
+            approx = when is None
+            if approx:
+                when = o.creation_date
+            if not when or (best and when <= best['sort']):
+                continue
+            best = {
+                'sort': when,
+                'when': str(when) + (' (recorded)' if approx else ''),
+                'who': o.supplier.name if o.supplier else '—',
+                'price': str(li.purchase_price) if li.purchase_price is not None else '',
+                'ref': o.reference[:20],
+                'url': f'/web/purchasing/purchase-order/{o.pk}/',
+                'src': 'order',
+            }
+        if best:
+            best.pop('sort')
+            return best
+
+        return self._parse_notes_history(part)
+
+    @staticmethod
+    def _parse_notes_history(part):
+        """Read the markdown purchase table out of Part.notes.
+
+        There is more than one table shape in this database and they disagree
+        about column ORDER, so positions cannot be assumed:
+
+            | Date | Qty | Unit | Line total | Order |      (Amazon import)
+            | Date | Order | Qty | Unit |                   (Lakeshore etc.)
+            | Date | Quote | Order | Qty | Unit |           (Tormach)
+
+        Reading by position turned a $69.49 threadmill into "$1" — it had
+        picked up the quantity column — and skipped the Tormach tables
+        entirely because their order number is not numeric. So find the header
+        and read by NAME.
+
+        Among rows, the most recent one wins, except that a zero price loses to
+        a real one: several parts carry a $0 replacement line dated after the
+        actual purchase, and reporting $0 as the price paid is worse than
+        reporting nothing.
+        """
+        notes = part.notes or ''
+        who = 'unknown'
+        m = re.search(r'##\s*Purchase history\s*\(([^)]+)\)', notes)
+        if m:
+            who = m.group(1).strip()[:22]
+
+        cols, best = None, None
+        for line in notes.splitlines():
+            line = line.strip()
+            if not line.startswith('|'):
+                continue
+            cells = [c.strip() for c in line.strip('|').split('|')]
+            low = [c.lower() for c in cells]
+
+            if cols is None:
+                if 'date' in low:
+                    cols = {name: low.index(name) for name in ('date', 'qty', 'unit')
+                            if name in low}
+                continue
+            if set(''.join(cells)) <= set('-: '):
+                continue                       # the |---|---| separator
+
+            def cell(name):
+                i = cols.get(name)
+                return cells[i] if i is not None and i < len(cells) else ''
+
+            when = cell('date')
+            if not re.match(r'^\d{4}-\d{2}-\d{2}$', when):
+                continue
+            raw = cell('unit').replace('$', '').replace(',', '').strip()
+            try:
+                amount = float(raw) if raw else 0.0
+            except ValueError:
+                amount = 0.0
+
+            cand = {'when': when, 'amount': amount, 'qty': cell('qty') or '1'}
+            if best is None \
+                    or (cand['amount'] > 0 and best['amount'] == 0) \
+                    or (when > best['when']
+                        and not (cand['amount'] == 0 and best['amount'] > 0)):
+                best = cand
+
+        if not best:
+            return None
+        return {
+            'when': best['when'],
+            'who': who,
+            'price': f'${best["amount"]:,.2f}' if best['amount'] else '',
+            'ref': f'{best["qty"]} unit(s)',
+            'url': '',
+            'src': 'notes',
+        }
+
+    def _where_to_buy(self, part):
+        from company.models import SupplierPart
+
+        sups = [{
+            'who': sp.supplier.name[:22],
+            'sku': (sp.SKU or '')[:26],
+            'url': sp.link or '',
+        } for sp in (SupplierPart.objects.filter(part=part)
+                     .select_related('supplier').order_by('supplier__name'))]
+
+        # An assembly is built, not bought. Offering to shop for a Rat GDO is
+        # noise, so the alternates block is suppressed rather than faked.
+        if part.purchaseable:
+            term, how = self._search_term(part)
+            kind = self._vendor_set(part)
+            alts = [{'who': n, 'url': u.format(q=quote(term))}
+                    for n, u in VENDORS[kind]]
+        else:
+            term, how, kind, alts = '', 'notbuyable', '', []
+
+        return {
+            'last': self._last_bought(part),
+            'sups': sups,
+            'alts': alts,
+            'term': term,
+            'how': how,
+            'kind': kind,
+            'name': part.name[:70],
+        }
+
+    def get_ui_panels(self, request, context, **kwargs):
+        """A 'Where to Buy' panel, on part pages only."""
+        context = context or {}
+        if context.get('target_model') != 'part':
+            return []
+
+        from part.models import Part
+
+        try:
+            part = Part.objects.get(pk=context.get('target_id'))
+        except (Part.DoesNotExist, ValueError, TypeError):
+            return []
+
+        try:
+            data = self._where_to_buy(part)
+        except Exception:
+            import logging
+            logging.getLogger('inventree').exception(
+                'ShopStatus: _where_to_buy failed for part %s', part.pk)
+            return []
+
+        return [{
+            'key': 'shop-status-buy',
+            'title': _('Where to Buy'),
+            'icon': 'ti:shopping-bag:outline',
+            'source': self.plugin_static_file('shop_status.js:renderBuy'),
+            'context': data,
+        }]
 
     def _to_order(self):
         """What needs buying, from three signals that fail in different ways.

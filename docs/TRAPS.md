@@ -278,6 +278,24 @@ Use `launchctl kickstart -k gui/$(id -u)/com.inventree.server`, then verify by
 comparing md5 of the served file against the file on disk — not by grepping for
 the thing you just added.
 
+### Purchase-history tables have three different column orders
+The markdown tables the imports wrote into `Part.notes` are not one format:
+
+    | Date | Qty | Unit | Line total | Order |      Amazon
+    | Date | Order | Qty | Unit |                   Lakeshore and friends
+    | Date | Quote | Order | Qty | Unit |           Tormach
+
+A regex that assumes Amazon's order reads the QUANTITY as the price — a $69.49
+threadmill rendered as "$1" — and silently skips Tormach entirely, because its
+order number is not numeric. Parse the header row and read by column NAME.
+Also: a $0 row dated after the real purchase must lose to the real one.
+
+### creation_date is when you typed it in, not when you bought it
+`PurchaseOrder.creation_date` on a back-filled order is months after the
+purchase. Read `issue_date` first and label the fallback. And exclude PENDING
+orders from "last bought" — a shopping list is not a purchase, and the TO-ORDER
+list will otherwise report itself as the most recent one.
+
 ## Networking
 
 ### Local DNS across sites

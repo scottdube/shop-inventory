@@ -54,6 +54,23 @@ const CSS = `
 .ss .prog i{display:block;height:100%;background:var(--warn);border-radius:2px}
 .ss .prog.full i{background:var(--good)}
 
+/* where to buy — vendor chips and the last-purchase line */
+.ss .chips{display:flex;flex-wrap:wrap;gap:.35rem;padding:.15rem 0 .35rem}
+.ss .chip{display:inline-block;padding:.22rem .6rem;border-radius:999px;
+  border:1px solid var(--line);color:var(--link);text-decoration:none;
+  font-size:.78rem;white-space:nowrap}
+.ss .chip:hover{background:var(--hover);border-color:var(--link)}
+.ss .buy{display:flex;align-items:baseline;gap:.5rem;flex-wrap:wrap;
+  padding:.2rem 0 .4rem}
+.ss .buy .who{font-weight:650}
+.ss .buy .amt{font-variant-numeric:tabular-nums;font-weight:650}
+.ss .buy a{color:var(--link);text-decoration:none}
+.ss .buy a:hover{text-decoration:underline}
+.ss .term{font-size:.72rem;color:var(--dim);padding:0 0 .3rem}
+.ss .term code{font-family:var(--mantine-font-family-monospace, ui-monospace, monospace);
+  background:var(--hover);padding:.05rem .3rem;border-radius:3px;color:var(--fg)}
+.ss .caveat{font-size:.72rem;color:var(--warn);padding:0 0 .3rem}
+
 /* stats strip */
 .ss.stats{flex-direction:row;flex-wrap:wrap;align-content:center;
   justify-content:space-around;gap:.8rem 1rem;overflow:hidden;padding:.2rem 0}
@@ -146,6 +163,58 @@ export function renderToOrder(target, data) {
         head('On the list', o.listed_n ?? 0) +
         rows(o.listed, o.listed_n ?? 0, 'Nothing written down yet.',
              '/web/purchasing/'));
+}
+
+/* Where to buy. Answers the bench question: where did this come from last,
+   and who else sells it. The search term and the rule that produced it are
+   both shown — a term guessed from the part name should not look like a
+   catalogue lookup. */
+export function renderBuy(target, data) {
+    const c = data?.context ?? {};
+    const last = c.last, sups = c.sups ?? [], alts = c.alts ?? [];
+
+    let html = head('Bought last', last ? 1 : 0, last ? '' : 'warn');
+    if (last) {
+        const who = last.url
+            ? `<a href="${esc(last.url)}">${esc(last.who)}</a>`
+            : esc(last.who);
+        html += `<div class="buy"><span class="who">${who}</span>` +
+            `<span>${esc(last.when)}</span>` +
+            (last.price ? `<span class="amt">${esc(last.price)}</span>` : '') +
+            `<span class="sp"></span><span class="w">${esc(last.ref)}</span></div>`;
+        if (last.src === 'notes') {
+            html += `<div class="caveat">From the imported order history, ` +
+                `not a receipted purchase order.</div>`;
+        }
+    } else {
+        html += '<div class="none">No purchase on record.</div>';
+    }
+
+    html += head('Suppliers on file', sups.length);
+    html += sups.length
+        ? `<div class="chips">${sups.map((s) => s.url
+            ? `<a class="chip" href="${esc(s.url)}" target="_blank" rel="noopener"` +
+              ` title="${esc(s.sku)}">${esc(s.who)}</a>`
+            : `<span class="chip" style="color:var(--dim)"` +
+              ` title="no link on file">${esc(s.who)}</span>`).join('')}</div>`
+        : '<div class="none">No supplier recorded.</div>';
+
+    if (c.how === 'notbuyable') {
+        html += head('Alternates', 0);
+        html += '<div class="none">Built, not bought — nothing to shop for.</div>';
+    } else {
+        html += head('Alternates', alts.length);
+        html += `<div class="chips">${alts.map((a) =>
+            `<a class="chip" href="${esc(a.url)}" target="_blank" rel="noopener">` +
+            `${esc(a.who)}</a>`).join('')}</div>`;
+        const why = { MPN: 'manufacturer part number',
+                      name: 'part number from the name',
+                      guess: 'guessed from the name — expect category-level hits' };
+        html += `<div class="${c.how === 'guess' ? 'caveat' : 'term'}">` +
+            `Searching <code>${esc(c.term)}</code> · ${esc(why[c.how] ?? c.how)}</div>`;
+    }
+
+    shell(target, html);
 }
 
 export function renderStats(target, data) {
