@@ -315,6 +315,13 @@ nonsense: "SHNITPWR 12V Power Supply" matched *DROK Time Delay Relay*,
 matched a *threadmill*. A false MISS costs a glance; a false MATCH hides a real
 gap forever. Always re-check the brand token directly before believing a match.
 
+### Line count is not drawer volume
+A3-R8C1 showed "2 lines, 5 units" and was recommended as having room for 15
+LM2596 modules. It was full. The database counts RECORDS, and says nothing
+about how much space three bagged assortments physically occupy. Never propose
+a drawer from occupancy figures alone — either check a photo, or offer a
+verified-empty drawer, or ask.
+
 ## Networking
 
 ### Local DNS across sites
