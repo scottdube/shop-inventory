@@ -119,7 +119,9 @@ class ShopStatusPlugin(UserInterfaceMixin, InvenTreePlugin):
                 and any(c.isalpha() for c in first):
             return first, 'name'
 
-        return ' '.join(words[:4]), 'guess'
+        # Trailing punctuation is dead weight in a search box — shop names are
+        # comma-separated spec lists, so a four-word slice usually ends on one.
+        return ' '.join(words[:4]).strip(' ,.;:-'), 'guess'
 
     def _last_bought(self, part):
         """Most recent purchase — real orders first, notes table second.
