@@ -296,6 +296,25 @@ purchase. Read `issue_date` first and label the fallback. And exclude PENDING
 orders from "last bought" — a shopping list is not a purchase, and the TO-ORDER
 list will otherwise report itself as the most recent one.
 
+### Amazon's order-confirmation subjects stopped carrying product titles
+Around 2026-07-16 the format changed from `Ordered: "<product title>..."` to
+`Ordered: 1 Electronics item`. Any sweep that reads subjects goes blind after
+that date. Use the order-history search instead — it returns full titles and
+works back to at least 2016:
+
+    https://www.amazon.com/your-orders/search?search=<terms>
+
+(Order detail pages DO load programmatically while signed in:
+`https://www.amazon.com/gp/css/order-details?orderID=<id>`. An earlier note
+here claiming otherwise was written while logged out.)
+
+### Fuzzy title matching fails in the dangerous direction
+Reconciling purchases against the catalogue by token overlap produced confident
+nonsense: "SHNITPWR 12V Power Supply" matched *DROK Time Delay Relay*,
+"Raspberry Pi Zero WH" matched an *HDMI adapter*, "1/4 HP Lathe BandSaw"
+matched a *threadmill*. A false MISS costs a glance; a false MATCH hides a real
+gap forever. Always re-check the brand token directly before believing a match.
+
 ## Networking
 
 ### Local DNS across sites
