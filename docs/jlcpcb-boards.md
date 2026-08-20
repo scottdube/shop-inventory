@@ -1,0 +1,53 @@
+# Fabricated PCBs — what was ordered, and how to tell them apart
+
+Forty bare boards across five JLCPCB orders since 2019. Only one design is in
+the catalogue. This exists so a stack of green boards found in a bin can be
+identified rather than guessed at.
+
+**Nothing here is a stocking decision.** What to do with surplus boards is
+undecided; this only records what exists.
+
+## The orders
+
+| Order | Date | Gerber name | Qty | Merch | Total |
+|---|---|---|---:|---:|---:|
+| `W20190313241946` | 2019-03-12 | `0158016a7a36450d93c96a5692df10…` | 10 | $2.00 | $7.24 |
+| `W202401071001106` | 2024-01-06 | `Gerber_PCB_FFB_Arduino_Yoke_1…` | 5 | $2.00 | $20.05 |
+| `W202406142358683` | 2024-06-14 | `Gerber_G1000_nxi_v2_shield_rev…` | 10 | $29.50 | $67.62 |
+| `W2026060711329921` | 2026-06-06 | `sln-shop-minisplit-cn105-adapt…` | 5 | $2.00 | $5.12 |
+| `W2026062810308875` | 2026-06-28 | `Rat-RatGDO_Y7` | 10 | $5.00 | $14.59 |
+
+Note how little the boards themselves cost — **shipping is most of every
+order**. That is why ordering ten instead of five is close to free, and why
+surplus accumulates without anyone deciding to accumulate it.
+
+## Identifying them
+
+| Design | Where the files are | In the catalogue? |
+|---|---|---|
+| **Rat GDO** — silkscreen `RatGDO OpenSource D1Mini-ESP32 v2.5.0 2023`, marks `SHT4x_I2C`, `Piezo 12v`, `BATT`, `GDO` | `my-rat-ratgdo/kicad_files/D1 Mini - ESP32/` | yes, part `[877]`, 7 on hand in RB-12 |
+| **Shop minisplit CN105 adapter** | `sln-ha-config/electronics/kicad/sln-shop-minisplit-adapter/` and gerber zip `…_2026-06-07` | **no** |
+| **FFB Arduino Yoke** | not in any repo — third-party gerber zip | **no** |
+| **G1000 NXi shield** | not in any repo — third-party gerber zip | **no** |
+| **2019 order** | filename is a content hash, unidentifiable from records | **no** |
+
+## Two gaps worth knowing before the bin walk
+
+**The Cessna sim has 15 boards fabbed and none on its BOM.** BO-0006 lists a
+MEGA2560, two SG90 servos and a proto shield. The force-feedback yoke (5) and
+the G1000 NXi shield (10) are both flight-sim hardware bought in 2024, and
+`MC-T3` is described as *"Connectors and ribbon cable staged for the CESSNA
+FLIGHT SIMULATOR (BO-0006)"* while holding **zero recorded lines**. That tray
+and those boards are the same undocumented layer of one project.
+
+**The minisplit CN105 adapter has boards but no project.** Five were fabbed
+2026-06-06 from a design that lives in `sln-ha-config`, with an ADR
+(`015-shop-minisplit-jrre-cut-remote-temp.md`) and running ESPHome configs —
+but no part, no build order, and no stock record.
+
+## Method note
+
+Order contents came from the JLCPCB **shipping notification emails**, which list
+gerber name and quantity. The web order-history page shows totals but returns
+"No Data" for the item list on older orders, so the mail archive is the better
+source here.
