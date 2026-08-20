@@ -322,6 +322,18 @@ about how much space three bagged assortments physically occupy. Never propose
 a drawer from occupancy figures alone — either check a photo, or offer a
 verified-empty drawer, or ask.
 
+### Do not read quantities or contents from photographs
+Three wrong calls in one morning, all from inferring more than a photo can
+carry: an empty bag beside loose caps read as "these came out of that kit" (the
+kit is compartmented and bags nothing); one compartment read as depleted when
+it just held physically larger parts; and in an earlier session, gull-wing
+leads read off a 2D image as SMD when the parts were through-hole.
+
+A photograph reliably shows IDENTITY — printed labels, part numbers, silkscreen,
+package shape against a known reference. It does not reliably show COUNT,
+FULLNESS, or PROVENANCE. Read the label; ask about the quantity. The person
+holding the parts can see all three.
+
 ## Networking
 
 ### Local DNS across sites
