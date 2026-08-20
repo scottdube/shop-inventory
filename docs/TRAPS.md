@@ -265,6 +265,19 @@ wrong: `Fuse_1206` was a resettable PTC at 500 mA, and two `PhoenixContact`
 footprints were fixed-screw KF350 and DB301V blocks that are through-hole, not
 SMD. The footprint says what fits the pads. The invoice says what you own.
 
+### A plugin JS change needs a full restart, and HUP fails silently
+`kill -HUP` on the gunicorn master recycles workers with zero downtime and the
+API answers 200 — it looks like a clean reload. But the static-file layer keeps
+its old cache, and what it serves can be a TRUNCATED copy: after pushing a
+164-line plugin JS, the server served 6884 of 7804 bytes, cut off mid-function,
+with the last exported render function missing entirely. The new function was
+present, so grepping for it said "works". The existing widget it silently
+dropped would have rendered blank.
+
+Use `launchctl kickstart -k gui/$(id -u)/com.inventree.server`, then verify by
+comparing md5 of the served file against the file on disk — not by grepping for
+the thing you just added.
+
 ## Networking
 
 ### Local DNS across sites
