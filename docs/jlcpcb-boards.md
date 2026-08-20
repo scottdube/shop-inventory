@@ -40,6 +40,14 @@ the G1000 NXi shield (10) are both flight-sim hardware bought in 2024, and
 FLIGHT SIMULATOR (BO-0006)"* while holding **zero recorded lines**. That tray
 and those boards are the same undocumented layer of one project.
 
+**The sim boards ARE projects — they are deferred, not disqualified.** The
+G1000 NXi design was bought from someone and the gerbers sent straight to
+JLCPCB, but the board is large (roughly 7×10 or 8×10 cm) and Scott populated it
+himself with a lot of components. Buying the *design* does not make the *build*
+a purchase. These warrant real build orders; there is simply no bandwidth right
+now for backfilling big historical projects. Do not read their absence from the
+catalogue as a judgement that they do not belong in it.
+
 **The minisplit CN105 adapter has boards but no project.** Five were fabbed
 2026-06-06 from a design that lives in `sln-ha-config`, with an ADR
 (`015-shop-minisplit-jrre-cut-remote-temp.md`) and running ESPHome configs —
