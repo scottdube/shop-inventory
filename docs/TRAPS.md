@@ -244,6 +244,27 @@ browser. Do not work around it. Record what is certain, link the page, and note
 *why* the numbers are missing — a plausible spec written from memory is worse
 than an absent one, because nobody re-checks it.
 
+### Receiving the last open line auto-completes (and locks) a PurchaseOrder
+Creating one line, receiving it, creating the next — the first line is also the
+*last outstanding* line at that instant, so InvenTree completes the order, and
+a completed order refuses new line items with "The order is locked and cannot
+be modified". Create every line while the order is open, then receive, then
+complete. Walking `status` back to PLACED via queryset `.update()` unlocks an
+order that completed early.
+
+### The Amazon import has gaps
+A 460-piece JST XH2.54 kit (2023-07-31, $8.99, order ORDER-REDACTED) had
+no part, no supplier record, and no trace in the catalog. It surfaced only in
+the order-confirmation email. Treat "not in InvenTree" as weak evidence that
+something was never bought — check the mail archive before concluding a part
+has no source.
+
+### KiCad footprint names are not part numbers
+Three Rat GDO parts were built from footprint library names and all three were
+wrong: `Fuse_1206` was a resettable PTC at 500 mA, and two `PhoenixContact`
+footprints were fixed-screw KF350 and DB301V blocks that are through-hole, not
+SMD. The footprint says what fits the pads. The invoice says what you own.
+
 ## Networking
 
 ### Local DNS across sites
