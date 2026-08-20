@@ -112,6 +112,11 @@ Each of these was adopted after the naive version failed:
     down why the rest is missing. A plausible number nobody re-checks is worse
     than a gap, because the gap still asks to be filled. Corollary: never let a
     heuristic's output acquire a stocktake date.
+13. **Drawer capacity is a number, not a vibe.** Location `metadata.size`
+    carries width, depth, height and cubic inches for all 324 Akro-Mils
+    drawers. Three drawer recommendations were wrong in one morning because
+    capacity was inferred from *line counts*, which measure records rather than
+    volume: "2 lines, 5 units" was a full drawer. Query the size.
 
 ## The workflows
 
