@@ -58,10 +58,16 @@ Each of these was adopted after the naive version failed:
 1. **Locations are addresses, never contents.** `B3-R2C5` survives
    re-purposing; "MOSFET drawer" doesn't. The hand-written legacy label goes
    in the location *description*, where search finds it.
-2. **Count devices, not packages.** Purchase records count what the vendor
-   sold (a 3-pack). Stock counts usable units. `pack_quantity` does the
-   conversion; price breaks stay per-pack, stock cost is per-device. The
-   restatement check: total stock value must not change.
+2. **Count devices, not packages — and price per device too.** Stock counts
+   usable units. The original design used `pack_quantity` to convert and left
+   price breaks per-pack; that produced pack-vs-unit errors repeatedly (a
+   $19.82 3-pack valued at $19.82 *each*), because two conventions coexisting
+   means every script has to know which one a given part follows. Settled
+   rule: **`pack_quantity` is always 1 and the price is always per item**, with
+   the pack size recorded in the notes. A vendor title claiming a pack is
+   evidence, not proof — the two false-positive classes are dimensions
+   ("20 x 9.5in") and assortment kits, and only a human can tell "4 identical
+   holders" from "a set of 4 different things."
 3. **Assortment kits are locations, not parts.** An "850 pcs, 30 values"
    resistor kit becomes a StockLocation with 30 Parts inside it. "Do I have a
    4.7k?" becomes answerable without unpacking anything.
@@ -94,6 +100,18 @@ Each of these was adopted after the naive version failed:
     goes into a decision queue; the nightly run push-notifies; any interactive
     session renders it as approve/decline checkboxes. Skipping is cheap to
     reverse; a wrong record is not.
+11. **A default location is where a *spare* goes home.** Not where a committed
+    unit happens to sit — a board on the bench or fitted into a build is in
+    use, not at home. Never a staging area or a bare site root: that blesses
+    the backlog, making a part officially "belong" in the pile it's stuck in.
+    No home yet? Leave it blank. An empty field asks a question; a wrong one
+    answers it badly.
+12. **Absent beats plausible.** When a spec can't be verified — the vendor
+    site is behind bot detection, the order page won't open, the compartment
+    hasn't been counted — record what *is* certain, link the source, and write
+    down why the rest is missing. A plausible number nobody re-checks is worse
+    than a gap, because the gap still asks to be filled. Corollary: never let a
+    heuristic's output acquire a stocktake date.
 
 ## The workflows
 
@@ -137,13 +155,19 @@ are catalogued in **[docs/TRAPS.md](docs/TRAPS.md)**.
 
 | Script | What |
 |---|---|
+| **`itq`** | **The one stable command shape.** Ships a script to the server, runs it under the right venv/settings/cwd, filters startup noise. `itq run f.py`, `itq sql "…"`, `itq pull/push`. Exists so a single permission rule covers all future work — see the Agent tooling trap |
 | `make_labels_avery.py` | Print-exact Avery 5167/8167 drawer labels with QR |
+| `make_location_labels.py` | Location labels: QR + big name, `--skip-rows` to resume a part-used sheet, `--commit` assigns the barcode |
+| `make_parent_labels.py` | Labels for the *furniture*, so a cabinet decodes its own drawers. Derives the prefix from the children (`AT-D1/D2/D3` → `AT`) rather than storing it |
 | `link_barcodes.py` | Register each drawer's address as its scannable barcode |
 | `file_stock.py` | Bulk stock filing: `"B3-R1C1=344:2"`, `--estimate` flag |
 | `split_mmwave.py` | The cross-site split pattern: stocktake → split → move |
 | `receive_pololu.py` | Split-receive a PO across two destinations |
 | `mailbox_build.py` | Project claim: assembly Part → BOM → Build → allocation |
+| **`florida.py`** | Earmark stock for the other site **without moving or splitting it** — metadata + tag, plus a packing list. An allocation says a part is spoken for; it doesn't get it into a box |
 | `lrd_transfer.py` | TransferOrder as a standing inter-site packing list |
+| **`photo_pull.py`** | Extract every photo from a chat session transcript *with its surrounding conversation* — a directory of 40 anonymous JPEGs is no better than none; the text is what says which drawer |
+| **`photo_push.py`** | Attach a photo to a location and/or part. Fills a blank `Part.image` but **never overwrites** one; scene photos (several parts in one drawer) go on the location, which has no image field of its own |
 | `pitch_backfill.py` | Derive lead pitch from the standard radial series |
 | `mptt_check.py` / `mptt_deep.py` | Tree-integrity verification |
 

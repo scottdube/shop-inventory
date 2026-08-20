@@ -1,0 +1,91 @@
+#!/bin/bash
+# itq — run a Python script against the InvenTree instance on the Mini.
+#
+# Exists to solve a permissions problem, not a technical one. Every InvenTree
+# operation used to be a unique compound command (heredoc + scp + ssh chained
+# together), so every approval Scott granted was a literal one-off that never
+# matched anything again — 243 of them accumulated in settings.local.json.
+#
+# Collapsing that into one stable invocation means a single wildcard rule
+# covers all future work:
+#
+#     "Bash($HOME/code/shop-inventory/scripts/*)"
+#
+# Usage:
+#   itq run <local.py> [args...]   ship a script to the Mini and run it there
+#   itq pull <remote> <local>      copy a file back off the Mini
+#   itq push <local> <remote>      copy a file to the Mini
+#   itq sql "<django orm oneliner>"  quick read-only poke
+#
+# The script runs with the InvenTree venv python, the right settings module,
+# and cwd set to the backend root — the three things every one of these
+# scripts needs and none of them should have to repeat.
+
+set -euo pipefail
+
+HOST="${ITQ_HOST:-mini}"
+ROOT="/Volumes/4TB_Removable/inventree"
+VENV="$ROOT/env/bin/python3"
+BACKEND="$ROOT/src/src/backend/InvenTree"
+CFG="$ROOT/config.yaml"
+SSH_OPTS=(-o ConnectTimeout=10 -o BatchMode=yes)
+
+# InvenTree is chatty on startup; none of it is ever the answer we want.
+NOISE='INVE-W|^WARNING|RuntimeWarning|warnings.warn|^ *timestamp|^ *logger'
+
+usage() { sed -n '2,28p' "$0" | sed 's/^# \{0,1\}//'; exit 1; }
+
+[ $# -ge 1 ] || usage
+cmd="$1"; shift
+
+case "$cmd" in
+  run)
+    [ $# -ge 1 ] || usage
+    local_py="$1"; shift
+    [ -f "$local_py" ] || { echo "itq: no such file: $local_py" >&2; exit 1; }
+    remote="/tmp/itq_$(basename "$local_py")"
+    scp -q "${SSH_OPTS[@]}" "$local_py" "$HOST:$remote"
+    # Args cross an ssh boundary and get re-parsed by the remote shell, so each
+    # one is quoted individually. Without this, any argument containing a space
+    # ("Red Bins") arrives as two arguments.
+    argstr=''
+    for a in "$@"; do
+      argstr="$argstr $(printf '%q' "$a")"
+    done
+    # shellcheck disable=SC2029  # remote expansion is intended
+    ssh "${SSH_OPTS[@]}" "$HOST" \
+      "export INVENTREE_CONFIG_FILE=$CFG; cd $BACKEND && $VENV $remote$argstr" \
+      2>&1 | grep -Ev "$NOISE" || true
+    ;;
+
+  pull)
+    [ $# -eq 2 ] || usage
+    scp -q "${SSH_OPTS[@]}" "$HOST:$1" "$2"
+    echo "itq: pulled $1 -> $2"
+    ;;
+
+  push)
+    [ $# -eq 2 ] || usage
+    scp -q "${SSH_OPTS[@]}" "$1" "$HOST:$2"
+    echo "itq: pushed $1 -> $2"
+    ;;
+
+  sql)
+    [ $# -eq 1 ] || usage
+    tmp=$(mktemp /tmp/itq_oneliner_XXXX.py)
+    {
+      echo "import os, sys, django"
+      echo "sys.path.insert(0, os.getcwd())"
+      echo "os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'InvenTree.settings')"
+      echo "django.setup()"
+      echo "from part.models import Part"
+      echo "from stock.models import StockItem, StockLocation"
+      echo "from build.models import Build"
+      echo "$1"
+    } > "$tmp"
+    "$0" run "$tmp"
+    rm -f "$tmp"
+    ;;
+
+  *) usage ;;
+esac

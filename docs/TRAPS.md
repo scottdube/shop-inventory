@@ -57,6 +57,50 @@ distinct and contiguous over 1..2n.
 Bulk ORM scripts fail with `database is locked` because the django-q worker
 polls continuously. Unload the worker agent, run the import, reload.
 
+### `.save()` can report success and write nothing
+**Symptom:** a script prints "updated", the in-memory object holds the new
+value, the database does not. No exception.
+**Cause:** InvenTree overrides `save()` on several models with validation and
+lock logic, and the override can return without writing. Confirmed on
+`BomItem.quantity`; completed `PurchaseOrder` lines behave the same by design.
+**Fix:** after any save that matters, **re-read the row by pk and compare**.
+Fall back to `Model.objects.filter(pk=...).update(...)`, which bypasses
+`save()`. Build the check into the script — the failure is invisible otherwise.
+
+### `Part.name` caps at 100 characters
+Not 200. Appending a suffix (`" [merged]"`) to a long imported title and then
+truncating cuts off the suffix itself — losing the only visible marker that the
+record is retired. Budget for the suffix *before* truncating.
+
+### Completing a build freezes its line items
+**Symptom:** a Complete build shows two lines while the part's BOM has seven.
+**Cause:** build lines are generated from the BOM at build time. BOM lines
+added later never appear, and completion freezes the set.
+**Fix:** reopen → `create_build_line_items()` → re-complete. Move the status
+with queryset `.update()`, not `save()`, or completion logic will try to consume
+allocations. **Consume nothing** if the counts were taken after the build — the
+parts are already outside those numbers, and allocating would deduct twice.
+
+### `default_location` rots silently
+**Symptom:** a part whose stock sits in RB-06 suggests B3-R7C1 on every receipt.
+**Cause:** the field is a suggestion the UI offers, so a wrong value never
+errors. Many were set by an import that inferred a location from a drawer
+*label* and wrote "INFERRED … verify" in the notes. The verification never
+happened. 55 were wrong in one audit.
+**Fix:** audit it against where stock actually is. Rules that survived: the
+default is where a **spare** goes back to (a unit on a bench or fitted into a
+build is in use, not at home); never point it at a staging area or a bare site
+root — that blesses the backlog; and where there is no home yet, **leave it
+empty**. An empty field asks a question, a wrong one answers it badly.
+
+### Import twins split stock from provenance
+Every duplicate pair follows the same shape: the tidy name holds the **stock**,
+the verbose vendor title holds the **supplier link, price history and image**.
+Neither record alone is right. Merge by moving the supplier part and image onto
+the record with stock, then retire the twin in place with a pointer — deleting
+it loses the audit trail. Eighteen pairs surfaced in a single day's walk; assume
+more.
+
 ## Labels & QR
 
 ### segno.make() silently produces Micro QR — iPhones won't read it
@@ -71,6 +115,31 @@ is the whole game on a ½-inch label: ~0.53 mm/module at 6% padding vs a
 The phone reading `A1-R1C1` ≠ InvenTree resolving it. Each location's own name
 must be registered via `assign_barcode(barcode_data=...)` or scans return
 "barcode not found."
+
+### The built-in label templates fit no sheet you own
+All six shipped templates are 50 × 20 mm. That is not an Avery size, so the
+Print Labels dialog produces something plausible and wrong, and the natural
+conclusion is "the printer is misaligned." Load templates sized to the stock you
+actually buy (44.45 × 12.7 mm for Avery 5167/8167) alongside the built-ins —
+don't replace them, an upgrade expects to find them.
+
+### The sheet plugin's column count flips on the margin field
+**Symptom:** the same label sheet comes out 4-across one day and 3-across the
+next, and a "skip 28" that worked lands everything one row off.
+**Cause:** the plugin computes `floor((page − 2×margin) / label_width)`. On US
+Letter with a 44.45 mm label, margin 10 mm gives exactly 4 × 20 — the Avery
+grid. With a 50 mm label the same margin gives **3** columns, and margin ≤ 5 mm
+gives 4. The cliff is invisible in the dialog.
+**Fix:** compute the grid before setting *skip*, and print one bordered test
+page on plain paper. Also check the printer's own unprintable edge — a 5 mm
+margin sits right on it and shaves the outer columns.
+
+### A generated sheet is a PDF, not a print job
+`InvenTreeLabelSheet` writes a file and stops; nothing reaches a print queue, so
+"Process completed successfully" with no printer activity is correct behaviour,
+not a failure. The PDF lands in `data_output/` and is served from `/media/`,
+which requires the session cookie — so the link only opens in the browser you
+are logged into.
 
 ### Browser print settings can walk labels off-register
 Headers/footers force the browser to shrink page content — every label drifts
@@ -137,6 +206,43 @@ next run can *report* that its predecessor died.
 The first successful run discovered its instructions were impossible (the PO
 reference format) and adapted. If that discovery doesn't get folded back into
 the task file, every future run rediscovers it.
+
+## Agent tooling
+
+### Permission rules never match a heredoc or a compound command
+**Symptom:** broad allow rules like `Bash(ssh *)` are in place and every command
+still prompts. Approving them accumulates hundreds of rules that never fire
+again — 243 dead literals in one settings file.
+**Cause:** the matcher reads the first token. A command beginning with a
+variable assignment (`SP=/tmp/...`) matches nothing, and
+`cat <<EOF … && scp … && ssh …` cannot be decomposed into its parts. Each such
+command is unique, so each approval is a one-off.
+**Fix:** the answer is not more rules — it is **one stable command shape**.
+Write the script to a file with the editor tool, then invoke it as a single
+simple command through a wrapper directory that one wildcard covers
+(`Bash(<repo>/scripts/*)`). See `scripts/itq`.
+
+### Interjected images never reach the transcript
+A photo sent while a tool call is running is visible to the agent but is **not**
+written to the session JSONL — so it cannot be extracted afterwards. Photos sent
+as their own message are. If an image needs to be pushed into a system later,
+ask for it as a standalone turn.
+
+## Vendor sites
+
+### Order-detail links do not navigate programmatically
+Amazon order *search* pages read fine, and the "View order details" links do
+nothing when clicked by automation — no error, no navigation. Order dates and
+titles are available from the search results; **prices are not**, and the
+product page shows today's listing price, not what was paid. Ask the human for
+the figure rather than recording the current price as if it were the receipt.
+
+### 403 with no body means fingerprinting, not authentication
+Vendor docs sites (Digilent among them) sit behind bot detection that returns
+403 to a plain fetch and a "verifying you are human" interstitial to a driven
+browser. Do not work around it. Record what is certain, link the page, and note
+*why* the numbers are missing — a plausible spec written from memory is worse
+than an absent one, because nobody re-checks it.
 
 ## Networking
 
