@@ -174,7 +174,15 @@ Each of these was adopted after the naive version failed:
     one spent on four parts cannot be recovered without a second handling.
     Filter free drawers by `metadata.size.cls` before proposing one, and
     prefer the smallest class the part fits.
-17. **Drawer capacity is a number, not a vibe.** Location `metadata.size`
+17. **A flat thing is limited by the DIAGONAL, not the width.** A 2004A LCD
+    at ~98 x 60 mm was filed to a large drawer because a small one is only
+    56 mm wide. Scott: *"it'll fit in a small container on an angle... they'll
+    both fit in one."* Correct — a tilted board is bounded by the
+    cross-section's diagonal, sqrt(56² + 40²) ≈ **69 mm**, which is 23% more
+    than the width and enough for both LCDs in one small drawer. Compare a
+    board's dimensions against the diagonal before spending a large drawer on
+    it; large drawers are the scarce class and there are only 36 in the wall.
+18. **Drawer capacity is a number, not a vibe.** Location `metadata.size`
     carries width, depth, height and cubic inches for all 324 Akro-Mils
     drawers. Three drawer recommendations were wrong in one morning because
     capacity was inferred from *line counts*, which measure records rather than
