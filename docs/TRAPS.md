@@ -492,6 +492,24 @@ overlapping text is still ink in the expected region. Truncate in the TEMPLATE
 (`|truncatechars:N`), and verify by rendering to PNG and LOOKING at it, not by
 measuring margins.
 
+### `metadata.labeled` tracked what INVENTREE printed, not what is on the drawer
+A 62mm label was printed for A3-R1C1 on 2026-08-21 because its flag read
+`None`. Scott: *"All of these labels are already printed for the wall cabinets.
+They're printed on Avery sheets, so no need to reprint them."* The drawer had a
+label the whole time. One label of scarce starter tape, spent on a duplicate.
+
+The flag was not lying so much as answering a different question. It recorded
+what *this system* had produced, and the Avery sheets for the wall cabinets were
+run off separately. Same failure shape as `count() == 0` meaning "no stock rows"
+rather than "empty drawer": a field that describes the database being read as if
+it describes the room.
+
+This one costs consumables rather than time, which makes it worse. **Before any
+batch print, ask whether the drawers already carry labels** — do not infer
+coverage from the flag. And note the asymmetry runs both ways: `LABELLING.md`
+already warns that a wrongly-*true* flag leaves a drawer bare forever, and this
+is the mirror — a wrongly-*false* flag silently spends tape.
+
 ### Most IPNs here are Amazon ASINs
 `IPN` is "B017KUC6XQ" for most of the imported catalogue — useless on a label.
 Print the default_location instead; where a part lives is what you need
