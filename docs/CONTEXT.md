@@ -1,0 +1,61 @@
+# Protecting context
+
+Long sessions get compacted. Anything that lives only in the conversation is
+gone — and what gets lost is never the code, which is on disk, but the
+*reasoning*: why an approach was abandoned, what was already ruled out, what a
+correction taught. That is the expensive part to rediscover.
+
+The 2026-08-20 session is the case in point: an evening spent proving that
+`brother_ql` cannot drive this printer produced almost no code, and would have
+left no trace at all if the eliminations had not been written down. Someone —
+including me, next month — would have started with the obvious approach and
+lost the same evening.
+
+## The rule
+
+**Write it down in the same turn it is learned, not at the end of the session.**
+
+End-of-session capture fails in the exact case it matters: the session that runs
+long, gets compacted, or stops unexpectedly.
+
+## Triggers — capture immediately when any of these happen
+
+| Trigger | Goes where |
+|---|---|
+| A correction lands ("not true", "that's wrong", "you're overstating it") | `TRAPS.md` |
+| Something surprising is established **by test** rather than inferred | `TRAPS.md` |
+| An approach is ruled out | the subsystem doc — *with what eliminated it* |
+| A decision is made for a reason that is not obvious from the result | commit message, and the doc if it will outlive the change |
+| A precedent or convention is set | subsystem doc + memory |
+| Something is deliberately **not** done | a note on the record itself, saying why |
+| A physical fact is reported that is not derivable from the database | the part / location notes |
+
+That last one matters more than it looks. "The roll is 62 mm × 5 m", "there are
+14 in the bag", "A3 rows 1–3 are empty" — none of it can be recovered from the
+data, and all of it came from someone standing in the shop looking at it.
+
+## Commit as the primary record
+
+Commit at every milestone, not at the end. The message is the artifact: state
+what changed, and **why the obvious alternative was not chosen**. A diff shows
+what; only the message shows what was ruled out.
+
+Commits are cheap; a lost explanation is not.
+
+## "Checkpoint"
+
+Say **`checkpoint`** at any point and everything not yet on disk gets flushed:
+pending traps written, docs updated, work committed, memory updated. Use it
+before a long tool run, when a phase completes, or whenever the session has been
+going a while and it is unclear what has been captured.
+
+It should rarely find much. If a checkpoint turns up a lot of uncaptured
+material, the triggers above were not being followed.
+
+## What does NOT go in
+
+- Anything the repo already records — code structure, git history, file layout
+- Blow-by-blow narration of a session; capture *conclusions*, not transcripts
+- Speculation and provisional plans. Record what was decided and what was
+  learned. A policy nobody has decided on yet is not context worth protecting —
+  it is a guess that will later be mistaken for a decision.
