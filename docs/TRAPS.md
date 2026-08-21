@@ -360,6 +360,23 @@ nonsense: "SHNITPWR 12V Power Supply" matched *DROK Time Delay Relay*,
 matched a *threadmill*. A false MISS costs a glance; a false MATCH hides a real
 gap forever. Always re-check the brand token directly before believing a match.
 
+### Loose fasteners pack at roughly HALF what the arithmetic says
+Asked whether 100 of a 1/4 x 2in hex-head lag screw would fit a 20.8 cu in
+drawer, a solid-volume calculation plus a guessed 55% packing efficiency gave
+~21 cu in — "dead on the line, just try it". Scott, holding them: *"The one
+hundred is gonna take at least two drawers."* So the real figure is north of
+40 cu in, and the estimate was low by about 2x.
+
+Why: hex heads and coarse threads interlock badly and cannot nest. The naive
+model treats a screw as a cylinder and then applies a packing factor borrowed
+from smooth stock. **For loose headed fasteners, budget ~4x the solid volume**,
+not the ~1.8x that 55% implies — and treat even that as a starting guess.
+
+The right move is still what happened: say the number, say it is a model, and
+let the person holding the box settle it. Quoting ~21 cu in as though it
+decided the question would have put 100 lag screws in a drawer that will not
+close.
+
 ### Line count is not drawer volume
 A3-R8C1 showed "2 lines, 5 units" and was recommended as having room for 15
 LM2596 modules. It was full. The database counts RECORDS, and says nothing
