@@ -1,11 +1,12 @@
 # McMaster-Carr import — scope and rules
 
-Scoped 2026-08-21, not yet built. McMaster-Carr was missed in the original
+**Built and run 2026-08-21.** Scoped, then executed the same day. McMaster-Carr was missed in the original
 supplier import; most of the hardware in cabinets **A2 and B2 came from them**,
 so this is the single biggest quality win available to the fastener catalogue.
 
-**Nothing here is built yet.** This records what was established while scoping,
-so the work does not have to be re-derived.
+Run by `scripts/mcmaster_import.py`, which is idempotent on the invoice
+number and safe to re-run. Result: **92 parts, 92 supplier parts with per-unit
+prices, 18 purchase orders, 92 [ESTIMATE] stock items**.
 
 ## Why it is worth doing
 
@@ -128,3 +129,39 @@ pack quantity. Under the evidence tiers in README principle 5 that is a
 **stated** number, not a tally — strong, since a factory-sealed bag is unlikely
 to be short, but still **no stocktake date** until someone counts it. Let the
 never-counted report keep surfacing it.
+
+
+## What the run actually produced
+
+| | |
+|---|---|
+| Parts created | 92 — every one a distinct McMaster number, no repeats in five years |
+| Supplier parts | 92, `pack_quantity` 1 throughout, linked to their product page |
+| Purchase orders | 18, all Complete, each keyed on its invoice |
+| Stock items | 92, all `[ESTIMATE]`, **none** with a stocktake date |
+| Units recorded | 4,072 — as PURCHASED, not counted |
+
+Category routing came out Hardware 55, Mechanical 20, Materials 8, Tooling 5,
+Pneumatic 4, with **nothing unrouted**.
+
+Stock location: 31 metric fastener lines to **B1**, 17 imperial to **B2**, and
+44 left with **no location** — the tooling, raw stock and bearings that do not
+belong in either cabinet, plus threadless items like dowel pins and steel
+balls. Cabinet level only; the drawer is unknown until the walk.
+
+## Traps hit while building it
+
+**A Complete purchase order is LOCKED.** Creating one with `status=30` and then
+calling `save()` to attach notes raises *"This order is locked and cannot be
+modified"*, and lines cannot be added either. Create the order **Placed**, add
+every line, and only then move it to Complete with queryset `.update()` —
+never `save()`, which tries to consume allocations that deliberately do not
+exist. The first run died on this after creating one empty locked PO, which had
+to be deleted before re-running.
+
+**The Cannon Gasket bag resolved on the first pass.** `93412A423` — *Viton
+Fluoroelastomer Rubber Sealing Washer, 3/8" Screw Size, 0.355" ID, 0.812" OD,
+Packs of 10* — bought 2023-01. The bag's own number, `CVTN-812355062M`, encodes
+**812** OD / **355** ID / **062** thick. Cannon Gasket is McMaster's
+manufacturer for that washer and it shipped in the maker's packaging. The
+falsifiable check written into this file before the run answered itself.
