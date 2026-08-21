@@ -96,7 +96,16 @@ Each of these was adopted after the naive version failed:
 8. **Identifiable gets a record; anonymous gets a bucket.** A stamped C&K or
    NKK switch earns its own part; a handful of unmarked salvage becomes one
    "Assorted" line. When a named part is pulled out of a bucket, the bucket
-   count is decremented — or it double-counts.
+   count is decremented — or it double-counts. Extension for **equipment
+   carrying a unique serial** — a radio, an instrument, a board with a MAC:
+   set `trackable` and put the serial on the stock item, not in the notes.
+   Two identical units are then distinguishable, which is the whole point;
+   a MAC or FCC ID goes in the notes because it identifies the *unit* but is
+   not what you would search for. First applied 2026-08-21 to a MikroTik
+   Metal 2SHPn (#930). Corollary: **an item nobody can point at is not
+   stock.** The PoE injector for that radio is owned and unlocated, so it is
+   a sentence on the radio's record — inventing a record with no location
+   would put a findable-looking thing in the database that nobody can find.
 9. **Anticipate vocabulary mismatch.** Six months later you remember
    "distance sensor", not "VL53L4CD" — and substring search means "ToF"
    doesn't even match "Time-of-Flight". Every part gets plain-language
