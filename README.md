@@ -193,7 +193,24 @@ Each of these was adopted after the naive version failed:
     on any drawer that is barely used, and say what else belongs there. This
     is the same instinct as the divided drawers in principle 15 — the enemy
     is storing air, and the wall has only 324 drawers.
-19. **Drawer capacity is a number, not a vibe.** Location `metadata.size`
+19. **Grade is part identity for a fastener — same thread is not the same
+    part.** Scott, on the McMaster import: *"not all hardware is the same...
+    the hardware we filed earlier today was not the same grade as the stuff we
+    buy from McMaster. We have to distinguish between those two."* A 1/4-20
+    nyloc out of a garage-cabinet hardware pack and a McMaster Grade 5
+    black-oxide nyloc share a thread and nothing else that matters. Swapping
+    one into a joint designed around the other is how things fail, and
+    nothing about the part looks different in a drawer.
+    - **An unstated grade is not "doesn't matter" — write UNKNOWN.** Silence
+      gets read as unimportant. The six fasteners filed on 2026-08-21 now say
+      grade unknown and *do not use where strength matters*.
+    - **Finish is not grade.** Galvanized, zinc and black-oxide are coatings.
+      Grade 5, Grade 8 and A574 are strength classes. Recording one does not
+      record the other.
+    - **Never merge a graded part into an ungraded record.** It silently
+      promotes unmarked hardware to a strength nobody tested. This is the
+      binding rule for the McMaster import: create, never reconcile.
+20. **Drawer capacity is a number, not a vibe.** Location `metadata.size`
     carries width, depth, height and cubic inches for all 324 Akro-Mils
     drawers. Three drawer recommendations were wrong in one morning because
     capacity was inferred from *line counts*, which measure records rather than
