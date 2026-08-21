@@ -1,8 +1,17 @@
 # Fabricated PCBs — what was ordered, and how to tell them apart
 
-Forty bare boards across five JLCPCB orders since 2019. Only one design is in
+Forty bare boards across five JLCPCB orders since 2019. Two designs are now in
 the catalogue. This exists so a stack of green boards found in a bin can be
 identified rather than guessed at.
+
+**The 2019 order is solved (2026-08-21).** It had been the one entry here with
+no identification at all, because JLCPCB named the gerber with a content hash
+and the shipping email carried nothing else. The answer was silkscreened on the
+board the whole time: `Arduino Nano NRF24L01 adaptor`, with the author, the
+licence and the repo URL, plus a panel code `2583209A-Y1-190313` whose trailing
+digits are the fab date matching the order. **Read the board before mining the
+paperwork** — a bare PCB usually carries its own provenance, and this one
+survived seven years of it.
 
 **Nothing here is a stocking decision.** What to do with surplus boards is
 undecided; this only records what exists.
@@ -11,7 +20,7 @@ undecided; this only records what exists.
 
 | Order | Date | Gerber name | Qty | Merch | Total |
 |---|---|---|---:|---:|---:|
-| `W20190313241946` | 2019-03-12 | `0158016a7a36450d93c96a5692df10…` | 10 | $2.00 | $7.24 |
+| `W20190313241946` | 2019-03-12 | `0158016a7a36450d93c96a5692df10…` **= NRF24L01 adaptor** | 10 | $2.00 | $7.24 |
 | `W202401071001106` | 2024-01-06 | `Gerber_PCB_FFB_Arduino_Yoke_1…` | 5 | $2.00 | $20.05 |
 | `W202406142358683` | 2024-06-14 | `Gerber_G1000_nxi_v2_shield_rev…` | 10 | $29.50 | $67.62 |
 | `W2026060711329921` | 2026-06-06 | `sln-shop-minisplit-cn105-adapt…` | 5 | $2.00 | $5.12 |
@@ -29,7 +38,7 @@ surplus accumulates without anyone deciding to accumulate it.
 | **Shop minisplit CN105 adapter** | `sln-ha-config/electronics/kicad/sln-shop-minisplit-adapter/` and gerber zip `…_2026-06-07` | **no** |
 | **FFB Arduino Yoke** | not in any repo — third-party gerber zip | **no** |
 | **G1000 NXi shield** | not in any repo — third-party gerber zip | **no** |
-| **2019 order** | filename is a content hash, unidentifiable from records | **no** |
+| **Arduino Nano NRF24L01 adaptor** — silkscreen `Arduino Nano NRF24L01 adaptor`, `github.com/markjb/NRF24L01_Adaptors`, panel code `2583209A-Y1-190313` | upstream repo (third-party, CC BY-SA 4.0); nothing local | yes, part `[938]` |
 
 ## Two gaps worth knowing before the bin walk
 
