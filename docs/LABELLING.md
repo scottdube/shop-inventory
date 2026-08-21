@@ -119,6 +119,36 @@ drawer, where the part lives is the useful fact; the ASIN is noise.
 
 ---
 
+## Tape is finite — printing is opt-in, never automatic
+
+**As of 2026-08-21 the shop is still on the starter tape that came with the
+printer, and no replacement DK rolls have been ordered.** Scott, when a
+per-part label print was being made routine: *"we don't have that much label
+stock... we gotta be careful."* Remaining length is **not known** — nobody has
+measured what is left on the roll, and this doc will not guess.
+
+So: **never print as a side effect of filing a part.** `print_part_label.py`
+defaults to render-only and requires an explicit `--print` for exactly this
+reason. Ask before printing a batch.
+
+What a roll buys, for planning. A full 62mm × 5m continuous roll is 5,000mm of
+tape, and continuous DK tape is consumed by label *length*, so:
+
+| Template | Length | Labels per full roll |
+|---|---:|---:|
+| Location 62mm Compact | 16mm | ~310 |
+| Part / Stock Item 62mm | 18mm | ~275 |
+| Location 62mm | 25mm | ~200 |
+
+Those are ceilings — they ignore the feed the cutter eats between jobs, which
+is per-job, so **one batch of 20 wastes far less than 20 separate prints.**
+Batch the work.
+
+Against that: 368 of 474 locations are still unlabelled, which is already more
+than one full roll before a single part label is printed. Locations earn the
+tape first — a drawer with no label cannot be found at all, whereas an unlabelled
+bag inside a labelled drawer is merely slower.
+
 ## Coverage
 
 Tracked as `metadata.labeled` on each `StockLocation`, beside `metadata.size`,
