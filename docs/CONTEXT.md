@@ -65,8 +65,18 @@ The rule that keeps parking honest: **a parking spot is a QUEUE, not a home.**
 - Nothing in it ever gets a `default_location` pointing there
 - It is flagged in `metadata` so one query finds every one of them
 
-As of 2026-08-21 there are two: `SLN/Triage` (a 21×15×6in tote for anything
-homeless and bulky) and `A2-R8C8` (unsorted small imperial hardware).
+As of 2026-08-21 there are five:
+
+| Spot | Holds |
+|---|---|
+| `SLN/Triage` | anything homeless and bulky — a 21×15×6in tote |
+| `A2-R8C5` | pre-sort: machine-threaded (takes a nut) |
+| `A2-R8C6` | pre-sort: self-threading (pointed end) |
+| `A2-R8C7` | pre-sort: nuts & washers |
+| `A2-R8C8` | pre-sort: everything else |
+
+Find them all with `metadata.unsorted`, or by searching locations for
+`pre-sort`.
 
 The difference between parking and hiding is whether the backlog can be
 *listed*. A pile on a table is invisible to every query; a flagged location
