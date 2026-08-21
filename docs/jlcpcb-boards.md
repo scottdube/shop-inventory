@@ -65,6 +65,16 @@ and those boards are the same undocumented layer of one project.
 | **G1000 NXi shield** (10 pcs, 2024-06) | **A real project, to be documented incrementally.** The design was bought and the gerbers sent straight to JLCPCB, but the board is large — roughly 7×10 or 8×10 cm — and Scott populated it himself with a lot of components. Buying the *design* does not make the *build* a purchase. No build order yet purely for bandwidth; pick away at it. |
 | **FFB Arduino Yoke** (5 pcs, 2024-01) | **Dead end. Not needed.** Do not create a project, do not chase the boards, do not treat their absence as a gap. |
 
+**MySensors is dead — decided 2026-08-21.** The nine NRF24L01 adaptor boards,
+the loose nRF24L01 radios and a Sensebender Gateway are all one 2018-19
+MySensors cluster. Scott: *"disperse it to loose stock... that project's dead
+in the water. Gone."* So: **no project, no build order, no kit bin.** The parts
+are good stock for anything else and stay as loose stock; each carries a note
+saying where it came from and that the project is dead. Recorded for the same
+reason as the FFB yoke below — so the next person to find nine identical
+adaptor boards does not read them as an undocumented project awaiting
+reconstruction, and does not go looking for the rest of it.
+
 **The minisplit CN105 adapter has boards but no project.** Five were fabbed
 2026-06-06 from a design that lives in `sln-ha-config`, with an ADR
 (`015-shop-minisplit-jrre-cut-remote-temp.md`) and running ESPHome configs —
