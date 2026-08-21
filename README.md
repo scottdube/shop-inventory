@@ -134,7 +134,17 @@ Each of these was adopted after the naive version failed:
     `ST / 48` and the caveat was struck. Collapsing the two into one
     "verified" would have made the gap unfindable, and refusing to record
     anything until both were sure would have lost the count.
-13. **Match the part to the drawer class — a large drawer is a scarce
+13. **There are three storage tiers, and the top one is nearly uninventoried.**
+    Drawers (324 Akro-Mils, 20.8 or 59.9 cu in) hold components. Red bins (28)
+    hold one project kit each. Shelves (12 wire at 46 x 18 in, plus the laser
+    cabinets) hold anything bulky — and *only* they do: the biggest drawer in
+    the bin wall is about 6 x 4.5 x 2.2 in, so an 18-inch radio was never
+    going in the wall or a red bin. Only the 324 drawers have a recorded
+    `metadata.size`; the other 150 locations have none, so "will this fit?"
+    is currently unanswerable above drawer scale. **Triage is a box, not a
+    shelf** (`SLN/Triage`, 2026-08-21) — the wire racks are full, and a box
+    fills up and forces the decision where a shelf lets a pile grow quietly.
+14. **Match the part to the drawer class — a large drawer is a scarce
     resource.** Four TO-220 regulators were filed into B3-R5C2, a 59.9 cu in
     large drawer, purely because it was the nearest verified-empty one. Scott:
     *"we don't wanna waste big drawers with little parts."* Moved to A3-R6C3,
@@ -142,7 +152,7 @@ Each of these was adopted after the naive version failed:
     one spent on four parts cannot be recovered without a second handling.
     Filter free drawers by `metadata.size.cls` before proposing one, and
     prefer the smallest class the part fits.
-14. **Drawer capacity is a number, not a vibe.** Location `metadata.size`
+15. **Drawer capacity is a number, not a vibe.** Location `metadata.size`
     carries width, depth, height and cubic inches for all 324 Akro-Mils
     drawers. Three drawer recommendations were wrong in one morning because
     capacity was inferred from *line counts*, which measure records rather than

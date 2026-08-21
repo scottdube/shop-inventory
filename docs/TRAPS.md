@@ -384,9 +384,21 @@ empty one are indistinguishable by stock count alone.
 **Emptiness is a claim someone made, not a row count.** This estate says so
 explicitly: the genuinely empty drawers read `VERIFIED EMPTY <date>`, the
 unknown ones read `NOT WALKED — contents unknown`, and the rest describe their
-contents. Trust that sentence, never `count() == 0`. Counting rows says A1 and
-A2 are 128/128 empty; their descriptions carry legacy labels like `M3 .5 x20`,
-and they are cabinets full of uninventoried hardware.
+contents. Trust that sentence, never `count() == 0`.
+
+**And do not fill the gap with a guess either — that is the same error wearing
+a hat.** Having just written the rule above, this file then asserted that A1
+and A2 were "cabinets full of uninventoried hardware", reasoning from the
+`M3 .5 x20` legacy labels. Those labels are on **B1**. Scott, walking the room
+on 2026-08-21: A1 has a few things in it, A2 is *virtually empty*, B1 and B2
+hold the hardware and are filling up but are not full. So the correction to
+"the database is silent" is to **go and look, or ask** — not to infer contents
+from a neighbouring cabinet. An inferred answer is indistinguishable from a
+known one once it is written down, which is precisely what makes it expensive.
+
+Cabinet-level reports get recorded on the **cabinet**, not stamped onto its 64
+drawers. Writing "virtually empty" onto every A2 drawer would forge 64
+per-drawer checks from one glance across a room.
 
 Corollary: a stale physical label is not evidence either. B3-R5C1 is
 `VERIFIED EMPTY` but its printed label still reads "Hall effect sensors" —
