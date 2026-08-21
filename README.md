@@ -125,7 +125,15 @@ Each of these was adopted after the naive version failed:
     `ST / 48` and the caveat was struck. Collapsing the two into one
     "verified" would have made the gap unfindable, and refusing to record
     anything until both were sure would have lost the count.
-13. **Drawer capacity is a number, not a vibe.** Location `metadata.size`
+13. **Match the part to the drawer class — a large drawer is a scarce
+    resource.** Four TO-220 regulators were filed into B3-R5C2, a 59.9 cu in
+    large drawer, purely because it was the nearest verified-empty one. Scott:
+    *"we don't wanna waste big drawers with little parts."* Moved to A3-R6C3,
+    20.8 cu in. There are far more small drawers than large ones, and a large
+    one spent on four parts cannot be recovered without a second handling.
+    Filter free drawers by `metadata.size.cls` before proposing one, and
+    prefer the smallest class the part fits.
+14. **Drawer capacity is a number, not a vibe.** Location `metadata.size`
     carries width, depth, height and cubic inches for all 324 Akro-Mils
     drawers. Three drawer recommendations were wrong in one morning because
     capacity was inferred from *line counts*, which measure records rather than

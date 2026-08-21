@@ -178,14 +178,23 @@ Only mark what someone has **seen**. A wrongly flagged location is worse than an
 unflagged one: the unflagged drawer gets a spare label printed, the wrongly
 flagged one stays bare forever because nothing will offer to print it again.
 
-**Reassigning a drawer means setting `labeled` back to false.** A drawer that
-keeps `labeled: true` through a change of contents is the worst state of all —
-it carries a *confident, printed, wrong* label, and nothing will ever offer to
-reprint it. B3-R5C2 went from `VERIFIED EMPTY` to holding TO-220 regulators on
-2026-08-21 while its printed label still read "PCB terminals". Two steps, both
-required: rewrite the description, and flip `labeled` to false so the next
-batch print picks it up. This is the operational half of the stale-label
-corollary in `TRAPS.md`.
+**Reassigning a drawer does NOT invalidate its printed label.** This was got
+wrong on 2026-08-21: B3-R5C2 was given TO-220 regulators and `labeled` was
+flipped to false on the theory that its label had gone stale. It had not.
+Principle 1 is that **locations are addresses, never contents** — a printed
+label says `B3-R5C2` and a QR of the same string, and an address does not go
+stale when the contents change. That is the entire reason the scheme is
+addresses.
+
+What *does* go stale is the **legacy handwritten tag** from before this system:
+B3-R5C2 still carries a paper "PCB terminals" label, and those went to
+A3-R8C6/R8C7 long ago. Those tags were never tracked by `labeled` (see the rule
+above — they carry no QR and are flagged false by definition), so contents
+changing cannot make the flag wrong.
+
+So on reassignment: rewrite the `description`, and leave `labeled` alone.
+Flipping it to false would queue a reprint of a label that is already correct —
+spending tape that, per the section above, the shop does not have.
 
 ---
 
