@@ -75,7 +75,17 @@
 
 <img class='qr' alt="{% trans 'QR Code' %}" src='{% qrcode qr_data %}'>
 
-<div class='name'>{{ name }}</div>
+{% comment %}
+   Truncated in the TEMPLATE, not by CSS overflow: WeasyPrint does not clip
+   absolutely-positioned blocks, so a long name silently overprints the
+   quantity/location line instead of being cut. ~25 chars per line at 3.1mm
+   Arial across 42mm, two lines.
+
+   Comment tags here, not hash-brace: Django's hash-brace comment is
+   SINGLE-LINE only, and a multi-line one inside a block renders as visible
+   text straight across the label.
+{% endcomment %}
+<div class='name'>{{ name|truncatechars:50 }}</div>
 
 <div class='meta'>
     {% localize off %}{{ quantity|floatformat:"-2" }}{% endlocalize %}
@@ -83,8 +93,7 @@
 </div>
 
 <div class='sub'>
-    {% if serial %}SN {{ serial }}{% elif batch %}Batch {{ batch }}
-    {% elif ipn %}{{ ipn }}{% endif %}
+    {% if serial %}SN {{ serial }}{% elif batch %}Batch {{ batch }}{% endif %}
 </div>
 
 {% endblock content %}

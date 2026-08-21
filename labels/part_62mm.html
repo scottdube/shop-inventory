@@ -62,10 +62,28 @@
 
 <img class='qr' alt="{% trans 'QR Code' %}" src='{% qrcode qr_data %}'>
 
-<div class='name'>{{ name }}</div>
+{% comment %}
+   Truncated in the TEMPLATE, not by CSS overflow: WeasyPrint does not clip
+   absolutely-positioned blocks, so a long name silently overprints the meta
+   line instead of being cut. ~25 chars per line at 3.1mm Arial across 42mm,
+   three lines.
 
+   Comment tags here, not hash-brace: Django's hash-brace comment is
+   SINGLE-LINE only, and a multi-line one inside a block renders as visible
+   text straight across the label.
+{% endcomment %}
+<div class='name'>{{ name|truncatechars:75 }}</div>
+
+{% comment %}
+   Location first, and no IPN: for most of this catalogue the IPN is an Amazon
+   ASIN ("B017KUC6XQ"), which tells nobody anything standing at a drawer.
+   Where the part lives is the fact worth printing. Category is the leaf name
+   only -- the full path ("Tooling/Measuring - M...") just ran off the edge --
+   and it is truncated here rather than by CSS, which WeasyPrint ignores.
+{% endcomment %}
 <div class='meta'>
-    {% if IPN %}{{ IPN }} &middot; {% endif %}{{ category }}
+    {% if part.default_location %}{{ part.default_location.name }}{% if part.category %} &middot; {% endif %}{% endif %}
+    {% if part.category %}{{ part.category.name|truncatechars:24 }}{% endif %}
 </div>
 
 {% endblock content %}

@@ -393,3 +393,23 @@ InvenTree submits through CUPS knowing none of this, so `PageSize`,
 The driver's default PageSize here is `29x90mm` — a die-cut size unrelated to
 the continuous roll loaded. `roll_current_62x0mm` from the IPP `media-ready`
 attribute is NOT a valid PageSize keyword; use `Custom.62x16mm`.
+
+### Django `{# #}` comments are SINGLE-LINE — multi-line ones PRINT
+A multi-line `{# ... #}` inside a `{% block %}` is not a comment. Django only
+treats hash-brace as a comment on one line, so the rest renders as visible text
+straight across the label — several labels came out carrying this file's own
+source comments. Use `{% comment %}...{% endcomment %}` inside blocks. Comments
+placed OUTSIDE a block in an `extends` template are discarded and are safe.
+
+### WeasyPrint does not honour `overflow: hidden`
+CSS `max-height` + `overflow: hidden` does NOT clip an absolutely-positioned
+block in InvenTree's PDF renderer. A long part name silently overprints the
+line below it — the label still passes an ink-bbox margin check, because
+overlapping text is still ink in the expected region. Truncate in the TEMPLATE
+(`|truncatechars:N`), and verify by rendering to PNG and LOOKING at it, not by
+measuring margins.
+
+### Most IPNs here are Amazon ASINs
+`IPN` is "B017KUC6XQ" for most of the imported catalogue — useless on a label.
+Print the default_location instead; where a part lives is what you need
+standing at the drawer.
