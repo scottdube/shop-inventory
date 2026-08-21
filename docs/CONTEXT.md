@@ -52,6 +52,31 @@ going a while and it is unclear what has been captured.
 It should rarely find much. If a checkpoint turns up a lot of uncaptured
 material, the triggers above were not being followed.
 
+## Parking is allowed — hiding is not
+
+Some things are not worth stopping for. Cataloguing a handful of plastic filler
+buttons mid-session costs more than the record is worth, and a session that
+stalls on trivia is a session that does not finish. So park it.
+
+The rule that keeps parking honest: **a parking spot is a QUEUE, not a home.**
+
+- It is a real, addressable location — not a pile, not "on the bench"
+- Its description says what went in, when, and that it is **not counted**
+- Nothing in it ever gets a `default_location` pointing there
+- It is flagged in `metadata` so one query finds every one of them
+
+As of 2026-08-21 there are two: `SLN/Triage` (a 21×15×6in tote for anything
+homeless and bulky) and `A2-R8C8` (unsorted small imperial hardware).
+
+The difference between parking and hiding is whether the backlog can be
+*listed*. A pile on a table is invisible to every query; a flagged location
+shows up the moment anyone asks. Neither is sorted — but only one of them
+admits it, and admitting it is what eventually gets it done.
+
+Do not create a Part with a made-up quantity to represent parked contents.
+"Assorted hardware, qty 1" is a fiction that reads like a fact. The location
+description carries the truth until someone counts.
+
 ## What does NOT go in
 
 - Anything the repo already records — code structure, git history, file layout
