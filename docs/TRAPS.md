@@ -492,23 +492,39 @@ overlapping text is still ink in the expected region. Truncate in the TEMPLATE
 (`|truncatechars:N`), and verify by rendering to PNG and LOOKING at it, not by
 measuring margins.
 
-### `metadata.labeled` tracked what INVENTREE printed, not what is on the drawer
-A 62mm label was printed for A3-R1C1 on 2026-08-21 because its flag read
-`None`. Scott: *"All of these labels are already printed for the wall cabinets.
-They're printed on Avery sheets, so no need to reprint them."* The drawer had a
-label the whole time. One label of scarce starter tape, spent on a duplicate.
+### "Labelled" is THREE states, and `labeled` only models two
+A 62mm label was printed for A3-R1C1 on 2026-08-21 because `labeled` read
+`None`. Scott: *"All of these labels are already printed for the wall
+cabinets... on Avery sheets, so no need to reprint them."* Then, correcting the
+over-correction that followed: *"The metadata was right. The label wasn't
+actually affixed to the drawer, but the labels are printed."*
 
-The flag was not lying so much as answering a different question. It recorded
-what *this system* had produced, and the Avery sheets for the wall cabinets were
-run off separately. Same failure shape as `count() == 0` meaning "no stock rows"
-rather than "empty drawer": a field that describes the database being read as if
-it describes the room.
+Both statements are true, and the flag was accurate the whole time. A drawer is
+in one of three states:
 
-This one costs consumables rather than time, which makes it worse. **Before any
-batch print, ask whether the drawers already carry labels** — do not infer
-coverage from the flag. And note the asymmetry runs both ways: `LABELLING.md`
-already warns that a wrongly-*true* flag leaves a drawer bare forever, and this
-is the mirror — a wrongly-*false* flag silently spends tape.
+| State | `labeled` | Reprint needed? |
+|---|---|---|
+| Not printed | false | **yes** |
+| Printed, sitting on a sheet, not stuck on | false | **no** |
+| Printed and affixed | true | no |
+
+`labeled` correctly means **affixed** — that is `LABELLING.md`'s definition and
+it never wavered. What nothing recorded is the middle state, which is where most
+of the estate actually sits: as of 2026-08-21, **84 drawers affixed and 240
+printed and waiting**. Installing them is a slow manual job being done a bit at
+a time.
+
+The middle state is the one that decides whether to print. Reading `labeled:
+false` as "needs a label" would have queued 240 duplicates — most of a roll of
+scarce starter tape. It is now recorded as `metadata.label_printed`.
+
+The trap generalises past labels: **a boolean flattens a workflow that has more
+than two stages, and the missing stage is usually the one you need.** Before
+acting on any false flag, ask what the field actually asserts and what lies
+between its two values. And when a correction arrives, do not swing past it —
+the first fix here flipped 23 drawers to `true`, which would have left them
+permanently bare because nothing ever offers to label a drawer already marked
+done.
 
 ### Most IPNs here are Amazon ASINs
 `IPN` is "B017KUC6XQ" for most of the imported catalogue — useless on a label.
