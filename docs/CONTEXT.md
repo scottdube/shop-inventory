@@ -101,9 +101,31 @@ record:
   label is physically ON, so a parking spot should be near the front of the
   labelling queue rather than the back.
 
-Do not create a Part with a made-up quantity to represent parked contents.
-"Assorted hardware, qty 1" is a fiction that reads like a fact. The location
-description carries the truth until someone counts.
+**Give each parking spot a bucket PART with no stock item.** This is how it
+becomes findable the way people actually look. Scott, after the location search
+worked and still was not what he needed: *"I need to be able to type
+miscellaneous hardware into probably parts and have those four buckets pop
+up."* Right — Parts is where you look for a thing, and a location-only record
+answers a question nobody asks.
+
+Each bucket gets a Part named `Miscellaneous Hardware — <bucket>`, with
+`default_location` set to its drawer and the sorting test in the description.
+Searching Parts for "miscellaneous hardware" returns all four, each showing
+which drawer and what belongs in it.
+
+**No stock item, ever.** That is the line, and it is narrower than the one
+first written here. The objection was never to *having a record* — principle 8
+already says anonymous gets a bucket — it was to **inventing a quantity**.
+"Assorted hardware, qty 1" is a fiction that reads like a fact. A Part carrying
+a LOCATION and no amount invents nothing, which is exactly what a finding aid
+should be. When something in the bucket gets identified, it becomes its own
+part and leaves; the bucket record is never counted down, because it was never
+counted up.
+
+This is also the one place a parking spot legitimately appears as a
+`default_location`. The rule against that protects *identified* parts from
+being blessed as belonging in a queue. A bucket's home genuinely is the
+bucket.
 
 ## What does NOT go in
 
