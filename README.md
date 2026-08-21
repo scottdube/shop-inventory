@@ -78,7 +78,12 @@ Each of these was adopted after the naive version failed:
 5. **A count and an estimate are different claims.** A hand tally gets a
    stocktake date; "pack of 100, mostly there" is recorded `[ESTIMATE]` with
    no stamp — so a rolling bin-check can still find drawers never truly
-   counted.
+   counted. Kit quantities come in three tiers, and only the first is a
+   count: someone tallied it; the card states a per-value number; the number
+   was divided out of a total. The lower two are both `[ESTIMATE]`, but a
+   stated number is evidence and a divided one is arithmetic — record which
+   it was, because a card that says "20 per value" can be checked against the
+   box and `850/30 = 28` never can.
 6. **Ordered ≠ received.** Auto-created POs sit in Placed until a human
    confirms the box physically arrived. (Learned from an order that was held
    for freight and never completed — it would have been phantom stock
