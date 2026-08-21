@@ -35,19 +35,36 @@ Sender to search: their invoicing address. Each order generates three mails —
 Confirmation, Shipped, Receipt — and **only the Receipt carries line items**.
 The other two are noise for this purpose.
 
-## Rule 1 — the shop/dealership filter is the PAYMENT METHOD
+## Rule 1 — the shop/dealership filter is SHIPPING ADDRESS + who placed it
 
 Some McMaster orders in this mailbox belong to the family car dealership, not
 the shop, and their contents are plausible enough to slip through: the one
 excluded order is a drum dolly, oil sorbent pads and gallon jugs — real
 workshop-shaped items that went to a service bay.
 
-**Do not filter on the billing address.** It says who paid, not where the parts
-went. Filter on **card and cardholder**: the shop's orders go on one personal
-card, the dealership's on a business card in the business name, and the
-shipping address agrees. Every receipt states both.
+**Do not filter on the billing address** — it says who paid, not where the
+parts went. **And do not filter on the card brand either.** That rule was
+written from two receipts and was falsified by the third: a 2025 order shipped
+to the shop was paid on a Visa, not the Mastercard. The shop uses both cards.
 
-The concrete card and address values are **deliberately not in this repo** —
+Two things ARE reliable, and both appear in every receipt:
+
+1. **Shipping address** — the shop's home address vs the dealership's.
+2. **A literal sentence naming who placed it** — `<person> placed this order`
+   for the shop, `Parts Department placed this order` for the dealership.
+
+Use the shipping address as the primary filter and the placed-by line to
+confirm. The card *brand* does not separate them at all — **three different
+cards appear across the shop's own orders**, two Visa and two Mastercard.
+
+**And the cardholder name has three spellings for one person.** Scott's full
+name is Christopher Scott Dube, so receipts show the personal name as any of
+three variants across the years. An importer matching one spelling would
+silently drop orders — which is the worst failure mode here, because a missing
+order looks exactly like an order that never happened. Match on the *business*
+name to EXCLUDE, rather than on a personal name to include.
+
+The concrete address and name values are **deliberately not in this repo** —
 they belong in a gitignored config the importer reads at runtime, per the
 data-in-code rule in `CONTEXT.md`.
 
