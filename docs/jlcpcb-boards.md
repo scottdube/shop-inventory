@@ -13,8 +13,17 @@ digits are the fab date matching the order. **Read the board before mining the
 paperwork** — a bare PCB usually carries its own provenance, and this one
 survived seven years of it.
 
-**Nothing here is a stocking decision.** What to do with surplus boards is
-undecided; this only records what exists.
+**Surplus boards now have a home (2026-08-21): `A3-R2C1`, long-term storage.**
+Nine NRF24L01 adaptors and four minisplit CN105 adapters are filed there and
+counted. The Rat GDO boards stay in `RB-12` because they belong to an active
+project kit, which is a different thing.
+
+The distinction that governs this, in Scott's words: **red bins are LIVE
+storage** — things used regularly — and the bare boards kept there (`RB-06`)
+are unetched copper-clad blanks awaiting the mill or the laser. Finished
+fabricated boards are the far end of the same pipeline and do not belong in
+the same place. Both get called "blank boards" in speech; the pipeline stage
+is what separates them.
 
 ## The orders
 
@@ -35,7 +44,7 @@ surplus accumulates without anyone deciding to accumulate it.
 | Design | Where the files are | In the catalogue? |
 |---|---|---|
 | **Rat GDO** — silkscreen `RatGDO OpenSource D1Mini-ESP32 v2.5.0 2023`, marks `SHT4x_I2C`, `Piezo 12v`, `BATT`, `GDO` | `my-rat-ratgdo/kicad_files/D1 Mini - ESP32/` | yes, part `[877]`, 7 on hand in RB-12 |
-| **Shop minisplit CN105 adapter** | `sln-ha-config/electronics/kicad/sln-shop-minisplit-adapter/` and gerber zip `…_2026-06-07` | **no** |
+| **Shop minisplit CN105 adapter** | `sln-ha-config/electronics/kicad/sln-shop-minisplit-adapter/` and gerber zip `…_2026-06-07` | yes, part `[909]`, 4 in A3-R2C1 |
 | **FFB Arduino Yoke** | not in any repo — third-party gerber zip | **no** |
 | **G1000 NXi shield** | not in any repo — third-party gerber zip | **no** |
 | **Arduino Nano NRF24L01 adaptor** — silkscreen `Arduino Nano NRF24L01 adaptor`, `github.com/markjb/NRF24L01_Adaptors`, panel code `2583209A-Y1-190313` | upstream repo (third-party, CC BY-SA 4.0); nothing local | yes, part `[938]` |
