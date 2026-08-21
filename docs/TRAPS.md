@@ -158,6 +158,29 @@ Bonus: for radial electrolytics, **body diameter fixes pitch** (standard
 series: Ø5→2.0mm, Ø6.3→2.5, Ø8→3.5, Ø10→5.0), and diameter is the
 *trustworthy* measurement — calipers across splayed leads over-read.
 
+### Body size is the envelope; PIN COUNT is the footprint
+Two 6x6mm tactile switches were merged on 2026-08-21 because both measured
+6x6mm. Scott turned them over: the SparkFun ones have **four legs**, the ones
+already in B3-R1C3 have **two**. Same envelope, different PCB footprint, not
+the same part. Merge reversed; they now sit in the same drawer as separate
+records — a good location with a different description.
+
+Asking for a measurement was right. Stopping at *one* measurement was not.
+`6x6mm` describes the plastic body, which is what a caliper reaches easily and
+what a vendor title advertises. What a board actually needs is the pin pattern,
+and on a tactile switch that is only visible from the underside — the top of a
+2-pin and a 4-pin 6x6 are indistinguishable.
+
+Before merging any through-hole part on a size match, ask for the thing the
+footprint depends on and not merely the thing that is easy to measure:
+
+| Part | Size names | Footprint needs |
+|---|---|---|
+| Tactile switch | body envelope | pin count (2 vs 4), pitch |
+| Radial electrolytic | body Ø | lead pitch (Ø fixes it — see above) |
+| LED | barrel Ø | Ø **and** lead pitch |
+| Header | pin count | pitch, row count, gender |
+
 ### An LED's size is its BARREL diameter — measuring the dome under-reads
 The SparkFun kit's surviving LEDs were called 3mm on 2026-08-21, against a kit
 list that said 5mm. Scott asked the right question before anything was written:
