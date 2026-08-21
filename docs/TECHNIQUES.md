@@ -57,3 +57,36 @@ saves.
 
 These are queues, not homes: contents are **not counted**, and nothing ever gets
 a `default_location` pointing at them. See the parking rule in `CONTEXT.md`.
+
+## Whether to keep an offcut
+
+Free material is not free — it costs the space it occupies, and in this shop
+bulky storage is the binding constraint. Keep an offcut only if it passes all
+three:
+
+1. **Can't be remade quickly** from stock already on hand
+2. **Worth meaningfully more** than the storage it takes
+3. **Stored in a form you would actually reach for** — not a tangle
+
+Worked example, 2026-08-21, both from the same Emporia Vue install:
+
+| | ~60 CT lead offcuts, 22 ga | 6 offcuts, 14 AWG |
+|---|---|---|
+| Remade from stock? | yes — 100 ft of 22 AWG and two ferrule crimpers on hand | no 14 AWG catalogued |
+| Worth > the space? | ~$30 against a shelf, and there is no free shelf | ~$3.50 against a sandwich bag |
+| Reachable form? | one tangled boxful | six coiled pieces |
+| **Verdict** | **binned** | **kept** |
+
+Three things that example teaches:
+
+- **The deciding variable was volume, not the wire.** Sixty pieces of anything
+  is a storage problem; six is not. Ask "how many" before "what is it".
+- **A tangle is not stock.** If retrieving one takes longer than making a new
+  one, it will never be retrieved. Test 3 does more work than it looks.
+- **Do not strip offcuts for scrap.** 90 ft of 22 AWG stranded holds about
+  2 oz of copper — roughly 40 cents. There is no third option where scrap
+  value rescues a keep-or-bin decision at this scale.
+
+And the reframe that unsticks it: *"I hate to throw out wire"* is about money
+already spent, which is gone either way. The only live question is whether the
+material is worth the space **going forward**.
