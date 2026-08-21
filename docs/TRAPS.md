@@ -158,6 +158,28 @@ Bonus: for radial electrolytics, **body diameter fixes pitch** (standard
 series: Ø5→2.0mm, Ø6.3→2.5, Ø8→3.5, Ø10→5.0), and diameter is the
 *trustworthy* measurement — calipers across splayed leads over-read.
 
+### An LED's size is its BARREL diameter — measuring the dome under-reads
+The SparkFun kit's surviving LEDs were called 3mm on 2026-08-21, against a kit
+list that said 5mm. Scott asked the right question before anything was written:
+*"where should you measure them? I'm measuring towards the middle of the LED
+surface."* Mid-dome is a chord of a hemisphere, not a diameter, so it reads
+low — a 5mm LED measured up its dome comes out around 3–4mm, which is exactly
+the reading that had been taken.
+
+Measure the straight cylindrical barrel, above the flange at the base and
+below where the dome starts. The flange is wider than the barrel and is not
+the number either.
+
+| | barrel (names the part) | flange | height |
+|---|---|---|---|
+| 3mm | 3.0mm | ~3.8mm | ~5.3mm |
+| 5mm | 4.9–5.0mm | ~5.8mm | ~8.6mm |
+
+**Height is the easier tell** — 5.3 vs 8.6mm is flat-to-flat and hard to
+confuse, where a caliper on a curved body is not. (Re-measured at the barrel,
+these were genuinely 3mm.) Footprint is part identity, so a wrong reading here
+creates a wrong part, not just a wrong note.
+
 ### Same capacitance, two notations = invisible duplicate
 `0.1uF (104)` and `100nF (104)` coexisted as separate parts. Pick a canonical
 notation by range (pF < 1nF ≤ nF < 1µF ≤ µF) and keep marking codes in the
