@@ -73,6 +73,24 @@ The difference between parking and hiding is whether the backlog can be
 shows up the moment anyone asks. Neither is sorted — but only one of them
 admits it, and admitting it is what eventually gets it done.
 
+**An empty location is invisible to a Parts or Stock search.** Scott, trying to
+look up which pre-sort bucket was which: *"When I type that bin location... it
+doesn't turn up anything. I've tried it in stock, and I've tried it in parts."*
+Correct, and it always will be — those views list parts and stock items, and a
+parking spot deliberately has neither. The information lives on the LOCATION.
+
+So a parking spot needs both of these to be usable, or it is a write-only
+record:
+
+- **Search:** Stock → **Locations**. Searching `pre-sort` returns all four
+  buckets at once, which is why that phrase is in every one of their
+  descriptions. Pick a distinctive shared string when creating a bank of them.
+- **At the cabinet:** scan the drawer. The barcode resolves to the location
+  page and the description is the first thing on it. This is the whole point of
+  addressing drawers, and it costs nothing extra — but it only works once the
+  label is physically ON, so a parking spot should be near the front of the
+  labelling queue rather than the back.
+
 Do not create a Part with a made-up quantity to represent parked contents.
 "Assorted hardware, qty 1" is a fiction that reads like a fact. The location
 description carries the truth until someone counts.
