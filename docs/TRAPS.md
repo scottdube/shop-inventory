@@ -601,3 +601,15 @@ done.
 `IPN` is "B017KUC6XQ" for most of the imported catalogue — useless on a label.
 Print the default_location instead; where a part lives is what you need
 standing at the drawer.
+
+## A trailing "X100" in a fastener SKU is the length, not the pack quantity
+
+`F-MSOP1032X100` decodes as Machine Screw Oval Phillips, 10-32, **× 1.00 inch
+long**. It says nothing about how many are in the box. The same three digits
+read as a pack size are a plausible, wrong quantity — and this box genuinely
+does hold 100, which is exactly what makes the coincidence dangerous: the wrong
+reading was confirmed by the right answer.
+
+Take the count from the box label or from counting. Never from the part number.
+Distributor SKUs encode thread, head style and length in one run of characters,
+and every field in them looks like every other field.
