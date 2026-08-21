@@ -155,7 +155,18 @@ Each of these was adopted after the naive version failed:
     is currently unanswerable above drawer scale. **Triage is a box, not a
     shelf** (`SLN/Triage`, 2026-08-21) — the wire racks are full, and a box
     fills up and forces the decision where a shelf lets a pile grow quietly.
-15. **Match the part to the drawer class — a large drawer is a scarce
+15. **A drawer can hold more than one part — divide it.** The smallest drawer
+    here is 20.8 cu in, which is enormous next to eight nuts. One part per
+    drawer would burn the cabinet on air. Related small-quantity types share
+    a drawer behind a physical divider: `A2-R2C1` holds 1/4-20 hex bolts *and*
+    their nyloc nuts, `A2-R4C1` both 1/4in washers. Scott: *"I'm gonna put a
+    divider in each of those bins so that they keep them separate, but we
+    don't waste bin space."* The divider is load-bearing — it is what makes
+    this a *shared* drawer rather than a *mixed* one. Note the pairing on
+    every part sharing a drawer, because if the divider ever comes out, two
+    parts at one address are indistinguishable by location and only the
+    count tells them apart.
+16. **Match the part to the drawer class — a large drawer is a scarce
     resource.** Four TO-220 regulators were filed into B3-R5C2, a 59.9 cu in
     large drawer, purely because it was the nearest verified-empty one. Scott:
     *"we don't wanna waste big drawers with little parts."* Moved to A3-R6C3,
@@ -163,7 +174,7 @@ Each of these was adopted after the naive version failed:
     one spent on four parts cannot be recovered without a second handling.
     Filter free drawers by `metadata.size.cls` before proposing one, and
     prefer the smallest class the part fits.
-16. **Drawer capacity is a number, not a vibe.** Location `metadata.size`
+17. **Drawer capacity is a number, not a vibe.** Location `metadata.size`
     carries width, depth, height and cubic inches for all 324 Akro-Mils
     drawers. Three drawer recommendations were wrong in one morning because
     capacity was inferred from *line counts*, which measure records rather than
