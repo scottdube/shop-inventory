@@ -181,6 +181,23 @@ footprint depends on and not merely the thing that is easy to measure:
 | LED | barrel Ø | Ø **and** lead pitch |
 | Header | pin count | pitch, row count, gender |
 
+### On a flanged pulley, the FLANGE is what your calipers grab
+A 20T timing pulley was measured at 16 mm to settle whether it was GT2 or
+HTD-3M. Sixteen matched neither — GT2 20T is 12.2 mm across the tooth tips and
+HTD-3M 20T is 18.3 mm — and that mismatch is the only thing that caught it.
+The 16 mm was the **flange**, which on this part runs 3–4 mm larger in diameter
+than the teeth and is the widest, easiest thing on the pulley to catch. Measured
+again on the narrow toothed barrel between the rims: **12.2 mm, GT2, confirmed.**
+
+Same shape as the LED dome below: the feature that names the part is not the
+feature the tool naturally lands on. **Say which surface to measure, not just
+what dimension.**
+
+The mismatch is also the lesson. Had 16 mm happened to fall near a real value it
+would have been accepted. Working out the expected figures for *both* candidates
+first meant an out-of-range answer announced itself instead of being written
+down — so compute what you expect to see before asking for a measurement.
+
 ### An LED's size is its BARREL diameter — measuring the dome under-reads
 The SparkFun kit's surviving LEDs were called 3mm on 2026-08-21, against a kit
 list that said 5mm. Scott asked the right question before anything was written:
