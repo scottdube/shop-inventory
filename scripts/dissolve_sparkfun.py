@@ -61,8 +61,11 @@ HOMES = {
     708: (304, "B3-R2C3", "clear 5mm LED drawer"),
     710: (303, "B3-R2C2", "misc LED / display drawer"),
     711: (325, "B3-R4C8", "sensor drawer"),
-    704: (311, "B3-R3C2", "empty drawer opened for regulators, next to the ICs"),
-    705: (311, "B3-R3C2", "empty drawer opened for regulators, next to the ICs"),
+    # NOT B3-R3C2: it reads as empty only because it has no StockItem rows.
+    # Its description says it holds the SMD bridge rectifier kit and "takes
+    # the kit bag and not much else". R5C2 says VERIFIED EMPTY.
+    704: (327, "B3-R5C2", "verified-empty large drawer opened for regulators"),
+    705: (327, "B3-R5C2", "verified-empty large drawer opened for regulators"),
     700: (297, "B3-R1C4", "switch row"),
     701: (296, "B3-R1C3", "6mm tactile / power button drawer"),
     702: (319, "B3-R4C2", "potentiometer drawer"),

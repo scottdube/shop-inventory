@@ -322,6 +322,32 @@ about how much space three bagged assortments physically occupy. Never propose
 a drawer from occupancy figures alone — either check a photo, or offer a
 verified-empty drawer, or ask.
 
+### Zero stock items does NOT mean the drawer is empty — read the description
+B3-R3C2 was offered as "an empty drawer" for TO-220 regulators on 2026-08-21.
+Scott: "B3-R3C2 is definitely not empty. That has ICs in it already." The
+drawer has zero `StockItem` rows, so a `filter(location=d).exists()` check
+called it empty — but its own `description` field said, in full: *"SMD
+components — 8-value bridge rectifier kit (vendor no. 48-13). SMALL drawer: it
+takes the kit bag and not much else."* The answer was already in the database,
+in the field the query did not look at.
+
+Why the gap exists: a drawer walk records what it finds in the location
+description immediately, and stock records are created later — or never, for
+things nobody has itemised. So an un-walked or partly-walked drawer and a truly
+empty one are indistinguishable by stock count alone.
+
+**Emptiness is a claim someone made, not a row count.** This estate says so
+explicitly: the genuinely empty drawers read `VERIFIED EMPTY <date>`, the
+unknown ones read `NOT WALKED — contents unknown`, and the rest describe their
+contents. Trust that sentence, never `count() == 0`. Counting rows says A1 and
+A2 are 128/128 empty; their descriptions carry legacy labels like `M3 .5 x20`,
+and they are cabinets full of uninventoried hardware.
+
+Corollary: a stale physical label is not evidence either. B3-R5C1 is
+`VERIFIED EMPTY` but its printed label still reads "Hall effect sensors" —
+those moved to B3-R4C4. Reprint on reassignment or the drawer lies to the room
+while the database tells the truth.
+
 ### Do not read quantities or contents from photographs
 Three wrong calls in one morning, all from inferring more than a photo can
 carry: an empty bag beside loose caps read as "these came out of that kit" (the
