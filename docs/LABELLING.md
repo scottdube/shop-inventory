@@ -11,7 +11,7 @@ Related: `docs/TRAPS.md` (the individual gotchas), `docs/TECHNIQUES.md`
 
 ## The printer
 
-**Brother QL-810W, 192.168.30.252 (static), at SLN.** InvenTree runs on the Mac
+**Brother QL-810W, PRINTER_IP (static), at SLN.** InvenTree runs on the Mac
 Mini at LRD, so every print job crosses the site-to-site VPN — roughly 120 ms
 RTT. That is fine; latency was investigated and is not a problem.
 
@@ -49,7 +49,7 @@ The same printer's **IPP stack is healthy** — it reports `printer-state: idle`
 driver at all.
 
 ```bash
-lpadmin -p QL810W -E -v ipp://192.168.30.252/ipp/print -m everywhere
+lpadmin -p QL810W -E -v ipp://PRINTER_IP/ipp/print -m everywhere
 lpadmin -p QL810W -o MediaType=Roll -o CutMedia=EndOfPage -o cupsPrintQuality=High
 ```
 
@@ -154,7 +154,7 @@ flagged one stays bare forever because nothing will offer to print it again.
 
 - **LW1–LW3 shelves** (`LW1-S1`, `LW1-S2`, … six total) — the cabinets are
   labelled; unknown whether the shelves inside are.
-- **A stray CUPS queue** `_192_168_30_252` sits on the Mini beside `QL810W`.
+- **A stray CUPS queue** `_PRINTER_IP_` sits on the Mini beside `QL810W`.
   Harmless but should be removed so there is one obvious queue.
 - **Shop-made parts have no IPN scheme.** [925] tie wrap hold-down and [926]
   bagging funnel are the first parts the shop *makes* rather than buys. There is
