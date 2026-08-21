@@ -149,6 +149,26 @@ than one full roll before a single part label is printed. Locations earn the
 tape first — a drawer with no label cannot be found at all, whereas an unlabelled
 bag inside a labelled drawer is merely slower.
 
+## How labels actually get installed
+
+The sheets are printed; sticking them on is the slow part, and it is done two
+ways rather than as a project:
+
+1. **On demand** — whenever something goes into a drawer, that drawer's label
+   goes on first. Filing and labelling happen together, so a drawer that holds
+   something is always findable.
+2. **Opportunistically** — a few at a time during downtime, e.g. while a long
+   tool run is going. Scott, 2026-08-21: *"That way, they get on as straight as
+   possible, and I'm not just rushing through it."*
+
+Neither is a backlog to be cleared in one sitting, and the gap between
+*printed* and *affixed* is therefore expected, not a defect. **Do not treat
+unaffixed drawers as work outstanding** — no batch print is needed, and
+nagging about them optimises the wrong thing. A crooked label on all 324
+drawers is worse than a straight one on the 100 that hold something.
+
+Mark them as they go on: `itq run scripts/mark_labeled.py --rows A3 1 1`.
+
 ## Coverage
 
 Tracked as `metadata.labeled` on each `StockLocation`, beside `metadata.size`,
