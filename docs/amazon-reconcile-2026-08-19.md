@@ -73,3 +73,45 @@ rather than from the mail archive.
 - Orders after 2026-07-16 whose subjects carry no title (roughly six weeks).
 - Non-Amazon vendors. AliExpress in particular has 42 supplier parts with
   composite SKUs and no derivable links, and was not examined here.
+
+## Addendum 2026-08-21 — the sweep had a category blind spot
+
+A bag of TOGGLER SnapToggle anchors came off the plywood table with no
+catalogue record. Scott: *"those were ordered from Amazon, so that order's out
+there. It just probably got skipped in the import."* Correct — the order was
+sitting in Gmail in the **old, title-bearing subject format**, the exact format
+this sweep could read.
+
+It was not missed by the matcher. **It was never in scope.** This pass hunted
+electronics — power supplies, connector kits, dev boards — and a drywall anchor
+is not one. Nothing was wrong with the method; the *question* was narrower than
+the catalogue turned out to be.
+
+That matters now in a way it did not in August, because the shop has since
+started inventorying **hardware**: two fastener cabinets, a McMaster import, a
+Hardware category. Amazon hardware orders are a whole gap class nobody has
+looked for, and they will keep surfacing one bag at a time on benches.
+
+**The lesson is about scoping a sweep, not about this anchor.** A reconcile
+that finds "fewer gaps than feared" has only established that for the
+categories it asked about. Record what a sweep did NOT cover, or its clean bill
+of health gets read as covering everything. This one read that way for two
+days.
+
+### Amazon has two confirmation formats, and the old one carries no line items
+
+Both were seen in the same search:
+
+| Format | Body contains |
+|---|---|
+| Newer (seen 2025-07) | full untruncated product title, quantity, per-line price, ship-to city |
+| Older (seen 2025-04) | **no line items at all** — ship-to city and an order total only |
+
+The old format leaves the truncated *subject* as the only description of what
+was bought, and the subject is where Amazon truncates. So an old-format mail
+can prove an order happened and still not say what was in it or how many.
+
+Also: **an order total of $0.00 is a replacement or a credit, not a free
+item.** It is a real shipment of real goods, and skipping it as noise loses
+stock that physically arrived.
+

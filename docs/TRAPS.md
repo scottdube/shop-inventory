@@ -613,3 +613,14 @@ reading was confirmed by the right answer.
 Take the count from the box label or from counting. Never from the part number.
 Distributor SKUs encode thread, head style and length in one run of characters,
 and every field in them looks like every other field.
+
+## A "no gaps found" sweep only clears the categories it asked about
+
+The 2026-08-19 Amazon reconcile concluded the import was broadly sound: four
+gaps in ~330 orders. True, and it was an **electronics** sweep. When hardware
+started being inventoried two days later, an uncatalogued Amazon fastener order
+turned up immediately — in the readable subject format, never matched because
+never sought.
+
+A negative result carries the scope of the question. Write the scope next to
+the conclusion, or "we checked" gets remembered without the "for what".
