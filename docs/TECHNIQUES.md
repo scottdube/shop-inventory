@@ -90,3 +90,32 @@ Three things that example teaches:
 And the reframe that unsticks it: *"I hate to throw out wire"* is about money
 already spent, which is gone either way. The only live question is whether the
 material is worth the space **going forward**.
+
+
+## Label a shop-built board, or it becomes a mystery
+
+A Teensy 3.2 + MCP2562 CAN board turned up on the staging table in 2026 with
+**no markings of any kind** — eight screw-terminal positions and nothing to say
+which was CAN, which was power, or which were GPIO. Scott, holding a board he
+built himself: *"I'm not quite sure how we would hook it up."*
+
+The parts were fine. The information was gone.
+
+**An unlabelled assembly is worth less than the components in it**, because
+working out what it does can cost more than rebuilding it. This one is
+recoverable in about fifteen minutes only because both ICs have fixed pinouts,
+so continuity from a known chip pin identifies every terminal. A board built
+around a bare microcontroller and discrete parts would not have that luxury.
+
+So, when a shop-built board goes in a drawer:
+
+- **Write the terminal functions on the board itself.** Tape and a marker.
+  `CANH CANL +12 GND` costs ten seconds and survives everything.
+- **Record the pinout on the part**, not in a notebook or a chat log.
+- **Say whether it is terminated.** This one measures 4.6k, not 120 ohm, so it
+  is *not* a bus terminator — the useful case, because it can join a
+  terminated bus without becoming the third terminator. That single fact
+  decides whether plugging it in works.
+- **Note whether firmware exists and where.** This board had none: the GitHub
+  repo behind it is a fork with zero commits. Knowing that up front is worth
+  more than the board.
