@@ -106,21 +106,32 @@ Each of these was adopted after the naive version failed:
    stock.** The PoE injector for that radio is owned and unlocated, so it is
    a sentence on the radio's record — inventing a record with no location
    would put a findable-looking thing in the database that nobody can find.
-9. **Anticipate vocabulary mismatch.** Six months later you remember
+9. **Some things are retrieved by memory, not by search — give those the
+    memorable spot.** The whole system optimises for lookup: any drawer is as
+    good as any other because a QR and a search will find it. That is wrong
+    for the handful of things you reach for without thinking — keys, the
+    common wrench, the thing you want at 11pm. Scott, siting the cabinet
+    keys at A3-R1C1: *"so that it's easy to remember right where it is, I can
+    always go get them if I'm looking for them. I don't even have to look
+    them up."* Corner and edge positions are the scarce resource here, not
+    volume — R1C1 is the one drawer in 64 you can find by feel. Spend them on
+    what you grab, not on what you search for, and keep them out of the
+    middle of a component series where they read as a filing error.
+10. **Anticipate vocabulary mismatch.** Six months later you remember
    "distance sensor", not "VL53L4CD" — and substring search means "ToF"
    doesn't even match "Time-of-Flight". Every part gets plain-language
    `keywords` at creation; a nightly job backfills the backlog.
-10. **Decisions get delivered, not stored.** Anything needing human judgement
+11. **Decisions get delivered, not stored.** Anything needing human judgement
     goes into a decision queue; the nightly run push-notifies; any interactive
     session renders it as approve/decline checkboxes. Skipping is cheap to
     reverse; a wrong record is not.
-11. **A default location is where a *spare* goes home.** Not where a committed
+12. **A default location is where a *spare* goes home.** Not where a committed
     unit happens to sit — a board on the bench or fitted into a build is in
     use, not at home. Never a staging area or a bare site root: that blesses
     the backlog, making a part officially "belong" in the pile it's stuck in.
     No home yet? Leave it blank. An empty field asks a question; a wrong one
     answers it badly.
-12. **Absent beats plausible.** When a spec can't be verified — the vendor
+13. **Absent beats plausible.** When a spec can't be verified — the vendor
     site is behind bot detection, the order page won't open, the compartment
     hasn't been counted — record what *is* certain, link the source, and write
     down why the rest is missing. A plausible number nobody re-checks is worse
@@ -134,7 +145,7 @@ Each of these was adopted after the naive version failed:
     `ST / 48` and the caveat was struck. Collapsing the two into one
     "verified" would have made the gap unfindable, and refusing to record
     anything until both were sure would have lost the count.
-13. **There are three storage tiers, and the top one is nearly uninventoried.**
+14. **There are three storage tiers, and the top one is nearly uninventoried.**
     Drawers (324 Akro-Mils, 20.8 or 59.9 cu in) hold components. Red bins (28)
     hold one project kit each. Shelves (12 wire at 46 x 18 in, plus the laser
     cabinets) hold anything bulky — and *only* they do: the biggest drawer in
@@ -144,7 +155,7 @@ Each of these was adopted after the naive version failed:
     is currently unanswerable above drawer scale. **Triage is a box, not a
     shelf** (`SLN/Triage`, 2026-08-21) — the wire racks are full, and a box
     fills up and forces the decision where a shelf lets a pile grow quietly.
-14. **Match the part to the drawer class — a large drawer is a scarce
+15. **Match the part to the drawer class — a large drawer is a scarce
     resource.** Four TO-220 regulators were filed into B3-R5C2, a 59.9 cu in
     large drawer, purely because it was the nearest verified-empty one. Scott:
     *"we don't wanna waste big drawers with little parts."* Moved to A3-R6C3,
@@ -152,7 +163,7 @@ Each of these was adopted after the naive version failed:
     one spent on four parts cannot be recovered without a second handling.
     Filter free drawers by `metadata.size.cls` before proposing one, and
     prefer the smallest class the part fits.
-15. **Drawer capacity is a number, not a vibe.** Location `metadata.size`
+16. **Drawer capacity is a number, not a vibe.** Location `metadata.size`
     carries width, depth, height and cubic inches for all 324 Akro-Mils
     drawers. Three drawer recommendations were wrong in one morning because
     capacity was inferred from *line counts*, which measure records rather than
