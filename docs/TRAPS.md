@@ -415,6 +415,22 @@ let the person holding the box settle it. Quoting ~21 cu in as though it
 decided the question would have put 100 lag screws in a drawer that will not
 close.
 
+### `[ESTIMATE]` is a PREFIX flag — test with startswith, not `in`
+A verification step reported that a stock item was still flagged `[ESTIMATE]`
+after being counted. It was not. The check was `'[ESTIMATE]' not in notes`, and
+the new note legitimately *quoted* the marker while explaining its own removal:
+"…the first line to graduate from [ESTIMATE] to a real count." The substring
+test found the word in the prose describing its absence.
+
+The convention is that `[ESTIMATE]` **opens** the note. Every query that
+matters must use `notes__startswith('[ESTIMATE]')` — a companion query in the
+same script did, and reported the correct answer at the same moment the other
+one cried failure.
+
+Worth its own entry because the failure inverts the usual danger: the write
+succeeded and the *verification* lied. A check that can produce a false alarm
+trains people to ignore checks, which is worse than having none.
+
 ### Line count is not drawer volume
 A3-R8C1 showed "2 lines, 5 units" and was recommended as having room for 15
 LM2596 modules. It was full. The database counts RECORDS, and says nothing
