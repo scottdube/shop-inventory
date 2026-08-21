@@ -351,3 +351,45 @@ per-network "Limit IP Address Tracking" is the surgical fix.
 An agent hammering ssh in a loop looks like an attack to UniFi IPS — port 22
 goes dark for minutes while everything else answers (that's the tell). Batch
 remote work into one uploaded script, run once, read the log once.
+
+## Label printing (Brother QL-810W)
+
+### brother_ql raster is dead on this unit — use CUPS/AirPrint
+The QL-810W accepts every job on port 9100, prints nothing, latches a blinking
+red error, and has NEVER answered a status request — not in P-touch Template
+emulation, not after Command Mode was switched to Raster, not with stock
+brother_ql CLI defaults against a freshly cleared printer. Reachability is not
+the problem: closed ports refuse honestly, HTTP works end-to-end from the Mini,
+and the job arrives complete (printer closes its side cleanly).
+
+The SAME printer's AirPrint/IPP stack is healthy — reports `idle`,
+`printer-state-reasons: none`, and correctly identifies its own media. So print
+through CUPS driverlessly (`-m everywhere`), never brother_ql. The
+`inventree-brother-plugin` is installed but useless here; `cups_label` replaces it.
+
+### The error LATCHES — one job per clear cycle
+After a failed job the printer ignores everything sent until the error is
+cleared (power cycle). Sending three variants in a row to see "which one works"
+tests only the first; the rest are no-ops that LOOK like failures. This
+invalidated several rounds of testing. Clear → send ONE → observe → clear.
+
+### CUPS silently upscales a label narrower than the tape
+The stock 50mm InvenTree template on 62mm tape got scaled 1.24x to fill the
+media: QR came out oversized AND the overflow was clipped off the bottom.
+`print-scaling=none` / `=fit` do nothing — the option is not in this queue's
+`lpoptions -l` list, so CUPS ignores it. The fix is to author the template at
+the tape's true width (62mm) so there is no scaling to do.
+
+### A thermal printer cannot mark its unprintable margin
+InvenTree's stock location template pins the QR at `left:0/top:0` sized to the
+FULL label height, so it touches both edges and gets clipped. A QR missing part
+of a finder pattern or its quiet zone does not degrade — it stops decoding.
+Inset everything ≥2mm. Measure the render's ink bounding box BEFORE printing
+(`pdftoppm` + `getbbox`) rather than judging margins off a photo of tape.
+
+### Queue defaults, not job options, are what InvenTree gets
+InvenTree submits through CUPS knowing none of this, so `PageSize`,
+`MediaType=Roll` and `CutMedia=EndOfPage` belong on the QUEUE via `lpadmin -o`.
+The driver's default PageSize here is `29x90mm` — a die-cut size unrelated to
+the continuous roll loaded. `roll_current_62x0mm` from the IPP `media-ready`
+attribute is NOT a valid PageSize keyword; use `Custom.62x16mm`.

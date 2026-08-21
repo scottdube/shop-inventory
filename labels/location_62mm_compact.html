@@ -1,0 +1,64 @@
+{% extends "label/label_base.html" %}
+
+{% load l10n i18n barcode %}
+
+{# Compact location label for 62mm continuous DK tape.
+
+   Same geometry rules as location_62mm.html -- authored at the tape's true
+   width so CUPS never scales it, and every element inset far enough that the
+   printer's unprintable edge cannot eat the QR's quiet zone -- but short, to
+   use less tape and sit closer to the Avery 5167 labels already in use.
+
+   Only the length is ours to choose: 62mm is fixed by the roll. So the QR
+   shrinks with the label height and the text block moves in to match, rather
+   than the whole design being scaled, which would shrink the margins too and
+   put us straight back into clipping.
+#}
+
+{% block style %}
+
+.qr {
+    position: absolute;
+    left: 2mm;
+    top: 2mm;
+    {% localize off %}
+    height: {{ height|add:"-4" }}mm;
+    width: {{ height|add:"-4" }}mm;
+    {% endlocalize %}
+}
+
+.loc {
+    font-family: Arial, Helvetica, sans-serif;
+    position: absolute;
+    {% localize off %}
+    left: {{ height|add:"-1" }}mm;
+    {% endlocalize %}
+    top: 2.5mm;
+    font-size: 5mm;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.trail {
+    font-family: Arial, Helvetica, sans-serif;
+    position: absolute;
+    {% localize off %}
+    left: {{ height|add:"-1" }}mm;
+    {% endlocalize %}
+    top: 8.5mm;
+    font-size: 2.6mm;
+}
+
+{% endblock style %}
+
+{% block content %}
+
+<img class='qr' alt="{% trans 'QR code' %}" src='{% qrcode qr_data %}'>
+
+<div class='loc'>{{ location.name }}</div>
+
+<div class='trail'>
+    {% if location.parent %}{{ location.parent.name }}{% endif %}
+</div>
+
+{% endblock content %}

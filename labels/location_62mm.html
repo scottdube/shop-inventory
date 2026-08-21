@@ -1,0 +1,70 @@
+{% extends "label/label_base.html" %}
+
+{% load l10n i18n barcode %}
+
+{# Location label for 62mm continuous DK tape on the QL-810W.
+
+   The stock template pins the QR at left:0/top:0 and sizes it to the FULL
+   label height, so it touches both edges. A thermal printer cannot mark its
+   unprintable margin, so the code came out clipped top and bottom and would
+   not scan -- a QR missing part of a finder pattern is not a degraded QR, it
+   is an unreadable one.
+
+   Everything here is inset by a real margin, and the page is authored at the
+   tape's own width so CUPS has no reason to scale it. Scaling was the second
+   half of the problem: a 50mm page stretched to 62mm enlarged the QR by 1.24x
+   and pushed the overflow off the bottom.
+#}
+
+{% block style %}
+
+/* Keeping the quiet zone: the QR is inset on all sides and sized from the
+   label height minus both margins, so it can never reach an edge. */
+.qr {
+    position: absolute;
+    left: 3mm;
+    top: 3mm;
+    {% localize off %}
+    height: {{ height|add:"-6" }}mm;
+    width: {{ height|add:"-6" }}mm;
+    {% endlocalize %}
+}
+
+.loc {
+    font-family: Arial, Helvetica, sans-serif;
+    position: absolute;
+    {% localize off %}
+    left: {{ height|add:"-1" }}mm;
+    {% endlocalize %}
+    top: 4mm;
+    font-size: 6mm;
+    font-weight: bold;
+    line-height: 1.05;
+}
+
+/* The trail is what makes a label useful on a drawer you are standing at:
+   the bare name says BR-D3, this says which cabinet BR-D3 is. */
+.trail {
+    font-family: Arial, Helvetica, sans-serif;
+    position: absolute;
+    {% localize off %}
+    left: {{ height|add:"-1" }}mm;
+    {% endlocalize %}
+    top: 11mm;
+    font-size: 2.8mm;
+    color: #000;
+}
+
+{% endblock style %}
+
+{% block content %}
+
+<img class='qr' alt="{% trans 'QR code' %}" src='{% qrcode qr_data %}'>
+
+<div class='loc'>{{ location.name }}</div>
+
+<div class='trail'>
+    {% if location.parent %}{{ location.parent.name }}{% endif %}
+</div>
+
+{% endblock content %}
