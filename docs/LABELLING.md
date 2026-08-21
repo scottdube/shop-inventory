@@ -178,6 +178,15 @@ Only mark what someone has **seen**. A wrongly flagged location is worse than an
 unflagged one: the unflagged drawer gets a spare label printed, the wrongly
 flagged one stays bare forever because nothing will offer to print it again.
 
+**Reassigning a drawer means setting `labeled` back to false.** A drawer that
+keeps `labeled: true` through a change of contents is the worst state of all —
+it carries a *confident, printed, wrong* label, and nothing will ever offer to
+reprint it. B3-R5C2 went from `VERIFIED EMPTY` to holding TO-220 regulators on
+2026-08-21 while its printed label still read "PCB terminals". Two steps, both
+required: rewrite the description, and flip `labeled` to false so the next
+batch print picks it up. This is the operational half of the stale-label
+corollary in `TRAPS.md`.
+
 ---
 
 ## Open items
