@@ -51,6 +51,15 @@ surplus accumulates without anyone deciding to accumulate it.
 
 ## Two gaps worth knowing before the bin walk
 
+**The Cessna sim's BOM is growing back (2026-08-21).** 10 self-holding
+push/pull electromagnets (`[500]`) and 10 D4184 MOSFET driver modules
+(`[501]`) were found on the staging table, never used, and added to BO-0006.
+They were bought to build **simulated circuit breakers** — not real breakers,
+but panel hardware that pops out and pushes back in like one. That is why the
+part is *self-holding*: it keeps its position with no current, so ten on a
+panel dissipate nothing between actuations. BOM quantity 10 is the quantity
+purchased, not a designed breaker count, and the line says so.
+
 **The Cessna sim has 15 boards fabbed and none on its BOM.** BO-0006 lists a
 MEGA2560, two SG90 servos and a proto shield. The force-feedback yoke (5) and
 the G1000 NXi shield (10) are both flight-sim hardware bought in 2024, and
