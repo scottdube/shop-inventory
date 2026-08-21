@@ -91,6 +91,23 @@ And the reframe that unsticks it: *"I hate to throw out wire"* is about money
 already spent, which is gone either way. The only live question is whether the
 material is worth the space **going forward**.
 
+### For "might be handy someday", ask how often someday comes
+
+Test 2 needs sharpening when the item is *insurance* rather than stock. A strip
+of leftover TV-mount hardware — VESA screws in four thread sizes, anchors, lag
+bolts — looked worth keeping: those sizes are genuinely annoying to source
+mid-job. The argument survived two rounds and died on one question: **how often
+does a TV actually go up?**
+
+Rarely. And every mount ships its own hardware, so the claim would almost never
+be made. Binned 2026-08-21.
+
+The question generalises: for anything kept "in case", estimate **how often the
+case arises** and whether the thing would even be reached for when it does. A
+spare that is superseded by whatever arrives with the next job is not insurance,
+it is storage. Scott, getting there the long way: *"Took me a while, but I got
+there."* The long way is fine — the failure is never asking.
+
 
 ## Label a shop-built board, or it becomes a mystery
 
