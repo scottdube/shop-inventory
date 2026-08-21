@@ -180,8 +180,9 @@ handwritten paper labels from before this system existed — `1/4-28 NUT`,
 `TOGGLE SWITCHES`, `ARDUINOS`. Those must stay flagged false: they carry no QR,
 nothing links them to InvenTree, and they are exactly the drawers still to do.
 
-As of 2026-08-21 — **84 of 474 affixed**, with **240 more printed on Avery
-sheets and waiting to be stuck on**. Those two numbers are different things
+As of 2026-08-21 — **131 of 475 affixed**, with **216 more printed on Avery
+sheets and waiting to be stuck on**. A3 and B3 are complete; A1, A2, B1 and
+B2 are printed throughout and awaiting install. Those two numbers are different things
 and only the first is what `labeled` records; see the three-state trap in
 `TRAPS.md`. Installing is a slow manual job done a bit at a time, so the gap
 between them is normal and is NOT a reason to print anything.
@@ -192,7 +193,7 @@ between them is normal and is NOT a reason to print anything.
 | L1, L2 drawers | 14 | 14 | complete |
 | B3 | 44 | 44 | complete |
 | Assembly & Test (AT-D1..D3) | 3 | 3 | complete |
-| A3 | 40 | 64 | rows 4–8 affixed; rows 1–3 printed, not yet stuck on |
+| A3 | 64 | 64 | complete 2026-08-21 |
 | A1, A2 | 0 | 128 | all 128 printed on Avery sheets, awaiting install |
 | B1, B2 | 0 | 88 | all 88 printed on Avery sheets, awaiting install |
 | Red Bins | 0 | 28 | |
