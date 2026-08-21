@@ -15,6 +15,12 @@ Only mark what someone has actually SEEN a label on. A location wrongly flagged
 as labelled is worse than one not flagged at all: the unflagged drawer gets a
 spare label printed, the wrongly-flagged one stays bare forever because nothing
 will ever offer to print it again.
+
+"Labelled" means a PRINTED label carrying the QR code. Several cabinets have
+handwritten paper labels ("1/4-28 NUT", "TOGGLE SWITCHES", "ARDUINOS") from
+before this system existed. Those drawers are labelled in the everyday sense
+and must still be flagged FALSE: they carry no QR, nothing links them to
+InvenTree, and they are exactly the drawers that still need doing.
 """
 import os
 import re
