@@ -1,0 +1,71 @@
+{% extends "label/label_base.html" %}
+
+{% load l10n i18n barcode %}
+
+{# Part label for 62mm continuous DK tape on the QL-810W.
+
+   Authored at the tape's true width so CUPS has nothing to scale, and inset
+   2mm on every side so the printer's unprintable edge cannot clip the QR's
+   quiet zone. Both rules are load-bearing — see docs/TRAPS.md.
+
+   18mm rather than the 16mm used for locations: a location name is "BR-D3",
+   but a part name is "#10 Single Profile Threadmill, 3/8 LOC, .138 cut dia,
+   24-56". Three lines of readable text is the difference between a label you
+   can act on and one you have to scan to identify.
+#}
+
+{% block style %}
+
+.qr {
+    position: absolute;
+    left: 2mm;
+    top: 2mm;
+    {% localize off %}
+    height: {{ height|add:"-4" }}mm;
+    width: {{ height|add:"-4" }}mm;
+    {% endlocalize %}
+}
+
+/* Bounded to three lines and clipped: a long name must not push the meta line
+   off the bottom of the label, which on continuous tape fails silently. */
+.name {
+    font-family: Arial, Helvetica, sans-serif;
+    position: absolute;
+    {% localize off %}
+    left: {{ height|add:"-1" }}mm;
+    {% endlocalize %}
+    top: 1.8mm;
+    width: 42mm;
+    font-size: 3.1mm;
+    font-weight: bold;
+    line-height: 1.15;
+    max-height: 10.8mm;
+    overflow: hidden;
+}
+
+.meta {
+    font-family: Arial, Helvetica, sans-serif;
+    position: absolute;
+    {% localize off %}
+    left: {{ height|add:"-1" }}mm;
+    {% endlocalize %}
+    top: 13.2mm;
+    width: 42mm;
+    font-size: 2.5mm;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+{% endblock style %}
+
+{% block content %}
+
+<img class='qr' alt="{% trans 'QR Code' %}" src='{% qrcode qr_data %}'>
+
+<div class='name'>{{ name }}</div>
+
+<div class='meta'>
+    {% if IPN %}{{ IPN }} &middot; {% endif %}{{ category }}
+</div>
+
+{% endblock content %}

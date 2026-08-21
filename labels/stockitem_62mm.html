@@ -1,0 +1,90 @@
+{% extends "label/label_base.html" %}
+
+{% load l10n i18n barcode %}
+
+{# Stock item label for 62mm continuous DK tape on the QL-810W.
+
+   InvenTree ships exactly ONE stockitem template and it is a bare QR — no
+   text at all — so a printed stock label is unidentifiable without a scanner.
+   This is that template with the information a person standing at the drawer
+   actually needs: what it is, how many, and where it lives.
+
+   Same two geometry rules as the other 62mm templates: authored at the tape's
+   true width so CUPS does not upscale it, and inset 2mm so the unprintable
+   edge cannot eat the QR's quiet zone. See docs/TRAPS.md.
+#}
+
+{% block style %}
+
+.qr {
+    position: absolute;
+    left: 2mm;
+    top: 2mm;
+    {% localize off %}
+    height: {{ height|add:"-4" }}mm;
+    width: {{ height|add:"-4" }}mm;
+    {% endlocalize %}
+}
+
+.name {
+    font-family: Arial, Helvetica, sans-serif;
+    position: absolute;
+    {% localize off %}
+    left: {{ height|add:"-1" }}mm;
+    {% endlocalize %}
+    top: 1.8mm;
+    width: 42mm;
+    font-size: 3.1mm;
+    font-weight: bold;
+    line-height: 1.15;
+    max-height: 7.2mm;
+    overflow: hidden;
+}
+
+/* Quantity and location on their own line: the two facts that make a stock
+   label different from a part label, and the two most likely to be wrong. */
+.meta {
+    font-family: Arial, Helvetica, sans-serif;
+    position: absolute;
+    {% localize off %}
+    left: {{ height|add:"-1" }}mm;
+    {% endlocalize %}
+    top: 9.4mm;
+    width: 42mm;
+    font-size: 3mm;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.sub {
+    font-family: Arial, Helvetica, sans-serif;
+    position: absolute;
+    {% localize off %}
+    left: {{ height|add:"-1" }}mm;
+    {% endlocalize %}
+    top: 13.4mm;
+    width: 42mm;
+    font-size: 2.5mm;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+{% endblock style %}
+
+{% block content %}
+
+<img class='qr' alt="{% trans 'QR Code' %}" src='{% qrcode qr_data %}'>
+
+<div class='name'>{{ name }}</div>
+
+<div class='meta'>
+    {% localize off %}{{ quantity|floatformat:"-2" }}{% endlocalize %}
+    {% if item.location %}&nbsp;&middot;&nbsp;{{ item.location.name }}{% endif %}
+</div>
+
+<div class='sub'>
+    {% if serial %}SN {{ serial }}{% elif batch %}Batch {{ batch }}
+    {% elif ipn %}{{ ipn }}{% endif %}
+</div>
+
+{% endblock content %}
