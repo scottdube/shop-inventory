@@ -136,3 +136,48 @@ So, when a shop-built board goes in a drawer:
 - **Note whether firmware exists and where.** This board had none: the GitHub
   repo behind it is a fork with zero commits. Knowing that up front is worth
   more than the board.
+
+## Identify a mystery object by querying what has no home
+
+An imported order history is not just a record of what was bought. It is a
+**list of objects that are somewhere in this building**, and most of a bulk
+import lands with no location because the importer had nothing to go on.
+
+That makes the unlocated set a lookup table. When something turns up on a bench
+and nobody can name it, do not start from the object — start from the records:
+
+```
+StockItem.objects.filter(location__isnull=True,
+    part__supplier_parts__supplier__name__icontains='<vendor>')
+```
+
+Then read the object against that list instead of against the whole catalogue.
+A few dozen fully specified candidates beats a thousand parts and a guess.
+
+This resolved two things in one pass on 2026-08-21, off the same table:
+
+- An **eyebolt** nobody could name. Two were bought on one order. Measuring the
+  shank at 16 mm picked the metric one — and independently, that was the record
+  with no location while its twin was already filed. The homeless record was the
+  homeless object.
+- A **carbide bur**, which turned out to be the exact bur a shop-printed jig was
+  built to hold. Neither record referenced the other; the jig was catalogued as
+  a tool and the bur as consumable tooling from a hardware order, and nothing
+  short of reading both lists on the same afternoon connects them.
+
+Two properties make this work, and both are worth protecting:
+
+**Leave imported stock unlocated rather than guessing.** A guessed location is
+worse than none — it reads as knowledge, it sends someone to the wrong drawer,
+and it silently removes the row from exactly this query. The 42 unlocated rows
+here are not a defect in the import; they are what makes the import useful a
+second time.
+
+**A matched pair gets cross-linked on both records.** A tool and the consumable
+it is built around are one thing functionally and two things in the database.
+Link them in both directions and say why, or the pair survives only as long as
+the person who assembled it remembers.
+
+The general rule: **the catalogue can answer questions about physical objects
+that the objects cannot answer about themselves.** A part with no markings has
+no identity in the hand, and a complete one in a record nobody thought to open.
