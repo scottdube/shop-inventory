@@ -235,6 +235,27 @@ returned. An automated PO pipeline must leave everything in Placed until a
 human confirms physical arrival, and a review pass must catch
 refunds/returns or they become phantom stock (or phantom open POs).
 
+### Amazon truncates the product title in the email BODY, not just the subject
+Chasing the origin of four timing pulleys on 2026-08-21, the order confirmation,
+the shipping confirmation and the seller-feedback request all render the item as
+`Zeelo GT2 Timing Belt 9mm...` — **with a literal ellipsis in the plaintext
+body**, not only in the subject line. Amazon's own emails never carry the full
+title. The bodies do carry the order number and the total, and nothing else
+useful about *what was bought*.
+
+This bounds what email mining can ever do for Amazon: it can tell you an order
+happened, when, and for how much, but **the item is only ever a truncated
+prefix**. That is enough to match against a known part and not enough to
+identify an unknown one. Contrast JLCPCB, whose shipping notifications list
+gerber name and quantity in full — see `docs/jlcpcb-boards.md`.
+
+Practical consequences:
+- Do not expect a backfill job to recover full product names from mail.
+- A truncated prefix is still a usable search key — `Zeelo GT2 Timing Belt 9mm`
+  was enough to establish the shop runs GT2 with 9mm belt.
+- The full title lives on the order page, which is behind bot detection. Drive
+  a browser if it genuinely matters; do not retune a fetch.
+
 ## Scheduled LLM agents
 
 ### A hung run looks exactly like a lazy one
