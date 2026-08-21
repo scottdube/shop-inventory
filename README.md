@@ -116,7 +116,15 @@ Each of these was adopted after the naive version failed:
     hasn't been counted — record what *is* certain, link the source, and write
     down why the rest is missing. A plausible number nobody re-checks is worse
     than a gap, because the gap still asks to be filled. Corollary: never let a
-    heuristic's output acquire a stocktake date.
+    heuristic's output acquire a stocktake date. Corollary: **a count and an
+    identity are separate claims and can be recorded at different
+    confidence.** Five diodes were tallied (certain) while their part number
+    was inherited from a kit list whose markings were illegible (not
+    certain) — so the quantity got a stocktake date and the identity got a
+    written caveat naming what it rested on. Hours later a cleaner unit read
+    `ST / 48` and the caveat was struck. Collapsing the two into one
+    "verified" would have made the gap unfindable, and refusing to record
+    anything until both were sure would have lost the count.
 13. **Drawer capacity is a number, not a vibe.** Location `metadata.size`
     carries width, depth, height and cubic inches for all 324 Akro-Mils
     drawers. Three drawer recommendations were wrong in one morning because
