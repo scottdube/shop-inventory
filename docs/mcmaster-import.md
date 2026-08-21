@@ -87,3 +87,27 @@ Key on the **invoice number**, which is unique per receipt.
   an order to a machine project and should be preserved in the PO notes.
 - Their regional sales office changes over the years (three different ones
   appear across this date range). It is cosmetic; ignore it.
+
+## First test case: the Cannon Gasket bag
+
+A sealed bag of dark rings turned up on the staging table 2026-08-21, branded
+**Cannon Gasket, Inc.** with their own part number `CVTN-812355062M`. Scott
+believes it came in on a McMaster order, so it was deliberately **not**
+catalogued — the import should supply both the identity and the count.
+
+That makes it a **falsifiable check on this whole scope**:
+
+- If `CVTN-812355062M` appears in one of the 18 shop receipts, the McMaster
+  provenance holds and the pack quantity arrives with it.
+- If it appears in **none** of them, it came from somewhere else, and **Cannon
+  Gasket needs its own supplier record** — it is not currently in the list, the
+  same gap McMaster itself had.
+
+Run this check first. It costs nothing and it tests the assumption the rest of
+the import rests on.
+
+**Note on the count.** The bag is unopened, so the invoice line will state the
+pack quantity. Under the evidence tiers in README principle 5 that is a
+**stated** number, not a tally — strong, since a factory-sealed bag is unlikely
+to be short, but still **no stocktake date** until someone counts it. Let the
+never-counted report keep surfacing it.
