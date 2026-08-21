@@ -182,7 +182,18 @@ Each of these was adopted after the naive version failed:
     than the width and enough for both LCDs in one small drawer. Compare a
     board's dimensions against the diagonal before spending a large drawer on
     it; large drawers are the scarce class and there are only 36 in the wall.
-18. **Drawer capacity is a number, not a vibe.** Location `metadata.size`
+18. **A description that names contents reads as RESERVED — say when there is
+    room.** Eight drawers were opened in one afternoon and most ended up
+    holding single-digit units in 20.8 cu in, each described by what was in
+    it: *"Audio modules — DFPlayer Mini MP3 players"* for two 20 mm boards.
+    Scott: *"R2C4 has a lot of room in it for additional items. We don't need
+    to tie it up with just those two."* A contents-flavoured description is
+    read as a claim on the whole drawer, so the next person opens a fresh one
+    and the cabinet fills with air. Write **ROOM REMAINS** and *not reserved*
+    on any drawer that is barely used, and say what else belongs there. This
+    is the same instinct as the divided drawers in principle 15 — the enemy
+    is storing air, and the wall has only 324 drawers.
+19. **Drawer capacity is a number, not a vibe.** Location `metadata.size`
     carries width, depth, height and cubic inches for all 324 Akro-Mils
     drawers. Three drawer recommendations were wrong in one morning because
     capacity was inferred from *line counts*, which measure records rather than
