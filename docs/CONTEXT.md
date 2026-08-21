@@ -59,3 +59,24 @@ material, the triggers above were not being followed.
 - Speculation and provisional plans. Record what was decided and what was
   learned. A policy nobody has decided on yet is not context worth protecting —
   it is a guess that will later be mistaken for a decision.
+
+## Data does not belong in code
+
+In a repo that is public — or might ever become public, or has a public sibling —
+literals like order numbers, real email addresses, tokens and street addresses do
+not belong in source. Scripts should read them from a gitignored file at runtime.
+
+`shop-inventory` is **public**. On 2026-08-20 it was found to contain 22 Amazon
+order numbers with dates and amounts, a vendor PO number and a vendor email,
+hardcoded as literals in two spent one-shot migration scripts. They had been
+public for weeks. Scrubbing needed a full history rewrite and a force-push, which
+reduces future exposure but cannot undo past exposure — and old objects can
+survive in GitHub's storage and in any existing clone or fork.
+
+Git has no per-file privacy. The options are: keep the data out of the repo
+(simplest, and right when the data has no ongoing value), encrypt named files
+with git-crypt or SOPS, split public code from a private data repo, or make the
+whole repo private.
+
+Before any first push of a repo, and before adding data to a public one, grep for
+order numbers, emails, tokens, internal IPs and street addresses.
