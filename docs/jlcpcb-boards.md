@@ -71,7 +71,7 @@ and those boards are the same undocumented layer of one project.
 
 | Board | Status |
 |---|---|
-| **G1000 NXi shield** (10 pcs, 2024-06) | **A real project, to be documented incrementally.** The design was bought and the gerbers sent straight to JLCPCB, but the board is large — roughly 7×10 or 8×10 cm — and Scott populated it himself with a lot of components. Buying the *design* does not make the *build* a purchase. No build order yet purely for bandwidth; pick away at it. |
+| **G1000 NXi shield** (10 pcs, 2024-06) | **A real project, to be documented incrementally.** First component found and catalogued 2026-08-21: 81x `Resistor 150R 1% 1/2W` `[949]` in A3-R8C2, bought specifically for these boards — roughly 8 per shield. The design was bought and the gerbers sent straight to JLCPCB, but the board is large — roughly 7×10 or 8×10 cm — and Scott populated it himself with a lot of components. Buying the *design* does not make the *build* a purchase. No build order yet purely for bandwidth; pick away at it. |
 | **FFB Arduino Yoke** (5 pcs, 2024-01) | **Dead end. Not needed.** Do not create a project, do not chase the boards, do not treat their absence as a gap. |
 
 **MySensors is dead — decided 2026-08-21.** The nine NRF24L01 adaptor boards,
