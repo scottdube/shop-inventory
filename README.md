@@ -215,6 +215,26 @@ Each of these was adopted after the naive version failed:
     drawers. Three drawer recommendations were wrong in one morning because
     capacity was inferred from *line counts*, which measure records rather than
     volume: "2 lines, 5 units" was a full drawer. Query the size.
+21. **LENGTH is the dimension the bin wall cannot serve, and there is no tier
+    for it.** Scott, holding a bag of SnapToggle anchors against the cabinets:
+    *"They will not fit in any of these bins, A or B. They're too big, too
+    long even for the big drawers."* The biggest Akro-Mils drawer is roughly
+    6 × 4.5 × 2.2 in, so **6 inches is the hard ceiling on length** for 324 of
+    the shop's storage slots — and the diagonal trick from principle 17 buys
+    almost nothing, because a long thin object gains only about an inch from
+    lying corner to corner.
+    - This is not a property of one anchor. The McMaster import has **eight
+      unlocated rows that are 12 to 36 inches long** — 3-foot threaded rod,
+      3-foot O1/W1/1144 rod, 36in key stock, a 1-foot hex bar. They are
+      unplaced because nothing in the building can hold them, not because
+      nobody got to them.
+    - **A parking spot is the right answer for one homeless item and the wrong
+      answer for a class of them.** Triage absorbing every long thing turns a
+      queue into the long-stock rack by default — the failure mode the parking
+      rules exist to prevent. Nine items is a class.
+    - The tell that a storage tier is missing, rather than merely full: items
+      keep arriving at the same parking spot for **the same reason**. Read the
+      reasons, not the count.
 
 ## The workflows
 
