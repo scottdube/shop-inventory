@@ -593,6 +593,14 @@ def api_assign(stock: int = Form(...), location: str = Form(...),
     if counted is not None:
         note = (f"binscan {stamp}: filed into {loc['name']} and COUNTED at "
                 f"{counted:g} by hand.")
+        # The delta against what the row previously claimed is the whole reason
+        # counting is worth doing; state it here rather than leaving someone to
+        # diff two paragraphs.
+        if abs(carried - counted) > 1e-6:
+            note += (f" Previously recorded {carried:g}, so the count is "
+                     f"{abs(carried - counted):g} "
+                     f"{'FEWER' if counted < carried else 'MORE'} than the "
+                     f"record held.")
     else:
         # [ESTIMATE] is a PREFIX flag in this catalogue -- 166 rows carry it and
         # queries test notes__startswith. Without it a filed-but-uncounted row
@@ -628,6 +636,28 @@ def api_assign(stock: int = Form(...), location: str = Form(...),
     _lead = re.compile(r"^(?:\[ESTIMATE\]\s*)?binscan \d{4}-\d\d-\d\d:[^\n]*\n*")
     while _lead.match(prior):
         prior = _lead.sub("", prior, count=1).lstrip()
+
+    # Filing RESOLVES the transitional state the McMaster import wrote, so its
+    # description of that state has to go with it. Left in place, stock 514 read
+    # "COUNTED at 47 by hand" on line 0 and "treat this as UNFILED" on line 8 --
+    # a row contradicting itself is worse than one saying nothing, because both
+    # halves look authored.
+    STALE = ("**DRAWER UNKNOWN",
+             "This is a TRANSITIONAL state",
+             "Resolve it by opening the drawer")
+    kept = []
+    for para in prior.split("\n\n"):
+        q = para.strip()
+        if not q or any(q.startswith(m) for m in STALE):
+            continue
+        # The purchase paragraph is durable history and stays -- it is what
+        # makes a 50-bought / 47-counted gap visible at all. But once a count
+        # exists it is no longer an [ESTIMATE] of the CURRENT quantity, and the
+        # flag is a prefix this catalogue queries on.
+        if counted is not None and q.startswith("[ESTIMATE]"):
+            q = "PURCHASE HISTORY (superseded by the count above): " + q[len("[ESTIMATE]"):].lstrip()
+        kept.append(q)
+    prior = "\n\n".join(kept)
     body_notes = note + (("\n\n" + prior) if prior else "")
     patch = {"notes": body_notes}
     if counted is None:
@@ -901,7 +931,7 @@ border-radius:7px;border:1px solid var(--line);background:var(--card);color:var(
 
 <button id=go disabled>Estimate</button>
 <div id=out></div>
-<div class=ro>Read-only to InvenTree &mdash; every run is logged here for comparison. <a href="/log" style="color:#8fc7ff">view log</a></div>
+<div class=ro><b>Reading is free; writing needs you.</b> Photographs and matches are never written by themselves &mdash; a row moves only when you press File, and the count is only recorded if you typed one. Every run is logged. <a href="/log" style="color:#8fc7ff">view log</a></div>
 
 <script>
 const $=s=>document.querySelector(s);

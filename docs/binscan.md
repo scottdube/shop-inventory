@@ -200,6 +200,39 @@ listing every row still unlocated in the cabinet, with the same count box and
 file button. The message says explicitly that it describes the catalogue's
 unlocated list and says nothing about what is in the drawer.
 
+## Filing must retire the notes it makes false
+
+B2-R1C1 was taken all the way through on 2026-08-22 — read, matched to
+`91737A210`, counted at 47, filed. The write was correct: quantity 47, stocktake
+dated, `[ESTIMATE]` flag off. The **notes** were not:
+
+```
+ 0 | binscan 2026-08-22: filed into B2-R1C1 and COUNTED at 47 by hand.
+ 2 | [ESTIMATE] Quantity is what was PURCHASED ... not a count
+ 4 | **DRAWER UNKNOWN — this row is filed at CABINET level, which is not a place.**
+ 8 | Resolve it by ... Until then treat this as UNFILED
+```
+
+Line 0 and line 8 contradict each other, and both look authored. The import had
+written a careful description of a transitional state; filing *resolved* that
+state and left the description behind.
+
+**An action that resolves a condition has to retire the note describing it.**
+Filing now drops the DRAWER UNKNOWN / TRANSITIONAL / "resolve it by" paragraphs,
+and — when a count is recorded — rewrites the purchase paragraph from an
+`[ESTIMATE]` claim about the current quantity into `PURCHASE HISTORY
+(superseded by the count above)`. The purchase line is kept deliberately: it is
+what makes **50 bought, 47 counted** visible at all, and that gap is the input
+to `unaccounted.py`. The count line now states the delta rather than leaving
+someone to diff two paragraphs.
+
+## The footer was lying
+
+It read *"Read-only to InvenTree"* — true when written, false the moment
+`/api/assign` shipped, and it sat directly under a button that had just moved a
+row. Now: *"Reading is free; writing needs you."* A safety claim that has gone
+stale is worse than none, because it is trusted.
+
 ## Why the original design did not solve the B1/B2 walk
 
 The walk needs the drawer address to be an OUTPUT. binscan assumes it is an
