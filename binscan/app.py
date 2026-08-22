@@ -2110,13 +2110,20 @@ function manualCard(){
     <input id=manualq placeholder="filter &mdash; name or McMaster number" autocomplete=off>
     <div id=manualcount class=mut style="margin-top:7px"></div>
     <div id=manuallist class=picklist></div>
-    <div class=countbox>
-      <label># HOW MANY ARE IN THE DRAWER?</label>
-      <input class=qty data-i="m" type=number inputmode=decimal placeholder="tap to count">
-      <div class=why>Leave blank if you did not count.</div>
+    <!-- The count box and the file button stay HIDDEN until a row is chosen.
+         Shown up-front they invite a number with nothing to attach it to, above
+         a disabled button, and the whole card reads as broken -- which is
+         exactly how it read to Scott: "there's no way to commit that." -->
+    <div id=manualact style="display:none">
+      <div id=manualpicked class=mut style="margin-top:10px"></div>
+      <div class=countbox>
+        <label># HOW MANY ARE IN THE DRAWER?</label>
+        <input class=qty data-i="m" type=number inputmode=decimal placeholder="tap to count">
+        <div class=why>Leave blank if you did not count.</div>
+      </div>
+      <button class=file data-i="m" data-stock="" id=manualfile>File it</button>
+      <div class=msg data-i="m" style="margin-top:8px;font-size:13px"></div>
     </div>
-    <button class=file data-i="m" data-stock="" id=manualfile disabled>Choose a part above</button>
-    <div class=msg data-i="m" style="margin-top:8px;font-size:13px"></div>
   </div>`;
 }
 
@@ -2145,6 +2152,10 @@ function expand(w){
 
 function renderPicks(q){
   const list=$('#manuallist'), cnt=$('#manualcount'); if(!list) return;
+  // Changing the filter unpicks whatever was picked; leaving the action block
+  // open would let a count be filed against a row no longer on screen.
+  const act=$('#manualact');
+  if(act){ act.style.display='none'; const mf=$('#manualfile'); if(mf) mf.dataset.stock=''; }
   const t=(q||'').trim().toLowerCase();
   const terms=t.split(/\s+/).filter(Boolean);
   const hit=UNLOCATED.filter(u=>{
@@ -2176,6 +2187,10 @@ function renderPicks(q){
     mf.disabled=false;
     mf.textContent = b.dataset.split==='1'
       ? `Add a second lot in ${CUR}` : `File in ${CUR}`;
+    $('#manualact').style.display='';
+    $('#manualpicked').innerHTML =
+      `Chosen: <b style="color:var(--fg)">${b.querySelector('.nm').textContent}</b>`;
+    $('#manualact').scrollIntoView({behavior:'smooth',block:'nearest'});
   });
 }
 
