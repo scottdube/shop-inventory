@@ -15,7 +15,11 @@ Three sources, tried in order:
 1. **A manufacturer URL pattern** for vendors that publish predictably (TI,
    Vishay, Bosch, Microchip, Pololu). Free, no key, ~5/8 hit rate measured.
 2. **The Mouser Search API**, if a key is configured. Given an MPN it returns a
-   datasheet URL. Key-only auth — no OAuth. Register at mouser.com/api-hub.
+   datasheet URL *and* an image URL. Key-only auth, no OAuth, instant access.
+   Sign-up is NOT on the api-hub landing page: it is
+   `mouser.com/en/MyMouser/MouserSearchApplication.aspx`, reachable only via
+   Search API -> "Learn More" -> "Sign Up for Search API".
+   Limits: 30 calls/min, 1,000/day, 50 results per call. Throttled below.
 3. **`--from-dir`**, a directory of PDFs already downloaded by hand or by a
    driven browser. This is the escape hatch for vendors that fingerprint
    scripted clients (st.com kills curl's HTTP/2 stream outright), and it is why
@@ -36,7 +40,7 @@ wrong-part-as-PDF. This also greps the decompressed text for the part number
 and refuses if absent. A datasheet filed against the wrong part is worse than
 no datasheet, because it reads as authoritative.
 """
-import argparse, json, os, re, sys, tempfile, urllib.request, urllib.error, zlib
+import argparse, json, os, re, sys, tempfile, time, urllib.request, urllib.error, zlib
 import django
 
 sys.path.insert(0, os.getcwd())
@@ -146,7 +150,18 @@ def verify(data, mpn):
     return False, f"marker {stem} ABSENT — probably the wrong document"
 
 
+# Mouser publishes hard limits: 30 calls/minute, 1,000/day. 2.1s between calls
+# keeps us under the per-minute cap with margin. Exceeding it risks the key, and
+# a revoked key costs far more than a slow run -- there are only ~23 candidates.
+_MOUSER_GAP = 2.1
+_last_call = [0.0]
+
+
 def mouser_lookup(mpn, key):
+    wait = _MOUSER_GAP - (time.monotonic() - _last_call[0])
+    if wait > 0:
+        time.sleep(wait)
+    _last_call[0] = time.monotonic()
     body = json.dumps({"SearchByPartRequest": {"mouserPartNumber": mpn}}).encode()
     req = urllib.request.Request(
         f"https://api.mouser.com/api/v1/search/partnumber?apiKey={key}",

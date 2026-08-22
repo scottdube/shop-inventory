@@ -101,9 +101,25 @@ Three further blockers, any one of which would matter on its own:
 
 1. **Mouser's Search API is key-only — no OAuth.** This corrects an earlier
    assumption here that distributor datasheet APIs meant heavy registration.
-   Given an MPN it returns a datasheet URL, parameters and pricing. Free key
-   from mouser.com/api-hub. This is the real unblock for the parts that defeat
-   URL-guessing, and it is now wired into `scripts/datasheets.py`.
+   It is now wired into `scripts/datasheets.py`.
+
+   **Getting a key is not obvious and the api-hub page does not offer it.**
+   That landing page only lists four APIs with "Learn More" buttons. The actual
+   form is two clicks down:
+
+       mouser.com/api-hub/  ->  Search API "Learn More"  ->  "Sign Up for Search API"
+       = https://www.mouser.com/en/MyMouser/MouserSearchApplication.aspx
+
+   Requires a My Mouser account; sign-up is online with **instant access** and
+   the key arrives by email.
+
+   **Limits: 30 calls/min, 1,000/day, 50 results per call.** The script
+   throttles to 2.1 s between calls — a revoked key costs more than a slow run,
+   and there are only ~23 candidates.
+
+   Worth knowing: the response carries **Image URL as well as Data Sheet URL**,
+   plus manufacturer, lifecycle, RoHS and pricing. So this key also feeds the
+   603-part image backlog for anything with a real MPN, not just datasheets.
 2. **Element14 is also key-only** (covers Farnell and Newark) if a second source
    is ever wanted.
 3. **`supplier_parameters.yaml`** — mapping supplier attributes into structured
