@@ -1121,8 +1121,9 @@ PAGE = r"""<!doctype html><html><head>
 <meta name=viewport content="width=device-width,initial-scale=1">
 <title>binscan</title><style>
 :root{--bg:#111;--fg:#eee;--mut:#8a8a8e;--acc:#4ea1ff;--card:#1c1c1e;--line:#2c2c2e}
-*{box-sizing:border-box}body{margin:0;padding:16px 16px 48px;background:var(--bg);color:var(--fg);
+*{box-sizing:border-box}body{margin:0;padding:16px 16px 4px;background:var(--bg);color:var(--fg);
 font:16px/1.45 -apple-system,system-ui,sans-serif}
+body{padding-bottom:8px}
 h1{font-size:19px;margin:0 0 2px}p.sub{color:var(--mut);margin:0 0 18px;font-size:13px}
 label{display:block;margin:14px 0 6px;color:var(--mut);font-size:12px;
 text-transform:uppercase;letter-spacing:.06em}
@@ -1138,9 +1139,46 @@ button:disabled{opacity:.35}
 .low{color:#ff9f43}.medium{color:#feca57}.high{color:#4ecd7b}
 .warn{margin-top:10px;padding:9px 11px;border-radius:8px;background:#2a2213;color:#ffc978;font-size:13px}
 .err{background:#2a1616;color:#ff8f8f}
-img#prev{width:100%;border-radius:10px;margin-top:12px;display:none}
+/* A thumbnail, not a full-bleed photo. At full width the preview pushed the
+   submit button below the fold, so the one thing you have to press next was
+   invisible unless you knew to scroll. */
+img#prev{height:62px;width:auto;max-width:40%;object-fit:cover;border-radius:8px;
+display:none;border:1px solid var(--line)}
+.shot{display:flex;gap:10px;align-items:center}
+/* Everything needed to act on a drawer lives here and never scrolls away: the
+   camera, the thumbnail, the submit. An earlier version pinned only the button
+   and left the file input up-page, which moved the problem rather than fixing
+   it -- and used a gradient background, so the card underneath showed through
+   the bar. Solid, or it is not a bar. */
+.actionbar{position:sticky;bottom:0;z-index:20;margin:16px -16px 0;
+padding:11px 16px calc(14px + env(safe-area-inset-bottom));
+background:var(--bg);border-top:1px solid var(--line);
+box-shadow:0 -12px 22px -8px rgba(0,0,0,.85)}
+.actionbar button{margin-top:9px}
+#file{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.camera{display:inline-flex;align-items:center;gap:6px;margin:0;padding:11px 14px;
+border-radius:10px;background:var(--card);color:var(--fg);
+border:1px solid var(--line);font-size:14px;font-weight:600;
+text-transform:none;letter-spacing:0;white-space:nowrap;cursor:pointer}
+.camera:active{background:#2a2a2e}
+details#opts{margin-top:14px;border:1px solid var(--line);border-radius:10px;
+padding:8px 12px;background:var(--card)}
+details#opts summary{color:var(--mut);font-size:12px;text-transform:uppercase;
+letter-spacing:.06em;cursor:pointer}
+details#opts label{margin-top:10px}
+.shot .hint{color:var(--mut);font-size:12.5px}
 .ro{margin-top:22px;padding:9px 11px;border-radius:8px;background:#16212a;color:#8fc7ff;font-size:12px}
 .mut{color:var(--mut);font-size:13px}
+/* The count is the point of the whole exercise and it read as just another
+   input. Scott: "you really gotta look at it a couple of times in order to find
+   the spot where you enter the quantity... if you don't use this for a while
+   it's gonna be like learning it all over again." */
+.countbox{margin-top:14px;padding:11px 12px;border-radius:10px;
+background:#0e2436;border:1px solid #2f6f9e}
+.countbox label{margin:0 0 7px;color:#7fd0ff;font-size:12px;font-weight:700}
+.countbox input{background:#08161f;border-color:#2f6f9e;font-size:19px;
+font-weight:700;text-align:center;padding:11px}
+.countbox .why{margin-top:7px;color:#8fb8d0;font-size:12px}
 .uncount{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;
 background:#0e2436;color:#38bdf8;border:1px solid #26597d;font-size:11px;
 text-transform:uppercase;letter-spacing:.04em;font-weight:700}
@@ -1191,25 +1229,35 @@ align-items:center;justify-content:center;gap:1px}
 <div id=flash></div>
 <div id=known class=known></div>
 
-<label id=lpart>What it holds</label>
-<input id=part placeholder="auto-filled from the drawer">
+<div id=partwrap style="display:none">
+  <label id=lpart>What it holds</label>
+  <input id=part placeholder="auto-filled from the drawer">
+</div>
 
-<label>Provider</label>
-<select id=prov></select>
+<details id=opts>
+  <summary>Options &mdash; model, advance direction</summary>
+  <label>Provider</label>
+  <select id=prov></select>
+  <label>After submit</label>
+  <select id=adv>
+    <option value="across" selected>advance across the row (C1&rarr;C2&hellip;)</option>
+    <option value="down">advance down the column (R1&rarr;R2&hellip;)</option>
+    <option value="stay">stay on this drawer</option>
+  </select>
+</details>
 
-<label>After submit</label>
-<select id=adv>
-  <option value="across" selected>advance across the row (C1&rarr;C2&hellip;)</option>
-  <option value="down">advance down the column (R1&rarr;R2&hellip;)</option>
-  <option value="stay">stay on this drawer</option>
-</select>
 
-<label>Photo</label>
-<input id=file type=file accept=image/* capture=environment>
-<img id=prev>
 
-<button id=go disabled>Estimate</button>
 <div id=out></div>
+<div class=actionbar>
+  <div class=shot>
+    <input id=file type=file accept=image/* capture=environment>
+    <label class=camera for=file>&#128247; Take photo</label>
+    <img id=prev>
+    <div class=hint id=shothint>Pick a drawer first</div>
+  </div>
+  <button id=go disabled>Estimate</button>
+</div>
 <div class=ro><b>Reading is free; writing needs you.</b> Photographs and matches are never written by themselves &mdash; a row moves only when you press File, and the count is only recorded if you typed one. Every run is logged. <a href="/log" style="color:#8fc7ff">view log</a></div>
 
 <script>
@@ -1340,7 +1388,9 @@ async function refreshDrawer(v,keepOut){
     $('#known').innerHTML=`<div class=card><b>On record</b>${items}</div>`;
     $('#part').value=(d.stock&&d.stock[0]&&d.stock[0].name)||(d.homes&&d.homes[0]&&d.homes[0].name)||'';
     $('#lpart').textContent='What it holds';
+    $('#partwrap').style.display='';
     $('#go').textContent='Estimate';
+    if(!$('#file').files[0]) $('#shothint').textContent='On record — photograph it to estimate the count';
   }else{
     MODE='identify';
     UNLOCATED = d.unlocated || [];
@@ -1375,8 +1425,9 @@ async function refreshDrawer(v,keepOut){
       '<div id=emptymsg class=mut style="margin-top:8px"></div></div>';
     $('#emptybtn').onclick=()=>markEmpty(v);
     $('#part').value='';
-    $('#lpart').textContent='What it holds (unknown — leave blank)';
-    $('#go').textContent='Read the tag';
+    $('#partwrap').style.display='none';
+    $('#go').textContent='Identify from this photo';
+    if(!$('#file').files[0]) $('#shothint').textContent='No record — photograph the tag, or say it is empty';
   }
 }
 
@@ -1446,8 +1497,11 @@ function manualCard(){
       <option value="">— choose the part —</option>
       ${UNLOCATED.map(u=>`<option value="${u.stock}">${u.sku?u.sku+' · ':''}${u.name.slice(0,70)}</option>`).join('')}
     </select>
-    <label style="margin-top:10px">Count (leave blank if you did not count)</label>
-    <input class=qty data-i="m" type=number inputmode=decimal placeholder="blank = quantity not counted">
+    <div class=countbox>
+      <label># HOW MANY ARE IN THE DRAWER?</label>
+      <input class=qty data-i="m" type=number inputmode=decimal placeholder="tap to count">
+      <div class=why>Leave blank if you did not count.</div>
+    </div>
     <button class=file data-i="m" data-stock="" id=manualfile style="margin-top:10px">File in ${CUR}</button>
     <div class=msg data-i="m" style="margin-top:8px;font-size:13px"></div>
   </div>`;
@@ -1522,7 +1576,12 @@ async function advance(){
 }
 $('#file').onchange=e=>{
   const f=e.target.files[0]; $('#go').disabled=!f;
-  if(f){$('#prev').src=URL.createObjectURL(f);$('#prev').style.display='block';}
+  if(f){
+    $('#prev').src=URL.createObjectURL(f); $('#prev').style.display='block';
+    $('#shothint').textContent = MODE==='identify'
+      ? 'Photo ready. Press the blue button below.'
+      : 'Photo ready — press Estimate below.';
+  } else { $('#prev').style.display='none'; $('#shothint').textContent=''; }
 };
 function cabinetOf(drawer){ const m=/^([A-Z]\d+)-/.exec(drawer||''); return m?m[1]:''; }
 
@@ -1554,9 +1613,14 @@ function renderIdentify(d){
       <div class=row><span>McMaster</span><span><b>${c.sku||'—'}</b></span></div>
       <div class=row><span>basis</span><span class="${c.strength==='definite'?'high':c.strength==='probable'?'medium':'low'}">${c.strength}</span></div>
       <div style="margin-top:8px;color:#aaa;font-size:13.5px">${c.why}</div>
-      <label style="margin-top:12px">Count (leave blank if you did not count)</label>
-      <input class=qty data-i="${i}" type=number inputmode=decimal
-             placeholder="purchased ${(+c.quantity).toLocaleString()} — not a count">
+      <div class=countbox>
+        <label># HOW MANY ARE IN THE DRAWER?</label>
+        <input class=qty data-i="${i}" type=number inputmode=decimal
+               placeholder="tap to count">
+        <div class=why>Leave blank if you did not count. The record says
+          <b>${(+c.quantity).toLocaleString()}</b>, but that is what was
+          <b>purchased</b>, not what is there.</div>
+      </div>
       <button class=file data-i="${i}" data-stock="${c.stock}"
               style="margin-top:10px">File in ${here}</button>
       <div class=msg data-i="${i}" style="margin-top:8px;font-size:13px"></div>
