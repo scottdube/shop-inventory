@@ -679,11 +679,30 @@ def api_assign(stock: int = Form(...), location: str = Form(...),
                              "wanted_location": loc["pk"], "got_location": got_loc,
                              "wanted_quantity": counted, "got_quantity": got_qty}, 500)
 
+    # Journal the BEFORE state in full, including notes. Two things depend on
+    # it and neither is optional:
+    #
+    #   undo         - a wrong match filed twenty drawers ago has to be
+    #                  reversible, and InvenTree does not version the notes
+    #                  field. Stock 514's original notes were lost precisely
+    #                  because nothing captured them before a write.
+    #   reconcile    - purchased 50, counted 47 is the interesting number, and
+    #                  it only exists as a DIFFERENCE. Recording both ends here
+    #                  means the reconciliation does not have to parse prose.
     log_append({"id": uuid.uuid4().hex[:8], "kind": "assign",
                 "at": datetime.datetime.now().isoformat(timespec="seconds"),
-                "stock": stock, "location": loc["name"],
-                "quantity": got_qty, "counted": counted is not None,
-                "part": (after.get("part_detail") or {}).get("name")})
+                "stock": stock,
+                "part": (after.get("part_detail") or {}).get("name"),
+                "before": {"location": (before.get("location_detail") or {}).get("name"),
+                           "location_pk": before.get("location"),
+                           "quantity": float(before.get("quantity", 0)),
+                           "stocktake_date": before.get("stocktake_date"),
+                           "notes": before.get("notes") or ""},
+                "after": {"location": loc["name"], "location_pk": loc["pk"],
+                          "quantity": got_qty,
+                          "stocktake_date": after.get("stocktake_date")},
+                "counted": counted is not None,
+                "delta": (got_qty - carried) if counted is not None else None})
     flagged = (after.get("notes") or "").startswith("[ESTIMATE]")
     if (counted is None) != flagged:
         return JSONResponse({"error": "the [ESTIMATE] flag did not land as intended",
@@ -799,6 +818,13 @@ def record_truth(id: str = Form(...), actual: str = Form(...)):
     return {"ok": True, "id": id, "actual": actual}
 
 
+@app.get("/api/journal")
+def api_journal(kind: str = "assign", limit: int = 200):
+    """The write journal, newest first. Feeds undo and reconciliation."""
+    rows = [r for r in log_read() if r.get("kind") == kind]
+    return list(reversed(rows))[:limit]
+
+
 @app.get("/api/log")
 def get_log():
     return list(reversed(log_read()))
@@ -884,6 +910,11 @@ button:disabled{opacity:.35}
 img#prev{width:100%;border-radius:10px;margin-top:12px;display:none}
 .ro{margin-top:22px;padding:9px 11px;border-radius:8px;background:#16212a;color:#8fc7ff;font-size:12px}
 .mut{color:var(--mut);font-size:13px}
+/* Survives the advance on purpose: the confirmation for the drawer you just
+   finished has to still be readable once the app has moved to the next one. */
+.flash{margin-top:12px;padding:11px 13px;border-radius:10px;background:#16291d;
+color:#9fe0b5;border:1px solid #2c4433;font-size:13.5px}
+.flash b{color:#c9f4d8}
 .chips{display:flex;flex-wrap:wrap;gap:7px}
 .chip{width:auto;padding:9px 13px;margin:0;font-size:14px;font-weight:600;
 background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:999px}
@@ -910,6 +941,7 @@ border-radius:7px;border:1px solid var(--line);background:var(--card);color:var(
 <div id=areas class=chips></div>
 <div id=gridwrap></div>
 
+<div id=flash></div>
 <div id=known class=known></div>
 
 <label id=lpart>What it holds</label>
@@ -1058,6 +1090,19 @@ function nextDrawer(cur,dir){
 // Always available, whether or not the automatic match found anything: pick
 // the row by hand from everything still unlocated in this cabinet.
 let UNLOCATED=[];
+
+// Filing advances. Not everything gets filed -- a drawer may hold something
+// that is not in the unlocated list, or you may simply want to move on -- so
+// there has to be a way past a drawer that does not involve writing to it.
+function setFlash(html){ $('#flash').innerHTML = html ? `<div class=flash>${html}</div>` : ''; }
+
+function skipCard(){
+  const nx=nextDrawer(CUR,$('#adv').value);
+  return `<div class=card><div class=mut>Nothing to file here?</div>
+    <button id=skipbtn style="background:var(--card);color:var(--fg);border:1px solid var(--line)">
+      ${nx?`Skip to ${nx}`:'No next drawer in this direction'}</button></div>`;
+}
+
 function manualCard(){
   if(!UNLOCATED.length) return '';
   return `<div class=card>
@@ -1077,6 +1122,8 @@ function manualCard(){
 function wireFiling(drawer){
   const sel=$('#manualsel'), mf=$('#manualfile');
   if(sel&&mf){ sel.onchange=()=>{ mf.dataset.stock=sel.value; }; }
+  const sk=$('#skipbtn');
+  if(sk) sk.onclick=()=>advance();
   $('#out').querySelectorAll('button.file').forEach(btn=>{
     btn.onclick=async()=>{
       const i=btn.dataset.i;
@@ -1097,6 +1144,25 @@ function wireFiling(drawer){
           btn.textContent='Filed';
           const cell=$('#gridwrap').querySelector(`.cell[data-n="${drawer}"]`);
           if(cell){cell.classList.remove('unknown','empty');cell.classList.add('filled');}
+          // The decision is made. Every other route to filing this drawer is
+          // now a way to file it twice, so they go.
+          $('#out').querySelectorAll('.card').forEach(c=>{
+            if(!c.contains(btn)) c.style.display='none'; });
+          $('#out').querySelectorAll('.warn').forEach(w=>w.style.display='none');
+          const what = j.counted
+            ? `<b>${j.quantity}</b> counted`
+            : `<b>${j.quantity}</b> carried over, <b>not counted</b>`;
+          setFlash(`&#10003; Filed into <b>${j.location}</b> &mdash; ${what}. Verified on re-read.`);
+          const nx=nextDrawer(drawer,$('#adv').value);
+          const bar=document.createElement('div');
+          bar.className='card';
+          bar.innerHTML = nx
+            ? `<button id=nextbtn>Next drawer &rarr; ${nx}</button>
+               <div class=mut style="margin-top:8px">Filed ${drawer}. Nothing else here needs doing.</div>`
+            : `<div class=mut>Filed ${drawer}. That was the last drawer in this direction — pick another area above.</div>`;
+          $('#out').appendChild(bar);
+          if(nx) $('#nextbtn').onclick=()=>advance();
+          if($('#adv').value!=='stay') setTimeout(()=>advance(), 1600);
         }else{
           msg.style.color='#ff8f8f'; msg.textContent=j.error||'failed'; btn.disabled=false;
         }
@@ -1110,7 +1176,7 @@ async function advance(){
   if(dir==='stay') return;
   const nx=nextDrawer(CUR,dir);
   $('#file').value=''; $('#prev').style.display='none'; $('#prev').removeAttribute('src');
-  $('#go').disabled=true;
+  $('#go').disabled=true; $('#out').innerHTML=''; UNLOCATED=[];
   if(!nx){
     $('#known').innerHTML='<div class=card><b>End of cabinet.</b>'+
       '<div class=mut>Pick the next one by hand.</div></div>';
@@ -1118,7 +1184,7 @@ async function advance(){
   }
   CUR=nx;
   $('#gridwrap').querySelectorAll('.cell').forEach(b=>b.classList.toggle('on',b.dataset.n===nx));
-  await refreshDrawer(nx,true);
+  await refreshDrawer(nx,false);
   $('#known').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 $('#file').onchange=e=>{
@@ -1147,7 +1213,7 @@ function renderIdentify(d){
       : d.basis==='nothing-legible'
       ? 'Nothing legible in the photo. Try again closer — or pick it by hand below.'
       : `Nothing in the <b>unlocated list for ${AREA}</b> obviously matches that text. This says nothing about what is in the drawer — only that the automatic match could not choose.`;
-    return read+`<div class="card warn">${why}</div>`+manualCard();
+    return read+`<div class="card warn">${why}</div>`+manualCard()+skipCard();
   }
   const here=CUR;
   return read + d.candidates.map((c,i)=>`<div class=card>
@@ -1166,7 +1232,7 @@ function renderIdentify(d){
        observation. Confirm against the open drawer before filing. The count box
        is blank on purpose — the number already on the row is what was BOUGHT,
        not what is there.</div>`
-    + manualCard();
+    + manualCard() + skipCard();
 }
 
 $('#go').onclick=async()=>{
@@ -1187,7 +1253,10 @@ $('#go').onclick=async()=>{
       $('#out').innerHTML = d.error ? `<div class="card err">${d.error}</div>` : renderIdentify(d);
       if(!d.error) wireFiling(CUR);
       $('#go').textContent=label; $('#go').disabled=false;
-      if(!d.error) await advance();
+      // Reading does NOT advance. Advancing on the read moved the drawer out
+      // from under a card the user had not acted on yet, and the card still
+      // showed the old name -- so it looked like nothing had happened while
+      // CUR had already changed. Advancing now follows the COMMIT.
       return;
     }
     if(d.error){$('#out').innerHTML=`<div class="card err">${d.error}</div>`;}
@@ -1214,8 +1283,15 @@ $('#go').onclick=async()=>{
         const fd2=new FormData(); fd2.append('id',truthId); fd2.append('actual',v);
         const rr=await fetch('/api/truth',{method:'POST',body:fd2});
         $('#tmsg').textContent = rr.ok ? `Recorded for ${truthLoc}.` : 'Failed to record.';
+        if(rr.ok) setFlash(`&#10003; Actual count <b>${v}</b> recorded for <b>${truthLoc}</b>.`);
+        if(rr.ok && $('#adv').value!=='stay') setTimeout(()=>advance(), 1600);
       };
-      await advance();
+      // Same rule as filing: the read does not advance, the COMMIT does. Here
+      // the commit is recording what was really in the drawer.
+      $('#out').insertAdjacentHTML('beforeend',
+        `<div class=card><div class=mut>Not recording a count?</div>
+         <button id=skipbtn2 style="background:var(--card);color:var(--fg);border:1px solid var(--line)">Skip to next drawer</button></div>`);
+      $('#skipbtn2').onclick=()=>advance();
     }
   }catch(err){ $('#out').innerHTML=`<div class="card err">${err}</div>`; }
   $('#go').disabled=false; $('#go').textContent=label;

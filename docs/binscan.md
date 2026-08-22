@@ -233,6 +233,39 @@ It read *"Read-only to InvenTree"* — true when written, false the moment
 row. Now: *"Reading is free; writing needs you."* A safety claim that has gone
 stale is worse than none, because it is trusted.
 
+## The write journal — undo and reconciliation from one record
+
+Every `/api/assign` write records the row's full **before** state: location,
+quantity, stocktake date and **notes**. Two things need it.
+
+**Undo.** InvenTree's tracking records quantity and location changes but not the
+notes field, and notes are where this catalogue keeps its provenance — the
+`[ESTIMATE]` flag, the purchase date, why a figure is what it is. Stock 514's
+original notes were lost on 2026-08-22 because a write happened with nothing
+capturing them first; they had to be reconstructed from a sibling row. The
+journal exists so that cannot recur. `scripts/binscan_undo.py --undo <pk>
+--commit` restores a row exactly and verifies the restore.
+
+**Reconciliation.** Scott: *"if you had purchased fifty and there's only
+forty-seven left, any idea where the other three went? ... Trying to do it from
+the phone at the time you're doing the bin check, I don't think that's
+realistic."* Right — so nothing asks at the drawer. `--reconcile` reports every
+counted filing whose count differs from what the record held, afterwards, in a
+batch. Answers feed `unaccounted.py --answer PART=PROJECT`, which is where the
+"CONSUMED BY:" provenance already lives.
+
+A filing with a blank count is deliberately **not** reconciled: the purchased
+figure was carried forward, so there is no second number to compare against.
+Only a real count creates a gap worth chasing.
+
+`scripts/binscan_reset.py` puts a drawer back to its pre-filing state so the
+same known-good case can be tested repeatedly — filing is a real write, so
+testing the walk on a real drawer otherwise consumes the drawer.
+
+**The journal is `~/binscan/log.jsonl`, not in git and not backed up.** That is
+acceptable for an undo log, which is only useful while the writes are recent.
+It is not an archive.
+
 ## Why the original design did not solve the B1/B2 walk
 
 The walk needs the drawer address to be an OUTPUT. binscan assumes it is an
