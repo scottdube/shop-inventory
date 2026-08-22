@@ -58,6 +58,42 @@ These orders contain an **X1-Carbon Combo ($1,449)** and an **H2D AMS Combo
 existing rule that instruments owned one-of and never consumed are not stock
 lines. The consumables around them — plates, hotends, AMS parts — are stock.
 
+## Naming: one part per SKU, keyed on Bambu's part number
+
+Decided 2026-08-22. **Not** one part per material with colour in the
+description — Scott: *"by part number, respecting the differences."*
+
+Bambu puts a numeric code on every filament: `PLA Basic / Hot Pink (10204)`,
+`ABS Black (40101)`, `PETG HF / Black (33102)`, `TPU 85A / Black (51107)`.
+Hardware and accessories use letter codes instead — `AA187` for the M3 FHCS
+pack, `ZH076` for the AMS Flipper. **That code is the IPN.**
+
+**But the code alone is not unique — refill and spool share it.** The same
+colour appears as `/ Refill / 1kg` and as `/ Filament with spool / 1 kg`, and
+the difference is operational rather than cosmetic: a refill has no spool, so
+it cannot be run without a reusable spool already in hand. Owning three refills
+and no spare spool is not the same as owning three usable rolls, and a
+catalogue that cannot express that is lying by omission.
+
+So part identity is **(code, form)**:
+
+    PLA Basic Hot Pink 10204, refill 1kg
+    PLA Basic Hot Pink 10204, with spool 1kg
+
+Same IPN `10204`, two parts, distinguished in the name. This is the same
+principle as footprint being part identity for a component, and grade being
+part identity for a fastener — the shared number is not the whole identity.
+
+## Printers go to Equipment, not stock
+
+Confirmed 2026-08-22. The **X1-Carbon Combo** ($1,449, order 2023-06-21) and
+the **H2D AMS Combo** ($2,099, order 2025-11-22) are one-of instruments and
+belong in the Equipment tree, never as consumable stock lines.
+
+**The X1C is located at LRD**, not where its order shipped. Its purchase record
+says Dover; it lives in Florida. Set the location from that fact, not from the
+order.
+
 ## Still to do
 
 The 12 confirmations have been located and the parser proven, but **the orders
