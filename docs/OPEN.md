@@ -49,6 +49,14 @@ queue, not a log.
 
 ## Labelling
 
+- [ ] **Wire shelves have no flat face to take a label.** Scott, 2026-08-22:
+      *"gotta figure out how we're gonna mount the label because there's no flat
+      surface."* Wire racks are open grid — an adhesive location label has
+      nothing to stick to. Needs a mounting answer (zip-tied tag, a clip-on
+      card, a strip of flat stock on the front rail) before WS1/WS2 shelves get
+      addressed. The BINS on the shelves label fine; it is the shelves
+      themselves that are the problem.
+
 - [ ] ~240 locations are **printed but not affixed**. A1 sheet still to install.
 
 ## Watch

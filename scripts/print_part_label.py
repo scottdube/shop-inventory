@@ -24,20 +24,28 @@ django.setup()
 
 from report.models import LabelTemplate
 from part.models import Part
-from stock.models import StockItem
+from stock.models import StockItem, StockLocation
 from plugin.registry import registry
 
 ap = argparse.ArgumentParser()
 ap.add_argument("pks", nargs="+", type=int)
 ap.add_argument("--print", dest="do_print", action="store_true",
                 help="actually send to the printer; default renders only")
+ap.add_argument("--location", action="store_true",
+                help="pks are StockLocation ids; uses template 9 (62x25mm). Bins and "
+                     "boxes take the taller label; drawers use 10, the 16mm compact, "
+                     "which is sized to the Avery scale already on the bin wall.")
 ap.add_argument("--stockitem", action="store_true",
                 help="pks are StockItem ids, use the stock item template")
 ap.add_argument("--template", type=int, default=None)
+ap.add_argument("--compact", action="store_true",
+                help="with --location, use the 16mm compact template instead of 25mm")
 a = ap.parse_args()
 
-tpl_pk = a.template or (12 if a.stockitem else 11)
-model = StockItem if a.stockitem else Part
+tpl_pk = a.template or (10 if getattr(a, 'location', False) and a.compact
+                        else 9 if getattr(a, 'location', False)
+                        else 12 if a.stockitem else 11)
+model = StockLocation if a.location else StockItem if a.stockitem else Part
 t = LabelTemplate.objects.get(pk=tpl_pk)
 print(f"template: {t.name}  {t.width}x{t.height}mm")
 
@@ -61,7 +69,8 @@ for pk in a.pks:
     pdf = t.render(obj)
 
     if not a.do_print:
-        out = f"/tmp/label_{'si' if a.stockitem else 'part'}_{pk}.pdf"
+        kind = 'loc' if a.location else 'si' if a.stockitem else 'part'
+        out = f"/tmp/label_{kind}_{pk}.pdf"
         with open(out, "wb") as fh:
             fh.write(pdf)
         print(f"  #{pk} {label[:34]:34} -> {out} ({len(pdf)} bytes)")
