@@ -946,3 +946,37 @@ Two rules follow:
 The wider point: a date field answers the question it was designed for, not the
 question you are asking. Before computing on a timestamp, check which *event* it
 records — and whether that event is the one in your reasoning.
+
+## Backslash-escaped whitespace forces a permission prompt, whatever the rules say
+
+`settings.json` allows `Bash(ssh *)`. The overnight job's first action is an
+`ssh` command. It still prompted — and on 2026-08-22 the 02:05 run sat on that
+prompt for **seven hours** and did nothing at all, leaving no journal entry,
+which made it look like the run had never fired.
+
+The dialog gave the reason: *"Contains backslash-escaped whitespace."* The
+command embedded `date +%Y-%m-%d\ %H:%M`. **Escaped whitespace makes a command
+unmatchable against allow rules — it asks regardless of any rule that would
+otherwise cover it.** A wildcard as broad as `ssh *` does not help.
+
+A second, independent reason the same command could never be approved: the
+queue description was interpolated *into* it, so every run produced a different
+string. Even granting it once would not cover the next night.
+
+Both are the `one-stable-command-shape` rule restated. The fix is
+`scripts/journal.py`, invoked as `itq run scripts/journal.py --start "…"`,
+which matches one standing rule and never varies.
+
+**For any unattended job, an unapprovable command is not a slow step — it is a
+dead run that leaves no trace.** Nobody is awake to click Allow, and the job
+cannot journal the fact that it is stuck, because the thing it is stuck on *is*
+the journal write. Check every command an overnight job issues for:
+
+- backslash-escaped whitespace (quote the argument instead: `date +'%F %H:%M'`)
+- interpolated variable text inside the command string
+- heredocs and `&&` chains, which never match a rule twice
+
+The symptom is indistinguishable from "the scheduler never fired". `lastRunAt`
+said it fired; the journal said nothing happened. Only the app's own Runs panel
+showed the truth — a run still marked **Running**, hours later, waiting on a
+dialog.
