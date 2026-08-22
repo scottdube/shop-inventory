@@ -817,3 +817,26 @@ same return value unless you deliberately separate them. Before trusting a
 negative, measure whether the check had anything to work with — and prefer a
 signal that distinguishes *absent* from *unreadable*, because a count of
 anything cannot.
+
+## A note claiming a location is not a location
+
+Stock item #89, a 7-pin DIN extension cable, carried the note *"Received
+2026-08-18 to Receiving — awaiting a home"* and had **no location set**. The
+prose was right and the data was empty, so the item was invisible to every
+location query and did not appear in Receiving's own contents. Anyone standing
+at the shelf would not have found it; anyone reading the record would have
+sworn it was there.
+
+This is the mirror of the 6-20P plug, where Receiving *claimed* an item that
+had already been consumed. Same root cause from opposite directions: **the
+narrative and the fields disagreed, and only the narrative was maintained.**
+
+Prose in a note is for the things a field cannot hold — why, when, who said so.
+The moment it states something a field exists for (location, quantity, date),
+the field must agree, because every query reads the field and every human reads
+the note. When they diverge, the record is confidently wrong in two directions
+at once.
+
+Cheap audit, worth repeating after any bulk import: list stock with
+`location__isnull=True` and grep the notes for a location word. A row whose
+note names a place it does not point to is always a defect.
