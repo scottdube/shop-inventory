@@ -235,3 +235,27 @@ CAPTCHA, a login wall, or a rate limit, and it must not be used to try:
 Octopart's PerimeterX interstitial is still a hard stop, and solving one is
 never on the table. If a page challenges the browser, that is a refusal from a
 human-facing system and it gets respected.
+
+### Amazon images: the page needs a browser, the CDN does not
+
+Re-tested 2026-08-21, and the standing conclusion was wrong.
+
+| Step | Needs | Result |
+|---|---|---|
+| Product page `amazon.com/dp/<ASIN>` | **driven Chrome** | loads fully, **no bot challenge**, correct title |
+| Extract `"hiRes"` URLs from page HTML | in-page JS | clean |
+| Fetch the image from `m.media-amazon.com` | **plain curl** | 200, `image/jpeg`, 1500×1500, 0.07 s |
+
+Note the shape: **only the product page is defended.** The image CDN serves
+curl happily. So the pipeline is browser-for-the-URL, curl-for-the-bytes — no
+blob juggling, and no CORS problem. (A cross-origin `fetch()` from the product
+page to the CDN *is* blocked by CORS; do not bother — curl the URL instead.)
+
+Proven end to end on part #14, RFP30N06LE: image attached, thumbnail generated.
+
+**This retires "Amazon is bot-blocked, the image queue is dead."** That was
+recorded from *two* independent confirmations — the Mini and the laptop — and
+both were curl from a shell hitting the product page. Two confirmations of the
+same wrong instrument is not corroboration; it is the same experiment run
+twice. 603 parts currently have no image; 32 of them have a usable ASIN today,
+and the rest depend on other suppliers, not on this block.
