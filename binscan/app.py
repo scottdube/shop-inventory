@@ -301,6 +301,7 @@ def api_grid(area: str = ""):
         state = ("filled" if (k["name"] in filled and counted.get(k["name"]))
                  else "uncounted" if k["name"] in filled
                  else "empty" if desc.upper().startswith("VERIFIED EMPTY")
+                 else "mixed" if desc.upper().startswith("PRE-SORT")
                  else "unknown")
         cells.append({"name": k["name"], "state": state,
                       "r": int(m.group(2)) if m else None,
@@ -309,7 +310,7 @@ def api_grid(area: str = ""):
                       "label": re.sub(r"\s*\[[^\]]*\]\s*", "", desc).strip()[:40]})
     cells.sort(key=lambda x: (x["r"] or 0, x["c"] or 0, x["name"]))
     tally = {s: sum(1 for c in cells if c["state"] == s)
-             for s in ("filled", "uncounted", "empty", "unknown")}
+             for s in ("filled", "uncounted", "mixed", "empty", "unknown")}
     return {"area": loc["name"], "grid": all(c["r"] for c in cells) and bool(cells),
             "cells": cells, "tally": tally}
 
@@ -667,6 +668,59 @@ def api_drawer(name: str = ""):
     if d is None:
         return JSONResponse({"error": f"no location named {name}"}, status_code=404)
     return d
+
+
+@app.post("/api/mixed")
+def api_mixed(location: str = Form(...), note: str = Form(""),
+              confirm: str = Form("")):
+    """Record a drawer as a mixed jumble: LOOKED AT, deliberately not itemised.
+
+    Some drawers hold oddments -- a handful of hex bolts in three lengths, a few
+    socket heads, leftovers from jobs. Itemising those means creating a part per
+    fastener for things nobody stocks, and skipping records nothing, so the
+    drawer stays amber and gets opened again on the next pass.
+
+    'Mixed' is a finding. It says a person looked, and the contents are not
+    worth a row each yet.
+
+    Uses the PRE-SORT prefix the catalogue already reserves -- the four buckets
+    at A2-R8C5..C8 -- so mark_empty.py's existing guard leaves it alone and it
+    reads the same as every other queue in the shop.
+    """
+    if not WRITES_ON:
+        return JSONResponse({"error": "writes disabled (BINSCAN_WRITES != 1)"}, 403)
+    if confirm.lower() not in ("1", "true", "yes"):
+        return JSONResponse({"error": "confirm required"}, 400)
+
+    locs = [l for l in _rows(it_get("stock/location/", name=location, limit=5))
+            if (l.get("name") or "").upper() == location.upper()]
+    if not locs:
+        return JSONResponse({"error": f"no location named {location}"}, 404)
+    loc = locs[0]
+
+    known = drawer_contents(location) or {}
+    if known.get("stock"):
+        return JSONResponse({"error": "this drawer has stock filed in it; a mixed "
+                                      "bucket holds only unitemised oddments"}, 409)
+
+    desc = (loc.get("description") or "").strip()
+    size = re.search(r"\[[^\]]*\]", desc)
+    tag = f"PRE-SORT {datetime.date.today().isoformat()} — mixed, not itemised"
+    if note.strip():
+        tag += f": {note.strip()[:120]}"
+    new = (tag + (" " + size.group(0) if size else ""))[:250]
+    _b, err = it_patch(f"stock/location/{loc['pk']}/", {"description": new})
+    if err:
+        return JSONResponse({"error": f"could not write: {err}"}, 502)
+    again = it_get(f"stock/location/{loc['pk']}/") or {}
+    if not (again.get("description") or "").upper().startswith("PRE-SORT"):
+        return JSONResponse({"error": "write did not verify on re-read"}, 500)
+
+    log_append({"id": uuid.uuid4().hex[:8], "kind": "mixed",
+                "at": datetime.datetime.now().isoformat(timespec="seconds"),
+                "location": loc["name"], "before": {"description": desc},
+                "after": {"description": again.get("description")}})
+    return {"ok": True, "location": loc["name"], "description": again.get("description")}
 
 
 @app.post("/api/newpart")
@@ -1337,6 +1391,7 @@ align-items:center;justify-content:center;gap:1px}
    HOW MANY. Green would say both were settled. */
 
 .cell.empty{background:var(--card);color:#5a5a5e}
+.cell.mixed{background:#2b1836;color:#d8a0ff;border-color:#5a3570}
 .cell.on{outline:2px solid var(--acc);color:var(--fg)}
 .legend{display:flex;gap:12px;margin-top:8px;font-size:11.5px;color:var(--mut);flex-wrap:wrap}
 .known .card{margin-top:10px}
@@ -1397,6 +1452,7 @@ const STATE={
   uncounted: {g:'~',       word:'filed, not counted'},
   unknown:   {g:'?',       word:'nobody has looked'},
   empty:     {g:'\u00b7', word:'verified empty'},
+  mixed:     {g:'\u2261', word:'mixed jumble, not itemised'},
 };
 let AREA=null, CELLS=[], CUR=null, LABEL='';
 fetch('/api/areas').then(r=>r.json()).then(as=>{
@@ -1445,6 +1501,7 @@ async function loadArea(name){
     <span style="color:#4ade80"><b>&#10003;</b> ${t.filled} counted</span>
     <span style="color:#38bdf8"><b>~</b> ${t.uncounted||0} filed, not counted</span>
     <span style="color:#fde047"><b>?</b> ${t.unknown} not looked at</span>
+    <span style="color:#d8a0ff"><b>&equiv;</b> ${t.mixed||0} mixed</span>
     <span style="color:#5a5a5e"><b>&middot;</b> ${t.empty} empty</span></div>`;
   $('#gridwrap').innerHTML=html;
   $('#gridwrap').querySelectorAll('.cell').forEach(b=>b.onclick=()=>pick(b.dataset.n));
@@ -1546,9 +1603,12 @@ async function refreshDrawer(v,keepOut){
     $('#known').innerHTML='<div class=card><b>Nothing on record for this drawer.</b>'+
       '<div class=mut>Photograph the McMaster bag tag if there is one, '+
       'or say it is empty.</div>'+
-      `<button id=emptybtn style="margin-top:12px;background:var(--card);color:var(--fg);border:1px solid var(--line)">This drawer is empty</button>`+
+      `<button id=emptybtn style="margin-top:12px;background:var(--card);color:var(--fg);border:1px solid var(--line)">&middot; This drawer is empty</button>`+
+      `<button id=mixedbtn style="margin-top:8px;background:var(--card);color:var(--fg);border:1px solid var(--line)">&equiv; Oddments &mdash; ones and twos, not worth a row each</button>`+
+      `<div class=mut style="margin-top:7px">Four or more of the same thing? Catalogue it above instead &mdash; the pile only works if the countable stuff keeps leaving it.</div>`+
       '<div id=emptymsg class=mut style="margin-top:8px"></div></div>';
     $('#emptybtn').onclick=()=>markEmpty(v);
+    $('#mixedbtn').onclick=()=>markMixed(v);
     $('#part').value='';
     $('#partwrap').style.display='none';
     $('#go').textContent='Identify from this photo';
@@ -1612,6 +1672,24 @@ async function markEmpty(drawer){
   }catch(e){ msg.style.color='#ff8f8f'; msg.textContent=String(e); btn.disabled=false; }
 }
 
+async function markMixed(drawer){
+  const note = prompt("Roughly what is in it? And did you take anything OUT to "
+                    + "catalogue separately? (e.g. 'ones and twos of hex bolts; "
+                    + "the 4 black SHCS were catalogued')") || "";
+  const btn=$('#mixedbtn'), msg=$('#emptymsg');
+  btn.disabled=true; msg.textContent='recording…';
+  const fd=new FormData();
+  fd.append('location',drawer); fd.append('note',note); fd.append('confirm','yes');
+  try{
+    const j=await (await fetch('/api/mixed',{method:'POST',body:fd})).json();
+    if(j.ok){
+      setFlash(`&#8801; <b>${j.location}</b> recorded as a mixed jumble &mdash; looked at, not itemised.`);
+      await repaint();
+      if($('#adv').value!=='stay') setTimeout(()=>advance(), 1200);
+    }else{ msg.style.color='#ff8f8f'; msg.textContent=j.error||'failed'; btn.disabled=false; }
+  }catch(e){ msg.style.color='#ff8f8f'; msg.textContent=String(e); btn.disabled=false; }
+}
+
 function setFlash(html){ $('#flash').innerHTML = html ? `<div class=flash>${html}</div>` : ''; }
 
 function skipCard(){
@@ -1625,13 +1703,70 @@ function skipCard(){
 // nothing and filing the wrong row is worse, so there has to be a third way
 // out. Collapsed by default: creating a part is the rare case, and an open
 // text box invites a near-duplicate of something already in the catalogue.
+// A guided path to a NAME, because free text drifts. This catalogue already
+// contains "Nyloc Nut 1/4-20, galvanized" and "Medium-Strength Steel
+// Nylon-Insert Locknut, Grade 5" -- the same idea written two ways -- and the
+// matcher pays for that every time it runs. Scott: "some form of a fastener
+// funnel that we work down through when we have to create a fastener."
+//
+// The funnel COMPOSES a name; the name field stays editable, because a funnel
+// that cannot be overridden is a funnel that lies about the odd one out.
+const F_TYPE=[
+  ['Hex Bolt','L'],['Hex Cap Screw','L'],['Carriage Bolt','L'],
+  ['Socket Head Cap Screw','L'],['Button Head Cap Screw','L'],
+  ['Flat Head Cap Screw','L'],['Low-Profile Socket Head Screw','L'],
+  ['Machine Screw, pan head','L'],['Machine Screw, flat head','L'],
+  ['Fillister Head Screw','L'],['Set Screw','L'],['Threaded Rod','L'],
+  ['Wood Screw','L'],['Sheet Metal Screw','L'],['Lag Screw','L'],
+  ['Hex Nut','N'],['Nyloc Nut','N'],['Flange Nut','N'],['Cap Nut','N'],
+  ['Wing Nut','N'],['Coupling Nut','N'],
+  ['Flat Washer','W'],['Fender Washer','W'],['Split Lock Washer','W'],
+  ['Star Washer','W'],
+];
+const F_IMP=['#2-56','#4-40','#6-32','#8-32','#10-24','#10-32','#12-24',
+  '1/4-20','1/4-28','5/16-18','5/16-24','3/8-16','3/8-24','7/16-14','7/16-20',
+  '1/2-13','1/2-20','9/16-12','5/8-11','3/4-10','7/8-9','1-8'];
+const F_MET=['M2-0.4','M2.5-0.45','M3-0.5','M4-0.7','M5-0.8','M6-1.0','M8-1.25',
+  'M10-1.5','M12-1.75','M14-2.0','M16-2.0'];
+const F_FIN=['zinc-plated steel','black-oxide alloy steel','18-8 stainless',
+  '316 stainless','galvanized steel','plain steel','brass','nylon',
+  'yellow zinc','Grade 5 zinc','Grade 8 zinc','Class 8.8 zinc'];
+
+function funnelName(){
+  const t=$('#fType').value, sz=$('#fSize').value,
+        ln=$('#fLen').value.trim(), fin=$('#fFin').value;
+  if(!t||!sz) return '';
+  const kind=(F_TYPE.find(x=>x[0]===t)||[])[1];
+  const metric=sz.startsWith('M');
+  let core=`${t} ${sz}`;
+  if(kind==='L' && ln) core += ` x ${ln}${/[a-z"']/i.test(ln)?'':(metric?'mm':'in')}`;
+  return core + (fin?`, ${fin}`:'');
+}
+function syncFunnel(){
+  const n=funnelName();
+  if(n) $('#npname').value=n;
+  const kind=(F_TYPE.find(x=>x[0]===$('#fType').value)||[])[1];
+  $('#fLenWrap').style.display = kind==='L' ? '' : 'none';
+}
+
 function createCard(seed){
   const s = (seed||'').trim();
   return `<details class=card id=newpartbox>
     <summary style="color:var(--acc);font-size:13px;cursor:pointer">
       Not in the list? Create it as a new part</summary>
-    <label style="margin-top:12px">Name &mdash; house style, e.g. &ldquo;Nyloc Nut 5/16-18, zinc-plated steel&rdquo;</label>
-    <input id=npname value="${s.replace(/"/g,'&quot;')}" placeholder="what it is, precisely">
+    <label style="margin-top:12px">Build the name</label>
+    <select id=fType><option value="">— what is it? —</option>
+      ${F_TYPE.map(t=>`<option>${t[0]}</option>`).join('')}</select>
+    <select id=fSize style="margin-top:7px"><option value="">— thread size —</option>
+      <optgroup label="imperial">${F_IMP.map(x=>`<option>${x}</option>`).join('')}</optgroup>
+      <optgroup label="metric">${F_MET.map(x=>`<option>${x}</option>`).join('')}</optgroup></select>
+    <div id=fLenWrap style="display:none">
+      <input id=fLen style="margin-top:7px" placeholder="length &mdash; e.g. 3/4 or 20" autocomplete=off>
+    </div>
+    <select id=fFin style="margin-top:7px"><option value="">— material / finish —</option>
+      ${F_FIN.map(x=>`<option>${x}</option>`).join('')}</select>
+    <label style="margin-top:12px">Name that will be saved &mdash; edit freely</label>
+    <input id=npname value="${s.replace(/"/g,'&quot;')}" placeholder="or just type it">
     <label style="margin-top:10px">Anything worth recording (optional)</label>
     <input id=npnotes placeholder="markings, material, how you identified it">
     <div class=countbox>
@@ -1649,6 +1784,8 @@ function createCard(seed){
 
 function wireCreate(drawer){
   const go=$('#npgo'); if(!go) return;
+  ['fType','fSize','fFin'].forEach(id=>{ const e=$('#'+id); if(e) e.onchange=syncFunnel; });
+  const fl=$('#fLen'); if(fl) fl.oninput=syncFunnel;
   go.onclick=async()=>{
     const msg=$('#npmsg');
     const fd=new FormData();
