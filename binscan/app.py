@@ -202,6 +202,101 @@ def drawers():
             for g, v in sorted(groups.items())]
 
 
+DRAWER_RE = re.compile(r"^([A-Z]+\d+)-R(\d+)C(\d+)$")
+
+
+def _area_children(area):
+    locs = [l for l in _rows(it_get("stock/location/", name=area, limit=5))
+            if (l.get("name") or "").upper() == (area or "").upper()]
+    if not locs:
+        return None, []
+    loc = locs[0]
+    kids = _rows(it_get("stock/location/", parent=loc["pk"], limit=200))
+    return loc, kids
+
+
+@app.get("/api/areas")
+def api_areas():
+    """Short list of places to start, so nobody scrolls 478 entries on a phone.
+    A parent whose children are leaves is somewhere you can actually stand."""
+    rows = _rows(it_get("stock/location/", limit=1000))
+    by_pk = {r["pk"]: r for r in rows}
+    kids = {}
+    for r in rows:
+        if r.get("parent") is not None:
+            kids.setdefault(r["parent"], []).append(r)
+    out = []
+    for pk, ch in kids.items():
+        par = by_pk.get(pk)
+        if not par:
+            continue
+        leaves = [c for c in ch if c["pk"] not in kids]
+        if not leaves:
+            continue
+        # A drawer that holds an assortment kit has a child location and so
+        # looks like a place you could stand. It is not -- it is a drawer, and
+        # it is reachable by tapping it in its cabinet's grid. Listing A3-R8C5
+        # and B3-R3C2 alongside the cabinets was pure noise.
+        if DRAWER_RE.match(par.get("name") or ""):
+            continue
+        out.append({"name": par["name"], "pk": pk, "drawers": len(leaves),
+                    "grid": bool(DRAWER_RE.match(leaves[0]["name"] or "")),
+                    "path": (par.get("pathstring") or par["name"]).replace("SLN/", "")})
+    grid_first = sorted(out, key=lambda a: (not a["grid"], a["path"]))
+    return grid_first
+
+
+@app.get("/api/grid")
+def api_grid(area: str = ""):
+    """Every drawer in one area with enough state to colour it. One call, so the
+    picker doubles as a progress view: what is filled, what is confirmed empty,
+    and what nobody has looked at yet."""
+    loc, kids = _area_children(area)
+    if loc is None:
+        return JSONResponse({"error": f"no location named {area}"}, status_code=404)
+
+    # Which direct child does each location descend from? Resolved by PRIMARY
+    # KEY, not by matching pathstring text: the stock endpoint does not return
+    # location_detail unless asked, so the first version of this matched empty
+    # strings and reported a 40-drawer cabinet as entirely unfilled. A pk map
+    # also handles kits, which are child locations of a drawer.
+    all_locs = _rows(it_get("stock/location/", limit=1000))
+    by_pk = {l["pk"]: l for l in all_locs}
+    owner = {}
+    for l in all_locs:
+        cur, hops = l, 0
+        while cur is not None and cur.get("parent") is not None and hops < 12:
+            if cur["parent"] == loc["pk"]:
+                owner[l["pk"]] = cur["name"]
+                break
+            cur = by_pk.get(cur["parent"])
+            hops += 1
+
+    filled = set()
+    for r in _rows(it_get("stock/", location=loc["pk"], cascade=True, limit=1000)):
+        kn = owner.get(r.get("location"))
+        if kn:
+            filled.add(kn)
+
+    cells = []
+    for k in kids:
+        m = DRAWER_RE.match(k["name"] or "")
+        desc = k.get("description") or ""
+        state = ("filled" if k["name"] in filled
+                 else "empty" if desc.upper().startswith("VERIFIED EMPTY")
+                 else "unknown")
+        cells.append({"name": k["name"], "state": state,
+                      "r": int(m.group(2)) if m else None,
+                      "c": int(m.group(3)) if m else None,
+                      "large": "large" in desc.lower(),
+                      "label": re.sub(r"\s*\[[^\]]*\]\s*", "", desc).strip()[:40]})
+    cells.sort(key=lambda x: (x["r"] or 0, x["c"] or 0, x["name"]))
+    tally = {s: sum(1 for c in cells if c["state"] == s)
+             for s in ("filled", "empty", "unknown")}
+    return {"area": loc["name"], "grid": all(c["r"] for c in cells) and bool(cells),
+            "cells": cells, "tally": tally}
+
+
 @app.get("/api/parts")
 def parts_at(q: str = ""):
     """Resolve a drawer address to what should be in it."""
@@ -366,6 +461,89 @@ def api_drawer(name: str = ""):
     return d
 
 
+@app.post("/api/assign")
+def api_assign(stock: int = Form(...), location: str = Form(...),
+               quantity: str = Form(""), confirm: str = Form("")):
+    """File a stock row into a drawer. The FIRST write this app makes.
+
+    Two separate facts, kept separate on purpose:
+
+      the DRAWER  - established by a human looking in it, and the whole point
+      the COUNT   - only recorded if a human typed a number
+
+    Leaving quantity blank moves the row and leaves its quantity alone. That
+    quantity came from a purchase order, which is a real record of what was
+    BOUGHT and not a record of what is THERE. Silently promoting one to the
+    other is how a stock system starts lying, so the note says which it is.
+
+    No model output reaches this endpoint. The match is a proposal; a person
+    confirms it with the drawer open, and only then does anything get written.
+    """
+    if not WRITES_ON:
+        return JSONResponse({"error": "writes disabled (BINSCAN_WRITES != 1)"}, 403)
+    if confirm.lower() not in ("1", "true", "yes"):
+        return JSONResponse({"error": "confirm required"}, 400)
+
+    locs = [l for l in _rows(it_get("stock/location/", name=location, limit=5))
+            if (l.get("name") or "").upper() == location.upper()]
+    if not locs:
+        return JSONResponse({"error": f"no location named {location}"}, 404)
+    loc = locs[0]
+
+    before = it_get(f"stock/{stock}/")
+    if not before:
+        return JSONResponse({"error": f"no stock item {stock}"}, 404)
+
+    counted = None
+    if str(quantity).strip():
+        try:
+            counted = float(quantity)
+        except ValueError:
+            return JSONResponse({"error": f"quantity {quantity!r} is not a number"}, 400)
+        if counted < 0:
+            return JSONResponse({"error": "quantity cannot be negative"}, 400)
+
+    note = (f"binscan: filed into {loc['name']} "
+            + (f"and COUNTED at {counted:g} by hand"
+               if counted is not None
+               else f"- quantity {float(before.get('quantity', 0)):g} NOT counted, "
+                    "it is the purchased figure carried over"))
+
+    body, err = it_post("stock/transfer/",
+                        {"items": [{"pk": stock, "quantity": before.get("quantity")}],
+                         "location": loc["pk"], "notes": note})
+    if err:
+        return JSONResponse({"error": f"transfer failed: {err}"}, 502)
+
+    if counted is not None:
+        body, err = it_post("stock/count/",
+                            {"items": [{"pk": stock, "quantity": counted}],
+                             "notes": note})
+        if err:
+            return JSONResponse({"error": f"moved, but the count failed: {err}",
+                                 "moved": True}, 502)
+
+    # Verify by re-read. .save() on this install has reported success and
+    # written nothing; the API is a different path but the habit is cheap.
+    after = it_get(f"stock/{stock}/") or {}
+    got_loc = after.get("location")
+    got_qty = float(after.get("quantity", -1))
+    ok_loc = got_loc == loc["pk"]
+    ok_qty = counted is None or abs(got_qty - counted) < 1e-6
+    if not (ok_loc and ok_qty):
+        return JSONResponse({"error": "write did not verify on re-read",
+                             "wanted_location": loc["pk"], "got_location": got_loc,
+                             "wanted_quantity": counted, "got_quantity": got_qty}, 500)
+
+    log_append({"id": uuid.uuid4().hex[:8], "kind": "assign",
+                "at": datetime.datetime.now().isoformat(timespec="seconds"),
+                "stock": stock, "location": loc["name"],
+                "quantity": got_qty, "counted": counted is not None,
+                "part": (after.get("part_detail") or {}).get("name")})
+    return {"ok": True, "verified": True, "location": loc["name"],
+            "quantity": got_qty, "counted": counted is not None, "note": note}
+
+
 @app.get("/api/unlocated")
 def api_unlocated(cabinet: str = ""):
     return cabinet_unlocated(cabinet) if cabinet else []
@@ -410,6 +588,7 @@ async def api_identify(image: UploadFile = File(...),
            "reading": reading, "basis": basis,
            "candidates": [{"sku": c["row"]["sku"], "name": c["row"]["name"],
                            "stock": c["row"]["stock"], "why": c["why"],
+                           "quantity": c["row"].get("quantity"),
                            "strength": c["strength"]} for c in ranked],
            "unlocated_in_cabinet": len(rows), "actual": None}
     log_append(rec)
@@ -554,6 +733,20 @@ button:disabled{opacity:.35}
 img#prev{width:100%;border-radius:10px;margin-top:12px;display:none}
 .ro{margin-top:22px;padding:9px 11px;border-radius:8px;background:#16212a;color:#8fc7ff;font-size:12px}
 .mut{color:var(--mut);font-size:13px}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{width:auto;padding:9px 13px;margin:0;font-size:14px;font-weight:600;
+background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:999px}
+.chip.on{background:var(--acc);color:#000;border-color:var(--acc)}
+.gridbox{margin-top:12px;overflow-x:auto}
+.grow{display:flex;gap:5px;margin-bottom:5px}
+.cell{flex:1 1 0;min-width:30px;height:38px;padding:0;margin:0;font-size:11px;
+border-radius:7px;border:1px solid var(--line);background:var(--card);color:var(--mut)}
+.cell.large{height:46px}
+.cell.filled{background:#1d2b20;color:#7fd39b;border-color:#2c4433}
+.cell.unknown{background:#2a2213;color:#ffc978;border-color:#4a3a1c}
+.cell.empty{background:var(--card);color:#4a4a4e}
+.cell.on{outline:2px solid var(--acc);color:var(--fg)}
+.legend{display:flex;gap:12px;margin-top:8px;font-size:11.5px;color:var(--mut);flex-wrap:wrap}
 .known .card{margin-top:10px}
 .known b{display:block;margin-bottom:6px;font-size:14px}
 /* legibility of the READING, distinct from confidence in a COUNT: clear means
@@ -562,8 +755,9 @@ img#prev{width:100%;border-radius:10px;margin-top:12px;display:none}
 </style></head><body>
 <h1>binscan</h1><p class=sub>The record first &middot; the camera only when it is silent &middot; nothing is written</p>
 
-<label>Drawer</label>
-<select id=loc><option value="">— pick a drawer —</option></select>
+<label>Where</label>
+<div id=areas class=chips></div>
+<div id=gridwrap></div>
 
 <div id=known class=known></div>
 
@@ -590,12 +784,64 @@ img#prev{width:100%;border-radius:10px;margin-top:12px;display:none}
 
 <script>
 const $=s=>document.querySelector(s);
-fetch('/api/drawers').then(r=>r.json()).then(gs=>{
-  $('#loc').innerHTML='<option value="">— pick a drawer —</option>'+
-    gs.map(g=>`<optgroup label="${g.group.replace(/^SLN\//,'')}">`+
-      g.items.map(i=>`<option value="${i.name}">${i.name}</option>`).join('')+
-      '</optgroup>').join('');
-}).catch(()=>{});
+// A 478-entry select is the wrong control on a phone: reaching B3 meant
+// scrolling past everything, and B3 is not even last. Two stages instead --
+// pick a place, then tap the drawer where it physically sits. The grid mirrors
+// the cabinet, so the picker doubles as a progress view.
+let AREA=null, CELLS=[], CUR=null;
+fetch('/api/areas').then(r=>r.json()).then(as=>{
+  // The bin wall is where the work is; twenty-odd other places are real but
+  // rarely the answer, and showing all of them cost nine rows of chips.
+  const chip=a=>`<button class=chip data-a="${a.name}">${a.name}<span class=mut style="margin-left:6px">${a.drawers}</span></button>`;
+  const wall=as.filter(a=>a.grid), rest=as.filter(a=>!a.grid);
+  $('#areas').innerHTML = wall.map(chip).join('')
+    + `<button class=chip id=more style="border-style:dashed">elsewhere <span class=mut>${rest.length}</span></button>`
+    + `<div id=rest style="display:none;width:100%;margin-top:7px" class=chips>${rest.map(chip).join('')}</div>`;
+  const wire=()=>$('#areas').querySelectorAll('.chip[data-a]').forEach(b=>b.onclick=()=>loadArea(b.dataset.a));
+  wire();
+  $('#more').onclick=()=>{ const r=$('#rest');
+    const open=r.style.display!=='none'; r.style.display=open?'none':'flex';
+    $('#more').classList.toggle('on',!open); };
+}).catch(()=>{ $('#areas').innerHTML='<div class="card err">could not load areas</div>'; });
+
+async function loadArea(name){
+  AREA=name; CUR=null;
+  $('#areas').querySelectorAll('.chip').forEach(b=>b.classList.toggle('on',b.dataset.a===name));
+  $('#gridwrap').innerHTML='<div class=card>loading…</div>';
+  $('#known').innerHTML=''; $('#out').innerHTML=''; $('#go').disabled=true;
+  let g;
+  try{ g=await (await fetch('/api/grid?area='+encodeURIComponent(name))).json(); }
+  catch(_){ $('#gridwrap').innerHTML='<div class="card err">could not load '+name+'</div>'; return; }
+  if(g.error){ $('#gridwrap').innerHTML=`<div class="card err">${g.error}</div>`; return; }
+  CELLS=g.cells;
+  const t=g.tally;
+  let html='<div class=gridbox>';
+  if(g.grid){
+    const rows={};
+    CELLS.forEach(c=>{ (rows[c.r]=rows[c.r]||[]).push(c); });
+    Object.keys(rows).sort((a,b)=>a-b).forEach(r=>{
+      html+='<div class=grow>'+rows[r].sort((a,b)=>a.c-b.c).map(c=>
+        `<button class="cell ${c.state}${c.large?' large':''}" data-n="${c.name}"
+           title="${c.label||c.name}">${c.r}.${c.c}</button>`).join('')+'</div>';
+    });
+  }else{
+    html+='<div class=grow style="flex-wrap:wrap">'+CELLS.map(c=>
+      `<button class="cell ${c.state}" style="flex:0 0 auto;min-width:86px;padding:0 10px"
+         data-n="${c.name}">${c.name}</button>`).join('')+'</div>';
+  }
+  html+=`</div><div class=legend>
+    <span style="color:#7fd39b">&#9632; ${t.filled} filled</span>
+    <span style="color:#ffc978">&#9632; ${t.unknown} unknown</span>
+    <span style="color:#4a4a4e">&#9632; ${t.empty} verified empty</span></div>`;
+  $('#gridwrap').innerHTML=html;
+  $('#gridwrap').querySelectorAll('.cell').forEach(b=>b.onclick=()=>pick(b.dataset.n));
+}
+
+function pick(name){
+  CUR=name;
+  $('#gridwrap').querySelectorAll('.cell').forEach(b=>b.classList.toggle('on',b.dataset.n===name));
+  refreshDrawer(name,false);
+}
 fetch('/api/providers').then(r=>r.json()).then(ps=>{
   const ok=ps.filter(p=>p.available);
   $('#prov').innerHTML =
@@ -636,7 +882,7 @@ async function refreshDrawer(v,keepOut){
     $('#go').textContent='Read the tag';
   }
 }
-$('#loc').onchange=e=>refreshDrawer(e.target.value,false);
+
 
 // Walking a wall means going drawer to drawer, and re-finding your place in a
 // 324-entry select every time is the friction that made the original unusable.
@@ -648,18 +894,48 @@ $('#loc').onchange=e=>refreshDrawer(e.target.value,false);
 function nextDrawer(cur,dir){
   const m=/^([A-Z]\d+)-R(\d+)C(\d+)$/.exec(cur||''); if(!m) return null;
   const cab=m[1]+'-';
-  const rows=[...$('#loc').options].map(o=>o.value)
-    .filter(v=>v.startsWith(cab))
+  const rows=CELLS.map(c=>c.name).filter(v=>v.startsWith(cab))
     .map(v=>{const q=/-R(\d+)C(\d+)$/.exec(v); return {v,r:+q[1],c:+q[2]};});
   rows.sort(dir==='down' ? (a,b)=>(a.c-b.c)||(a.r-b.r) : (a,b)=>(a.r-b.r)||(a.c-b.c));
   const i=rows.findIndex(x=>x.v===cur);
   return (i>=0 && i+1<rows.length) ? rows[i+1].v : null;
 }
 
+// Filing happens against the drawer that was photographed. advance() changes
+// CUR straight afterwards, so the drawer name is bound HERE, at render time --
+// otherwise the second drawer of a walk collects the first drawer's contents.
+function wireFiling(drawer){
+  $('#out').querySelectorAll('button.file').forEach(btn=>{
+    btn.onclick=async()=>{
+      const i=btn.dataset.i;
+      const msg=$('#out').querySelector(`.msg[data-i="${i}"]`);
+      const qty=$('#out').querySelector(`.qty[data-i="${i}"]`).value.trim();
+      btn.disabled=true; msg.textContent='filing…'; msg.style.color='#8a8a8e';
+      const fd=new FormData();
+      fd.append('stock',btn.dataset.stock); fd.append('location',drawer);
+      fd.append('quantity',qty); fd.append('confirm','yes');
+      try{
+        const r=await fetch('/api/assign',{method:'POST',body:fd});
+        const j=await r.json();
+        if(j.ok){
+          msg.style.color='#7fd39b';
+          msg.textContent=`Filed in ${j.location}, verified. `
+            + (j.counted?`Counted ${j.quantity}.`:`Quantity ${j.quantity} carried over — NOT counted.`);
+          btn.textContent='Filed';
+          const cell=$('#gridwrap').querySelector(`.cell[data-n="${drawer}"]`);
+          if(cell){cell.classList.remove('unknown','empty');cell.classList.add('filled');}
+        }else{
+          msg.style.color='#ff8f8f'; msg.textContent=j.error||'failed'; btn.disabled=false;
+        }
+      }catch(e){ msg.style.color='#ff8f8f'; msg.textContent=String(e); btn.disabled=false; }
+    };
+  });
+}
+
 async function advance(){
   const dir=$('#adv').value;
   if(dir==='stay') return;
-  const nx=nextDrawer($('#loc').value,dir);
+  const nx=nextDrawer(CUR,dir);
   $('#file').value=''; $('#prev').style.display='none'; $('#prev').removeAttribute('src');
   $('#go').disabled=true;
   if(!nx){
@@ -667,7 +943,8 @@ async function advance(){
       '<div class=mut>Pick the next one by hand.</div></div>';
     return;
   }
-  $('#loc').value=nx;
+  CUR=nx;
+  $('#gridwrap').querySelectorAll('.cell').forEach(b=>b.classList.toggle('on',b.dataset.n===nx));
   await refreshDrawer(nx,true);
   $('#known').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
@@ -696,15 +973,23 @@ function renderIdentify(d){
       : 'No row in this cabinet fits what was read.';
     return read+`<div class="card warn">${why}</div>`;
   }
-  return read + d.candidates.map(c=>`<div class=card>
+  const here=CUR;
+  return read + d.candidates.map((c,i)=>`<div class=card>
       <div class=big style="font-size:17px">${c.name}</div>
       <div class=row><span>McMaster</span><span><b>${c.sku||'—'}</b></span></div>
       <div class=row><span>basis</span><span class="${c.strength==='definite'?'high':c.strength==='probable'?'medium':'low'}">${c.strength}</span></div>
       <div style="margin-top:8px;color:#aaa;font-size:13.5px">${c.why}</div>
+      <label style="margin-top:12px">Count (leave blank if you did not count)</label>
+      <input class=qty data-i="${i}" type=number inputmode=decimal
+             placeholder="purchased ${(+c.quantity).toLocaleString()} — not a count">
+      <button class=file data-i="${i}" data-stock="${c.stock}"
+              style="margin-top:10px">File in ${here}</button>
+      <div class=msg data-i="${i}" style="margin-top:8px;font-size:13px"></div>
     </div>`).join('')
-    + `<div class=warn>Nothing has been written. Confirm against the open drawer,
-       then have the assignment recorded — a match made from a photograph is a
-       proposal, not an observation.</div>`;
+    + `<div class=warn>A match made from a photograph is a proposal, not an
+       observation. Confirm against the open drawer before filing. The count box
+       is blank on purpose — the number already on the row is what was BOUGHT,
+       not what is there.</div>`;
 }
 
 $('#go').onclick=async()=>{
@@ -714,14 +999,15 @@ $('#go').onclick=async()=>{
   $('#go').disabled=true; $('#go').textContent='Looking…'; $('#out').innerHTML='';
   const fd=new FormData();
   fd.append('image',f); fd.append('provider',$('#prov').value);
-  fd.append('location',$('#loc').value||'');
-  if(identify) fd.append('cabinet',cabinetOf($('#loc').value));
+  fd.append('location',CUR||'');
+  if(identify) fd.append('cabinet',cabinetOf(CUR));
   else fd.append('part_name',$('#part').value||'unknown part');
   try{
     const r=await fetch(identify?'/api/identify':'/api/estimate',{method:'POST',body:fd});
     const d=await r.json();
     if(identify){
       $('#out').innerHTML = d.error ? `<div class="card err">${d.error}</div>` : renderIdentify(d);
+      if(!d.error) wireFiling(CUR);
       $('#go').textContent=label; $('#go').disabled=false;
       if(!d.error) await advance();
       return;
@@ -742,9 +1028,9 @@ $('#go').onclick=async()=>{
              <input id=truth type=number inputmode=numeric placeholder="how many were really there">
              <button id=savetruth style="margin-top:10px">Record actual</button>
              <div id=tmsg style="margin-top:8px;color:#8a8a8e;font-size:13px"></div></div>`;
-      // Captured now: advancing changes #loc, and the truth being recorded
+      // Captured now: advancing changes CUR, and the truth being recorded
       // belongs to the drawer just photographed, not the one queued next.
-      const truthId=d.id, truthLoc=$('#loc').value;
+      const truthId=d.id, truthLoc=CUR;
       $('#savetruth').onclick=async()=>{
         const v=$('#truth').value; if(v===''){return;}
         const fd2=new FormData(); fd2.append('id',truthId); fd2.append('actual',v);
