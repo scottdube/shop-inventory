@@ -1,0 +1,11 @@
+# The API keys. Never commit: this repo is PUBLIC and has leaked once already.
+env
+# Submitted photos — binary, large, and they are shop photos.
+shots/
+# Run history. Rebuildable, and it grows without bound.
+log.jsonl
+venv/
+__pycache__/
+# Hand-rolled version history from before this was in git. Kept on the Mini as
+# a safety net until the git copy has proven itself; not worth versioning twice.
+*.pre*
