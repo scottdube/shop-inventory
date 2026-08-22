@@ -1189,3 +1189,36 @@ Note this is a *different* fault from the false alarm on 2026-08-21, when
 pathstrings looked wrong only because of a `[:40]` truncation in debug output.
 That one was withdrawn. This one is real, and the difference is that
 `construct_pathstring()` disagrees with the stored value.
+
+## Record USABLE dimensions — an exterior figure answers a different question
+
+The NewAge cabinets went in as **28 x 14 in**, straight off the manufacturer's
+page. Scott: *"the twenty-eight by fourteen is outside measurements, which are
+not useful. It should say usable space."*
+
+Two different questions, and only one of them ever gets asked of an inventory
+system:
+
+| Figure | Answers |
+|---|---|
+| **Exterior** | does the cabinet fit the wall / the truck / the space |
+| **Usable** | does my box fit the cabinet |
+
+A storage record exists to answer the second. The first is a purchasing number
+and belongs, at most, in a note.
+
+Worse than useless, it is misleading by subtraction: a 28 in cabinet has a
+**24 in** clear opening — four inches of side walls, frames and door swing that
+no arithmetic on the exterior would have predicted, because the loss depends on
+the door style. Anyone sizing a 26 in box to a "28 in cabinet" buys a box that
+does not go in.
+
+**Never derive an interior from an exterior.** An estimated `interior_d` sitting
+in the same record as a measured `usable_w` reads as though both were measured —
+a guess wearing a measurement's clothes, which is the same failure as
+attributing a measurement to someone who only quoted you. Record the source per
+figure: MEASURED, or UNKNOWN. Not "estimated from the outside".
+
+The bin-wall drawers already do this correctly — `metadata.size` there is
+interior capacity, which is why drawer-fit questions can be answered from the
+data and cabinet-fit questions could not.
