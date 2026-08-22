@@ -566,7 +566,10 @@ _KINDS = (("nylon-insert", "nyloc"), ("nyloc", "nyloc"), ("locknut", "nyloc"),
           ("bearing", "bearing"), ("bushing", "bearing"), ("sleeve", "bearing"),
           ("spacer", "spacer"), ("o-ring", "oring"), ("clip", "clip"),
           ("rivet", "rivet"), ("anchor", "anchor"), ("pin", "pin"),
-          ("terminal", "terminal"), ("connector", "connector"))
+          ("terminal", "terminal"), ("connector", "connector"),
+          ("threaded rod", "rod"), ("all-thread", "rod"), ("stud", "rod"),
+          ("rod", "rod"), ("shim", "shim"), ("key", "key"), ("retaining", "clip"),
+          ("grommet", "grommet"), ("insert", "insert"), ("bearing", "bearing"))
 
 
 def _kinds(t):
@@ -679,6 +682,21 @@ def match_reading(reading, rows):
             # other, thread agreement is not enough to rescue it.
             if ("nyloc" in lk or "nut" in lk) != ("nyloc" in pk or "nut" in pk):
                 sc -= 5
+        elif lk and not pk:
+            # THE LABEL NAMED A TYPE AND THE ROW'S TYPE IS UNKNOWN. Penalise,
+            # do not ignore.
+            #
+            # This is the general form of a bug hit twice: a nylon sleeve
+            # bearing and then a threaded rod were both proposed for a box of
+            # hex nuts, because neither word was in the vocabulary, so one side
+            # of the comparison came back empty and "cannot tell" scored the
+            # same as "agrees". Adding the missing word each time fixes one case
+            # and leaves the next one waiting.
+            #
+            # An unrecognised type cannot CORROBORATE a named one. Thread and
+            # finish alone are not enough -- a 3/8-16 stainless nut and a 3/8-16
+            # stainless rod agree on both and are not remotely the same thing.
+            sc -= 4
         if lm and pm:
             sc += 4 if lm == pm else -6
         if li and pi:

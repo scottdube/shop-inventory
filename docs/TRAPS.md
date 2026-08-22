@@ -1498,8 +1498,20 @@ candidate" routes straight to the filter and the create path.
 **3. A bearing could not disagree with a nut.** `_kinds()` had no entry for
 bearings, so one side of the comparison came back empty and the wrong-type
 penalty never fired. **A vocabulary that only knows the right answers cannot
-detect a wrong one** — the absence of a term reads as agreement. Added bearing,
-bushing, spacer, o-ring, clip, rivet, anchor, pin, terminal, connector.
+detect a wrong one** — the absence of a term reads as agreement.
+
+The first fix was to add the missing words: bearing, bushing, spacer, o-ring,
+clip, rivet, anchor, pin, terminal, connector. **That fixed one case and left
+the next one waiting.** Within the hour the same box of hex nuts matched an
+`18-8 Stainless Steel Threaded Rod, 3/8"-16` — because "threaded rod" was not in
+the list either. Thread agreed, finish agreed, and the type could not object.
+
+**Enumerating the vocabulary is the wrong shape of fix.** The rule now: if the
+label names a type and the row's type is UNRECOGNISED, that is a penalty, not a
+pass. An unknown type cannot corroborate a known one. A 3/8-16 stainless nut and
+a 3/8-16 stainless rod agree on every attribute the matcher can parse and are
+not remotely the same object — so the attributes it *cannot* parse have to count
+against a match, not for it.
 
 The pattern across all three: **each fault converted "I could not tell" into "I
 am fairly sure".** That is the same direction as the missing 13 TPI, where a
