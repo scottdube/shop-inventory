@@ -149,14 +149,52 @@ constraint. Any purchase should therefore be all-large.
       clearance, and confirm two-high clears what is above. No dimension for
       that run exists yet.
 
-**Naming, if a third form factor is bought: call them C1 and C2, not A4/B4.**
-The letter already encodes form factor — every A is a 64-drawer all-small
-10164 on an 8x8 grid, every B is a 44-drawer 10144 with rows 1-4 small and rows
-5-7 large. So `A` and `B` each imply *drawers physically interchangeable within
-the letter*, which is the property that would break if a 24-drawer all-large
-cabinet were called A4. A 10124 is a 6x4 grid: `C1-R3C2`. Both C and D are
-unused anywhere in the tree. Physical position is independent of the name — the
-new column can sit at the left end and still be C.
+**Naming: the letter is the ROW. The new pair is A4 and B4.**
+
+Settled 2026-08-22 by Scott's expansion plan, which decided it: when the wall
+needs more space after this, it grows **DOWN, not right** — a third row below
+B, numbered C1/C2/C3, in the space the plywood table occupies now. So `A` is
+the top row and `B` the middle one; the number is the column, left to right.
+Form factor is NOT what the letter means — that lives in the cabinet
+description, where A3 and B3 already record the Akro-Mils model number.
+
+**C is NOT burned — it is reserved for the third row.** An earlier version of
+this section said to skip C because `C1-R3C2` spends C on both the cabinet and
+the column. Scott spotted that, and then his own row plan required C anyway.
+The objection was cosmetic: the format is fixed, so the token before the hyphen
+is always the cabinet and the R/C after it are always row and column. It parses
+one way. Rows reading A, B, C is worth more than avoiding a double-take.
+
+**The move: slide the existing six cabinets LEFT, then hang the new pair on the
+right.** Measured clearance at the left end is **22 in**; a 10124 is 20 in wide.
+
+- [ ] **Slide the full 22 in, not 20.** Sliding exactly one cabinet width leaves
+      the new column a 20 in hole for a 20 in cabinet — zero fit clearance, on
+      keyhole pins. Going the full 22 leaves 2 in of working room on the right
+      and nothing on the left, which is the correct side to give up.
+- [ ] **Pull or tape the drawers before lifting.** Akro-Mils drawers slide free;
+      a loaded cabinet tipped a few degrees empties onto the floor. B1 and B2
+      are the dangerous two — they hold the 48 unlocated McMaster rows, so their
+      contents are the least reconstructable in the shop. Spilling them would
+      destroy counts that took two days to establish.
+- [ ] Sliding is reversible; a naming decision with 48 printed labels and a
+      hundred QR codes in the database is not. If the right end turns out not to
+      clear something, slide back.
+
+Rejected: `OS1/OS2` for "oversize" (Scott's suggestion, and it solves the
+symmetry objection for the right reason — a name outside the A/B series creates
+no expectation of ordering). Rejected because the name would be false: 24 of the
+35 large drawers are in B1/B2/B3 and are staying there, so a reader told that
+oversize stock lives in OS would be wrong most of the time. A positional scheme
+makes no claim about contents and so cannot go stale.
+
+Also rejected: `D1/D2` at the left end. No renumbering, but the wall would read
+D,A,A,A left to right, and the next expansion would need another exception.
+
+**Code debt cleared the same day:** four places hardcoded `^[AB][1-3]-R\d+C\d+$`
+(`link_barcodes.py`, `first_stock.py`, `file_stock.py`, `shop_status/__init__.py`)
+and would have silently excluded A4/B4/C-row drawers from every count without
+erroring. Widened to `^[A-Z][0-9]+-R\d+C\d+$`.
 
 **If instead the same 44-drawer form factor is bought, A4/B4 is correct and
 free** — but it buys 12 larges and 32 unneeded smalls per cabinet instead of 24

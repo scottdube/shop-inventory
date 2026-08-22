@@ -1316,23 +1316,35 @@ closed. Ask. Scott's answer here was *"r2c1 is also occupied correct, I'll take
 one more trip thru a2 to verify"*, and 53 drawers stayed unmarked until that
 trip rather than being marked on a summary.
 
-## The B wall is sorted by thread system, and nobody wrote that down
+## The B wall is sorted by thread system, and it WAS written down
 
 B1 holds 31 McMaster rows, **all metric, zero imperial**. B2 holds 17, **all
-imperial, zero metric**. Not one part crosses. That is an organising principle
-in active use, and it existed only in the physical cabinets and in Scott's
-head — no note, no location description, no metadata field recorded it.
+imperial, zero metric**. Not one part crosses.
+
+**This entry originally said nobody had recorded that. That was false.** B1's
+own description reads *"METRIC fastener cabinet (Scott, 2026-08-21)"* and B2's
+reads *"IMPERIAL fastener cabinet"* — written the previous day, on the exact
+two cabinets under discussion. The fact was not undocumented; it was unread.
+
+Which makes the failure worse, not better. An undiscovered convention is bad
+luck. A convention sitting in the `description` field of the record you are
+proposing to reorganise is a failure to look.
 
 Three separate layout proposals were argued on 2026-08-22 — hardware to A1+B1,
 hardware to A2+A1, hardware to B1+B2 — and **all three would have broken it**,
 because none of them knew it was there. The discussion was about cabinets and
 drawer sizes; the actual structure was about threads.
 
-**Before proposing a reorganisation, query what the existing arrangement
-already sorts by.** One `GROUP BY` over the part names would have surfaced this
-in the first minute. The tell that it was missing: every proposal treated
-"hardware" as a single undifferentiated category, which is exactly the
-assumption a person who owns the shop would never make.
+**Before proposing a reorganisation, READ THE DESCRIPTION OF EVERY CONTAINER
+you propose to change.** Not a query over contents — the container's own note,
+which is where the previous session left its reasoning precisely so the next
+one would not re-derive it. Three cabinet-level descriptions would have taken
+one query and settled the whole argument.
+
+The tell that something was missing: every proposal treated "hardware" as one
+undifferentiated category, which is an assumption the shop's owner would never
+make. When a proposal needs the domain to be simpler than the person you are
+talking to knows it to be, the model is wrong, not the domain.
 
 Consequence worth acting on: A2's eleven hardware drawers are entirely
 imperial, so their home is B2, not A1.
