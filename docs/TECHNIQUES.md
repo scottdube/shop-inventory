@@ -429,3 +429,32 @@ timestamp of its own and there is nothing else to read.
 Each reconstructed build is tagged `[RECONSTRUCTED]` in its notes and records
 that its **physical build date is unknown**, so nobody later compares stocktake
 dates against its completion date — that comparison reads the wrong event.
+
+## Telling stainless from plated steel with a magnet
+
+Scott, 2026-08-22, on unidentified washers in B2-R3C3: *"I put a magnet up to
+these, and they're slightly magnetic, but not nearly as magnetic as I would
+think they would be if they were plain steel."*
+
+That reading is the answer, and the nuance is the whole point:
+
+| response to a magnet | material |
+|---|---|
+| none at all | 316 stainless, aluminium, brass, copper |
+| **weak — noticeable but easily pulled off** | **18-8 / 304 stainless, cold-worked** |
+| strong — snaps to the magnet | plain steel, zinc-plated steel, galvanised |
+
+18-8 is austenitic and nominally non-magnetic, but **stamping, rolling or
+thread-forming cold-works it and makes it weakly magnetic.** A punched washer, a
+rolled thread, a formed clip: all slightly magnetic and all still stainless. So
+"a bit magnetic" is not evidence of plated steel — it is close to positive
+evidence of *worked* 18-8, because plain steel does not do "a bit".
+
+**Do not use "it sticks" as a yes/no test.** The strength is the signal, and it
+needs a comparison: hold a known plated screw in the other hand.
+
+This settled an identification that two catalogue searches could not, and it
+agreed with a caliper reading taken independently — 7.28 mm ID, which is a 1/4in
+SAE flat washer at 7.14 mm and not an M6 at 6.60 mm. Two unrelated properties
+pointing the same way is worth far more than either alone; either could be
+explained away, both together cannot.

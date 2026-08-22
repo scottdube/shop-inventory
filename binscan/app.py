@@ -355,13 +355,24 @@ def cabinet_unlocated(cab):
         return []
     skus = _mcmaster_skus()
     rows = _rows(it_get("stock/", location=loc[0]["pk"], cascade=False, limit=200))
+
+    # Rows with NO location at all are MORE unfiled than cabinet-level ones and
+    # were invisible to this list entirely, so they could not be picked by hand.
+    # Found 2026-08-22 when Scott had 1/4in washers in B2-R3C3 and six McMaster
+    # washer rows sat locationless where nothing could reach them. A row nobody
+    # can select is a row that gets entered twice.
+    nowhere = [r for r in _rows(it_get("stock/", location__isnull=True, limit=200))
+               if skus.get(r.get("part"))]
     out = []
-    for r in rows:
+    for r in rows + nowhere:
         pk = r.get("part")
+        nm = ((r.get("part_detail") or {}).get("name")
+              or r.get("part_name") or f"part {pk}")
+        homeless = r.get("location") is None
         out.append({"stock": r.get("pk"), "part": pk,
-                    "name": (r.get("part_detail") or {}).get("name")
-                            or r.get("part_name") or f"part {pk}",
+                    "name": ("(NOT LOCATED ANYWHERE) " + nm) if homeless else nm,
                     "quantity": r.get("quantity"),
+                    "homeless": homeless,
                     "sku": skus.get(pk, "")})
     return out
 
@@ -1212,6 +1223,32 @@ async function loadArea(name){
   $('#gridwrap').querySelectorAll('.cell').forEach(b=>b.onclick=()=>pick(b.dataset.n));
 }
 
+// After a write, re-read the grid from the server rather than patching the
+// cell in place. The local patch changed the colour class and left the GLYPH
+// span alone, so a filed drawer went green and kept saying "?" -- invisible if
+// you read colour, and the whole point of the glyph is that Scott reads the
+// glyph. Two representations of one fact will disagree; keep one.
+async function repaint(){
+  if(!AREA) return;
+  try{
+    const g=await (await fetch('/api/grid?area='+encodeURIComponent(AREA))).json();
+    if(g.error) return;
+    CELLS=g.cells;
+    g.cells.forEach(c=>{
+      const b=$('#gridwrap').querySelector(`.cell[data-n="${c.name}"]`);
+      if(!b) return;
+      b.className='cell '+c.state+(c.large?' large':'')+(c.name===CUR?' on':'');
+      b.innerHTML=`<span class=g>${STATE[c.state].g}</span><span>${c.r}.${c.c}</span>`;
+      b.title=`${c.name} — ${STATE[c.state].word}`;
+    });
+    const t=g.tally, L=$('#gridwrap').querySelector('.legend');
+    if(L) L.innerHTML=`<span style="color:#4ade80"><b>&#10003;</b> ${t.filled} counted</span>
+      <span style="color:#38bdf8"><b>~</b> ${t.uncounted||0} filed, not counted</span>
+      <span style="color:#fde047"><b>?</b> ${t.unknown} not looked at</span>
+      <span style="color:#5a5a5e"><b>&middot;</b> ${t.empty} empty</span>`;
+  }catch(_){}
+}
+
 function pick(name){
   CUR=name;
   $('#gridwrap').querySelectorAll('.cell').forEach(b=>b.classList.toggle('on',b.dataset.n===name));
@@ -1328,8 +1365,7 @@ async function markEmpty(drawer){
     const j=await (await fetch('/api/empty',{method:'POST',body:fd})).json();
     if(j.ok){
       setFlash(`&#10003; <b>${j.location}</b> recorded ${j.already?'(already)':''} as verified empty.`);
-      const cell=$('#gridwrap').querySelector(`.cell[data-n="${drawer}"]`);
-      if(cell){cell.classList.remove('unknown','filled');cell.classList.add('empty');}
+      await repaint();
       if($('#adv').value!=='stay') setTimeout(()=>advance(), 1100);
       else { msg.style.color='#7fd39b'; msg.textContent='recorded'; }
     }else{
@@ -1386,8 +1422,7 @@ function wireFiling(drawer){
           msg.textContent=`Filed in ${j.location}, verified. `
             + (j.counted?`Counted ${j.quantity}.`:`Quantity ${j.quantity} carried over — NOT counted.`);
           btn.textContent='Filed';
-          const cell=$('#gridwrap').querySelector(`.cell[data-n="${drawer}"]`);
-          if(cell){cell.classList.remove('unknown','empty');cell.classList.add('filled');}
+          await repaint();
           // The decision is made. Every other route to filing this drawer is
           // now a way to file it twice, so they go.
           $('#out').querySelectorAll('.card').forEach(c=>{
