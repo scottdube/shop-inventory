@@ -665,3 +665,35 @@ more than asking for none, because a question implies the answer is there.
 Before requesting a measurement, establish what KIND of interface the thing
 has. Threaded, push-to-connect, barbed, compression and flare are all "1/2
 inch" in different and incompatible senses.
+
+## "Never re-ask" needs an escape hatch, or a reversed policy fails silently
+
+The overnight agent records declined decisions and never raises them again —
+a good rule that stops it pestering Scott about the same consumer order every
+night. On 2026-08-18 he declined label stock: *"consumable, not inventoried."*
+
+On 2026-08-21 he reversed that, asking for label tape to be tracked **with a
+reorder point**, because it gates every other labelling task. The standing
+decline would have quietly binned the very next label order.
+
+Nothing would have gone wrong visibly. The rule would have worked exactly as
+designed and produced the wrong outcome, and a **silent skip is
+indistinguishable from nothing happening** — no error, no journal line, no
+missing-PO alarm. It would have surfaced weeks later as "why isn't my tape in
+the system?"
+
+The fix is a distinction the original rule did not draw:
+
+| Declined thing | Lifetime |
+|---|---|
+| A specific **order number** | settled forever — genuinely never re-ask |
+| A **category** ("label stock", "zip bags") | a standing *policy*, and policies change |
+
+A category decline now moves to `## reversed` when overturned, with the date
+and the new policy, and sweeping resumes. The reversal also triggers a check
+for anything skipped while the decline stood.
+
+**Generally: any rule of the form "remember this answer forever" needs a
+defined way to change the answer.** Without one, the memory outlives the
+reasoning that produced it, and the system gets more confidently wrong the
+longer it runs.

@@ -265,6 +265,25 @@ number, hard guardrails (never invent prices, never receive, never delete,
 read-only on vendor sites). See [docs/TRAPS.md](docs/TRAPS.md) for the ways
 this went wrong before it went right.
 
+**Scope widened 2026-08-21 — it now finishes the job instead of queueing it.**
+Three changes, all aimed at the same thing: *"the idea is to have the POs
+created without me being involved."*
+
+- **It drives the logged-in Chrome.** The old rule said Amazon per-item prices
+  live behind a login "which you do not have overnight", so the job collected
+  order numbers and handed them to a human. That queue *was* the manual work.
+  It now reads the order-details page itself. The ban on treating an Amazon
+  grand total as a price is unchanged and absolute — reading the real page is
+  what makes that ban affordable to obey.
+- **McMaster-Carr was not in the vendor list at all**, which is why five years
+  of its orders were invisible until they were imported by hand. Added.
+- **A decline can now be reversed.** `## declined` bans *re-asking*, not
+  *re-evaluating* — see the trap below.
+
+Unchanged, and not negotiable: never buy, never submit a form, never solve a
+CAPTCHA, never re-authenticate, never receive stock, never invent a price. On
+any of those, stop and journal it.
+
 ## Lessons & traps
 
 The expensive ones — macOS TCC vs launchd, Micro-QR vs iPhone, MPTT race
