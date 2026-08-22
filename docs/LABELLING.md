@@ -104,7 +104,8 @@ Sources live in `labels/`. Rules any new template must follow:
 - **Use `{% comment %}`, not `{# #}`,** inside a block. Django's hash-brace
   comment is single-line only; a multi-line one renders as visible text across
   the label. This actually happened, on real tape.
-- **Look at the rendered PNG before printing.** Every failure above passed an
+- **Look at the rendered PNG before printing A NEW OR CHANGED TEMPLATE.** Every
+  failure above passed an
   automated check and was caught only by looking.
 
 ### Why the stock item template exists
@@ -283,3 +284,32 @@ every template in the shop. **CUPS silently upscales a page narrower than the
 media** — the documented failure that enlarged the QR and pushed text off the
 edge. 62 mm is not a preference, it is what the whole pipeline is authored
 around. Width is a compatibility spec; only length is a quantity.
+
+
+## When to preview, and when to just print
+
+The look-before-you-print rule is scoped, and it was being applied too widely on
+2026-08-22 — a routine part label turned into render, pull, rasterise, read,
+print, verify. Scott: *"we cant do this dance every time we print a label."*
+Correct, and the friction is the danger: a check that costs six steps is a check
+that gets skipped on the day it would have caught something.
+
+**Preview when the RENDERING could be wrong:**
+- a template that is new, edited, or has never printed on this stock
+- a different label size or a different tape
+- the first label of a batch — then print the rest without re-looking
+- any label whose text length is unusual (very long part names wrap or clip)
+
+**Just print when only the DATA could be wrong:**
+- a proven template (9, 10, 11, 12 are all in daily use) with ordinary content
+
+The reason is that these two failure modes are caught in different places. A
+rendering fault — clipping, upscaling, a blank QR — is invisible in the database
+and only the eye catches it. A data fault — wrong part, stale location line — is
+visible in the record *before* you print and is better caught by reading the row
+than by squinting at 62 mm of tape.
+
+**One-step preview:** `itq png /tmp/label_part_1058.pdf` pulls the PDF and
+rasterises it with `qlmanage` in a single command. That exists so that when a
+preview IS warranted it costs one step instead of three. poppler is not
+installed on this laptop; `qlmanage` is macOS built-in and needs nothing.
