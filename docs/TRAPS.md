@@ -776,3 +776,44 @@ pass/fail forces every "I don't know" into one bucket or the other, and
 whichever bucket you choose is wrong half the time — silently. Ask of any check:
 *what does it return when it cannot run?* If that is the same value as failure,
 it will eventually reject something correct and nobody will find out.
+
+## Measure whether your CHECK worked before believing what it says
+
+The datasheet verifier greps a PDF's text for the part number. Tuning its
+"could I read this?" test produced two wrong answers in a row, both confident.
+
+**Attempt 1 — word count.** Reject if the marker is missing. It rejected the
+correct NXP BC327 sheet: 250 extracted "words", over the 200 floor, so the code
+believed extraction had worked and reported *wrong document*. The 250 "words"
+were fragments of inflated font data.
+
+**Attempt 2 — the fix that revealed the real signal.** Count datasheet
+vocabulary, not words. Measured across five known files:
+
+| File | Words | Datasheet terms | Truth |
+|---|---|---|---|
+| NE555 | 3030 | 3 | extraction worked, right part |
+| MB6F | 2377 | 9 | extraction worked, right part |
+| A1015 → LeaderTech | 4827 | 3 | extraction worked, **genuinely wrong part** |
+| BC327 | 250 | **0** | extraction FAILED |
+| BC337 | 295 | **0** | extraction FAILED |
+
+Word count cannot separate rows 3 and 4; vocabulary separates them cleanly. A
+document with thousands of words and zero occurrences of *voltage*, *maximum*,
+*typical* or *temperature* is not a datasheet you have read — it is binary you
+have inflated.
+
+**Then: when one witness is blind, find another.** Unreadable text does not
+mean no evidence. The URL is independent of extraction entirely, and
+`MB10S.pdf` served by Diodes Incorporated for part MB10S is strong evidence, as
+is `nxp_bc817_bc817w_bc337.pdf` for BC337. It fails safe — a wrong document
+rarely carries the right part number in its filename. Adding that single
+fallback took verified attachments from 2 to 6, and every attachment records
+*which* witness convinced it, so a reader can discount URL-only evidence.
+
+**The general rule: a validator has two failure modes, and only one is
+visible.** "The check says no" and "the check could not run" arrive through the
+same return value unless you deliberately separate them. Before trusting a
+negative, measure whether the check had anything to work with — and prefer a
+signal that distinguishes *absent* from *unreadable*, because a count of
+anything cannot.

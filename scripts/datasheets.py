@@ -53,7 +53,29 @@ from common.models import Attachment
 from part.models import Part, PartCategory
 
 KEYS = os.path.expanduser("~/.config/shop-inventory/keys.json")
-UA = {"User-Agent": "Mozilla/5.0"}
+# A single User-Agent is not enough. Mouser's datasheet host answers a bare
+# curl with HTTP 200 and 13KB of HTML — a real status code and the wrong body,
+# which is why the %PDF guard matters. Verified 2026-08-21: no SINGLE added
+# header fixes it (Referer alone, Accept alone, Sec-Fetch alone, Accept-Language
+# alone all still return HTML). The full plausible set does, byte-identical to
+# what a real browser gets. It is a coherence check across headers, not one
+# magic value — so send the whole set or expect HTML.
+UA = {
+    "User-Agent": ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                   "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"),
+    "Accept": ("text/html,application/xhtml+xml,application/xml;q=0.9,"
+               "image/avif,image/webp,*/*;q=0.8"),
+    "Accept-Language": "en-US,en;q=0.9",
+    "Referer": "https://www.mouser.com/",
+    "Sec-Fetch-Dest": "document",
+    "Sec-Fetch-Mode": "navigate",
+    "Sec-Fetch-Site": "same-origin",
+    "Sec-Fetch-User": "?1",
+    "Upgrade-Insecure-Requests": "1",
+    "sec-ch-ua": '"Chromium";v="128", "Not;A=Brand";v="24"',
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": '"macOS"',
+}
 
 # Vendors that publish at a predictable path. Measured 2026-08-21: these five
 # served real PDFs unauthenticated; onsemi, Diodes Inc, Toshiba, SMC and Mouser's
@@ -164,17 +186,35 @@ def pdf_text(data, cap=600_000):
     return out.decode("latin-1", "ignore")
 
 
+# Words that appear in essentially every datasheet and essentially never in
+# decompressed font tables or colour profiles. Deliberately long: "min"/"max"
+# are short enough to turn up in binary noise by chance.
+_DS_VOCAB = ("maximum", "voltage", "typical", "current", "temperature",
+             "parameter", "ratings", "symbol", "conditions", "package",
+             "characteristics", "absolute", "supply", "operating")
+
+
 def readable(txt):
-    """How much of this looks like actual prose rather than decompressed binary?
+    """Did text extraction actually work? Returns (word_count, vocab_hits).
 
-    pdf_text() inflates every stream, and most of a datasheet's bytes are fonts,
-    images and colour profiles — not text. Counting ASCII words is the cheapest
-    way to tell "I read the document" from "I read its JPEGs".
+    Word count ALONE is the wrong signal, and getting this wrong caused real
+    false rejects. The NXP BC327 sheet yielded 250 "words" — over a naive
+    200-word floor, so it was treated as readable, so a missing marker was
+    reported as WRONG DOCUMENT. It is the right document; the 250 words were
+    fragments of inflated font data, and the sheet contains **zero** datasheet
+    vocabulary because none of its text decoded.
+
+    Measured 2026-08-21: NE555 3030 words / 3 vocab, MB6F 2377 / 9, A1015 4827
+    / 3 (a genuinely wrong document that extracted fine), BC327 250 / **0**,
+    BC337 295 / **0**. Vocabulary separates extraction failure from a real
+    mismatch; word count does not.
     """
-    return len(re.findall(r"[A-Za-z]{4,}", txt))
+    words = len(re.findall(r"[A-Za-z]{4,}", txt))
+    low = txt.lower()
+    return words, sum(1 for v in _DS_VOCAB if v in low)
 
 
-def verify(data, mpn):
+def verify(data, mpn, url=""):
     """Is this a real PDF, and is it about this part?
 
     THREE outcomes, not two. An earlier version had only accept/reject, and it
@@ -193,12 +233,31 @@ def verify(data, mpn):
     if len(stem) < 4:
         return "unknown", "MPN too short to be a distinctive marker"
     txt = pdf_text(data)
-    words = readable(txt)
-    if words < 200:
-        return "unknown", f"text not extractable ({words} words) — cannot verify"
+    words, vocab = readable(txt)
+    if vocab < 1 or words < 200:
+        # Text is unreadable — but the URL is a second, INDEPENDENT witness that
+        # does not depend on extraction at all. `MB10S.pdf` served by Diodes
+        # Incorporated for part MB10S is strong evidence; so is
+        # `nxp_bc817_bc817w_bc337.pdf` for BC337. Weaker than reading the
+        # document, much better than shrugging, and it fails safe: a wrong
+        # document rarely carries the right part number in its filename.
+        if stem and stem in re.sub(r"[^A-Z0-9]", "", url.upper()):
+            return "ok", (f"marker {stem} found IN THE URL; document text could not "
+                          f"be extracted ({words} words, {vocab} terms) so the "
+                          f"contents were not read")
+        return "unknown", (f"text not extractable ({words} words, {vocab} datasheet "
+                           f"terms) and {stem} not in the URL — cannot verify")
     if stem in re.sub(r"[^A-Z0-9]", "", txt.upper()):
-        return "ok", f"marker {stem} found in {words} words"
-    return "no", f"marker {stem} ABSENT in {words} readable words — wrong document"
+        return "ok", f"marker {stem} found ({words} words, {vocab} terms)"
+    return "no", (f"marker {stem} ABSENT from {words} words containing {vocab} "
+                  f"datasheet terms — extraction worked, so this is the wrong document")
+
+
+# Mouser publishes hard limits: 30 calls/minute, 1,000/day. 2.1s between calls
+# keeps us under the per-minute cap with margin. A revoked key would cost far
+# more than a slow run, and there are only ~23 candidates.
+_MOUSER_GAP = 2.1
+_last_call = [0.0]
 
 
 def mouser_lookup(mpn, key):
@@ -226,7 +285,8 @@ def mouser_lookup(mpn, key):
         "keyword": mpn, "records": 50, "startingRecord": 0}}).encode()
     req = urllib.request.Request(
         f"https://api.mouser.com/api/v1/search/keyword?apiKey={key}",
-        data=body, headers={**UA, "Content-Type": "application/json"})
+        data=body, headers={"User-Agent": UA["User-Agent"],
+                            "Content-Type": "application/json"})
     try:
         d = json.loads(urllib.request.urlopen(req, timeout=30).read())
     except urllib.error.HTTPError as e:
@@ -352,9 +412,10 @@ def main():
                 blob = open(os.path.join(a.from_dir, fn), "rb").read()
                 if blob[:4] != b"%PDF":
                     continue                      # keep looking, do not give up
-                data, origin = blob, f"local:{fn}"
+                data, origin, used_url = blob, f"local:{fn}", fn
                 break
         tried = []
+        used_url = ""
         if data is None and a.fetch:
             for url, why in sources(mpn, key):
                 if url is None:
@@ -362,7 +423,7 @@ def main():
                     continue
                 d = get(url)
                 if d and d[:4] == b"%PDF":
-                    data, origin = d, f"{why}:{url.split('/')[2]}"
+                    data, origin, used_url = d, f"{why}:{url.split('/')[2]}", url
                     break
                 tried.append(f"{why}:{'no response' if d is None else 'not a PDF'}")
         if data is None:
@@ -372,7 +433,8 @@ def main():
             bad += 1
             continue
 
-        state, reason = verify(data, mpn)
+        src_url = origin.split(":", 1)[1] if origin and ":" in origin else ""
+        state, reason = verify(data, mpn, url=used_url or src_url)
         if state == "no":
             print(f"  --   #{p.pk:<5} {mpn:<16} REJECTED: {reason} ({origin})")
             bad += 1
