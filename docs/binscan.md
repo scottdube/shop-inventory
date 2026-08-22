@@ -320,6 +320,27 @@ Blue is deliberately not a shade of green. Filed-uncounted is a different
 *claim*, not a weaker version of the same one: it says we know WHERE the stock
 is and not HOW MANY. Green would say both questions were settled.
 
+## Colour is never the only channel
+
+Scott, 2026-08-22: *"I am mildly colourblind. So subtle colours are difficult
+for me to deal with. I can definitely deal with primary colours, but subtleties
+make it difficult."*
+
+Every grid state therefore carries a **glyph** as well as a colour, and the
+glyph is what carries the meaning:
+
+| | | |
+|---|---|---|
+| `✓` | green `#4ade80` | filed and counted |
+| `~` | blue `#38bdf8` | filed, quantity never counted |
+| `?` | yellow `#fde047` | nobody has looked |
+| `·` | grey | verified empty |
+
+Hues are pushed toward primaries and the old amber replaced with a bright
+yellow. **A grid that needs hue discrimination to read is a grid that fails at
+arm's length, in a garage, for this user.** Any future state gets a glyph before
+it gets a colour.
+
 ## The write journal — undo and reconciliation from one record
 
 Every `/api/assign` write records the row's full **before** state: location,

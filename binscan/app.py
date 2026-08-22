@@ -1077,8 +1077,8 @@ img#prev{width:100%;border-radius:10px;margin-top:12px;display:none}
 .ro{margin-top:22px;padding:9px 11px;border-radius:8px;background:#16212a;color:#8fc7ff;font-size:12px}
 .mut{color:var(--mut);font-size:13px}
 .uncount{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;
-background:#16232e;color:#7fc0e0;border:1px solid #284457;font-size:11px;
-text-transform:uppercase;letter-spacing:.04em}
+background:#0e2436;color:#38bdf8;border:1px solid #26597d;font-size:11px;
+text-transform:uppercase;letter-spacing:.04em;font-weight:700}
 /* Survives the advance on purpose: the confirmation for the drawer you just
    finished has to still be readable once the app has moved to the next one. */
 .flash{margin-top:12px;padding:11px 13px;border-radius:10px;background:#16291d;
@@ -1090,16 +1090,25 @@ background:var(--card);color:var(--fg);border:1px solid var(--line);border-radiu
 .chip.on{background:var(--acc);color:#000;border-color:var(--acc)}
 .gridbox{margin-top:12px;overflow-x:auto}
 .grow{display:flex;gap:5px;margin-bottom:5px}
-.cell{flex:1 1 0;min-width:30px;height:38px;padding:0;margin:0;font-size:11px;
-border-radius:7px;border:1px solid var(--line);background:var(--card);color:var(--mut)}
-.cell.large{height:46px}
-.cell.filled{background:#1d2b20;color:#7fd39b;border-color:#2c4433}
-.cell.unknown{background:#2a2213;color:#ffc978;border-color:#4a3a1c}
+/* Every state carries a GLYPH as well as a colour. Scott is mildly colourblind:
+   "subtle colours are difficult... I can definitely deal with primary colours."
+   So the hues are pushed toward primaries, and more importantly the grid stays
+   readable with no colour discrimination at all -- the mark, not the shade,
+   carries the meaning. */
+.cell{flex:1 1 0;min-width:30px;height:40px;padding:0;margin:0;font-size:10px;
+line-height:1.05;border-radius:7px;border:1px solid var(--line);
+background:var(--card);color:var(--mut);display:flex;flex-direction:column;
+align-items:center;justify-content:center;gap:1px}
+.cell .g{font-size:15px;font-weight:800}
+.cell.large{height:48px}
+.cell.filled{background:#12301c;color:#4ade80;border-color:#2f6b41}
+.cell.uncounted{background:#0e2436;color:#38bdf8;border-color:#26597d}
+.cell.unknown{background:#3a2f07;color:#fde047;border-color:#7a6410}
 /* Filed, but the quantity was never counted -- it is the purchased figure. A
    distinct colour because it is a distinct claim: we know WHERE it is and not
    HOW MANY. Green would say both were settled. */
-.cell.uncounted{background:#16232e;color:#7fc0e0;border-color:#284457}
-.cell.empty{background:var(--card);color:#4a4a4e}
+
+.cell.empty{background:var(--card);color:#5a5a5e}
 .cell.on{outline:2px solid var(--acc);color:var(--fg)}
 .legend{display:flex;gap:12px;margin-top:8px;font-size:11.5px;color:var(--mut);flex-wrap:wrap}
 .known .card{margin-top:10px}
@@ -1144,6 +1153,13 @@ const $=s=>document.querySelector(s);
 // scrolling past everything, and B3 is not even last. Two stages instead --
 // pick a place, then tap the drawer where it physically sits. The grid mirrors
 // the cabinet, so the picker doubles as a progress view.
+// Glyph first, colour second.
+const STATE={
+  filled:    {g:'\u2713', word:'counted'},
+  uncounted: {g:'~',       word:'filed, not counted'},
+  unknown:   {g:'?',       word:'nobody has looked'},
+  empty:     {g:'\u00b7', word:'verified empty'},
+};
 let AREA=null, CELLS=[], CUR=null;
 fetch('/api/areas').then(r=>r.json()).then(as=>{
   // The bin wall is where the work is; twenty-odd other places are real but
@@ -1178,18 +1194,20 @@ async function loadArea(name){
     Object.keys(rows).sort((a,b)=>a-b).forEach(r=>{
       html+='<div class=grow>'+rows[r].sort((a,b)=>a.c-b.c).map(c=>
         `<button class="cell ${c.state}${c.large?' large':''}" data-n="${c.name}"
-           title="${c.label||c.name}">${c.r}.${c.c}</button>`).join('')+'</div>';
+           title="${c.name} — ${STATE[c.state].word}${c.label?' — '+c.label:''}">
+           <span class=g>${STATE[c.state].g}</span><span>${c.r}.${c.c}</span></button>`).join('')+'</div>';
     });
   }else{
     html+='<div class=grow style="flex-wrap:wrap">'+CELLS.map(c=>
-      `<button class="cell ${c.state}" style="flex:0 0 auto;min-width:86px;padding:0 10px"
-         data-n="${c.name}">${c.name}</button>`).join('')+'</div>';
+      `<button class="cell ${c.state}" style="flex:0 0 auto;min-width:96px;padding:0 10px"
+         data-n="${c.name}" title="${STATE[c.state].word}">
+         <span class=g>${STATE[c.state].g}</span><span>${c.name}</span></button>`).join('')+'</div>';
   }
   html+=`</div><div class=legend>
-    <span style="color:#7fd39b">&#9632; ${t.filled} counted</span>
-    <span style="color:#7fc0e0">&#9632; ${t.uncounted||0} filed, uncounted</span>
-    <span style="color:#ffc978">&#9632; ${t.unknown} unknown</span>
-    <span style="color:#4a4a4e">&#9632; ${t.empty} verified empty</span></div>`;
+    <span style="color:#4ade80"><b>&#10003;</b> ${t.filled} counted</span>
+    <span style="color:#38bdf8"><b>~</b> ${t.uncounted||0} filed, not counted</span>
+    <span style="color:#fde047"><b>?</b> ${t.unknown} not looked at</span>
+    <span style="color:#5a5a5e"><b>&middot;</b> ${t.empty} empty</span></div>`;
   $('#gridwrap').innerHTML=html;
   $('#gridwrap').querySelectorAll('.cell').forEach(b=>b.onclick=()=>pick(b.dataset.n));
 }
@@ -1225,7 +1243,7 @@ async function refreshDrawer(v,keepOut){
       const sub = x.sub_location && x.sub_location!==v ? ` <span class=mut>(in ${x.sub_location})</span>` : '';
       const mark = x.counted
         ? `<span class=high style="font-size:12px"> &#10003; counted ${x.stocktake_date}</span>`
-        : `<span class=uncount> NOT COUNTED &mdash; this is the purchased figure</span>`;
+        : `<span class=uncount>~ NOT COUNTED &mdash; purchased figure</span>`;
       return `<div style="margin:4px 0">${(+x.quantity).toLocaleString()} &times; ${x.name}${sub}${mark}</div>`;}).join('')
       || (d.homes||[]).map(h=>`<div class=mut>home of ${h.name} — no stock on hand</div>`).join('');
     $('#known').innerHTML=`<div class=card><b>On record</b>${items}</div>`;
