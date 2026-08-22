@@ -398,7 +398,27 @@ Decided 2026-08-22, while the wire shelves are mid-transition. Scott: *"get
 containers that make sense for the end state, not just for where we are right
 now."*
 
-**Standard: 10 in front-to-back, 14 in long, height to suit the contents.**
+**Standard: Sterilite 7 Quart Latch Box — 14 3/8 x 8 1/4 x 6 in.**
+
+Chosen 2026-08-22 after checking live stock. $3.98 each at Walmart, pickup
+same day, shipping not offered. Clear with a latching lid, so it stacks and the
+contents are visible without opening it.
+
+**It beats the 10 x 14 x 3 bin that prompted this, for a non-obvious reason:**
+at 8 1/4 in deep, **two rows fit an 18 in wire shelf**. A 10 in bin cannot —
+2 x 10 = 20 in. So the narrower box gives 6 per shelf instead of 3, and each
+holds 1.7x the volume because it is 6 in tall rather than 3. The 6 in height
+also takes coiled tubing, which a 3 in tray will not.
+
+| | 10 x 14 x 3 | Sterilite 7 Qt |
+|---|---|---|
+| Per 46 x 18 shelf | 3 | **6** (3 across x 2 deep) |
+| Volume each | 420 cu in | **712 cu in** |
+| Coiled tubing | no | yes |
+| 12 in wall cabinet | 2 in spare | **3.75 in spare** |
+
+The general rule this came from still holds, and is what made the choice
+obvious once the numbers were in:
 
 The reasoning is that only one dimension is actually constrained, and it is not
 the obvious one:
