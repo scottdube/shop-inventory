@@ -648,3 +648,20 @@ status nobody has revisited."
 Corollary to the parking rules: a parking spot's description records what went
 in and when, but only a **person** can say whether an item is still waiting.
 Age in a staging area is a question, not a fact.
+
+## A push-to-connect fitting has no thread — do not ask for its NPT size
+
+The shop air valve was recorded needing a "port size (1/4 vs 1/2 NPT)" before
+it could be used. Wrong question. It is a **1/2in push-to-connect** valve from
+the PRIMEFIT nylon air piping kit that runs air to the shop and garage, and
+nothing threads into it. PTC fittings are sized by the **tubing OD** they
+accept.
+
+The failure is subtler than being wrong: a plausible-sounding spec request
+sends someone to the bench hunting for a marking that does not exist, and they
+come back with either nothing or a guess. Asking for the wrong dimension costs
+more than asking for none, because a question implies the answer is there.
+
+Before requesting a measurement, establish what KIND of interface the thing
+has. Threaded, push-to-connect, barbed, compression and flare are all "1/2
+inch" in different and incompatible senses.
