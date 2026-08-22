@@ -723,6 +723,76 @@ def api_mixed(location: str = Form(...), note: str = Form(""),
     return {"ok": True, "location": loc["name"], "description": again.get("description")}
 
 
+_FINISH = [
+    ("black-oxide", ("black-oxide", "black oxide", "blackox")),
+    ("18-8 stainless", ("18-8", "18/8", "passivated 18-8")),
+    ("316 stainless", ("316 stainless",)),
+    ("stainless", ("stainless",)),
+    ("galvanized", ("galvanized", "galvanised")),
+    ("zinc-plated", ("zinc-plated", "zinc plated", "zinc")),
+    ("brass", ("brass",)),
+    ("nylon", ("nylon plastic", "nylon washer")),
+    ("plain steel", ("plain steel", "low-strength steel", "carbon steel")),
+]
+_HEAD = [
+    ("socket head", ("socket head",)), ("low-profile socket", ("low-profile",)),
+    ("button head", ("button head",)), ("flat head", ("flat head",)),
+    ("pan head", ("pan head",)), ("fillister", ("fillister",)),
+    ("hex head", ("hex head", "hex bolt", "hex cap")),
+    ("set screw", ("set screw", "cup-point")),
+    ("nyloc nut", ("nylon-insert", "nyloc", "locknut", "lock nut")),
+    ("cap nut", ("cap nut",)), ("hex nut", ("hex nut",)), ("nut", ("nut,", " nut")),
+    ("flat washer", ("flat washer", "general purpose steel washer")),
+    ("fender washer", ("fender washer",)),
+    ("lock washer", ("lock washer", "spring lock")),
+    ("washer", ("washer",)),
+    ("threaded rod", ("threaded rod",)), ("dowel pin", ("dowel",)),
+    ("spring pin", ("slotted spring", "spring pin")),
+    ("machine key", ("machine key",)), ("standoff", ("standoff",)),
+]
+
+
+def _first(text, table):
+    t = (text or "").lower()
+    for label, needles in table:
+        if any(n in t for n in needles):
+            return label
+    return ""
+
+
+@app.get("/api/fasteners")
+def api_fasteners():
+    """Every catalogued fastener, broken into attributes, for faceted search.
+
+    Scott asked for a McMaster-style funnel: narrow by attribute and watch the
+    count fall. That is a FINDER first and a creator second -- when the facets
+    bottom out at zero, absence is proven by construction rather than by having
+    scrolled far enough, which is the failure he described standing at B2-R4C1.
+
+    The whole catalogue, not just the cabinet's unlocated rows: a part you are
+    holding may well exist already and be filed in another drawer, and creating
+    a second one is the outcome worth preventing.
+    """
+    skus = _mcmaster_skus()
+    out = []
+    for r in _rows(it_get("part/", limit=2000)):
+        name = r.get("name") or ""
+        head = _first(name, _HEAD)
+        if not head:
+            continue
+        metric, imp, mm, inch = _facts(name)
+        thread = metric.upper() if metric else (imp or "")
+        length = (f"{mm:g}mm" if mm is not None
+                  else f"{inch:g}in" if inch is not None else "")
+        out.append({"pk": r.get("pk"), "name": name,
+                    "sku": skus.get(r.get("pk"), ""),
+                    "head": head, "thread": thread,
+                    "system": "metric" if metric else ("imperial" if imp else ""),
+                    "length": length,
+                    "finish": _first(name, _FINISH)})
+    return out
+
+
 @app.post("/api/newpart")
 def api_newpart(name: str = Form(...), location: str = Form(...),
                 quantity: str = Form(""), notes: str = Form(""),
@@ -1352,6 +1422,13 @@ color:var(--fg);text-align:left;font-size:13.5px}
 .pick .sku{color:var(--acc);font-family:ui-monospace,monospace;font-size:12px;flex:0 0 auto}
 .pick .nm{flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pick .qt{color:var(--mut);font-size:12px;flex:0 0 auto}
+.fchip{padding:7px 11px;font-size:13px}
+.fchip .ct{margin-left:6px;font-size:11px;color:var(--mut);font-weight:600}
+.fchip.on .ct{color:#000}
+.fchip.zero{opacity:.55;border-style:dashed}
+.fchip.zero .ct{color:#fde047}
+.fresult{margin-top:12px;padding:10px 11px;border-radius:9px;background:#0f0f11;
+border:1px solid var(--line);font-size:13.5px}
 .countbox{margin-top:14px;padding:11px 12px;border-radius:10px;
 background:#0e2436;border:1px solid #2f6f9e}
 .countbox label{margin:0 0 7px;color:#7fd0ff;font-size:12px;font-weight:700}
@@ -1703,68 +1780,112 @@ function skipCard(){
 // nothing and filing the wrong row is worse, so there has to be a third way
 // out. Collapsed by default: creating a part is the rare case, and an open
 // text box invites a near-duplicate of something already in the catalogue.
-// A guided path to a NAME, because free text drifts. This catalogue already
-// contains "Nyloc Nut 1/4-20, galvanized" and "Medium-Strength Steel
-// Nylon-Insert Locknut, Grade 5" -- the same idea written two ways -- and the
-// matcher pays for that every time it runs. Scott: "some form of a fastener
-// funnel that we work down through when we have to create a fastener."
+// A faceted funnel, in Scott's order: system, then thread, then head. Each step
+// is a question you can answer with the part in your hand -- a thread gauge, a
+// look, a caliper -- which is why it is easier than typing a name, not harder.
 //
-// The funnel COMPOSES a name; the name field stays editable, because a funnel
-// that cannot be overridden is a funnel that lies about the odd one out.
-const F_TYPE=[
-  ['Hex Bolt','L'],['Hex Cap Screw','L'],['Carriage Bolt','L'],
-  ['Socket Head Cap Screw','L'],['Button Head Cap Screw','L'],
-  ['Flat Head Cap Screw','L'],['Low-Profile Socket Head Screw','L'],
-  ['Machine Screw, pan head','L'],['Machine Screw, flat head','L'],
-  ['Fillister Head Screw','L'],['Set Screw','L'],['Threaded Rod','L'],
-  ['Wood Screw','L'],['Sheet Metal Screw','L'],['Lag Screw','L'],
-  ['Hex Nut','N'],['Nyloc Nut','N'],['Flange Nut','N'],['Cap Nut','N'],
-  ['Wing Nut','N'],['Coupling Nut','N'],
-  ['Flat Washer','W'],['Fender Washer','W'],['Split Lock Washer','W'],
-  ['Star Washer','W'],
-];
+// One inversion from McMaster: they hide options with no results. Here a ZERO
+// is the useful answer. Narrowing to nothing is how you learn the part is not
+// in the catalogue, and it is proof rather than "I scrolled and did not see
+// it", which is what sent Scott looking through the same list several times.
+//
+// Faceted over the WHOLE catalogue, not the cabinet's unlocated rows: a part
+// you are holding may already exist, filed in another drawer, and creating a
+// second one is the outcome worth preventing.
+let FAST=[], FSEL={system:'',thread:'',head:'',length:'',finish:''};
 const F_IMP=['#2-56','#4-40','#6-32','#8-32','#10-24','#10-32','#12-24',
   '1/4-20','1/4-28','5/16-18','5/16-24','3/8-16','3/8-24','7/16-14','7/16-20',
-  '1/2-13','1/2-20','9/16-12','5/8-11','3/4-10','7/8-9','1-8'];
-const F_MET=['M2-0.4','M2.5-0.45','M3-0.5','M4-0.7','M5-0.8','M6-1.0','M8-1.25',
-  'M10-1.5','M12-1.75','M14-2.0','M16-2.0'];
-const F_FIN=['zinc-plated steel','black-oxide alloy steel','18-8 stainless',
-  '316 stainless','galvanized steel','plain steel','brass','nylon',
-  'yellow zinc','Grade 5 zinc','Grade 8 zinc','Class 8.8 zinc'];
+  '1/2-13','1/2-20','9/16-12','5/8-11','3/4-10'];
+const F_MET=['M2','M2.5','M3','M4','M5','M6','M8','M10','M12','M14','M16'];
+const F_HEAD=['socket head','button head','flat head','pan head','hex head',
+  'fillister','low-profile socket','set screw','hex nut','nyloc nut','cap nut',
+  'flat washer','fender washer','lock washer','threaded rod','dowel pin',
+  'spring pin','standoff'];
+const F_FIN=['zinc-plated','black-oxide','18-8 stainless','316 stainless',
+  'galvanized','plain steel','brass','nylon'];
+
+function fmatch(upto){
+  const order=['system','thread','head','length','finish'];
+  const keys=order.slice(0, order.indexOf(upto)+1);
+  return FAST.filter(x=>keys.every(k=>!FSEL[k] || x[k]===FSEL[k]));
+}
+function fcount(key,val){
+  const order=['system','thread','head','length','finish'];
+  const before=order.slice(0,order.indexOf(key));
+  return FAST.filter(x=>before.every(k=>!FSEL[k]||x[k]===FSEL[k]) && x[key]===val).length;
+}
+function chips(key,vals){
+  return `<div class=chips style="margin-top:7px">` + vals.map(v=>{
+    const n=fcount(key,v), on=FSEL[key]===v;
+    return `<button class="chip fchip${on?' on':''}${n?'':' zero'}"
+              data-k="${key}" data-v="${v}">${v}<span class=ct>${n}</span></button>`;
+  }).join('') + `</div>`;
+}
+// The facet VALUE is a search word; the part NAME is a proper noun. "socket
+// head" narrows well and reads badly, so they are not the same string.
+const F_NAME={'socket head':'Socket Head Cap Screw','button head':'Button Head Cap Screw',
+  'flat head':'Flat Head Cap Screw','pan head':'Pan Head Machine Screw',
+  'hex head':'Hex Bolt','fillister':'Fillister Head Screw',
+  'low-profile socket':'Low-Profile Socket Head Screw','set screw':'Set Screw',
+  'hex nut':'Hex Nut','nyloc nut':'Nyloc Nut','cap nut':'Cap Nut',
+  'flat washer':'Flat Washer','fender washer':'Fender Washer',
+  'lock washer':'Split Lock Washer','threaded rod':'Threaded Rod',
+  'dowel pin':'Dowel Pin','spring pin':'Spring Pin','standoff':'Standoff'};
 
 function funnelName(){
-  const t=$('#fType').value, sz=$('#fSize').value,
-        ln=$('#fLen').value.trim(), fin=$('#fFin').value;
+  const t=FSEL.head, sz=FSEL.thread, ln=($('#fLen')?$('#fLen').value.trim():''),
+        fin=FSEL.finish;
   if(!t||!sz) return '';
-  const kind=(F_TYPE.find(x=>x[0]===t)||[])[1];
-  const metric=sz.startsWith('M');
-  let core=`${t} ${sz}`;
-  if(kind==='L' && ln) core += ` x ${ln}${/[a-z"']/i.test(ln)?'':(metric?'mm':'in')}`;
+  const nolen=/nut|washer/.test(t);
+  const metric=FSEL.system==='metric';
+  const Title=F_NAME[t] || t.replace(/\b\w/g,c=>c.toUpperCase());
+  let core=`${Title} ${sz}`;
+  if(!nolen && ln) core+=` x ${ln}${/[a-z"']/i.test(ln)?'':(metric?'mm':'in')}`;
   return core + (fin?`, ${fin}`:'');
 }
-function syncFunnel(){
-  const n=funnelName();
-  if(n) $('#npname').value=n;
-  const kind=(F_TYPE.find(x=>x[0]===$('#fType').value)||[])[1];
-  $('#fLenWrap').style.display = kind==='L' ? '' : 'none';
+function renderFunnel(){
+  const box=$('#funnel'); if(!box) return;
+  const sizes = FSEL.system==='metric' ? F_MET
+              : FSEL.system==='imperial' ? F_IMP : [];
+  const hit=fmatch('finish');
+  const nolen=/nut|washer/.test(FSEL.head||'');
+  box.innerHTML =
+    `<label>1 &middot; thread system</label>${chips('system',['imperial','metric'])}`
+  + (FSEL.system?`<label style="margin-top:11px">2 &middot; thread size</label>${chips('thread',sizes)}`:'')
+  + (FSEL.thread?`<label style="margin-top:11px">3 &middot; head or type</label>${chips('head',F_HEAD)}`:'')
+  + (FSEL.head?`<label style="margin-top:11px">4 &middot; finish</label>${chips('finish',F_FIN)}`:'')
+  + (FSEL.head&&!nolen?`<label style="margin-top:11px">5 &middot; length</label>
+       <input id=fLen placeholder="e.g. 3/4 or 20" autocomplete=off value="${$('#fLen')?$('#fLen').value:''}">`:'')
+  + `<div class=fresult>` + (
+      !FSEL.thread ? `<span class=mut>${hit.length} fasteners in the catalogue &mdash; keep narrowing</span>`
+      : hit.length ? `<b>${hit.length}</b> in the catalogue match so far:` +
+          `<div class=picklist style="max-height:150px;margin-top:7px">` +
+          hit.slice(0,20).map(x=>`<div class=pick style="cursor:default">
+             <span class=sku>${x.sku||'—'}</span><span class=nm>${x.name}</span></div>`).join('')
+          + `</div>`
+      : `<b style="color:#4ade80">&#10003; Nothing in the catalogue matches.</b>
+         <div class=mut style="margin-top:5px">Not "you missed it" &mdash; the whole
+         catalogue was filtered by these attributes and came back empty. Safe to
+         create it.</div>`)
+    + `</div>`;
+  box.querySelectorAll('.fchip').forEach(b=>b.onclick=()=>{
+    const k=b.dataset.k;
+    FSEL[k] = FSEL[k]===b.dataset.v ? '' : b.dataset.v;
+    if(k==='system'){FSEL.thread='';FSEL.head='';FSEL.finish='';}
+    if(k==='thread'){FSEL.head='';FSEL.finish='';}
+    if(k==='head'){FSEL.finish='';}
+    renderFunnel(); syncName();
+  });
+  const fl=$('#fLen'); if(fl) fl.oninput=syncName;
 }
+function syncName(){ const n=funnelName(); if(n) $('#npname').value=n; }
 
 function createCard(seed){
   const s = (seed||'').trim();
   return `<details class=card id=newpartbox>
     <summary style="color:var(--acc);font-size:13px;cursor:pointer">
-      Not in the list? Create it as a new part</summary>
-    <label style="margin-top:12px">Build the name</label>
-    <select id=fType><option value="">— what is it? —</option>
-      ${F_TYPE.map(t=>`<option>${t[0]}</option>`).join('')}</select>
-    <select id=fSize style="margin-top:7px"><option value="">— thread size —</option>
-      <optgroup label="imperial">${F_IMP.map(x=>`<option>${x}</option>`).join('')}</optgroup>
-      <optgroup label="metric">${F_MET.map(x=>`<option>${x}</option>`).join('')}</optgroup></select>
-    <div id=fLenWrap style="display:none">
-      <input id=fLen style="margin-top:7px" placeholder="length &mdash; e.g. 3/4 or 20" autocomplete=off>
-    </div>
-    <select id=fFin style="margin-top:7px"><option value="">— material / finish —</option>
-      ${F_FIN.map(x=>`<option>${x}</option>`).join('')}</select>
+      Not in the list? Narrow it down and create it</summary>
+    <div id=funnel></div>
     <label style="margin-top:12px">Name that will be saved &mdash; edit freely</label>
     <input id=npname value="${s.replace(/"/g,'&quot;')}" placeholder="or just type it">
     <label style="margin-top:10px">Anything worth recording (optional)</label>
@@ -1782,10 +1903,17 @@ function createCard(seed){
   </details>`;
 }
 
+async function loadFasteners(){
+  if(FAST.length) return;
+  try{ FAST = await (await fetch('/api/fasteners')).json(); }catch(_){ FAST=[]; }
+}
+
 function wireCreate(drawer){
   const go=$('#npgo'); if(!go) return;
-  ['fType','fSize','fFin'].forEach(id=>{ const e=$('#'+id); if(e) e.onchange=syncFunnel; });
-  const fl=$('#fLen'); if(fl) fl.oninput=syncFunnel;
+  FSEL={system:'',thread:'',head:'',length:'',finish:''};
+  loadFasteners().then(renderFunnel);
+  const box=$('#newpartbox');
+  if(box) box.addEventListener('toggle',()=>{ if(box.open) loadFasteners().then(renderFunnel); });
   go.onclick=async()=>{
     const msg=$('#npmsg');
     const fd=new FormData();
