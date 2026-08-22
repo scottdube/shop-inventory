@@ -499,9 +499,14 @@ _THREAD = re.compile(r"\bM\s*(\d+(?:\.\d+)?)\b", re.I)
 _TPI = {8, 9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 27, 28, 32, 36, 40, 44, 48,
         56, 64, 72, 80}
 _SCREW_NO = set(range(4, 15))
-# The inch mark sits between diameter and dash in McMaster's own spelling,
-# 1/4"-20, so the separator has to tolerate it.
-_IMP_DASH = re.compile(r'(?<![\d/])#?\s*(\d+(?:/\d+)?)\s*"?\s*-\s*(\d+)(?![\d/])')
+# The inch mark sits between diameter and dash, and it is written three ways:
+# McMaster prints 1/4"-20, an Everbilt retail box prints 3/8 in-16, and a
+# handwritten label prints 3/8-16. The word form broke twice over -- the thread
+# did not parse AND "3/8 in" was then read as a LENGTH of 0.375in, so a box of
+# 3/8-16 hex nuts arrived at the matcher as a three-eighths-inch-long something.
+_IMP_DASH = re.compile(r'(?<![\d/])#?\s*(\d+(?:/\d+)?)\s*'
+                       r'(?:"|\u2033|\bin\b|\binch\b)?\s*-\s*(\d+)(?![\d/])',
+                       re.I)
 _IMP_SLASH = re.compile(r'(?<![\d/])(\d{1,2})\s*/\s*(\d{2})(?![\d/])')
 
 # Lengths. Metric is "20 mm Long"; imperial is 3/4", 1-1/2", .375in, or a bare
@@ -1365,6 +1370,42 @@ async def api_identify(image: UploadFile = File(...),
     rows = cabinet_unlocated(cabinet)
     ranked, basis = match_reading(reading, rows)
 
+    # When nothing matches, hand back a STARTING POSITION for creating it rather
+    # than a blank form. The read already contains everything the funnel asks
+    # for -- "EVERBILT HEX NUTS 3/8 in-16 I.D. STAINLESS 25PK" is a thread, a
+    # type and a material -- and making someone re-enter what was just read off
+    # the label is the tool wasting the work it did.
+    #
+    # It is a SUGGESTION and the fields stay editable: the label is evidence
+    # about the box, and the box is evidence about its contents only as long as
+    # nobody refilled it.
+    suggest = None
+    if not ranked:
+        read_text = " ".join(list(reading.get("labels") or [])
+                             + list(reading.get("markings") or []))
+        metric, imp, mm, inch = _facts(read_text)
+        head = _first(read_text, _HEAD)
+        fin = _first(read_text, _FINISH)
+        thread = (metric.upper() if metric else imp) or ""
+        if thread:
+            nice = {"socket head": "Socket Head Cap Screw", "hex nut": "Hex Nut",
+                    "nyloc nut": "Nyloc Nut", "hex head": "Hex Bolt",
+                    "flat washer": "Flat Washer", "button head": "Button Head Cap Screw",
+                    "flat head": "Flat Head Cap Screw", "pan head": "Pan Head Machine Screw",
+                    "lock washer": "Split Lock Washer", "set screw": "Set Screw",
+                    }.get(head, head.title() if head else "")
+            length = (f"{mm:g}mm" if mm is not None
+                      else f"{inch:g}in" if inch is not None else "")
+            nolen = "nut" in head or "washer" in head
+            name = " ".join(x for x in [nice, thread] if x)
+            if length and not nolen:
+                name += f" x {length}"
+            if fin:
+                name += f", {fin}"
+            suggest = {"name": name.strip(), "system": "metric" if metric else "imperial",
+                       "thread": thread, "head": head, "finish": fin,
+                       "length": length if not nolen else ""}
+
     rec_id = uuid.uuid4().hex[:8]
     ext = {"image/png": "png", "image/webp": "webp"}.get(media, "jpg")
     (SHOTS / f"{rec_id}.{ext}").write_bytes(raw)
@@ -1376,7 +1417,7 @@ async def api_identify(image: UploadFile = File(...),
                            "stock": c["row"]["stock"], "why": c["why"],
                            "quantity": c["row"].get("quantity"),
                            "strength": c["strength"]} for c in ranked],
-           "unlocated_in_cabinet": len(rows), "actual": None,
+           "unlocated_in_cabinet": len(rows), "actual": None, "suggest": suggest,
            "unlocated": [{"stock": r["stock"], "sku": r["sku"], "name": r["name"],
                           "quantity": r["quantity"]} for r in rows]}
     log_append(rec)
@@ -1688,7 +1729,7 @@ const STATE={
   empty:     {g:'\u00b7', word:'verified empty'},
   mixed:     {g:'\u2261', word:'mixed jumble, not itemised'},
 };
-let AREA=null, CELLS=[], CUR=null, LABEL='', MORE=false;
+let AREA=null, CELLS=[], CUR=null, LABEL='', MORE=false, SUGGEST=null;
 fetch('/api/areas').then(r=>r.json()).then(as=>{
   // The bin wall is where the work is; twenty-odd other places are real but
   // rarely the answer, and showing all of them cost nine rows of chips.
@@ -1768,7 +1809,7 @@ async function repaint(){
 }
 
 function pick(name){
-  CUR=name; LABEL=''; MORE=false;
+  CUR=name; LABEL=''; MORE=false; SUGGEST=null;
   $('#gridwrap').querySelectorAll('.cell').forEach(b=>b.classList.toggle('on',b.dataset.n===name));
   refreshDrawer(name,false);
 }
@@ -2075,8 +2116,21 @@ async function loadFasteners(){
 
 function wireCreate(drawer){
   const go=$('#npgo'); if(!go) return;
-  FSEL={system:'',thread:'',head:'',length:'',finish:''};
-  loadFasteners().then(renderFunnel);
+  // Pre-set the funnel from the read so the count of matching catalogue rows
+  // is visible immediately -- which is the evidence that creating is the right
+  // move, not a leap of faith.
+  FSEL = SUGGEST
+    ? {system:SUGGEST.system||'', thread:SUGGEST.thread||'',
+       head:SUGGEST.head||'', length:'', finish:SUGGEST.finish||''}
+    : {system:'',thread:'',head:'',length:'',finish:''};
+  loadFasteners().then(()=>{
+    renderFunnel();
+    if(SUGGEST){
+      const box=$('#newpartbox'); if(box) box.open=true;
+      const fl=$('#fLen'); if(fl && SUGGEST.length) fl.value=SUGGEST.length.replace(/(mm|in)$/,'');
+      if(SUGGEST.name) $('#npname').value=SUGGEST.name;
+    }
+  });
   const box=$('#newpartbox');
   if(box) box.addEventListener('toggle',()=>{ if(box.open) loadFasteners().then(renderFunnel); });
   go.onclick=async()=>{
@@ -2333,7 +2387,10 @@ function renderIdentify(d){
       : d.basis==='nothing-legible'
       ? 'Nothing legible in the photo. Try again closer — or pick it by hand below.'
       : `Nothing in the <b>unlocated list for ${AREA}</b> obviously matches that text. This says nothing about what is in the drawer — only that the automatic match could not choose.`;
-    return read+`<div class="card warn">${why}</div>`+manualCard()+createCard(LABEL)+skipCard();
+    // Seed the create card from what was just READ, not from the drawer label.
+    SUGGEST = d.suggest || null;
+    return read+`<div class="card warn">${why}</div>`+manualCard()
+         + createCard((d.suggest && d.suggest.name) || LABEL) + skipCard();
   }
   const here=CUR;
   return read + d.candidates.map((c,i)=>`<div class=card>
