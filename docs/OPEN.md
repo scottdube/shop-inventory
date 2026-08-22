@@ -119,6 +119,11 @@ queue, not a log.
 
 ## Watch
 
+- [ ] **CANCEL the $1 Walmart+ trial before ~2026-09-21.** Taken 2026-08-22
+      only to get an $11 bin order delivered same-day. Scheduled reminder set
+      for 2026-09-17. Then re-enrol via the Amex Platinum credit — **monthly
+      plan only**, the annual plan forfeits the $12.95/mo credit entirely.
+
 - [ ] **Tonight's overnight run** is the first test of the permission fix. If
       the journal shows a RUN STARTED with no completion, Chrome automation
       during preflight is the next suspect.
