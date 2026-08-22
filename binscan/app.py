@@ -418,11 +418,43 @@ def cabinet_unlocated(cab):
     # here. Third silent filter failure on this install after `name=` on parts
     # and `stocktake_date` on stock. Filter in Python; the API's word that it
     # understood a parameter is worth nothing.
+    all_stock = _rows(it_get("stock/", limit=2000))
     seen = {r.get("pk") for r in rows}
-    nowhere = [r for r in _rows(it_get("stock/", limit=2000))
+    nowhere = [r for r in all_stock
                if r.get("location") is None
                and r.get("pk") not in seen
                and skus.get(r.get("part"))]
+    # Parts ALREADY filed in a drawer of this cabinet, offered so a second lot
+    # of the same part can go in a second drawer. 91251A585 was purchased 50;
+    # 4 were found in B2-R4C3 and counted, which set the row to 4 -- and the
+    # other 46, sitting in another drawer, became invisible. A fastener bought
+    # in one lot does not stay in one drawer.
+    # Built from ALL stock, filtered here. `cascade=True` is the third or
+    # fourth parameter this API has quietly ignored -- after location__isnull,
+    # name= on parts, and stocktake_date -- and each time the symptom was an
+    # empty or over-full result rather than an error. Fetch once, filter in
+    # Python, stop asking whether this particular argument is honoured.
+    drawer_pks = {}
+    for l in _rows(it_get("stock/location/", limit=1000)):
+        cur, hops = l, 0
+        while cur is not None and cur.get("parent") is not None and hops < 12:
+            if cur["parent"] == loc[0]["pk"]:
+                drawer_pks[l["pk"]] = cur["name"]
+                break
+            cur = next((z for z in [None]), None) or None
+            break
+    # direct children only is enough: a second lot goes in a drawer, not a kit
+    for l in _rows(it_get("stock/location/", parent=loc[0]["pk"], limit=200)):
+        drawer_pks[l["pk"]] = l["name"]
+
+    elsewhere = []
+    for r in all_stock:
+        lp = r.get("location")
+        if lp in drawer_pks and skus.get(r.get("part")):
+            r = dict(r)
+            r["_at"] = drawer_pks[lp]
+            elsewhere.append(r)
+
     out = []
     for r in rows + nowhere:
         pk = r.get("part")
@@ -433,6 +465,14 @@ def cabinet_unlocated(cab):
                     "name": ("(NOT LOCATED ANYWHERE) " + nm) if homeless else nm,
                     "quantity": r.get("quantity"),
                     "homeless": homeless,
+                    "sku": skus.get(pk, "")})
+    for r in elsewhere:
+        pk = r.get("part")
+        out.append({"stock": r.get("pk"), "part": pk,
+                    "name": ((r.get("part_detail") or {}).get("name")
+                             or f"part {pk}"),
+                    "quantity": r.get("quantity"),
+                    "at": r.get("_at") or "",
                     "sku": skus.get(pk, "")})
     return out
 
@@ -1023,7 +1063,8 @@ def api_empty(location: str = Form(...), confirm: str = Form("")):
 
 @app.post("/api/assign")
 def api_assign(stock: int = Form(...), location: str = Form(...),
-               quantity: str = Form(""), confirm: str = Form("")):
+               quantity: str = Form(""), split: str = Form(""),
+               confirm: str = Form("")):
     """File a stock row into a drawer. The FIRST write this app makes.
 
     Two separate facts, kept separate on purpose:
@@ -1053,6 +1094,42 @@ def api_assign(stock: int = Form(...), location: str = Form(...),
     before = it_get(f"stock/{stock}/")
     if not before:
         return JSONResponse({"error": f"no stock item {stock}"}, 404)
+
+    # SPLIT: the part is already filed in another drawer and some of it is here
+    # too. Create a SECOND row rather than moving the first, because moving it
+    # would empty a drawer that is not empty.
+    if split.lower() in ("1", "true", "yes"):
+        if not str(quantity).strip():
+            return JSONResponse({"error": "a second lot needs a count - without "
+                                          "one there is no way to say how much "
+                                          "is in THIS drawer"}, 400)
+        try:
+            n = float(quantity)
+        except ValueError:
+            return JSONResponse({"error": f"quantity {quantity!r} is not a number"}, 400)
+        if n <= 0:
+            return JSONResponse({"error": "a second lot must be more than zero"}, 400)
+        stamp2 = datetime.date.today().isoformat()
+        body, err = it_post("stock/", {
+            "part": before.get("part"), "location": loc["pk"], "quantity": n,
+            "notes": (f"binscan {stamp2}: filed into {loc['name']} and COUNTED at "
+                      f"{n:g} by hand. SECOND LOT — the same part is also filed "
+                      f"in another drawer; this row is what is HERE, not the "
+                      f"total. Sum the rows for the shop total.")})
+        body = _one(body)
+        if err or not body.get("pk"):
+            return JSONResponse({"error": f"could not create the second lot: {err}"}, 502)
+        chk = it_get(f"stock/{body['pk']}/") or {}
+        if chk.get("location") != loc["pk"] or abs(float(chk.get("quantity", -1)) - n) > 1e-6:
+            return JSONResponse({"error": "second lot did not verify on re-read"}, 500)
+        log_append({"id": uuid.uuid4().hex[:8], "kind": "split",
+                    "at": datetime.datetime.now().isoformat(timespec="seconds"),
+                    "from_stock": stock, "new_stock": body["pk"],
+                    "part": before.get("part"), "location": loc["name"],
+                    "quantity": n, "counted": True})
+        return {"ok": True, "verified": True, "split": True,
+                "location": loc["name"], "quantity": n, "counted": True,
+                "note": "second lot created; the other drawer is untouched"}
 
     counted = None
     if str(quantity).strip():
@@ -1477,6 +1554,8 @@ color:var(--fg);text-align:left;font-size:13.5px;line-height:1.35}
 .pick .sku{color:var(--acc);font-family:ui-monospace,monospace;font-size:12px}
 .pick .nm{display:block;margin-top:3px;white-space:normal;color:var(--fg)}
 .pick .qt{color:var(--mut);font-size:12px;white-space:nowrap}
+.pick.split{background:#1d1930}
+.pick .elsewhere{display:block;margin-top:4px;font-size:11.5px;color:#c3a6ff}
 .fchip{padding:7px 11px;font-size:13px}
 .fchip .ct{margin-left:6px;font-size:11px;color:var(--mut);font-weight:600}
 .fchip.on .ct{color:#000}
@@ -2058,18 +2137,22 @@ function renderPicks(q){
          <i>waiting to be filed</i> &mdash; the part may still exist and already be
          filed in another drawer. If it is genuinely new, create it below.`;
   list.innerHTML = hit.slice(0,60).map(u=>
-    `<button class=pick data-stock="${u.stock}">
+    `<button class=pick${u.at?' split':''} data-stock="${u.stock}" data-split="${u.at?1:0}">
        <span class=top><span class=sku>${u.sku||'—'}</span>
-         <span class=qt>${(+u.quantity).toLocaleString()} on record</span></span>
+         <span class=qt>${(+u.quantity).toLocaleString()} ${u.at?`in ${u.at}`:'on record'}</span></span>
        <span class=nm>${u.name}</span>
+       ${u.at?`<span class=elsewhere>already filed in ${u.at} &mdash; picking this adds a SECOND lot here, leaving that drawer alone</span>`:''}
      </button>`).join('')
     + (hit.length>60?`<div class=mut style="padding:6px 2px">…and ${hit.length-60} more, keep typing</div>`:'');
   list.querySelectorAll('.pick').forEach(b=>b.onclick=()=>{
     list.querySelectorAll('.pick').forEach(x=>x.classList.remove('on'));
     b.classList.add('on');
     const mf=$('#manualfile');
-    mf.dataset.stock=b.dataset.stock; mf.disabled=false;
-    mf.textContent=`File in ${CUR}`;
+    mf.dataset.stock=b.dataset.stock;
+    mf.dataset.split=b.dataset.split||'0';
+    mf.disabled=false;
+    mf.textContent = b.dataset.split==='1'
+      ? `Add a second lot in ${CUR}` : `File in ${CUR}`;
   });
 }
 
@@ -2085,10 +2168,15 @@ function wireFiling(drawer){
       const msg=$('#out').querySelector(`.msg[data-i="${i}"]`);
       const qty=$('#out').querySelector(`.qty[data-i="${i}"]`).value.trim();
       if(!btn.dataset.stock){ msg.style.color='#ff8f8f'; msg.textContent='choose a part first'; return; }
+      if(btn.dataset.split==='1' && !qty){
+        msg.style.color='#ff8f8f';
+        msg.textContent='a second lot needs a count — otherwise there is no way to say how many are in THIS drawer';
+        return; }
       btn.disabled=true; msg.textContent='filing…'; msg.style.color='#8a8a8e';
       const fd=new FormData();
       fd.append('stock',btn.dataset.stock); fd.append('location',drawer);
       fd.append('quantity',qty); fd.append('confirm','yes');
+      if(btn.dataset.split==='1') fd.append('split','1');
       try{
         const r=await fetch('/api/assign',{method:'POST',body:fd});
         const j=await r.json();
