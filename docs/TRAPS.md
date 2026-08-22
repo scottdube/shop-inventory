@@ -1222,3 +1222,34 @@ figure: MEASURED, or UNKNOWN. Not "estimated from the outside".
 The bin-wall drawers already do this correctly — `metadata.size` there is
 interior capacity, which is why drawer-fit questions can be answered from the
 data and cabinet-fit questions could not.
+
+## Dimensions tell you what fits, not what you can get back out
+
+The NewAge wall cabinets measure 24 x 12.75 in usable, so two 11.6 in bins
+obviously "fit". They do not work. **Door hinges intrude at both sides of the
+opening**, so a bin sitting at the extreme left or right cannot be lifted
+straight up and out — and nothing in the width figure says so.
+
+Scott's fix is to use **three** bins rather than two: the centre one has no
+hinge near it and comes straight out, leaving a void the side bins can slide
+into and angle out through. The middle bin is the key to the other two.
+
+**Packing and access are different problems, and only one of them is
+arithmetic.** A layout can be dimensionally perfect and physically unusable:
+hinges, door swing, a shelf lip, an overhanging rail, or simply not being able
+to get fingers down the side of a snug bin. None of it appears in W x D x H.
+
+So when sizing to a container, ask both questions:
+
+- **Does it fit?** — arithmetic, answerable from the record
+- **Can I get it out one-handed, with the others still in place?** — geometry
+  of the *opening*, answerable only by trying it
+
+Recorded on LW1-LW3 as `hinge_intrusion` alongside the dimensions, because the
+next person sizing bins will read the numbers and reach the wrong answer
+otherwise — the numbers are right and the conclusion is wrong.
+
+Related: Scott measured 12 3/4 and said *"I wanna call it thirteen, but I don't
+dare."* Recorded as 12.75 with a note that it was rounded DOWN. A dimension
+rounded toward caution should say which way it was rounded, or the next person
+re-rounds it in the other direction and loses the margin twice.
