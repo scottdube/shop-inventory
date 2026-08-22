@@ -129,3 +129,35 @@ queue, not a log.
       during preflight is the next suspect.
 - [ ] **McMaster API request** sent 2026-08-22 to eprocurement@mcmaster.com —
       check for a reply before doing anything else with McMaster data.
+
+## Bin wall expansion — decided reasoning, purchase not yet made
+
+**The scarce class is large drawers, measured physically, not from the
+database.** Scott counted 2026-08-22: B1 3 empty of 12, B2 5 of 12, B3 3 of 11.
+**11 empty of 35 shop-wide — 68% full.** The A wall contributes zero (three
+10164s, all small). Small drawers are 289 at ~22% and will never be the
+constraint. Any purchase should therefore be all-large.
+
+- [ ] **Candidate: 2x Akro-Mils 10124**, 24 large drawers each, $49.99 (Walmart,
+      verified live 2026-08-22, free ship, no same-day). 48 larges takes the
+      shop from 35 to 83. Same 20 x 6-3/8 x 15-13/16 shell as the A cabinets;
+      two stacked are 31-5/8 in, level with the A row over the B row.
+      **The Walmart URL slug says "44-Drawer" and the page is the 24-Drawer** —
+      the variant picker offers 16/24/26/64 and has no 44 at all.
+
+- [ ] **Measure the wall left of the A1/B1 column** before ordering — 20 in plus
+      clearance, and confirm two-high clears what is above. No dimension for
+      that run exists yet.
+
+**Naming, if a third form factor is bought: call them C1 and C2, not A4/B4.**
+The letter already encodes form factor — every A is a 64-drawer all-small
+10164 on an 8x8 grid, every B is a 44-drawer 10144 with rows 1-4 small and rows
+5-7 large. So `A` and `B` each imply *drawers physically interchangeable within
+the letter*, which is the property that would break if a 24-drawer all-large
+cabinet were called A4. A 10124 is a 6x4 grid: `C1-R3C2`. Both C and D are
+unused anywhere in the tree. Physical position is independent of the name — the
+new column can sit at the left end and still be C.
+
+**If instead the same 44-drawer form factor is bought, A4/B4 is correct and
+free** — but it buys 12 larges and 32 unneeded smalls per cabinet instead of 24
+larges, at similar money and twice the wall.
