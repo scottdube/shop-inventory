@@ -624,3 +624,27 @@ never sought.
 
 A negative result carries the scope of the question. Write the scope next to
 the conclusion, or "we checked" gets remembered without the "for what".
+
+## A staging area cannot tell "not yet filed" from "already used up"
+
+The NEMA 6-20P plug (#784) sat in `SLN/Receiving` marked *"awaiting a home"*
+from 2026-08-18. It had no home because it was **already installed** — Scott,
+2026-08-21: *"that plug was used in the heat shrink project."* It is terminated
+on the shrink-fit controller's power cord and was never coming back.
+
+Those two states look identical in a staging area, and they are opposites. One
+is stock you still have; the other is stock you spent. A staging location
+reporting "3 items awaiting placement" is really reporting "3 items whose
+status nobody has revisited."
+
+- **Anything in Receiving for more than a few days needs asking about, not
+  filing.** The question is "where does this go?" *and* "is this still yours to
+  place?"
+- **Consumed stock moves to where the object physically is** — here
+  `SLN/Machine Shop`, on the machine — with a note saying what consumed it.
+  Deleting the row loses the fact that the part exists; leaving it in Receiving
+  claims it is available. Neither is true.
+
+Corollary to the parking rules: a parking spot's description records what went
+in and when, but only a **person** can say whether an item is still waiting.
+Age in a staging area is a question, not a fact.
