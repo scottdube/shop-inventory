@@ -231,3 +231,21 @@ than any amount of browser driving — and it is the only version of this that
 would survive being run unattended.
 
 **Not attempted: logging in on Scott's behalf.** Credentials are his to enter.
+
+### API access requested 2026-08-21 — do not re-send
+
+Scott sent the request to `eprocurement@mcmaster.com` on 2026-08-21. That is
+the address McMaster's own API documentation names for starting an
+integration; there is no rep on this account, so this is the front door.
+
+**A future session should check for a reply before doing anything else with
+McMaster data.** If access is granted, `/v1/products/{partNumber}`,
+`/price`, `/cad/*`, `/images/*` and `/datasheets/*` under a client certificate
+supersede every browser-based approach discussed here — including the derived
+`Part.link`, which stays useful but stops being the only handle.
+
+Note the API's shape before planning against it: it is **subscription-based**.
+You subscribe to specific part numbers, with a cap on total subscriptions and
+on how many can be added per day, and CAD endpoints are separately
+rate-limited. At 92 parts that is comfortable, but a "sync the whole catalogue"
+design would not be.
