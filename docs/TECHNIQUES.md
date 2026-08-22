@@ -378,3 +378,39 @@ GDO?" and looks unreliable.
 
 Re-run after any counting session — answers recorded by `unaccounted.py` feed
 straight in, so the column improves exactly as the drawer walk progresses.
+
+### Recording consumption AT COUNT TIME — inflate, allocate, consume
+
+Scott's workflow, and it beats reasoning about history afterwards. While
+counting a drawer, ask whether he remembers a project that used any. If he
+does, push it through InvenTree's own machinery rather than writing prose
+around it:
+
+```
+count says 27 on the shelf
+"three went into the pool controller"
+   -> inflate the stock row to 30     (you cannot allocate stock you do not have)
+   -> allocate 3 to that project's build
+   -> closing the build CONSUMES 3, and stock returns to 27
+```
+
+The count ends up correct **and** `consumed_by` carries the history — the
+authoritative field that survives completion, so the Project column shows the
+project as fact rather than as a `?`.
+
+`scripts/consumed.py` does it in one command, creating the build and a
+placeholder assembly part if the project has none:
+
+    itq run scripts/consumed.py --part 291 --used 3 --project "Pool Controller" --commit
+    itq run scripts/consumed.py --list
+    itq run scripts/consumed.py --close "Pool Controller" --commit
+
+**Leave the build OPEN during the walk.** A completed build locks — the same
+trap as a completed purchase order — and three drawers later another part will
+turn out to belong to the same project. Accumulate lines as they surface, close
+once at the end. Closing early means fighting a locked record for the rest of
+the session.
+
+Each reconstructed build is tagged `[RECONSTRUCTED]` in its notes and records
+that its **physical build date is unknown**, so nobody later compares stocktake
+dates against its completion date — that comparison reads the wrong event.

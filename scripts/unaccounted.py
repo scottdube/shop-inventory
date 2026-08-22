@@ -179,11 +179,14 @@ for stem, grp in sorted(groups.items(), key=lambda kv: -max(g[0] for g in kv[1])
             state = "completed" if st == 40 else "in production"
             match = "  <-- matches the gap exactly" if abs(need - gap) < 0.01 else ""
             print(f"        candidate: {ref} ({state}) needs {need:g} — {title[:34]}{match}")
-        print(f"        \"Was it {hits[0][0]}?\"  (yes / no / cannot remember)")
+        print(f"        \"Was it {hits[0][0]}?\"  if yes:")
+        print(f"           itq run scripts/consumed.py --part {pk} --used {gap:g} "
+              f"--project \"{hits[0][1][:28]}\" --commit")
     else:
         print(f"        no build order lists this part — most consumption has none.")
         print(f"        \"What used {gap:g}?\"  answer with:")
-        print(f"           itq run scripts/unaccounted.py --answer {pk}=\"the project\"")
+        print(f"           itq run scripts/consumed.py --part {pk} --used {gap:g} "
+              f"--project \"NAME\" --commit")
         print(f"           itq run scripts/unaccounted.py --answer {pk}=?   (cannot recall)")
 print("\n  An answer becomes a note on the part. 'Cannot remember' is also an")
 print("  answer and should be recorded as one — it stops the question being")
