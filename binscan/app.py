@@ -96,6 +96,20 @@ def _rows(data):
     return data.get("results", data) if isinstance(data, dict) else data
 
 
+def it_patch(path, payload):
+    if not IT_TOKEN:
+        return None, "no InvenTree token"
+    try:
+        r = httpx.patch(f"{INVENTREE}/api/{path}",
+                        headers={"Authorization": f"Token {IT_TOKEN}"},
+                        json=payload, timeout=25)
+        if r.status_code >= 400:
+            return None, f"{r.status_code}: {r.text[:200]}"
+        return r.json(), None
+    except Exception as e:
+        return None, str(e)[:200]
+
+
 def it_post(path, payload):
     if not IT_TOKEN:
         return None, "no InvenTree token"
@@ -351,24 +365,91 @@ def cabinet_unlocated(cab):
 
 # Deliberately loose: a drawer label writes the thread as "M3 .5 x20" -- size,
 # pitch, length -- so requiring "M3 x" the way a McMaster part name spells it
-# finds no thread at all, and the match then rests on length alone. That made
-# "M3 .5 x20" tie with an M6 x 20 socket head, which is the wrong drawer and
-# the wrong thread. Matching \bM<digits> catches both spellings; "MB10S" and
-# friends are safe because a letter follows the M.
+# finds no thread at all. Matching \bM<digits> catches both spellings.
 _THREAD = re.compile(r"\bM\s*(\d+(?:\.\d+)?)\b", re.I)
-_IMP = re.compile(r'(\d+/\d+)"?\s*-\s*(\d+)')
-_LEN_MM = re.compile(r"(\d+(?:\.\d+)?)\s*mm\s+long", re.I)
+
+# Imperial threads come in two shapes and BOTH were unmatched until 2026-08-22:
+#   1/4-20    a fractional diameter
+#   10-32     a screw NUMBER, which has no slash -- so a regex demanding a
+#             fraction before the dash never fired, on the label or the part.
+# A vendor label may also write the number form with a slash, "10/32", which
+# collides with fraction notation. Resolved by plausibility: a real TPI is one
+# of a short list, and a screw number is 4..14 -- nobody writes a fraction as
+# 10/32 when 5/16 exists. 1/32 and 3/32 stay fractions because 1 and 3 are
+# below that floor.
+_TPI = {18, 20, 24, 28, 32, 36, 40, 44, 48, 56, 64, 72, 80}
+_SCREW_NO = set(range(4, 15))
+# The inch mark sits between diameter and dash in McMaster's own spelling,
+# 1/4"-20, so the separator has to tolerate it.
+_IMP_DASH = re.compile(r'(?<![\d/])#?\s*(\d+(?:/\d+)?)\s*"?\s*-\s*(\d+)(?![\d/])')
+_IMP_SLASH = re.compile(r'(?<![\d/])(\d{1,2})\s*/\s*(\d{2})(?![\d/])')
+
+# Lengths. Metric is "20 mm Long"; imperial is 3/4", 1-1/2", .375in, or a bare
+# fraction after an x on a handwritten label.
+_LEN_MM = re.compile(r"(\d+(?:\.\d+)?)\s*mm\b", re.I)
+_LEN_IN = re.compile(r'(\d+\s*-\s*\d+/\d+|\d+/\d+|\d+(?:\.\d+)?)\s*(?:"|\bin\b|\binch|\blong\b)', re.I)
+_AFTER_X = re.compile(r'\bx\s*(\d+\s*-\s*\d+/\d+|\d+/\d+|\d+(?:\.\d+)?)', re.I)
+
+
+def _tofloat(t):
+    t = (t or "").strip().replace(" ", "")
+    m = re.fullmatch(r"(\d+)-(\d+)/(\d+)", t)          # 1-1/2
+    if m:
+        return int(m.group(1)) + int(m.group(2)) / int(m.group(3))
+    m = re.fullmatch(r"(\d+)/(\d+)", t)                 # 3/4
+    if m:
+        return int(m.group(1)) / int(m.group(2))
+    try:
+        return float(t)
+    except ValueError:
+        return None
+
+
+def _imperial(t):
+    """Returns (thread, span) -- span is where it matched, so the length search
+    can skip it. Without that, 1/4"-20 x 1/2" reads its own THREAD diameter as
+    the length and every quarter-inch screw looks 1/4in long."""
+    for m in _IMP_DASH.finditer(t or ""):
+        tpi = int(m.group(2))
+        if tpi in _TPI:
+            return f"{m.group(1)}-{tpi}", m.span()
+    for m in _IMP_SLASH.finditer(t or ""):
+        a, b = int(m.group(1)), int(m.group(2))
+        if b in _TPI and a in _SCREW_NO:
+            return f"{a}-{b}", m.span()
+    return None, None
 
 
 def _facts(t):
-    tl = (t or "").lower()
-    m = _THREAD.search(t or "")
-    im = _IMP.search(t or "")
-    ln = _LEN_MM.search(t or "")
-    return (f"m{float(m.group(1)):g}" if m else None,
-            f"{im.group(1)}-{im.group(2)}" if im else None,
-            float(ln.group(1)) if ln else None,
-            tl)
+    """(metric thread, imperial thread, length_mm, length_inches)"""
+    t = t or ""
+    m = _THREAD.search(t)
+    metric = f"m{float(m.group(1)):g}" if m else None
+    imp, span = _imperial(t)
+    rest = (t[:span[0]] + " " + t[span[1]:]) if span else t
+
+    mm = None
+    for cand in _LEN_MM.finditer(t):
+        v = float(cand.group(1))
+        # skip the pitch in "M6 x 1 mm Thread" -- a length is not 1 mm
+        if v >= 3:
+            mm = v
+            break
+    if mm is None and metric:
+        x = _AFTER_X.search(t)
+        if x:
+            mm = _tofloat(x.group(1))
+
+    inch = None
+    if not metric:
+        m2 = _LEN_IN.search(rest)
+        if m2:
+            inch = _tofloat(m2.group(1))
+        if inch is None:
+            x = _AFTER_X.search(rest)
+            if x:
+                inch = _tofloat(x.group(1))
+    return metric, imp, mm, inch
 
 
 def match_reading(reading, rows):
@@ -397,19 +478,23 @@ def match_reading(reading, rows):
                     + list(reading.get("markings") or []))
     if not text.strip():
         return [], "nothing-legible"
-    lm, li, ll, _ = _facts(text)
-    lnum = re.search(r"x\s*(\d+(?:\.\d+)?)", text.lower())
-    ll = ll or (float(lnum.group(1)) if lnum else None)
+    lm, li, lmm, lin = _facts(text)
     scored = []
     for r in rows:
-        pm, pi, pl, _ = _facts(r["name"])
+        pm, pi, pmm, pin = _facts(r["name"])
         sc = 0
         if lm and pm:
             sc += 4 if lm == pm else -6
         if li and pi:
             sc += 4 if li == pi else -6
-        if ll is not None and pl is not None:
-            sc += 4 if abs(ll - pl) < 0.01 else -4
+        if lm and pi and not pm:
+            sc -= 6                      # metric label, imperial part
+        if li and pm and not pi:
+            sc -= 6
+        if lmm is not None and pmm is not None:
+            sc += 4 if abs(lmm - pmm) < 0.01 else -4
+        if lin is not None and pin is not None:
+            sc += 4 if abs(lin - pin) < 0.005 else -4
         if sc > 0:
             scored.append((sc, r))
     scored.sort(key=lambda t: -t[0])
@@ -503,11 +588,21 @@ def api_assign(stock: int = Form(...), location: str = Form(...),
         if counted < 0:
             return JSONResponse({"error": "quantity cannot be negative"}, 400)
 
-    note = (f"binscan: filed into {loc['name']} "
-            + (f"and COUNTED at {counted:g} by hand"
-               if counted is not None
-               else f"- quantity {float(before.get('quantity', 0)):g} NOT counted, "
-                    "it is the purchased figure carried over"))
+    carried = float(before.get("quantity", 0))
+    stamp = datetime.date.today().isoformat()
+    if counted is not None:
+        note = (f"binscan {stamp}: filed into {loc['name']} and COUNTED at "
+                f"{counted:g} by hand.")
+    else:
+        # [ESTIMATE] is a PREFIX flag in this catalogue -- 166 rows carry it and
+        # queries test notes__startswith. Without it a filed-but-uncounted row
+        # shows the same bare number as a counted one in every list view, and
+        # the distinction survives only in prose nobody reads. The quantity here
+        # is what the PURCHASE ORDER said was bought; nobody has looked.
+        note = (f"[ESTIMATE] binscan {stamp}: filed into {loc['name']}. "
+                f"Quantity {carried:g} is the PURCHASED figure carried in with "
+                f"the row - NOT COUNTED, nobody has looked in the drawer and "
+                f"tallied it. Count it and the flag comes off.")
 
     body, err = it_post("stock/transfer/",
                         {"items": [{"pk": stock, "quantity": before.get("quantity")}],
@@ -522,6 +617,25 @@ def api_assign(stock: int = Form(...), location: str = Form(...),
         if err:
             return JSONResponse({"error": f"moved, but the count failed: {err}",
                                  "moved": True}, 502)
+
+    # Stamp the row itself, not just the transaction note. Existing notes are
+    # kept: they came from the McMaster import and say what the thing is.
+    # Strip EVERY leading binscan line, not just one, and whether or not it
+    # carried the flag. Filing a drawer twice -- which happens, because you
+    # correct a wrong match -- otherwise stacks a new line each time and the
+    # oldest, most wrong one sits at the bottom looking like provenance.
+    prior = (before.get("notes") or "").strip()
+    _lead = re.compile(r"^(?:\[ESTIMATE\]\s*)?binscan \d{4}-\d\d-\d\d:[^\n]*\n*")
+    while _lead.match(prior):
+        prior = _lead.sub("", prior, count=1).lstrip()
+    body_notes = note + (("\n\n" + prior) if prior else "")
+    patch = {"notes": body_notes}
+    if counted is None:
+        patch["stocktake_date"] = None      # never counted -> no stocktake date
+    _b, perr = it_patch(f"stock/{stock}/", patch)
+    if perr:
+        return JSONResponse({"error": f"moved, but could not stamp the row: {perr}",
+                             "moved": True}, 502)
 
     # Verify by re-read. .save() on this install has reported success and
     # written nothing; the API is a different path but the habit is cheap.
@@ -540,8 +654,13 @@ def api_assign(stock: int = Form(...), location: str = Form(...),
                 "stock": stock, "location": loc["name"],
                 "quantity": got_qty, "counted": counted is not None,
                 "part": (after.get("part_detail") or {}).get("name")})
+    flagged = (after.get("notes") or "").startswith("[ESTIMATE]")
+    if (counted is None) != flagged:
+        return JSONResponse({"error": "the [ESTIMATE] flag did not land as intended",
+                             "counted": counted is not None, "flagged": flagged}, 500)
     return {"ok": True, "verified": True, "location": loc["name"],
-            "quantity": got_qty, "counted": counted is not None, "note": note}
+            "quantity": got_qty, "counted": counted is not None,
+            "estimate_flag": flagged, "note": note}
 
 
 @app.get("/api/unlocated")
@@ -590,7 +709,9 @@ async def api_identify(image: UploadFile = File(...),
                            "stock": c["row"]["stock"], "why": c["why"],
                            "quantity": c["row"].get("quantity"),
                            "strength": c["strength"]} for c in ranked],
-           "unlocated_in_cabinet": len(rows), "actual": None}
+           "unlocated_in_cabinet": len(rows), "actual": None,
+           "unlocated": [{"stock": r["stock"], "sku": r["sku"], "name": r["name"],
+                          "quantity": r["quantity"]} for r in rows]}
     log_append(rec)
     return {**rec, "read_only": True}
 
@@ -904,12 +1025,34 @@ function nextDrawer(cur,dir){
 // Filing happens against the drawer that was photographed. advance() changes
 // CUR straight afterwards, so the drawer name is bound HERE, at render time --
 // otherwise the second drawer of a walk collects the first drawer's contents.
+// Always available, whether or not the automatic match found anything: pick
+// the row by hand from everything still unlocated in this cabinet.
+let UNLOCATED=[];
+function manualCard(){
+  if(!UNLOCATED.length) return '';
+  return `<div class=card>
+    <div class=prov>or pick it by hand</div>
+    <label style="margin-top:10px">${UNLOCATED.length} rows still unlocated in ${AREA}</label>
+    <select id=manualsel>
+      <option value="">— choose the part —</option>
+      ${UNLOCATED.map(u=>`<option value="${u.stock}">${u.sku?u.sku+' · ':''}${u.name.slice(0,70)}</option>`).join('')}
+    </select>
+    <label style="margin-top:10px">Count (leave blank if you did not count)</label>
+    <input class=qty data-i="m" type=number inputmode=decimal placeholder="blank = quantity not counted">
+    <button class=file data-i="m" data-stock="" id=manualfile style="margin-top:10px">File in ${CUR}</button>
+    <div class=msg data-i="m" style="margin-top:8px;font-size:13px"></div>
+  </div>`;
+}
+
 function wireFiling(drawer){
+  const sel=$('#manualsel'), mf=$('#manualfile');
+  if(sel&&mf){ sel.onchange=()=>{ mf.dataset.stock=sel.value; }; }
   $('#out').querySelectorAll('button.file').forEach(btn=>{
     btn.onclick=async()=>{
       const i=btn.dataset.i;
       const msg=$('#out').querySelector(`.msg[data-i="${i}"]`);
       const qty=$('#out').querySelector(`.qty[data-i="${i}"]`).value.trim();
+      if(!btn.dataset.stock){ msg.style.color='#ff8f8f'; msg.textContent='choose a part first'; return; }
       btn.disabled=true; msg.textContent='filing…'; msg.style.color='#8a8a8e';
       const fd=new FormData();
       fd.append('stock',btn.dataset.stock); fd.append('location',drawer);
@@ -966,12 +1109,15 @@ function renderIdentify(d){
     <div class=row><span>legible</span><span class="${r.legible}">${r.legible||'?'}</span></div>
     <div style="margin-top:10px;color:#aaa;font-size:13.5px">${r.reasoning||''}</div></div>`;
   if(!d.candidates||!d.candidates.length){
+    // Advisory, not a blocker. It says nothing about what is physically in the
+    // drawer -- only that the CATALOGUE's unlocated list has no obvious match.
+    // Scott hit this with a perfectly legible 10/32 label and had nowhere to go.
     const why = d.basis==='tag-no-match'
-      ? 'A tag was read but it matches no unlocated row in this cabinet. Either it belongs elsewhere, or it is not McMaster stock.'
+      ? `A bag tag was read, but no <b>unlocated row in ${AREA}</b> carries that McMaster number. The part may already be filed elsewhere, or may not be McMaster stock.`
       : d.basis==='nothing-legible'
-      ? 'Nothing legible in the photo. Try again closer, or write it down by hand.'
-      : 'No row in this cabinet fits what was read.';
-    return read+`<div class="card warn">${why}</div>`;
+      ? 'Nothing legible in the photo. Try again closer — or pick it by hand below.'
+      : `Nothing in the <b>unlocated list for ${AREA}</b> obviously matches that text. This says nothing about what is in the drawer — only that the automatic match could not choose.`;
+    return read+`<div class="card warn">${why}</div>`+manualCard();
   }
   const here=CUR;
   return read + d.candidates.map((c,i)=>`<div class=card>
@@ -989,7 +1135,8 @@ function renderIdentify(d){
     + `<div class=warn>A match made from a photograph is a proposal, not an
        observation. Confirm against the open drawer before filing. The count box
        is blank on purpose — the number already on the row is what was BOUGHT,
-       not what is there.</div>`;
+       not what is there.</div>`
+    + manualCard();
 }
 
 $('#go').onclick=async()=>{
@@ -1006,6 +1153,7 @@ $('#go').onclick=async()=>{
     const r=await fetch(identify?'/api/identify':'/api/estimate',{method:'POST',body:fd});
     const d=await r.json();
     if(identify){
+      if(!d.error) UNLOCATED = d.unlocated || [];
       $('#out').innerHTML = d.error ? `<div class="card err">${d.error}</div>` : renderIdentify(d);
       if(!d.error) wireFiling(CUR);
       $('#go').textContent=label; $('#go').disabled=false;

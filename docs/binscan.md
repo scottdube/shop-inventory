@@ -163,6 +163,43 @@ rendered, not when the button is clicked, because auto-advance changes the
 current drawer immediately after — otherwise the second drawer of a walk
 collects the first drawer's contents.
 
+## Imperial matching was broken, and a field test found it
+
+Scott photographed a B2 drawer on 2026-08-22. The read was perfect —
+`10/32 NF X 3/4 · PHILLIPS FILLISTER M/S`, legibility "clear" — and the matcher
+said no row fitted. B2 holds `91737A210`, a 10-32 fillister head. Two bugs, both
+in `_facts()`:
+
+1. **The imperial thread regex demanded a fraction before the dash.** It read
+   `1/4-20` and never `10-32`, so machine-screw sizes failed on the label AND on
+   the part name. Since B2 *is* the imperial cabinet, nothing in it could match.
+2. **There was no imperial length extractor at all** — only `N mm Long`. `3/4"`
+   was invisible.
+
+Then two more found while fixing those: McMaster spells it `1/4"-20`, and the
+inch mark between diameter and dash blocked the match; and once the thread was
+found, the length search read the thread's own `1/4"` as the length, making
+every quarter-inch screw look a quarter-inch long. The thread's span is now
+excluded from the length search.
+
+A vendor label may also write the number form with a slash — `10/32` — which
+collides with fraction notation. Resolved by plausibility: the second number
+must be a real TPI and the first a screw number 4-14. Nobody writes a fraction
+as 10/32 when 5/16 exists, and 1/32 and 3/32 stay fractions.
+
+## "No match" is an advisory, not a dead end
+
+The old wording — *"No row in this cabinet fits what was read"* — was ambiguous
+about whether it meant the drawer or the database, and it left nowhere to go.
+Scott, standing at a drawer of fifty fillister screws: *"I don't see any place
+to put in the quantity, and I don't know that no row fits should be a blocker,
+perhaps an advisory."*
+
+Now every result — match or no match — carries a **pick it by hand** card
+listing every row still unlocated in the cabinet, with the same count box and
+file button. The message says explicitly that it describes the catalogue's
+unlocated list and says nothing about what is in the drawer.
+
 ## Why the original design did not solve the B1/B2 walk
 
 The walk needs the drawer address to be an OUTPUT. binscan assumes it is an
