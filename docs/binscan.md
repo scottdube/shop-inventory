@@ -481,6 +481,27 @@ answerable at the drawer. Two things follow: it is not in the catalogue and
 should be, and **it hangs in the 22 in of clearance where A0/B0 are meant to
 go** — that wall is not as empty as `docs/OPEN.md` assumes.
 
+## The guard that was right until it was not
+
+`/api/identify` short-circuits when the drawer already holds stock, on the
+principle that a model should never be asked what the record already knows. That
+is correct for the normal flow and **exactly wrong for "add another part"**,
+where the drawer being assigned is the premise rather than the objection.
+
+Scott hit it filing a second part into B1-R1C1: he photographed the part, pressed
+Identify, and got *"Already on record — no model was called"*, with no way
+forward. The record did know what was in that drawer. It did not know about the
+second thing in his hand.
+
+`more=1` now bypasses the short-circuit, set only by the deliberate "file
+another part" path and cleared on every drawer change. The guard still fires for
+anyone who simply re-selects an assigned drawer.
+
+**A guard keyed on state rather than on intent will eventually block the case
+that shares the state and not the intent.** "The drawer has stock" was standing
+in for "you probably meant to estimate, not identify", and those came apart the
+moment a drawer could hold two things.
+
 ## The write journal — undo and reconciliation from one record
 
 Every `/api/assign` write records the row's full **before** state: location,
