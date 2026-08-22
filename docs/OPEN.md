@@ -16,10 +16,14 @@ queue, not a log.
       Dupont, #456 iCrimp open-barrel. **Do not guess from a photo** — that has
       gone wrong twice. Each one also needs a problem-statement per the tool
       convention in CONTEXT.md.
-- [ ] **Ball valve #1053 has no home.** Does it fit a large bin-wall drawer
-      (4.5625 x 6 x 2.1875)? If yes, one drawer could take it plus the four
-      unplaced McMaster pneumatics (#965 #967 #968 #969) and finally give air
-      spares a category.
+- [ ] **Inventory the Air System bin.** It is a clear lidded bin on WS2 with 7
+      items itemised and the bulk — tubing coils, bagged push-to-connect
+      fittings, couplers — declared uncounted. Scott: *"I can pull this off the
+      shelf and inventory this in the future rather than get bogged down with it
+      right this minute."* Deliberately deferred, not forgotten. Also **contains
+      plumbing that needs separating** into the Plumbing box; the WaterPEX P-412
+      was the first one pulled out.
+- [ ] ~~Ball valve #1053 has no home~~ — **done**, 2 off, 3/8in, in the Air box.
 - [ ] **A2 walk** — `mark_empty.py --cabinet A2` dry-runs to *would mark 54,
       skipped 10*. Mostly opening drawers.
 
