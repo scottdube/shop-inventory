@@ -840,3 +840,42 @@ at once.
 Cheap audit, worth repeating after any bulk import: list stock with
 `location__isnull=True` and grep the notes for a location word. A row whose
 note names a place it does not point to is always a defect.
+
+## A COMPLETE build that allocated nothing still shows its parts as on-hand
+
+Found 2026-08-22 from a single cable. All three completed builds consumed
+**zero** stock:
+
+| Build | BOM lines | Allocations | Output stock created |
+|---|---|---|---|
+| BO-0003 Desk controller | 7 | **0** | 1 |
+| BO-0008 Rat GDO — three already built | 15 | **0** | 0 |
+| BO-0013 Shop Minisplit CN105 Adapter | 5 | **0** | 0 |
+
+Marking a build complete does not consume its BOM unless stock was allocated
+first. So parts soldered into three working devices still answer *yes* to "do I
+have one?" — the 6-20P plug failure, systemic rather than one row. Two of the
+three do not even show the thing that was built.
+
+**But do not "fix" it by subtracting BOM quantities.** That would invent a
+consumption figure, and BO-0008 is titled *"three already built"* — it
+documents work done before the catalogue existed, so its parts may never have
+been stock here at all. Reducing counts on that assumption manufactures exactly
+the kind of number this project refuses to manufacture. The honest states are
+"consumed, known quantity" and "unknown", and only a person can say which
+applies per build.
+
+### The right model for a part inside a finished thing: `belongs_to`
+
+Not deletion, not a zeroed quantity, not a note. InvenTree's `StockItem.belongs_to`
+installs one stock item into another, and it is the only option that stays true
+on every axis at once:
+
+- the part still **exists**, with its provenance and purchase price intact
+- it is **not available**, so it stops answering "do I have one?"
+- the assembly **lists what is inside it** (`installed_parts`)
+- **uninstalling restores it to stock honestly**, which zeroing cannot
+
+Applied to the 7-pin DIN cable: it had been sitting in Receiving marked
+"awaiting a home" while wired into the desk controller. Now `belongs_to` stock
+#120, location cleared, quantity untouched.
