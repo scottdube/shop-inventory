@@ -27,6 +27,30 @@ queue, not a log.
 - [ ] **A2 walk** — `mark_empty.py --cabinet A2` dry-runs to *would mark 54,
       skipped 10*. Mostly opening drawers.
 
+## Cable inventory — greenfield
+
+- [ ] **Sort and catalogue the cables.** `Electronics/Cables` holds **4 parts,
+      all jumper wires** — every USB, HDMI, power cord and adapter on the wire
+      shelves is uncatalogued. Scott: *"I have no idea what I've got... they
+      need to be identified and then cataloged, so I know exactly what I have."*
+
+      **Identity is connector pair + length**, not "cable". The question asked
+      is never "do I have a cable" but "do I have a USB-A to micro, about six
+      foot" — so a part is `USB-A to Micro-B, 6ft`, and the same principle as
+      footprint-is-identity applies: A-to-C and A-to-micro are different parts,
+      not one part with a note.
+
+      Sort into ~11-12 bins, one per thing-you-reach-for: USB A-micro, A-C, A-B,
+      C-C, Lightning; HDMI (+mini/micro); DisplayPort/VGA/DVI; Ethernet; audio
+      3.5mm/RCA; power IEC-C13/figure-8/barrel; adapters and dongles.
+
+      **Sort and catalogue in one pass.** Sorting into piles that do not match
+      the search vocabulary means re-sorting later.
+
+      Bin height for cables can be 4-6in, unlike the 3in for small fittings —
+      burying is a small-parts problem and a coiled cable is big enough to see.
+      Same footprint so they interchange on a shelf.
+
 ## Cabinets never walked
 
 - [ ] **B1** — 31 rows still at cabinet level, flagged `DRAWER UNKNOWN`. All
