@@ -10,15 +10,17 @@ resolve the hostname.
 | | |
 |---|---|
 | host | the LRD Mac Mini — `binscan.internal` resolves to `192.168.50.10` |
-| code | `/Users/scottdube/binscan` — **not a git repo**, no remote, not backed up |
+| code | `binscan/` in this repo as of 2026-08-22; deployed to `/Users/scottdube/binscan` |
 | process | `uvicorn app:app --host 0.0.0.0 --port 8002`, LaunchAgent `com.binscan.plist` |
 | public port | 80, via Caddy (`com.caddy.proxy.plist`) |
 | state | `log.jsonl` (run history), `shots/` (submitted photos), `env` (API keys, mode 600) |
 | versioning | `app.py.prelog`, `app.py.prepicker`, `app.py.prewrite` — copies, by hand |
 
-**The hostname does not resolve from Scott's phone** (screenshot 2026-08-18,
-Safari "server can't be found") though it resolves from this laptop. Whatever
-serves `.internal` is not reaching the phone's resolver. Unfixed.
+**Phone access works.** A screenshot dated 2026-08-18 shows Safari failing to
+resolve the hostname, and that was taken as the current state — wrongly. Scott,
+2026-08-22: *"that photo must have been before we resolved the problem because
+I'm on binscan right now."* A dated screenshot records the moment it was taken,
+not the state of the world; treat one as evidence about the past only.
 
 ## What it does, and what it deliberately does not
 
