@@ -697,3 +697,44 @@ for anything skipped while the decline stood.
 defined way to change the answer.** Without one, the memory outlives the
 reasoning that produced it, and the system gets more confidently wrong the
 longer it runs.
+
+## An instant connection failure is a LOCAL block; a timeout is a remote one
+
+`st.com` failed from the laptop in **0.043 seconds**. That is not a network
+problem — nothing round-trips to Europe and back in 43 ms. An instant refusal
+means something *on this machine* answered first.
+
+Scott, 2026-08-21: *"st.com is being grabbed on this machine by Malwarebytes."*
+
+The same host also failed from the Mini, but with a **TimeoutError** — a
+completely different cause wearing the same coat. Two machines, one symptom
+("can't reach st.com"), two unrelated reasons, and the timing was the only
+thing that distinguished them:
+
+| Failure shape | Means |
+|---|---|
+| **Instant** (<100 ms) refusal or reset | Local: security software, hosts file, DNS sinkhole, proxy |
+| **Timeout** (seconds) | Remote or in-path: firewall drop, geo-block, dead host |
+| **403 / 450 / empty 202** | You reached them; they fingerprinted you — drive a browser |
+
+The mistake worth not repeating: the 0.04 s was in the output, and it was read
+as "blocked from this host" — true but useless. The number was already saying
+*local security product*, which is a 30-second fix, not a network problem to
+route around. **Read the latency, not just the outcome.**
+
+Practical consequence: a manufacturer datasheet domain being blocked by an
+endpoint security product is a whitelist entry, not an obstacle to engineer
+around. Check that before building a workaround through a third-party mirror.
+
+## Octopart works in a human browser and challenges an automated one
+
+Octopart is a good route to manufacturer datasheets — Scott: *"by going through
+Octopart I could easily get to ST's datasheets."* It is **not** a route for
+this project's automation. Plain fetch returns 403; a driven browser gets a
+PerimeterX interstitial (*"One more step — please complete the security
+check"*) with a client IP and block reference.
+
+Solving that is off the table, permanently. When a mirror throws a CAPTCHA, the
+answer is to fix the path to the *source* — see the Malwarebytes entry above —
+or to have a human fetch the handful of files by hand. Working around a bot
+challenge is how an account or an IP gets burned for a few PDFs.
