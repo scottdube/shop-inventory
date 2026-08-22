@@ -1012,3 +1012,31 @@ either one would have closed it.
 Exactly the B3-R3C2 mistake again — that drawer was called empty on a row count
 while its own description said what was in it. **When a record looks wrong,
 read its description before reporting it.**
+
+## A listing title names the marketing category, the box names the polymer
+
+Amazon sold it as *"Art3d Plexiglass Sheets, Clear & Flexible"*. The part was
+created from that title as **Acrylic Sheet**. The physical box says **PET
+Plexiglass Sheet** — and "plexiglass" is a brand name for *acrylic* (PMMA),
+which PET is not.
+
+This is not pedantry in a shop with a laser:
+
+| | Acrylic (PMMA) | PET |
+|---|---|---|
+| Laser cut | vaporises cleanly, flame-polished edge | **softens and drags**, tacky edge, warps |
+| Impact | brittle, shatters | tough, flexes |
+| Good for | display panels, anything cut on the laser | guards and windows that must not shatter |
+
+Reaching for this expecting acrylic behaviour wastes the sheet and the setup.
+The two are close to opposites for the two things a shop actually does with
+clear plastic.
+
+Already recorded once in a different form — *"a photo of a label repeatedly
+beat every other source, including the vendor's own listing"* — and this is the
+same finding for materials specifically. **A vendor's title describes the
+category a shopper searches for; the packaging describes what was made.** When
+they disagree, the box wins.
+
+Same family as grade on a fastener and footprint on a component: **the shared
+word is not the identity.** "Plexiglass" is the word; the polymer is the part.
