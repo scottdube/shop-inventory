@@ -27,6 +27,27 @@ queue, not a log.
 - [ ] **A2 walk** — `mark_empty.py --cabinet A2` dry-runs to *would mark 54,
       skipped 10*. Mostly opening drawers.
 
+## Containers and dividers
+
+- [ ] **Design bin dividers — laser or 3D print.** Scott has both. This changes
+      the buying decision: with dividers, buy FEWER and LARGER bins and
+      subdivide, rather than many small ones. ~4 cable bins by category (USB /
+      video / network+audio / power) each split 3 ways beats 12 separate bins —
+      you still pull one container per category, which is how you search.
+
+      **Moulded bins taper** (injection draft, often 1/8-1/4in per side over 3in
+      of height). A cross-lap divider cut to the bottom dimension rattles at the
+      top; cut to the top, it will not seat. Either make the side panels
+      trapezoidal to match the draft, or size to the bottom with a locating foot
+      and let the top run loose. **Measure top AND bottom internal width before
+      cutting anything.**
+
+      Slot-together cross-lap, no glue — the mix changes as sorting proceeds and
+      a re-spaceable divider beats a perfect fixed one. 3mm ply or acrylic on
+      the laser for flat dividers; 3D print only where features earn it (finger
+      notches, cable slots, moulded label tabs). Printing a full grid is slow
+      and filament-hungry for what the laser does in two minutes.
+
 ## Cable inventory — greenfield
 
 - [ ] **Sort and catalogue the cables.** `Electronics/Cables` holds **4 parts,
