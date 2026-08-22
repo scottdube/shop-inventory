@@ -226,6 +226,9 @@ export function renderStats(target, data) {
     // hardware and tooling that cannot have a datasheet at all, so a bare
     // "missing" count would read in the hundreds and mean nothing. The
     // denominator is the set that COULD have one.
+    const cellT = (v, label, tone, tip) =>
+        `<div class="stat ${v ? (tone || '') : ''}" title="${esc(tip)}">` +
+        `<b>${v ?? '-'}</b><span>${esc(label)}</span></div>`;
     const ratio = (have, elig, label) => {
         if (!elig) return '';
         const done = have >= elig;
@@ -245,7 +248,14 @@ export function renderStats(target, data) {
         cell(s.no_image, 'no image', 'warn') +
         cell(s.no_keywords, 'no keywords', 'warn') +
         ratio(s.ds_have, s.ds_eligible, 'datasheets') +
-        cell(s.free_drawers, 'confirmed empty', 'good') +
-        cell(s.unchecked_drawers, 'unchecked', 'warn'),
+        // Two different populations, so two different nouns. "Confirmed
+        // empty" counts ANY location a human has looked into — 17 today, of
+        // which three are Mobile Cart trays, not drawers. "Unchecked" counts
+        // bin-wall drawers only, because those are the ones worth sweeping.
+        // Calling both "drawers" made the first number wrong.
+        cellT(s.free_drawers, 'loc. confirmed empty', 'good',
+              'Any location whose description says VERIFIED EMPTY — a person looked in it. Includes non-drawer locations.') +
+        cellT(s.unchecked_drawers, 'drawers unchecked', 'warn',
+              'Bin-wall drawers with no stock rows that nobody has opened. Not free space — unknown space.'),
         'stats');
 }
