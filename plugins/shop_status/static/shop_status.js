@@ -222,12 +222,26 @@ export function renderStats(target, data) {
     const cell = (v, label, tone) =>
         `<div class="stat ${v ? (tone || '') : ''}">` +
         `<b>${v ?? '-'}</b><span>${esc(label)}</span></div>`;
+    // have/eligible, never have/total. Most of this catalogue is passives,
+    // hardware and tooling that cannot have a datasheet at all, so a bare
+    // "missing" count would read in the hundreds and mean nothing. The
+    // denominator is the set that COULD have one.
+    const ratio = (have, elig, label) => {
+        if (!elig) return '';
+        const done = have >= elig;
+        return `<div class="stat ${done ? 'good' : 'warn'}" ` +
+               `title="${have} of ${elig} parts that could have a datasheet">` +
+               `<b>${have}<span style="opacity:.55">/${elig}</span></b>` +
+               `<span>${esc(label)}</span></div>`;
+    };
     shell(target,
         cell(s.parts, 'parts') +
         cell(s.stock, 'stock items') +
         cell(s.uncounted, 'never counted', 'warn') +
         cell(s.no_image, 'no image', 'warn') +
         cell(s.no_keywords, 'no keywords', 'warn') +
-        cell(s.free_drawers, 'drawers free', 'good'),
+        ratio(s.ds_have, s.ds_eligible, 'datasheets') +
+        cell(s.free_drawers, 'confirmed empty', 'good') +
+        cell(s.unchecked_drawers, 'unchecked', 'warn'),
         'stats');
 }

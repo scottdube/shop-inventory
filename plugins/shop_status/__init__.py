@@ -451,6 +451,7 @@ class ShopStatusPlugin(UserInterfaceMixin, InvenTreePlugin):
             })
 
         parts = Part.objects.filter(active=True)
+        ds_have, ds_eligible = self._datasheet_coverage()
         return {
             'sections': sections,
             'pos': pos,
@@ -462,10 +463,85 @@ class ShopStatusPlugin(UserInterfaceMixin, InvenTreePlugin):
                 'uncounted': StockItem.objects.filter(stocktake_date__isnull=True).count(),
                 'no_image': parts.filter(image='').count(),
                 'no_keywords': parts.filter(keywords='').count(),
+                # Counts only locations a HUMAN confirmed empty by eye. Not
+                # "locations with no stock rows" — B3-R3C2 had zero rows and a
+                # drawer full of ICs, so records are not evidence of emptiness.
+                # The label says "confirmed empty" for that reason: this is a
+                # coverage number, not a capacity number, and reading it as
+                # capacity is how you get sent to fill an occupied drawer.
                 'free_drawers': StockLocation.objects.filter(
                     description__istartswith='VERIFIED EMPTY').count(),
+                'unchecked_drawers': self._unchecked_drawers(),
+                'ds_have': ds_have,
+                'ds_eligible': ds_eligible,
             },
         }
+
+    # Eligibility must match scripts/datasheets.py:candidates(). Two
+    # definitions of "could have a datasheet" would drift, and the number on a
+    # dashboard is the one people trust.
+    _DS_SKIP_CATS = {'Capacitors', 'Resistors', 'LEDs'}
+    _DS_BAD = re.compile(r'["\u2033\']|\bmm\b|\bawg\b|\bpcs?\b|\bpack\b|\bkit\b|\bassort', re.I)
+    _DS_MPN = re.compile(
+        r'\b(?=[A-Z0-9][A-Z0-9\-]{3,})(?=[A-Z0-9\-]*[0-9])(?=[A-Z0-9\-]*[A-Z])'
+        r'[A-Z][A-Z0-9]*[0-9][A-Z0-9\-]*\b')
+
+    def _unchecked_drawers(self):
+        """Bin-wall drawers with no stock rows that nobody has actually looked in."""
+        from stock.models import StockItem, StockLocation
+        pat = re.compile(r'^[AB][1-3]-R\d+C\d+$')
+        occupied = set(StockItem.objects.filter(location__isnull=False)
+                       .values_list('location_id', flat=True))
+        n = 0
+        for l in StockLocation.objects.all().only('pk', 'name', 'description'):
+            if not pat.match(l.name or ''):
+                continue
+            if l.pk in occupied:
+                continue
+            if (l.description or '').upper().startswith('VERIFIED EMPTY'):
+                continue
+            n += 1
+        return n
+
+    def _datasheet_coverage(self):
+        """(have, eligible) — NOT (missing, total).
+
+        A bare "no datasheet" count would read 900+ and be meaningless: most of
+        this catalogue is passives from assortment kits, hardware, and tooling,
+        none of which has a datasheet to find. Reporting coverage against the
+        set that COULD have one turns trivia into a to-do list, which is what
+        this panel is for.
+        """
+        # Deliberately NOT wrapped in a bare `except: return 0, 0`. An earlier
+        # version was, and it silently reported 0/0 when `Part` was simply not
+        # imported in this scope — a broken tile that looked like an honest
+        # "nothing eligible". Only the one expected, survivable condition is
+        # caught: a shop with no Electronics category at all.
+        from common.models import Attachment
+        from part.models import Part, PartCategory
+        try:
+            root = PartCategory.objects.get(name='Electronics')
+        except PartCategory.DoesNotExist:
+            return 0, 0
+        pool = Part.objects.filter(
+            active=True,
+            category__in=root.get_descendants(include_self=True))
+        have_ids = set(Attachment.objects.filter(model_type='part')
+                       .values_list('model_id', flat=True))
+        have = eligible = 0
+        for prt in pool.select_related('category').only('pk', 'name', 'category'):
+            if prt.category and prt.category.name in self._DS_SKIP_CATS:
+                continue
+            head = prt.name.split(',')[0]
+            if self._DS_BAD.search(head):
+                continue
+            m = self._DS_MPN.search(head.upper())
+            if not (m and len(m.group()) >= 4):
+                continue
+            eligible += 1
+            if prt.pk in have_ids:
+                have += 1
+        return have, eligible
 
     def get_ui_dashboard_items(self, request, context, **kwargs):
         """Four widgets: the work queue, orders/projects, what to buy, the numbers."""
