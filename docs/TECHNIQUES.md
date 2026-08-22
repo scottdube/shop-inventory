@@ -181,3 +181,57 @@ the person who assembled it remembers.
 The general rule: **the catalogue can answer questions about physical objects
 that the objects cannot answer about themselves.** A part with no markings has
 no identity in the hand, and a complete one in a record nobody thought to open.
+
+## Fetch through the page, not around it — driven Chrome defeats fingerprinting
+
+The house rule has been "vendor sites that fingerprint you need a browser."
+True, but it was applied as *"…so a human has to fetch it."* That last step is
+wrong, and it cost real work before anyone tested it.
+
+**A driven browser can fetch the bytes itself.** Run `fetch()` from inside a
+page already on that origin, and the request carries the browser's real TLS
+fingerprint, headers, cookies and session — everything curl cannot fake:
+
+```js
+const r = await fetch('https://vendor.example/file.pdf', {credentials: 'include'});
+const blob = await r.blob();
+const a = document.createElement('a');
+a.href = URL.createObjectURL(blob);
+a.download = 'thing.pdf';
+document.body.appendChild(a); a.click(); a.remove();
+```
+
+The file lands in `~/Downloads` and is then an ordinary local file — verify it,
+`itq push` it, attach it. **Proven end to end 2026-08-21** against `st.com`,
+which kills curl's HTTP/2 stream outright: the scripted download produced md5
+`dec39565…`, **identical to the same file downloaded by hand.**
+
+Two details that make it work:
+
+- **Navigate to the vendor's own origin first**, then fetch. A cross-origin
+  fetch from a blank tab has none of the context that makes the request look
+  legitimate, and may be blocked by CORS besides.
+- **`credentials: 'include'`** so a logged-in session applies. This is what
+  extends the technique to sites that require sign-in.
+
+### What this obsoletes
+
+Any conclusion of the form *"vendor X is unscrapeable"* that was reached with
+curl, or with a headless fetch, is **not evidence about a driven browser** and
+should be re-tested before it is believed. Specifically:
+
+- **The product-image backlog.** It was declared effectively dead because
+  "Amazon is bot-blocked from both the Mini and the laptop — two independent
+  confirmations", leaving ~82% of images unreachable. Both confirmations were
+  *curl from a shell*. Neither tested a driven browser holding a real Amazon
+  session. That backlog deserves one honest re-test.
+- **Remaining datasheets** from onsemi, Diodes Inc, Toshiba, SMC and Mouser,
+  all of which refused a scripted fetch today.
+
+### Where it stops
+
+This defeats **fingerprinting**, not **authorisation**. It does not touch a
+CAPTCHA, a login wall, or a rate limit, and it must not be used to try:
+Octopart's PerimeterX interstitial is still a hard stop, and solving one is
+never on the table. If a page challenges the browser, that is a refusal from a
+human-facing system and it gets respected.
