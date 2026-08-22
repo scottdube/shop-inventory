@@ -510,6 +510,47 @@ that shares the state and not the intent.** "The drawer has stock" was standing
 in for "you probably meant to estimate, not identify", and those came apart the
 moment a drawer could hold two things.
 
+## One part, two drawers
+
+`91251A585` was bought as 50. Scott found 4 in B2-R4C3 and counted them — which
+set the row to 4. **The other 46, sitting in a different drawer, stopped
+existing as far as the catalogue was concerned.** The count did not move them
+anywhere; it overwrote them.
+
+A fastener bought in one lot does not stay in one drawer, and the picker only
+ever offered rows that were *unlocated*, so once a part was filed there was no
+way to say "and some more of it is over here."
+
+The pick list now also offers parts already filed in a drawer of this cabinet,
+marked `already filed in B2-R4C3 — picking this adds a SECOND lot here, leaving
+that drawer alone`. Choosing one creates a **new stock row** rather than moving
+the existing one, because moving it would empty a drawer that is not empty.
+
+**A second lot requires a count.** Without one there is no way to say how much
+is in *this* drawer, and the purchased figure cannot be carried across — it is
+already carried on the first row. The new row's notes say outright that it is
+what is HERE and not the total, because a reader seeing "4" and "46" for the
+same part should not have to work out whether one supersedes the other.
+
+## The API's word is worth nothing
+
+Four parameters silently ignored on this install, each returning success:
+
+| parameter | claimed | actually |
+|---|---|---|
+| `stocktake_date` on PATCH | writes | read-only, HTTP 200, no change |
+| `metadata` on PATCH | writes | HTTP 200, no change |
+| `name=` on `/part/` | exact filter | ignored — the duplicate guard passed every time |
+| `location__isnull=true` | filters | returned all 560 rows |
+| `cascade=true` on `/stock/` | includes children | returned none |
+
+Every one failed by returning a plausible result rather than an error, and two
+of them broke a guard whose whole job was to prevent a bad write.
+
+**Fetch broadly, filter in Python.** The cost is a few hundred rows over
+localhost; the alternative is discovering each ignored parameter through the
+damage it does.
+
 ## The write journal — undo and reconciliation from one record
 
 Every `/api/assign` write records the row's full **before** state: location,
