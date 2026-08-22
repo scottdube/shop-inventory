@@ -54,7 +54,41 @@ drawer read as forty-five. This is the measurement behind "photographs show
 identity, not quantity": the rule is not superstition, it has a shape, and the
 shape is that occlusion beats the model as soon as parts overlap.
 
-## Why it does not solve the B1/B2 walk
+## The identify mode — added 2026-08-22
+
+**The record is consulted before the camera.** Picking a drawer calls
+`/api/drawer`, which is free and instant and reports what InvenTree already
+holds for it — counting stock in the drawer *or any descendant*, so a drawer
+holding an assortment kit does not read as empty. Scott: *"look to see if the
+bin has something assigned already before you have AI go look for it."*
+
+The drawer's state then picks the mode, so there is no toggle to set wrongly:
+
+| drawer state | job | what runs |
+|---|---|---|
+| already assigned | how many are there | the original estimate flow |
+| nothing on record | which part is this | `/api/identify` |
+
+`/api/identify` asks the model to **read text, not to identify the part** — the
+McMaster bag tag, any Brady or handwritten label, any stamping. Matching against
+the 48 unlocated rows happens in Python in `match_reading()`, because a model
+asked to choose from a candidate list always chooses, while a number either
+matches a SKU or does not. Results are graded `definite` (tag matches one SKU
+exactly), `probable`, or `ambiguous`, and the basis is reported — `tag`,
+`partial-tag`, `label-text`, `tag-no-match`, `nothing-legible`.
+
+The model is told to transcribe rather than correct, and to write `?` for a
+character it cannot read. A plausible completion of a part number is worse than
+a short answer, because a wrong McMaster number matches a real and different
+part.
+
+**Still read-only.** It proposes; nothing is written. Seven matcher cases pass,
+including the one that caught a real bug: a drawer label reading `M3 .5 x20`
+matched an *M6* x 20 socket head, because the thread regex expected McMaster's
+`M6 x` spelling and found no thread at all in the label's, leaving length as the
+only evidence.
+
+## Why the original design did not solve the B1/B2 walk
 
 The walk needs the drawer address to be an OUTPUT. binscan assumes it is an
 INPUT — *"the drawer address already determines that"* — which is true for every

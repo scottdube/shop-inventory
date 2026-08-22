@@ -22,9 +22,17 @@ Keys come from the environment, loaded from `~/binscan/env` (mode 600, **not in
 this repo**): `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `INVENTREE_TOKEN`,
 optionally `INVENTREE_URL`, `OLLAMA_URL`, `BINSCAN_WRITES`.
 
-`BINSCAN_WRITES=1` is the only thing that lets it write to InvenTree. It is off,
-and the reason is in the docstring: a bin-check tool that silently writes bad
-numbers is worse than no tool.
+`BINSCAN_WRITES=1` is the only thing that lets it write to InvenTree, and **it
+is ON** — an earlier version of this file said otherwise, from the docstring's
+intent rather than from `/healthz`. Read the running service, not the comment.
+
+What makes that safe is `AUTO_CONF`, the set of confidence levels allowed to
+write with no human confirming. **It is empty and must stay empty.** It held
+`{"high"}` until 2026-08-22, when the run log turned out to contain five HIGH
+confidence readings that were wrong — worst case a five-piece drawer called
+~10. Nothing had been written only because the UI never called `/api/record`.
+A model's confidence describes how clearly it could see, not whether it was
+right, and the log shows those two come apart.
 
 ## What it is for, and what it is not good at
 
