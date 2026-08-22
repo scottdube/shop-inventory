@@ -337,3 +337,44 @@ independently matched it to BO-0013, which needs exactly one.
 down stops the same question being asked every time somebody re-counts that
 drawer. An unanswered question that keeps reappearing trains people to ignore
 the tool.
+
+## A "Project" column in the parts table — via a parameter, not a plugin
+
+Scott wanted a column in the parts list showing which project(s) have used a
+part. Two things had to be established first, and one corrected an earlier
+claim here:
+
+- **There is no plugin hook for table columns.** `UserInterfaceMixin` offers
+  `get_ui_panels`, `get_ui_dashboard_items`, navigation and actions — nothing
+  for adding a column. A plugin can add a *panel* to a part's detail page, but
+  not a column to the list.
+- **Part parameters exist and the table can show them.** They were renamed and
+  moved in 1.x — `part.PartParameter` became **`common.Parameter`** with
+  `common.ParameterTemplate`, now generic (`model_type` is a ContentType FK,
+  `model_id` the object id). An earlier note here said parameters did not exist
+  in 1.5; that was a failed lookup under the old name, and this install already
+  had 95 values across Body Size, Lead Pitch and Footprint.
+
+`scripts/project_column.py` builds a `Project` parameter, re-runnably, from
+three sources ranked by how much they actually prove:
+
+| Source | Strength |
+|---|---|
+| `belongs_to` — physically installed in an assembly | **proof** — someone put it there and the record names the unit |
+| `CONSUMED BY:` notes from `unaccounted.py` | testimony, from the one person who knows, captured while holding the part |
+| Build BOM lines | a **plan** — a pending build has consumed nothing |
+
+**Planned use is marked with a trailing `?`.** A column showing "inside a
+finished device" and "some project intends to use this" identically is worse
+than no column: it reads as fact and is half intention.
+
+Two details worth keeping: split build titles on a **spaced** hyphen only, or
+"Shrink-fit controller" becomes "Shrink"; and if a project appears as both
+actual and planned, keep only the actual, or the column reads "Rat GDO, Rat
+GDO?" and looks unreliable.
+
+    itq run scripts/project_column.py            # dry run
+    itq run scripts/project_column.py --commit
+
+Re-run after any counting session — answers recorded by `unaccounted.py` feed
+straight in, so the column improves exactly as the drawer walk progresses.
