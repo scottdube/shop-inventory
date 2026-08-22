@@ -155,3 +155,44 @@ whole repo private.
 
 Before any first push of a repo, and before adding data to a public one, grep for
 order numbers, emails, tokens, internal IPs and street addresses.
+
+## Written-down constraints expire — schedule the re-test
+
+The rule at the top of this file is "write it down in the same turn". Here is
+its failure mode, found on 2026-08-21.
+
+Since mid-August every piece of remote work here has been shaped by a recorded
+constraint: rapid cross-site SSH trips the UniFi IPS, so batch everything into
+one uploaded script. It was written down properly, with evidence — a named
+signature and a differential port test. It was cited in `CLAUDE.md`, in two
+scheduled-task files, in the memory index, and in the design of `itq`.
+
+Scott, in passing: *"I'm not sure the IPS will trip — I believe that was
+solved. It was an inference before, based on a stale condition."*
+
+Tested it: **ten back-to-back SSH sessions in nine seconds, all ~0.85 s, no
+trip** — twice the old threshold and faster. Gone, and probably gone for a
+while. Nobody noticed, because a constraint that makes you avoid something
+never announces that it has lifted. **You do not get an error from a wall you
+stopped walking into.**
+
+So the discipline that preserves hard-won knowledge preserves expired knowledge
+identically, and the expired kind is worse than no knowledge: it carries
+citations and a date and reads as settled.
+
+**The distinction that matters:**
+
+| Kind of recorded finding | Ages how |
+|---|---|
+| A **symptom→diagnosis** note ("if 22 is dark, check another port first") | Stays useful even after the cause is gone |
+| A **constraint that shapes design** ("never do X, batch instead") | Expires silently, and keeps costing after it does |
+
+The second kind earns a **re-test date and a cheap test**, recorded next to the
+claim. This one's test was ten SSH calls and nine seconds — trivially cheap,
+and it went a week unrun purely because nobody thought to question a note that
+looked authoritative.
+
+Ask of any constraint: *what would it cost to check that this is still true?*
+If the answer is "almost nothing", the honest thing is to check rather than
+inherit it. And when a constraint is retired, keep the diagnostic that came
+with it — the wall is gone, but knowing what a wall felt like still helps.
