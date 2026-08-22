@@ -272,3 +272,44 @@ Two lessons, and the second is the sharp one:
   file — it is a conflict to resolve *then*, in both places, or the fresher
   wrong answer silently wins.
 
+
+## Find consumption forward from purchases, not backward from builds
+
+Reconstructing what a finished project consumed, from the build record, does
+not work here — those records were written up after the fact, so their dates
+describe when someone typed them rather than when anything was soldered. See
+the `completion_date` trap.
+
+Scott's inversion is better, and it is what `scripts/unaccounted.py`
+implements: **work forward from the two facts that are trustworthy.**
+
+1. **What was bought** — purchase orders, with real received quantities.
+2. **What is on the shelf** — a count taken just now.
+
+The gap is consumption. And it can be asked about *while the part is in hand*,
+which is the only moment anyone can answer it. Six months later the question is
+unanswerable, and the drawer walk is exactly when the part is in hand — so the
+question costs nothing extra to ask.
+
+    itq run scripts/unaccounted.py --location B3
+
+Three rules the tool enforces, each of which would otherwise produce fiction:
+
+- **Only counted stock is compared.** Subtracting a purchase from an
+  `[ESTIMATE]` produces a fictional shortfall that looks exactly like evidence.
+- **Installed stock counts as accounted for.** A part with `belongs_to` set is
+  inside something and the record says which — it is not missing. This is why
+  installing beats deleting.
+- **Prefer confirmation to recall.** Before asking an open question, it checks
+  whether a build's BOM already explains the gap and asks *"was it BO-0013?"*
+  instead of *"what used one of these?"* A yes/no is far more reliable than a
+  memory test, and it fails safe: a wrong suggestion gets corrected, a blank
+  prompt gets a shrug.
+
+It validated itself on first run — flagged one missing Minisplit CN105 PCB and
+independently matched it to BO-0013, which needs exactly one.
+
+**Record "cannot remember" as an answer.** It is a real result, and writing it
+down stops the same question being asked every time somebody re-counts that
+drawer. An unanswered question that keeps reappearing trains people to ignore
+the tool.
