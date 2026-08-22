@@ -909,3 +909,40 @@ Same shape as the kit-count evidence tiers: the number is not the problem, the
 observed rather than reconstructed. **For builds already finished, `belongs_to`
 is the retrofit** — it converts a claim into a fact for the items you can still
 identify, and leaves the rest honestly marked as design.
+
+## `completion_date` is when someone typed it in, not when it was built
+
+Deciding whether a completed build should deduct stock looks like a clean
+computation. Compare each part's `stocktake_date` against the build's
+`completion_date`:
+
+- counted **after** the build → the count already excludes what was used → **do
+  not deduct**
+- counted **before** → the count still includes it → **deduct**
+- never counted → **unknown**, decide nothing
+
+The test is sound. It ran cleanly across all three completed builds and gave a
+confident answer. **The answer was wrong**, because all three builds are
+retrospective write-ups: created and completed within a day of each other,
+recording work done earlier. BO-0008 says so in its own title — *"three already
+built"*. For those, `completion_date` is a data-entry date, so the test
+compares a count against the wrong event and cheerfully reports "counted before
+the build, should deduct" about parts counted long after the soldering.
+
+**The tell is `creation_date == completion_date`** (or within a day). A build
+worked in real time is created, sits in production, and completes later. One
+created and finished the same day is almost always a record of the past.
+
+Two rules follow:
+
+- **Record the PHYSICAL build date explicitly** when entering a historical
+  build, in the notes if nowhere else. Without it the chronology is
+  unreconstructable and every derived conclusion inherits the error.
+- **When the chronology is unknown, deduct nothing.** An inflated count is
+  visible and recoverable — you go to the drawer and find fewer than expected.
+  A wrongly-deducted count reads as "I need to buy more" and is never
+  questioned.
+
+The wider point: a date field answers the question it was designed for, not the
+question you are asking. Before computing on a timestamp, check which *event* it
+records — and whether that event is the one in your reasoning.
