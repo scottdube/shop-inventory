@@ -420,6 +420,27 @@ A part created here has no supplier and no purchase record, so it never appears
 in the purchased-vs-counted reconciliation. That is honest: nobody knows where
 it came from.
 
+## A drawer can hold more than one thing
+
+Filing used to collapse every option and advance after 1.6 seconds, which
+assumed a drawer holds exactly one part. Plenty do not, and auto-advancing away
+would strand the rest of the contents with no sign anything had been missed.
+
+After a filing the app now **asks**: *"Is there anything else in that drawer?"*
+— file another, or move on. It does not decide.
+
+**Marking a drawer empty still advances by itself**, and the asymmetry is the
+point: a drawer is empty or it is not, and there is nothing further to add. A
+filed drawer's completeness is genuinely unknown, and unknown should be asked,
+not assumed.
+
+"File another" does not simply reload the drawer view, because that view would
+now correctly report the drawer as ASSIGNED and offer to estimate its count
+rather than to file a second part into it.
+
+A drawer counts as **counted** in the grid only if every row in it does, so a
+drawer with one counted and one carried row reads blue, not green.
+
 ## The write journal — undo and reconciliation from one record
 
 Every `/api/assign` write records the row's full **before** state: location,
