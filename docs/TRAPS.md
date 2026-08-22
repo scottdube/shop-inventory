@@ -980,3 +980,35 @@ The symptom is indistinguishable from "the scheduler never fired". `lastRunAt`
 said it fired; the journal said nothing happened. Only the app's own Runs panel
 showed the truth — a run still marked **Running**, hours later, waiting on a
 dialog.
+
+## A zero with no note is a question; a zero with a note is a fact
+
+Stock item #341 (SHT31-D at RB-12) was flagged 2026-08-21 as the single
+unexplained row in a sweep — quantity 0, no notes, no other piles. It looked
+like a data error worth a trip to the bench.
+
+It was correct. Four were bought 2026-06-28, all four were used, and four more
+were reordered on 08-20. Nothing was wrong; the row simply never said why it
+was zero.
+
+**Write the reason down when you zero a row.** The number is identical either
+way, and the difference is entirely in what it costs the next person: an
+unexplained zero gets re-investigated every time somebody audits, and each
+audit rediscovers the same nothing.
+
+Same shape as `[ESTIMATE]` versus a counted quantity, and as VERIFIED EMPTY
+versus a drawer with no stock rows. The project keeps arriving at one rule from
+different directions: **a value without its provenance is not a smaller version
+of the truth, it is a different and worse thing** — because it looks identical
+and cannot be trusted.
+
+### Corollary: read the description before calling something a duplicate
+
+The same sweep flagged SHT31-D as existing twice, #292 and #54. It does not.
+#54 is a **tombstone** — inactive, zero stock, zero suppliers, and its
+description says `MERGED into part #292`. A name search found two rows; reading
+either one would have closed it.
+
+Exactly the B3-R3C2 mistake again — that drawer was called empty on a row count
+while its own description said what was in it. **When a record looks wrong,
+read its description before reporting it.**
