@@ -568,6 +568,31 @@ Offering an input before its subject exists teaches the user the tool is broken,
 which is exactly the impression to avoid in something meant to be picked up
 after a month away.
 
+## A read that matches nothing should still hand you a starting position
+
+An Everbilt retail box read perfectly — `EVERBILT HEX NUTS 3/8 in-16 I.D.
+STAINLESS 25PK` — matched nothing, and offered a blank create form. Scott: *"it
+properly decodes the picture, but it doesn't give you a candidate to add to the
+system."* Right: the read already contained everything the funnel asks for, and
+making someone retype what was just lifted off the label is the tool discarding
+its own work.
+
+When nothing matches, the response now carries a `suggest` — thread, head,
+finish and a composed name — and the create card opens **pre-filled**, with the
+funnel facets pre-selected so the count of matching catalogue rows is visible
+straight away. That count is the evidence that creating is right, rather than a
+leap of faith.
+
+Everything stays editable. **The label is evidence about the box, and the box is
+evidence about its contents only for as long as nobody refilled it.**
+
+Two parsing bugs surfaced getting there, in one string. `3/8 in-16` spells the
+inch mark as a WORD, which McMaster (`1/4"-20`) and handwritten labels (`3/8-16`)
+do not. The thread failed to parse — and then `3/8 in` was read as a LENGTH of
+0.375in, so a box of 3/8-16 hex nuts reached the matcher as a
+three-eighths-inch-long something. The separator now accepts `"`, `in`, `inch`
+or nothing, and the thread's span is excluded from the length search.
+
 ## The write journal — undo and reconciliation from one record
 
 Every `/api/assign` write records the row's full **before** state: location,
