@@ -593,6 +593,30 @@ do not. The thread failed to parse — and then `3/8 in` was read as a LENGTH of
 three-eighths-inch-long something. The separator now accepts `"`, `in`, `inch`
 or nothing, and the thread's span is excluded from the length search.
 
+## Filing retires the "empty" claim
+
+B2-R4C8 was marked VERIFIED EMPTY, then filed with hex nuts, and went on saying
+VERIFIED EMPTY. Scott found it in the InvenTree app: the **Details** tab claimed
+the drawer was empty while the **Stock Items** tab listed the nuts. Two screens
+of one record disagreeing, and the wrong one is the one a person reads first.
+
+Filing now strips any `VERIFIED EMPTY` or `PRE-SORT` stamp from the location,
+keeping the original human label. Three drawers had already drifted —
+B2-R2C8, B2-R4C5, B2-R4C8 — and were repaired.
+
+This is the third instance of one rule, which is why it is worth stating as a
+rule rather than as three fixes: **an action that resolves a state must retire
+the sentence describing that state.** The others were the McMaster import's
+"DRAWER UNKNOWN — treat this as UNFILED" surviving the filing that resolved it,
+and `[ESTIMATE] quantity is the purchased figure` surviving the count that
+replaced it. Prose does not know when it has become false; only the code that
+made it false does.
+
+One asymmetry left deliberately: **undoing a filing does not restore the
+VERIFIED EMPTY stamp.** The drawer returns to unknown rather than re-asserting
+an emptiness nobody has re-checked since. That is the conservative direction —
+after an undo the drawer should be looked at again anyway.
+
 ## The write journal — undo and reconciliation from one record
 
 Every `/api/assign` write records the row's full **before** state: location,

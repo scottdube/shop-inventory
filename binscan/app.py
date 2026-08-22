@@ -383,6 +383,27 @@ def _strip_stamp(desc):
     return d
 
 
+def clear_empty_stamp(loc):
+    """Filing into a drawer RETIRES any 'verified empty' claim on it.
+
+    B2-R4C8 was marked empty, then filed with hex nuts, and its Details tab went
+    on saying VERIFIED EMPTY while its Stock Items tab listed the nuts. Scott
+    caught it in the InvenTree app: two screens of the same record disagreeing,
+    and the wrong one is the one a person reads first.
+
+    Same rule as the notes: an action that resolves a state must retire the
+    sentence describing it. The original label is kept -- that is a human's
+    text, not the app's last opinion.
+    """
+    desc = (loc.get("description") or "").strip()
+    if not desc.upper().startswith(("VERIFIED EMPTY", "PRE-SORT")):
+        return None
+    restored = _strip_stamp(desc)
+    it_patch(f"stock/location/{loc['pk']}/", {"description": restored})
+    again = it_get(f"stock/location/{loc['pk']}/") or {}
+    return {"was": desc, "now": again.get("description")}
+
+
 def _norm_sku(s):
     return re.sub(r"[^A-Z0-9?]", "", (s or "").upper())
 
@@ -1033,6 +1054,7 @@ def api_newpart(name: str = Form(...), location: str = Form(...),
         return JSONResponse({"error": "part created but its home did not verify",
                              "part": part["pk"]}, 500)
 
+    clear_empty_stamp(loc)
     log_append({"id": uuid.uuid4().hex[:8], "kind": "newpart",
                 "at": datetime.datetime.now().isoformat(timespec="seconds"),
                 "part": part["pk"], "name": name, "location": loc["name"],
@@ -1179,6 +1201,7 @@ def api_assign(stock: int = Form(...), location: str = Form(...),
         chk = it_get(f"stock/{body['pk']}/") or {}
         if chk.get("location") != loc["pk"] or abs(float(chk.get("quantity", -1)) - n) > 1e-6:
             return JSONResponse({"error": "second lot did not verify on re-read"}, 500)
+        clear_empty_stamp(loc)
         log_append({"id": uuid.uuid4().hex[:8], "kind": "split",
                     "at": datetime.datetime.now().isoformat(timespec="seconds"),
                     "from_stock": stock, "new_stock": body["pk"],
@@ -1348,13 +1371,14 @@ def api_assign(stock: int = Form(...), location: str = Form(...),
                           "stocktake_date": after.get("stocktake_date")},
                 "counted": counted is not None,
                 "delta": (got_qty - carried) if counted is not None else None})
+    cleared = clear_empty_stamp(loc)
     flagged = (after.get("notes") or "").startswith("[ESTIMATE]")
     if (counted is None) != flagged:
         return JSONResponse({"error": "the [ESTIMATE] flag did not land as intended",
                              "counted": counted is not None, "flagged": flagged}, 500)
     return {"ok": True, "verified": True, "location": loc["name"],
             "quantity": got_qty, "counted": counted is not None,
-            "estimate_flag": flagged, "note": note}
+            "estimate_flag": flagged, "cleared_empty": cleared, "note": note}
 
 
 @app.get("/api/unlocated")
