@@ -441,6 +441,46 @@ rather than to file a second part into it.
 A drawer counts as **counted** in the grid only if every row in it does, so a
 drawer with one counted and one carried row reads blue, not green.
 
+## The fastener funnel
+
+Scott asked for *"a funnel like Amazon has or McMaster has, where you identify
+the fastener by its attributes and work down through it"*, in his order: thread
+system, then thread size, then head type. That ordering is right because **each
+step is a question you can answer with the part in your hand** — a thread gauge,
+a caliper, a look. Typing a name is harder, not easier: you have to invent the
+wording.
+
+It faces over the **whole catalogue**, not the cabinet's unlocated rows, because
+a part you are holding may already exist and be filed in another drawer, and a
+duplicate is the outcome worth preventing. `/api/fasteners` parses every part
+name into head / system / thread / length / finish; 74 of the 1046 parse as
+fasteners today.
+
+```
+all fasteners            74
+imperial                 20
+5/16-18                   2
+socket head               2
+black-oxide               1   -> 91251A585
+```
+
+**One inversion from McMaster: they hide options with no results; here a zero is
+the answer you want.** Narrowing to nothing is how you learn a part is not in
+the catalogue, and it is proof rather than "I scrolled and did not see it" —
+which is exactly what sent Scott through the same picker several times at
+B2-R4C1. Zero-count facets stay tappable and are marked, not removed.
+
+The funnel composes a name in one shape and the field stays editable, because a
+funnel that cannot be overridden lies about the odd one out. The facet VALUE and
+the part NAME are deliberately different strings: "socket head" narrows well and
+reads badly, so it is saved as "Socket Head Cap Screw".
+
+**The instrument this assumes exists.** Scott has a Thread Detective gauge
+hanging to the left of the Akro-Mils cabinets, which is what makes step 2
+answerable at the drawer. Two things follow: it is not in the catalogue and
+should be, and **it hangs in the 22 in of clearance where A0/B0 are meant to
+go** — that wall is not as empty as `docs/OPEN.md` assumes.
+
 ## The write journal — undo and reconciliation from one record
 
 Every `/api/assign` write records the row's full **before** state: location,
