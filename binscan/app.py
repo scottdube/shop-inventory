@@ -554,7 +554,14 @@ _KINDS = (("nylon-insert", "nyloc"), ("nyloc", "nyloc"), ("locknut", "nyloc"),
           ("button head", "button"), ("pan head", "pan"), ("flat head", "flat"),
           ("fillister", "fillister"), ("hex head", "hexhead"),
           ("set screw", "set"), ("washer", "washer"), ("eyebolt", "eyebolt"),
-          ("dowel", "dowel"), ("standoff", "standoff"), ("header", "header"))
+          ("dowel", "dowel"), ("standoff", "standoff"), ("header", "header"),
+          # Present so a MISMATCH registers. A bearing scored no kind at all,
+          # so "hex nuts" and "sleeve bearing" could not disagree -- the penalty
+          # for a wrong type never fired because one side was blank.
+          ("bearing", "bearing"), ("bushing", "bearing"), ("sleeve", "bearing"),
+          ("spacer", "spacer"), ("o-ring", "oring"), ("clip", "clip"),
+          ("rivet", "rivet"), ("anchor", "anchor"), ("pin", "pin"),
+          ("terminal", "terminal"), ("connector", "connector"))
 
 
 def _kinds(t):
@@ -633,13 +640,29 @@ def match_reading(reading, rows):
                       "strength": "ambiguous"} for r in exact[:5]], "tag")
         return [], "tag-no-match"
 
-    text = " ".join([reading.get("descriptors", "")]
-                    + list(reading.get("labels") or [])
+    # DESCRIPTORS ARE NOT MATCHED ON. The prompt calls them "the one place you
+    # may say what you see rather than read... treated as a weak hint, never as
+    # proof", and then this function weighted them exactly like read text.
+    #
+    # A photograph of a box of Everbilt hex nuts produced descriptors reading
+    # "cardboard box with orange and black retail label containing stainless hex
+    # nuts in plastic packaging" -- accurate prose, no part number -- and the
+    # matcher scored it against a nylon sleeve bearing and offered that. Prose
+    # about packaging cannot identify a fastener, and letting it try turns a
+    # correct reading into a confident wrong answer.
+    text = " ".join(list(reading.get("labels") or [])
                     + list(reading.get("markings") or []))
     if not text.strip():
         return [], "nothing-legible"
     lm, li, lmm, lin = _facts(text)
     lk = _kinds(text)
+    # No thread, no match. Length and finish and even the fastener TYPE are
+    # shared by dozens of rows; the thread is the only attribute that narrows to
+    # something worth proposing. Without one there is nothing to be confident
+    # about, and "no candidate" is an answer the UI handles well -- it offers
+    # the filter and the create path.
+    if not (lm or li):
+        return [], "no-thread-read"
     scored = []
     for r in rows:
         pm, pi, pmm, pin = _facts(r["name"])

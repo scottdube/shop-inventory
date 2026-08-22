@@ -1471,3 +1471,37 @@ the size annotation to the end where the guards that parse it would eventually
 miss it. **"Previously labelled" must mean the human's label, not the app's own
 last opinion.** `_strip_stamp()` removes any prior stamp before writing a new
 one, so a description carries at most one state plus the original text.
+
+## A correct reading turned into a confident wrong answer
+
+Scott photographed a Home Depot Everbilt box of stainless hex nuts. The model
+read it **perfectly**: *"cardboard box with orange and black retail label
+containing stainless hex nuts in plastic packaging"*, legibility "clear", UPC
+and product code transcribed. binscan then proposed a **nylon sleeve bearing**,
+and had done the same thing an hour earlier, which is why B2-R4C8 needed
+reversing.
+
+Nothing was wrong with the vision. Three faults in the matcher, compounding:
+
+**1. It matched on `descriptors`.** That field's own prompt says it is *"the one
+place you may say what you see rather than read... treated as a weak hint, never
+as proof"* — and `match_reading` then weighted it identically to transcribed
+text. Prose about packaging cannot identify a fastener. Descriptors are now
+displayed to the user and never scored.
+
+**2. It would propose a match with no thread size.** Type, length and finish are
+each shared by dozens of rows; the thread is the only attribute that narrows to
+something worth showing. A match now REQUIRES a thread designation or a tag, and
+returns `no-thread-read` otherwise — which the UI handles well, because "no
+candidate" routes straight to the filter and the create path.
+
+**3. A bearing could not disagree with a nut.** `_kinds()` had no entry for
+bearings, so one side of the comparison came back empty and the wrong-type
+penalty never fired. **A vocabulary that only knows the right answers cannot
+detect a wrong one** — the absence of a term reads as agreement. Added bearing,
+bushing, spacer, o-ring, clip, rivet, anchor, pin, terminal, connector.
+
+The pattern across all three: **each fault converted "I could not tell" into "I
+am fairly sure".** That is the same direction as the missing 13 TPI, where a
+part whose thread failed to parse could not disagree with the label. A matcher
+must fail toward silence.
