@@ -284,6 +284,27 @@ Unchanged, and not negotiable: never buy, never submit a form, never solve a
 CAPTCHA, never re-authenticate, never receive stock, never invent a price. On
 any of those, stop and journal it.
 
+**Session preflight.** Driving a logged-in browser creates a dependency that is
+invisible when it breaks: Scott uses Safari, so Chrome sits in the background
+purely as the agent's session holder and nobody is looking at it. A signed-out
+Chrome raises no error a human sees. So each run now begins by loading one
+cheap authenticated page per site and testing for a specific signed-in marker —
+for McMaster, the literal string *"Log in to view Product Detail"*.
+
+That single visit **is** the keep-alive: session cookies roll on activity, so
+the page load that tests the session also extends it. Deliberately not a
+separate high-frequency poller — repeated automated hits are what
+bot-detection looks for, and a chatty keep-alive would eventually cause the
+logout it exists to prevent.
+
+When a site is out, the run **degrades instead of stalling**: it skips only the
+queues needing that site, still runs the keyword queue (which needs no network
+at all), pushes a notification immediately rather than saving it for the
+report, and leads the report with what was blocked. **A quiet run is not the
+same as a clean run** — the failure being designed against is a silent skip
+that reads as a quiet night and surfaces weeks later as "why isn't my tape in
+the system?"
+
 ## Lessons & traps
 
 The expensive ones — macOS TCC vs launchd, Micro-QR vs iPhone, MPTT race
