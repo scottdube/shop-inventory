@@ -1432,3 +1432,42 @@ Notes turned out to be the only writable channel, so the marker
 `binscan <date>: filed into <drawer> and COUNTED at <n> by hand` is the
 authoritative record, and `scripts/sync_stocktake.py` mirrors it into the real
 `stocktake_date` through the ORM, which the serializer does not gate.
+
+## A 500 after a partial write leaves the write
+
+`/api/newpart` created the part, then created the stock row, then built its
+response — and threw `AttributeError: 'list' object has no attribute 'get'` on
+the last step, because `POST /api/stock/` returns a **list** while
+`POST /api/part/` returns a dict. The caller saw a 500 and a Safari
+`SyntaxError` (an HTML error page where JSON was expected). The part and its
+stock row were already in the catalogue.
+
+Scott tried twice and left two orphan parts; a test of mine left a third. All
+looked like failures.
+
+**A 500 means the request failed, not that nothing happened.** The endpoint had
+verified the part landed, verified the stock row landed, and then died
+formatting the answer — the most misleading possible place, because everything
+it was supposed to do had succeeded.
+
+Two guards now: `_one()` normalises list-or-dict responses at the boundary, and
+both writes are checked for a `pk` rather than assumed. But the durable lesson
+is for the CALLER: after a 500 from an endpoint that writes, **go and look**.
+
+Related: this API returns a list from one POST and a dict from another with no
+signal which. Normalise at the boundary, never at the point of use.
+
+## Descriptions accumulated a state stamp per state
+
+Marking a mixed drawer empty produced:
+
+```
+VERIFIED EMPTY 2026-08-22 — previously labelled: PRE-SORT 2026-08-22 — mixed,
+not itemised: 5/16 socket head cap screw [6 x 2-7/32 x 1-9/16 in, small]
+```
+
+Each state wrapped the previous one, burying the actual human label and pushing
+the size annotation to the end where the guards that parse it would eventually
+miss it. **"Previously labelled" must mean the human's label, not the app's own
+last opinion.** `_strip_stamp()` removes any prior stamp before writing a new
+one, so a description carries at most one state plus the original text.
