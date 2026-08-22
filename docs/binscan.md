@@ -551,6 +551,23 @@ of them broke a guard whose whole job was to prevent a bad write.
 localhost; the alternative is discovering each ignored parameter through the
 damage it does.
 
+## A control with nothing to act on reads as broken
+
+The pick-by-hand card showed its count box and File button before a part had
+been chosen — the box invited a number with nothing to attach it to, above a
+button disabled and labelled "Choose a part above". Scott: *"I put in twenty
+two, there's no way to commit that... unclear how am I supposed to do it."*
+
+Both now stay hidden until a row is picked, and appear together with
+`Chosen: <part>` and a button naming the drawer. Changing the filter hides them
+again and clears the selection, because a count filed against a row that has
+scrolled out of the list is worse than one not filed at all.
+
+**A disabled control is not a hint; it is an obstacle with no explanation.**
+Offering an input before its subject exists teaches the user the tool is broken,
+which is exactly the impression to avoid in something meant to be picked up
+after a month away.
+
 ## The write journal — undo and reconciliation from one record
 
 Every `/api/assign` write records the row's full **before** state: location,
