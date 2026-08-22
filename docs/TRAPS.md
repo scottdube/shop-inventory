@@ -1048,8 +1048,23 @@ measured the shank at 16 mm."* He never said that. He had pasted back one row
 of **my own comparison table** — `Shank Ø 16 mm ≈ 5/8"` — and that restatement
 of my text got written down as his independent measurement.
 
-The object turned out to be stamped **M6**, which matches neither candidate on
-that order.
+The object was first read as stamped **M6**, matching neither candidate on that
+order — which is what exposed the fabrication.
+
+**Postscript: the identification was right anyway.** The stamp is `M16`; it
+sits upside down on the eye and the `1` is shallow. Confirmed by photograph,
+plus the obvious physical check — an M6 eyebolt has a 6 mm shank, about
+pencil-thin, and this is a forged lifting eye you can get two fingers through.
+
+That does not rescue the note, it sharpens the lesson. **Being lucky is not
+being careful.** Had the stamp read 3/8", the fabricated attribution would have
+been exactly as confident, and it would have outranked every later attempt to
+correct it, because "Scott measured it" is the top of the evidence hierarchy
+here.
+
+A second, cheaper check went unused: **a reading that contradicts the object's
+obvious scale should be re-read, not believed.** M6 was never plausible for
+this object, and noticing that would have caught it before any record changed.
 
 **This is the worst failure mode available to this catalogue**, and worse than
 simply being wrong. A note reading "Scott measured it" is the strongest
