@@ -1651,7 +1651,14 @@ async function refreshDrawer(v,keepOut){
         : `<span class=uncount>~ NOT COUNTED &mdash; purchased figure</span>`;
       return `<div style="margin:4px 0">${(+x.quantity).toLocaleString()} &times; ${x.name}${sub}${mark}</div>`;}).join('')
       || (d.homes||[]).map(h=>`<div class=mut>home of ${h.name} — no stock on hand</div>`).join('');
-    $('#known').innerHTML=`<div class=card><b>On record</b>${items}</div>`;
+    // "Add another" used to exist only in the moments after a filing, so
+    // leaving the drawer and coming back lost it. A drawer that holds one thing
+    // can hold two whenever you next open it, not only in the sixty seconds
+    // after the first was filed.
+    $('#known').innerHTML=`<div class=card><b>On record</b>${items}
+      <button id=addmorebtn style="margin-top:12px;background:var(--card);color:var(--fg);border:1px solid var(--line)">
+        + Add another part to ${v}</button></div>`;
+    $('#addmorebtn').onclick=()=>fileAnother(v);
     $('#part').value=(d.stock&&d.stock[0]&&d.stock[0].name)||(d.homes&&d.homes[0]&&d.homes[0].name)||'';
     $('#lpart').textContent='What it holds';
     $('#partwrap').style.display='';
