@@ -1663,7 +1663,9 @@ function wireCreate(drawer){
           + (j.counted?`, <b>${j.quantity}</b> counted.`:', quantity <b>not counted</b>.'));
         await repaint();
         go.textContent='Created';
-        if($('#adv').value!=='stay') setTimeout(()=>advance(), 1600);
+        $('#npmsg').innerHTML =
+          `<button id=morebtn2 style="margin-top:10px;background:var(--card);color:var(--fg);border:1px solid var(--line)">Anything else in ${drawer}?</button>`;
+        $('#morebtn2').onclick=()=>fileAnother(drawer);
       }else{
         msg.style.color='#ff8f8f'; msg.textContent=j.error||'failed'; go.disabled=false;
       }
@@ -1777,22 +1779,52 @@ function wireFiling(drawer){
             ? `<b>${j.quantity}</b> counted`
             : `<b>${j.quantity}</b> carried over, <b>not counted</b>`;
           setFlash(`&#10003; Filed into <b>${j.location}</b> &mdash; ${what}. Verified on re-read.`);
+          // A drawer can hold more than one part, so filing one does NOT mean
+          // the drawer is done -- and auto-advancing away would strand the
+          // rest of its contents. Empty-marking still advances by itself: a
+          // drawer is empty or it is not, and there is nothing more to add.
+          // Here the answer is unknown, so it is asked rather than assumed.
           const nx=nextDrawer(drawer,$('#adv').value);
           const bar=document.createElement('div');
           bar.className='card';
-          bar.innerHTML = nx
-            ? `<button id=nextbtn>Next drawer &rarr; ${nx}</button>
-               <div class=mut style="margin-top:8px">Filed ${drawer}. Nothing else here needs doing.</div>`
-            : `<div class=mut>Filed ${drawer}. That was the last drawer in this direction — pick another area above.</div>`;
+          bar.innerHTML =
+            `<div class=mut style="margin-bottom:10px">Filed into <b>${drawer}</b>.
+               Is there anything else in that drawer?</div>
+             <button id=morebtn style="background:var(--card);color:var(--fg);border:1px solid var(--line)">
+               Yes &mdash; file another part in ${drawer}</button>`
+            + (nx ? `<button id=nextbtn style="margin-top:9px">No &mdash; next drawer &rarr; ${nx}</button>`
+                  : `<div class=mut style="margin-top:9px">That was the last drawer in this direction — pick another area above.</div>`);
           $('#out').appendChild(bar);
           if(nx) $('#nextbtn').onclick=()=>advance();
-          if($('#adv').value!=='stay') setTimeout(()=>advance(), 1600);
+          $('#morebtn').onclick=()=>fileAnother(drawer);
         }else{
           msg.style.color='#ff8f8f'; msg.textContent=j.error||'failed'; btn.disabled=false;
         }
       }catch(e){ msg.style.color='#ff8f8f'; msg.textContent=String(e); btn.disabled=false; }
     };
   });
+}
+
+// Re-open the same drawer for a second part. Not a reload of the drawer view:
+// that would now report the drawer as ASSIGNED -- correctly, it holds what was
+// just filed -- and offer an estimate rather than another filing.
+async function fileAnother(drawer){
+  setFlash('');
+  try{
+    const cab=cabinetOf(drawer);
+    UNLOCATED = await (await fetch('/api/unlocated?cabinet='+encodeURIComponent(cab))).json();
+  }catch(_){ UNLOCATED = []; }
+  CUR = drawer;
+  $('#known').innerHTML =
+    `<div class=card><b>Adding another part to ${drawer}</b>
+       <div class=mut>What is already filed here stays. Pick or create the next
+       thing in the drawer.</div></div>`;
+  $('#out').innerHTML = manualCard() + createCard('') +
+    `<div class=card><div class=mut>Done with this drawer?</div>
+       <button id=skipbtn style="background:var(--card);color:var(--fg);border:1px solid var(--line)">
+         Move on</button></div>`;
+  wireFiling(drawer);
+  $('#known').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
 async function advance(){
