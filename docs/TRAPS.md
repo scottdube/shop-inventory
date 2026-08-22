@@ -1253,3 +1253,31 @@ Related: Scott measured 12 3/4 and said *"I wanna call it thirteen, but I don't
 dare."* Recorded as 12.75 with a note that it was rounded DOWN. A dimension
 rounded toward caution should say which way it was rounded, or the next person
 re-rounds it in the other direction and loses the margin twice.
+
+## The proxy-for-the-thing trap — four instances in one day
+
+A number that is *near* the thing you care about, and plausible, and wrong.
+Each of these was individually reasonable and each produced a confident false
+answer on 2026-08-22:
+
+| Took | Actually needed | Result |
+|---|---|---|
+| the 1/2in tubing **kit's** size | the **valve's** size | it is 3/8in |
+| the listing title's **"Plexiglass"** | the **box's** material | it is PET, not acrylic |
+| the cabinet's **exterior** 28 x 14 | the **usable** opening | 24in, not 28 |
+| the **ZIP centroid** 03820 | the **actual address** | Newington, not Somersworth |
+
+Add the pack-count read off a SKU (`X100` was the length) and the shank size
+attributed from a quoted table, and it is six.
+
+**The tell is always the same: the figure came from something ADJACENT to the
+object rather than from the object.** A kit it belongs to, a listing that sells
+it, an enclosure around it, a postcode containing it, a part number describing
+it. Adjacency makes the number feel like evidence — it is genuinely *about*
+something real, just not the thing being asked about.
+
+Before recording a dimension, quantity or material, ask: **did this come off
+the object, or off something near it?** If the latter, mark it derived and name
+the source. Two of these were caught only because Scott had the part in his
+hand, which is the argument for asking during a walk rather than reconstructing
+afterwards — and one was caught because he knew a road better than a geocoder.
