@@ -212,3 +212,38 @@ Practical form of both lessons:
   costing. Record a cheap re-test next to it.
 - When the re-test passes, **write down what you measured, not why you think it
   passed** — unless someone tells you the mechanism.
+
+## Tool records exist to be RECOMMENDED, not retrieved
+
+Scott, 2026-08-22, on why he is cataloguing hand tools at all:
+
+> *"My goal with these kinds of tools, including these pin release tools, is
+> that when we work on a project, you'll be aware of it and recommend the use
+> of it. I might not even think of using some of these tools, and you might
+> say — hey, you have a tool for that."*
+
+That is a different requirement from everything else in this catalogue, and it
+changes how a tool record must be written.
+
+For a **component**, the question is "do I have one, and where" — identity and
+location are the whole job. For a **tool**, the question is asked in the other
+direction, by someone who does not know the tool exists and is not searching for
+it. Nobody types "terminal removal tool" into anything; they say *"this
+connector is stuck and I'm about to break it."*
+
+**So a tool record must name the PROBLEM, not just the object.** Compare:
+
+| Useless for recommendation | Triggers a recommendation |
+|---|---|
+| "Ferrule Crimper, AWG23-7" | "terminates stranded wire into screw terminals so the strands cannot splay or back out" |
+| "Terminal Removal Tool Set, 41pc" | "releases a crimped terminal from a connector housing **without destroying the locking tang** — the alternative is replacing the harness plug" |
+| "ACT-232 Butt Splice Crimper" | "M22520/37-1 equivalent — controlled-cycle crimps on butt splices where the joint has to be airworthy-grade repeatable" |
+
+The failure mode is specific and worth naming: a record that reads correctly and
+still never surfaces, because the words in it are the words you would use if you
+already knew the answer. **Write the symptom, not the specification.**
+
+Practical form: every tool gets a sentence saying *when you would reach for it*
+and, where it matters, *what goes wrong without it*. The second half is what
+makes a suggestion persuasive rather than trivia — "you have a tool for that"
+lands when it is followed by "and doing it the other way wrecks the connector".
