@@ -391,3 +391,46 @@ The air box went on WS2 because WS2 already held tubing and ducting — putting 
 at the bench would have split the category, and then "do I have a ball valve"
 has two answers. That failure has already happened here with imperial fasteners
 across A2 and B2.
+
+## Container standard: fix the depth, vary the length
+
+Decided 2026-08-22, while the wire shelves are mid-transition. Scott: *"get
+containers that make sense for the end state, not just for where we are right
+now."*
+
+**Standard: 10 in front-to-back, 14 in long, height to suit the contents.**
+
+The reasoning is that only one dimension is actually constrained, and it is not
+the obvious one:
+
+| Dimension | Constrained by | Decision |
+|---|---|---|
+| **Depth (front-to-back)** | the shallowest shelf you might ever own | **fix at 10 in** |
+| Length | shelf or cabinet *width*, which is generous everywhere | free |
+| Height | the contents | mix — 3 in for fittings, taller for coiled tubing |
+
+Depth is the killer because it can only shrink. Today's wire racks are
+**46 x 18 in**; the plausible replacements are shallower, and a 12 in wall
+cabinet or standard bracket shelf is the binding case. A 14 in dimension does
+**not** fit front-to-back in 12 in. A 10 in one does, with 2 in clearance, and
+it also fits 16 in garage cabinets, 18 in wire racks and 24 in base cabinets.
+**Buy for the shallowest future, because a bin that no longer fits is a bin you
+re-buy.**
+
+Length looks like the free choice and mostly is, but 14 in is a sweet spot
+rather than a compromise: **two fit across a 30 in wall cabinet (28 in) and
+three across a 46 in wire shelf (42 in)**. At 16 in only one fits a 30 in
+cabinet, wasting half of it. Go longer only if the end state is definitely wide
+shelving rather than modular cabinets.
+
+**And buy containers during the transition even though the end state is
+undecided** — that is the point, not a hedge. Scott: *"if we don't have some
+form of containers for this transition period, it's gonna be chaos over
+there."* Loose stock on an open shelf cannot be labelled, cannot be moved in
+one motion, and cannot be counted. A bin sized to the shallowest future is
+usable now and survives the move; the alternative is deferring storage until
+the layout is settled, which means deferring it indefinitely.
+
+Recorded as `metadata.size` on the racks and bins, not only in prose — the rack
+dimensions had been sitting in a parent location's description where no query
+could reach them.
