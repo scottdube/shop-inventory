@@ -199,3 +199,35 @@ re-ordering, which is what 90% of these records are for.
 
 McMaster fingerprints clients hard — CAD downloads need a logged-in browser
 session, not curl. See the browser-beats-curl rule.
+
+### The CAD link is NOT derivable — the whole product page is behind a login
+
+Tested 2026-08-21 in a real browser rather than argued. `mcmaster.com/93412A423/`
+resolves, renders the site shell, and then says **"Log in to view Product
+Detail"** with a login modal. Not a bot challenge — a plain authentication
+wall, served to a normal logged-out Chrome.
+
+That settles the CAD question without ever clicking a download button. If the
+*product page itself* requires a session, everything downstream of it is
+session-bound by construction. There is no public, derivable URL of the form
+`.../<part>/cad.step`, and searching for one would have been effort spent
+proving a negative.
+
+Consequences for how these 92 links should be understood:
+
+- **The link is still correct and still worth storing.** For Scott, logged in,
+  it lands on the exact part. Derivation cost nothing and repairs in one line.
+- **The link is worthless to anyone without a McMaster account** — including any
+  unattended job. Do not build automation that assumes it can read these pages.
+- **Local capture matters more than first thought.** The spec text in each
+  part's description is not a convenience copy, it is the *only* copy anyone can
+  read without credentials.
+
+**The sanctioned path is McMaster's own API**, advertised in their site footer
+(`mcmaster.com` → API). It requires an approved account and a client
+certificate, granted to established customers. For a shop already ordering
+regularly, asking a rep for API access is a far better route to CAD and specs
+than any amount of browser driving — and it is the only version of this that
+would survive being run unattended.
+
+**Not attempted: logging in on Scott's behalf.** Credentials are his to enter.
