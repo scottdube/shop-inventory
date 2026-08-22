@@ -408,8 +408,23 @@ placeholder assembly part if the project has none:
 **Leave the build OPEN during the walk.** A completed build locks — the same
 trap as a completed purchase order — and three drawers later another part will
 turn out to belong to the same project. Accumulate lines as they surface, close
-once at the end. Closing early means fighting a locked record for the rest of
-the session.
+once at the end.
+
+**And then wait longer than that.** Scott's addition, and the better half of
+the idea: there is a **14-day cooling-off period** before a reconstructed build
+can be closed. Projects have a tail — a connector added late, a part that
+failed and got swapped, something found in a drawer next week. A build closed
+the moment the last drawer was counted misses all of it.
+
+The asymmetry is what justifies the wait: closing **locks** the record, so
+being early is expensive and being late costs nothing. `--list` shows each
+build's quiet days and whether it is ripe; `--close` refuses inside the window
+and explains why; `--force` overrides when you know it is genuinely finished.
+Every addition restarts the clock, which is the behaviour you want — a project
+still receiving parts is not finished by definition.
+
+Tracked in `Build.metadata['last_addition']`, because `BuildItem` carries no
+timestamp of its own and there is nothing else to read.
 
 Each reconstructed build is tagged `[RECONSTRUCTED]` in its notes and records
 that its **physical build date is unknown**, so nobody later compares stocktake

@@ -42,9 +42,36 @@ ap.add_argument("--project")
 ap.add_argument("--list", action="store_true", help="show reconstructed projects still open")
 ap.add_argument("--close", metavar="PROJECT")
 ap.add_argument("--commit", action="store_true")
+ap.add_argument("--quiet-days", type=int, default=14,
+                help="cooling-off period before a build may be closed (default 14)")
+ap.add_argument("--force", action="store_true",
+                help="close inside the cooling-off period anyway")
 a = ap.parse_args()
 
 TAG = "[RECONSTRUCTED]"
+
+
+def touched(build, when=None):
+    """Stamp/read the last time anything was added to a build.
+
+    Projects have a TAIL. The board gets finished, then three days later a
+    connector nobody remembered goes in, or a part fails and gets swapped. A
+    build closed the moment the last drawer was counted misses all of that —
+    and closing LOCKS the record, so the mistake is expensive rather than
+    merely wrong.
+
+    Scott's cooling-off period. Tracked in metadata because BuildItem carries
+    no timestamp of its own, so there is nothing else to read.
+    """
+    md = build.metadata or {}
+    if when:
+        md["last_addition"] = when.isoformat()
+        Build.objects.filter(pk=build.pk).update(metadata=md)
+        return when
+    v = md.get("last_addition")
+    if v:
+        return date.fromisoformat(v)
+    return build.creation_date or date.today()
 
 
 def find_build(name, create=False):
@@ -83,7 +110,11 @@ if a.list:
         n += 1
         lines = BuildLine.objects.filter(build=b)
         alloc = BuildItem.objects.filter(build_line__build=b).count()
-        print(f"  {b.reference}  {b.title}   {lines.count()} line(s), {alloc} allocated")
+        quiet = (date.today() - touched(b)).days
+        ripe = "READY to close" if quiet >= a.quiet_days else \
+               f"cooling off — {a.quiet_days - quiet}d to go"
+        print(f"  {b.reference}  {b.title}   {lines.count()} line(s), "
+              f"{alloc} allocated   quiet {quiet}d  [{ripe}]")
         for l in lines:
             print(f"      {l.quantity:g} x {l.bom_item.sub_part.name[:46]}")
     print(f"\n  {n} open. Close one with:  --close \"<title>\" --commit"
@@ -101,6 +132,15 @@ if a.close:
           f"{len(unalloc)} with nothing allocated")
     for l in unalloc:
         print(f"    ! {l.bom_item.sub_part.name[:50]} — would consume nothing")
+    quiet = (date.today() - touched(b)).days
+    if quiet < a.quiet_days and not a.force:
+        print(f"\n  NOT CLOSING — last addition was {quiet}d ago, cooling-off is "
+              f"{a.quiet_days}d.")
+        print(f"  Projects have a tail: a connector added late, a failed part "
+              f"swapped. Closing LOCKS this build, so waiting is cheap and being "
+              f"early is not.")
+        print(f"  Override with --force if you are certain it is finished.")
+        sys.exit(1)
     if a.commit:
         Build.objects.filter(pk=b.pk).update(status=40, completion_date=date.today())
         print(f"  closed {b.reference} — allocated stock is now consumed")
@@ -149,6 +189,7 @@ StockItem.objects.filter(pk=row.pk).update(
            f"on the shelf — the number is restored and the history is real.").strip())
 BuildItem.objects.create(build_line=line, stock_item=StockItem.objects.get(pk=row.pk),
                          quantity=a.used)
+touched(build, date.today())      # restarts the cooling-off clock
 
 r = StockItem.objects.get(pk=row.pk)
 ok = (float(r.quantity) == before + a.used
