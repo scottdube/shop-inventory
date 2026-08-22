@@ -546,6 +546,81 @@ def api_drawer(name: str = ""):
     return d
 
 
+@app.post("/api/empty")
+def api_empty(location: str = Form(...), confirm: str = Form("")):
+    """Mark a drawer VERIFIED EMPTY from the phone, during the walk.
+
+    Most of a walk is empty drawers, and until now the UI had no way to say so
+    -- you could file something or skip, and skipping records nothing, so the
+    drawer stays "unknown" forever and gets opened again next time.
+
+    The guards mirror scripts/mark_empty.py exactly, because the same mistakes
+    are available here and one of them has already been made once:
+
+      stock present      - obvious, but check descendants too: a drawer holding
+                           an assortment kit has its stock one level down and
+                           reads as empty at drawer level. That is what made B3
+                           look 41 drawers emptier than it was.
+      parking spot       - a Part whose default_location is this drawer has no
+                           stock BY DESIGN. Stamping it empty is wrong twice:
+                           it is a queue somebody means to come back to.
+      description names  - "no rows" is not evidence of emptiness, and the
+        something          description is often the only place the truth was
+                           written. The bracketed size annotation is metadata,
+                           not contents, and must be stripped before deciding
+                           or every bin-wall drawer trips this.
+    """
+    if not WRITES_ON:
+        return JSONResponse({"error": "writes disabled (BINSCAN_WRITES != 1)"}, 403)
+    if confirm.lower() not in ("1", "true", "yes"):
+        return JSONResponse({"error": "confirm required"}, 400)
+
+    locs = [l for l in _rows(it_get("stock/location/", name=location, limit=5))
+            if (l.get("name") or "").upper() == location.upper()]
+    if not locs:
+        return JSONResponse({"error": f"no location named {location}"}, 404)
+    loc = locs[0]
+
+    known = drawer_contents(location) or {}
+    if known.get("stock"):
+        what = known["stock"][0]["name"][:44]
+        return JSONResponse({"error": f"not empty - it holds {what}"}, 409)
+    if known.get("homes"):
+        who = known["homes"][0]["name"][:44]
+        return JSONResponse({"error": f"this is a PARKING SPOT, the home of "
+                                      f"'{who}'. It has no stock by design; that "
+                                      f"is not the same as empty."}, 409)
+
+    desc = (loc.get("description") or "").strip()
+    body = re.sub(r"\[[^\]]*\]", "", desc).strip(" ,;-\u2014")
+    if body.upper().startswith("VERIFIED EMPTY"):
+        return {"ok": True, "already": True, "description": desc,
+                "note": "already recorded empty; nothing changed"}
+    if body and not body.upper().startswith("PRE-SORT"):
+        return JSONResponse({"error": f"the drawer's own description names "
+                                      f"something: \u201c{body[:80]}\u201d. Check by "
+                                      f"eye - a description is often the only "
+                                      f"place the contents were written down."}, 409)
+
+    tag = f"VERIFIED EMPTY {datetime.date.today().isoformat()}"
+    new = (tag + (f" \u2014 previously labelled: {desc}" if desc else ""))[:250]
+    _b, err = it_patch(f"stock/location/{loc['pk']}/", {"description": new})
+    if err:
+        return JSONResponse({"error": f"could not write: {err}"}, 502)
+
+    again = it_get(f"stock/location/{loc['pk']}/") or {}
+    if not (again.get("description") or "").upper().startswith("VERIFIED EMPTY"):
+        return JSONResponse({"error": "write did not verify on re-read",
+                             "got": again.get("description")}, 500)
+
+    log_append({"id": uuid.uuid4().hex[:8], "kind": "empty",
+                "at": datetime.datetime.now().isoformat(timespec="seconds"),
+                "location": loc["name"], "location_pk": loc["pk"],
+                "before": {"description": desc},
+                "after": {"description": again.get("description")}})
+    return {"ok": True, "location": loc["name"], "description": again.get("description")}
+
+
 @app.post("/api/assign")
 def api_assign(stock: int = Form(...), location: str = Form(...),
                quantity: str = Form(""), confirm: str = Form("")):
@@ -1058,8 +1133,11 @@ async function refreshDrawer(v,keepOut){
   }else{
     MODE='identify';
     $('#known').innerHTML='<div class=card><b>Nothing on record for this drawer.</b>'+
-      '<div class=mut>Photograph the McMaster bag tag if there is one. '+
-      'The tag number is read and matched here; nothing is written.</div></div>';
+      '<div class=mut>Photograph the McMaster bag tag if there is one, '+
+      'or say it is empty.</div>'+
+      `<button id=emptybtn style="margin-top:12px;background:var(--card);color:var(--fg);border:1px solid var(--line)">This drawer is empty</button>`+
+      '<div id=emptymsg class=mut style="margin-top:8px"></div></div>';
+    $('#emptybtn').onclick=()=>markEmpty(v);
     $('#part').value='';
     $('#lpart').textContent='What it holds (unknown — leave blank)';
     $('#go').textContent='Read the tag';
@@ -1094,6 +1172,27 @@ let UNLOCATED=[];
 // Filing advances. Not everything gets filed -- a drawer may hold something
 // that is not in the unlocated list, or you may simply want to move on -- so
 // there has to be a way past a drawer that does not involve writing to it.
+// Most of a walk is empty drawers. Without this the only options were "file
+// something" or "skip", and skipping records nothing -- so the drawer stays
+// unknown and gets opened again on the next pass. Saying "empty" is a finding.
+async function markEmpty(drawer){
+  const btn=$('#emptybtn'), msg=$('#emptymsg');
+  btn.disabled=true; msg.textContent='recording…';
+  const fd=new FormData(); fd.append('location',drawer); fd.append('confirm','yes');
+  try{
+    const j=await (await fetch('/api/empty',{method:'POST',body:fd})).json();
+    if(j.ok){
+      setFlash(`&#10003; <b>${j.location}</b> recorded ${j.already?'(already)':''} as verified empty.`);
+      const cell=$('#gridwrap').querySelector(`.cell[data-n="${drawer}"]`);
+      if(cell){cell.classList.remove('unknown','filled');cell.classList.add('empty');}
+      if($('#adv').value!=='stay') setTimeout(()=>advance(), 1100);
+      else { msg.style.color='#7fd39b'; msg.textContent='recorded'; }
+    }else{
+      msg.style.color='#ff8f8f'; msg.textContent=j.error||'failed'; btn.disabled=false;
+    }
+  }catch(e){ msg.style.color='#ff8f8f'; msg.textContent=String(e); btn.disabled=false; }
+}
+
 function setFlash(html){ $('#flash').innerHTML = html ? `<div class=flash>${html}</div>` : ''; }
 
 function skipCard(){

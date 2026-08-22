@@ -233,6 +233,32 @@ It read *"Read-only to InvenTree"* — true when written, false the moment
 row. Now: *"Reading is free; writing needs you."* A safety claim that has gone
 stale is worse than none, because it is trusted.
 
+## Saying a drawer is empty
+
+Most of a walk is empty drawers, and until 2026-08-22 the UI could not say so.
+Scott, having advanced to B2-R1C2: *"there's nothing in one point two. How do I
+tell the system that that is empty from this UI?"* The only options were file
+something or skip, and **skipping records nothing** — so the drawer stays
+unknown and gets opened again on the next pass. Saying "empty" is a finding, not
+the absence of one.
+
+`/api/empty` stamps the drawer `VERIFIED EMPTY <date> — previously labelled:
+<the old description>`, the same string `scripts/mark_empty.py` writes, so a
+drawer marked from the phone is indistinguishable from one marked in bulk.
+
+Its guards mirror that script's exactly, because the same four mistakes are
+available here and one has already been made once:
+
+| refuses when | why |
+|---|---|
+| stock present **in the drawer or any descendant** | a drawer holding an assortment kit keeps its stock one level down; that is what made B3 read 41 drawers emptier than it was |
+| a Part calls it `default_location` | a parking spot has no stock **by design** — stamping it empty is wrong twice, it is a queue someone means to return to |
+| the description names something | "no rows" is not evidence of emptiness, and the description is often the only place the contents were ever written |
+| — but the bracketed size annotation is stripped first | it is metadata, not contents; treating it as contents refused all 64 A2 drawers the first time |
+
+Verified on re-read, journalled for undo, and idempotent — marking an
+already-empty drawer changes nothing and says so.
+
 ## The write journal — undo and reconciliation from one record
 
 Every `/api/assign` write records the row's full **before** state: location,
