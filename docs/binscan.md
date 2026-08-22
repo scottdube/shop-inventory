@@ -292,6 +292,34 @@ available here and one has already been made once:
 Verified on re-read, journalled for undo, and idempotent — marking an
 already-empty drawer changes nothing and says so.
 
+## Filed is not counted, and the UI has to say so
+
+Scott mid-walk 2026-08-22, looking at B2-R2C1: *"it doesn't tell you anywhere
+that that's an estimate... it just looks the same as one point one, which has in
+fact been counted."*
+
+He was right, and it undercut the whole design. Filing without a count is a
+deliberate, flagged state in the database — `[ESTIMATE]` prefix, no stocktake
+date — and the UI was rendering it as a bare number identical to a real count.
+A distinction that only exists in storage is not a distinction anyone acts on.
+
+Now three fill states, not two:
+
+| grid | meaning |
+|---|---|
+| green | filed and **counted** — a person tallied it |
+| blue | filed, **never counted** — the quantity is the purchased figure |
+| amber | nobody has looked |
+| grey | verified empty |
+
+and the "On record" card marks each row `✓ counted 2026-08-22` or **NOT
+COUNTED — this is the purchased figure**. A drawer counts as counted only if
+every row in it does.
+
+Blue is deliberately not a shade of green. Filed-uncounted is a different
+*claim*, not a weaker version of the same one: it says we know WHERE the stock
+is and not HOW MANY. Green would say both questions were settled.
+
 ## The write journal — undo and reconciliation from one record
 
 Every `/api/assign` write records the row's full **before** state: location,
