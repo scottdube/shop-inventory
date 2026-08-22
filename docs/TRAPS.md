@@ -698,33 +698,45 @@ defined way to change the answer.** Without one, the memory outlives the
 reasoning that produced it, and the system gets more confidently wrong the
 longer it runs.
 
-## An instant connection failure is a LOCAL block; a timeout is a remote one
+## Diagnose a failed fetch by WHERE it dies, not how fast
 
-`st.com` failed from the laptop in **0.043 seconds**. That is not a network
-problem — nothing round-trips to Europe and back in 43 ms. An instant refusal
-means something *on this machine* answered first.
+`st.com` would not serve a datasheet to curl. First reading: it failed in
+43 ms, so something local must be answering — Malwarebytes was the obvious
+suspect and was written up as the cause. **Wrong.** Verbose output settles it:
 
-Scott, 2026-08-21: *"st.com is being grabbed on this machine by Malwarebytes."*
+```
+*   Trying 23.211.136.6:443...
+* Connected to www.st.com (23.211.136.6) port 443
+* SSL connection using TLSv1.3 ... SSL certificate verify ok.
+* HTTP/2 stream 1 was not closed cleanly: INTERNAL_ERROR (err 2)
+```
 
-The same host also failed from the Mini, but with a **TimeoutError** — a
-completely different cause wearing the same coat. Two machines, one symptom
-("can't reach st.com"), two unrelated reasons, and the timing was the only
-thing that distinguished them:
+DNS resolved. TCP connected. **TLS completed and the certificate verified.**
+Only then was the stream killed. A local blocker — security product, hosts
+file, DNS sinkhole — kills a connection *before* TLS, because it has no
+certificate to offer. Getting a verified TLS session and then being dropped
+means you reached the real server and **the server chose not to answer you**.
 
-| Failure shape | Means |
-|---|---|
-| **Instant** (<100 ms) refusal or reset | Local: security software, hosts file, DNS sinkhole, proxy |
-| **Timeout** (seconds) | Remote or in-path: firewall drop, geo-block, dead host |
-| **403 / 450 / empty 202** | You reached them; they fingerprinted you — drive a browser |
+Forcing `--http1.1` does not fix it; it hangs for 25 s instead (exit 28). Two
+different symptoms, one cause.
 
-The mistake worth not repeating: the 0.04 s was in the output, and it was read
-as "blocked from this host" — true but useless. The number was already saying
-*local security product*, which is a 30-second fix, not a network problem to
-route around. **Read the latency, not just the outcome.**
+**Read the connection sequence, not the clock:**
 
-Practical consequence: a manufacturer datasheet domain being blocked by an
-endpoint security product is a whitelist entry, not an obstacle to engineer
-around. Check that before building a workaround through a third-party mirror.
+| Dies at | Cause | Fix |
+|---|---|---|
+| DNS resolution | Local sinkhole, hosts file, DNS filter | Whitelist / check resolver |
+| TCP connect | Firewall, routing, dead host | Network |
+| **After TLS verifies** | **The server is fingerprinting you** | **Drive a browser** |
+| 403 / 450 / empty 202 | Same thing, stated politely | Drive a browser |
+
+So `curl exit 92` (HTTP/2 stream error) and `exit 28` (hang) join 403/450/202
+as fingerprinting signatures. They look like network faults and are not.
+
+**Latency alone is a trap.** 43 ms says "something answered fast", which is true
+of a DNS sinkhole *and* of a server resetting your stream — opposite problems,
+opposite fixes. Only the sequence separates them, and `curl -v` prints it for
+free. Two wrong diagnoses here came from reading the timing and skipping the
+transcript.
 
 ## Octopart works in a human browser and challenges an automated one
 
