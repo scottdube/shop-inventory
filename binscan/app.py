@@ -377,7 +377,13 @@ _THREAD = re.compile(r"\bM\s*(\d+(?:\.\d+)?)\b", re.I)
 # of a short list, and a screw number is 4..14 -- nobody writes a fraction as
 # 10/32 when 5/16 exists. 1/32 and 3/32 stay fractions because 1 and 3 are
 # below that floor.
-_TPI = {18, 20, 24, 28, 32, 36, 40, 44, 48, 56, 64, 72, 80}
+# Real thread pitches, coarse and fine, from 1-8 up to 0-80. 13 was missing, so
+# McMaster's 1/2"-13 parsed as NO imperial thread at all -- and a row with no
+# thread cannot disagree with the label, so a 5/16-18 lock nut matched a 1/2-13
+# cap nut on the strength of both being nuts. A failure to PARSE reads as
+# agreement, which is the dangerous direction.
+_TPI = {8, 9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 27, 28, 32, 36, 40, 44, 48,
+        56, 64, 72, 80}
 _SCREW_NO = set(range(4, 15))
 # The inch mark sits between diameter and dash in McMaster's own spelling,
 # 1/4"-20, so the separator has to tolerate it.
@@ -410,14 +416,40 @@ def _imperial(t):
     can skip it. Without that, 1/4"-20 x 1/2" reads its own THREAD diameter as
     the length and every quarter-inch screw looks 1/4in long."""
     for m in _IMP_DASH.finditer(t or ""):
-        tpi = int(m.group(2))
-        if tpi in _TPI:
-            return f"{m.group(1)}-{tpi}", m.span()
+        dia, tpi = m.group(1), int(m.group(2))
+        # The diameter must be a fraction or a screw number. Widening the TPI
+        # set to include 8 made "18-8" -- the STAINLESS GRADE, which appears on
+        # half these labels -- parse as an 18-8 thread. A diameter of 18 is
+        # neither a fraction nor a screw size, so it is not a thread.
+        ok = "/" in dia or (dia.isdigit() and int(dia) <= 14)
+        if tpi in _TPI and ok:
+            return f"{dia}-{tpi}", m.span()
     for m in _IMP_SLASH.finditer(t or ""):
         a, b = int(m.group(1)), int(m.group(2))
         if b in _TPI and a in _SCREW_NO:
             return f"{a}-{b}", m.span()
     return None, None
+
+
+# What KIND of fastener. Dropped in an earlier rewrite, which is why the label
+# "1/4-20 nyloc" proposed a socket head screw: the thread matched a dozen rows
+# and nothing distinguished a locknut from a cap screw.
+_KINDS = (("nylon-insert", "nyloc"), ("nyloc", "nyloc"), ("locknut", "nyloc"),
+          ("lock nut", "nyloc"), ("cap nut", "nut"), ("hex nut", "nut"),
+          ("nut", "nut"), ("socket head", "socket"), ("low-profile", "socket"),
+          ("button head", "button"), ("pan head", "pan"), ("flat head", "flat"),
+          ("fillister", "fillister"), ("hex head", "hexhead"),
+          ("set screw", "set"), ("washer", "washer"), ("eyebolt", "eyebolt"),
+          ("dowel", "dowel"), ("standoff", "standoff"), ("header", "header"))
+
+
+def _kinds(t):
+    tl = (t or "").lower()
+    out = set()
+    for word, tag in _KINDS:
+        if word in tl:
+            out.add(tag)
+    return out
 
 
 def _facts(t):
@@ -426,15 +458,29 @@ def _facts(t):
     m = _THREAD.search(t)
     metric = f"m{float(m.group(1)):g}" if m else None
     imp, span = _imperial(t)
+    # "M6-20" is a metric size and a length, but 6-20 also looks like an
+    # imperial thread because 20 is a real TPI -- and the cross-system penalty
+    # then rejected every metric row, so B1's most common label form matched
+    # nothing at all. A metric designation wins outright; nothing in this shop
+    # is both.
+    if metric:
+        imp, span = None, None
     rest = (t[:span[0]] + " " + t[span[1]:]) if span else t
 
     mm = None
+    # "M6-20" and "M6x20" both mean a 20 mm screw; the dash form has no x and
+    # no "mm" for the other extractors to find.
+    dash = re.search(r"\bM\s*\d+(?:\.\d+)?\s*-\s*(\d+)\b", t, re.I)
+    if metric and dash:
+        mm = float(dash.group(1))
     for cand in _LEN_MM.finditer(t):
         v = float(cand.group(1))
         # skip the pitch in "M6 x 1 mm Thread" -- a length is not 1 mm
         if v >= 3:
             mm = v
             break
+    if mm is None and metric:
+        pass
     if mm is None and metric:
         x = _AFTER_X.search(t)
         if x:
@@ -479,10 +525,18 @@ def match_reading(reading, rows):
     if not text.strip():
         return [], "nothing-legible"
     lm, li, lmm, lin = _facts(text)
+    lk = _kinds(text)
     scored = []
     for r in rows:
         pm, pi, pmm, pin = _facts(r["name"])
+        pk = _kinds(r["name"])
         sc = 0
+        if lk and pk:
+            sc += 3 if (lk & pk) else -3
+            # A nut is not a screw. When the label says one and the row is the
+            # other, thread agreement is not enough to rescue it.
+            if ("nyloc" in lk or "nut" in lk) != ("nyloc" in pk or "nut" in pk):
+                sc -= 5
         if lm and pm:
             sc += 4 if lm == pm else -6
         if li and pi:
@@ -531,6 +585,30 @@ def drawer_contents(name):
     for r in _rows(it_get("part/", default_location=loc["pk"], limit=50)):
         out["homes"].append({"part": r.get("pk"), "name": r.get("name")})
     out["assigned"] = bool(out["stock"] or out["homes"])
+
+    # The drawer's OWN description is a record too, and it was being ignored.
+    # Scott at B2-R2C1, 2026-08-22: no bag tag inside, but the label on the
+    # front reads 1/4-28 -- which the description already held, because these
+    # legacy labels were read off a photo yesterday. He photographed the nuts
+    # instead, and no photograph of a nut shows its thread pitch. The record
+    # knew; nobody asked it.
+    if not out["assigned"]:
+        body = re.sub(r"\[[^\]]*\]", "", out["description"]).strip(" ,;-\u2014")
+        if body and not body.upper().startswith(("VERIFIED EMPTY", "PRE-SORT")):
+            m = DRAWER_RE.match(name or "")
+            cab = m.group(1) if m else ""
+            rows = cabinet_unlocated(cab) if cab else []
+            ranked, basis = match_reading({"tag": "", "labels": [body],
+                                           "markings": [], "descriptors": ""}, rows)
+            out["label"] = body
+            out["label_basis"] = basis
+            out["label_candidates"] = [
+                {"sku": c["row"]["sku"], "name": c["row"]["name"],
+                 "stock": c["row"]["stock"], "quantity": c["row"].get("quantity"),
+                 "why": c["why"], "strength": c["strength"]} for c in ranked]
+            out["unlocated"] = [{"stock": r["stock"], "sku": r["sku"],
+                                 "name": r["name"], "quantity": r["quantity"]}
+                                for r in rows]
     return out
 
 
@@ -961,7 +1039,9 @@ def shot(name: str):
     return FileResponse(p) if p.exists() else JSONResponse({"error": "gone"}, 404)
 
 
-PAGE = """<!doctype html><html><head>
+# Raw string: the page embeds JavaScript regexes, and \d in a normal Python
+# string is an invalid escape that warns on every import.
+PAGE = r"""<!doctype html><html><head>
 <meta name=viewport content="width=device-width,initial-scale=1">
 <title>binscan</title><style>
 :root{--bg:#111;--fg:#eee;--mut:#8a8a8e;--acc:#4ea1ff;--card:#1c1c1e;--line:#2c2c2e}
@@ -1132,6 +1212,31 @@ async function refreshDrawer(v,keepOut){
     $('#go').textContent='Estimate';
   }else{
     MODE='identify';
+    UNLOCATED = d.unlocated || [];
+    if(d.label){
+      // The drawer is labelled even though no stock points at it. Offer the
+      // match now -- taking a photograph to learn what the label already says
+      // is work for nothing, and a photo of bare fasteners cannot show a
+      // thread pitch anyway.
+      const cands=(d.label_candidates||[]);
+      $('#out').innerHTML =
+        `<div class=card><div class=prov>from the drawer&rsquo;s own label</div>
+           <div class=big style="font-size:17px">&ldquo;${d.label}&rdquo;</div>
+           <div class=mut style="margin-top:6px">No stock is filed here, but the drawer is labelled. No photograph needed unless you want to check it.</div></div>`
+        + (cands.length ? cands.map((c,i)=>`<div class=card>
+             <div class=big style="font-size:17px">${c.name}</div>
+             <div class=row><span>McMaster</span><span><b>${c.sku||'—'}</b></span></div>
+             <div class=row><span>basis</span><span class="${c.strength==='definite'?'high':c.strength==='probable'?'medium':'low'}">${c.strength}</span></div>
+             <div style="margin-top:8px;color:#aaa;font-size:13.5px">${c.why}</div>
+             <label style="margin-top:12px">Count (leave blank if you did not count)</label>
+             <input class=qty data-i="${i}" type=number inputmode=decimal placeholder="purchased ${(+c.quantity).toLocaleString()} — not a count">
+             <button class=file data-i="${i}" data-stock="${c.stock}" style="margin-top:10px">File in ${v}</button>
+             <div class=msg data-i="${i}" style="margin-top:8px;font-size:13px"></div>
+           </div>`).join('')
+           : `<div class="card warn">The label reads &ldquo;${d.label}&rdquo; but nothing unlocated in this cabinet matches it. Pick by hand, or photograph the tag.</div>`)
+        + manualCard() + skipCard();
+      setTimeout(()=>wireFiling(v), 0);
+    }
     $('#known').innerHTML='<div class=card><b>Nothing on record for this drawer.</b>'+
       '<div class=mut>Photograph the McMaster bag tag if there is one, '+
       'or say it is empty.</div>'+

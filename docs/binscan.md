@@ -233,6 +233,39 @@ It read *"Read-only to InvenTree"* — true when written, false the moment
 row. Now: *"Reading is free; writing needs you."* A safety claim that has gone
 stale is worse than none, because it is trusted.
 
+## The drawer's own label is a record too
+
+Scott at B2-R2C1, mid-walk 2026-08-22: no bag tag inside, but *"the label on the
+front of the box is quarter twenty eight. So I took a picture of the nuts. It
+properly identified them as nuts. Obviously, didn't figure out the size."*
+
+No photograph of a nut shows its thread pitch. But the drawer's description
+already read `1/4-28 nut` — those legacy labels were read off a wall photo the
+day before. **The record knew and nobody asked it.**
+
+Selecting an unassigned drawer now matches its own description against the
+cabinet's unlocated rows and offers the result immediately, before any camera.
+Fifteen B1/B2 drawers carry such a label.
+
+Three matcher bugs fell out of testing that, each one making a wrong answer look
+like a right one:
+
+- **`M6-20` matched nothing.** The imperial parser read the `6-20` inside a
+  metric designation as a 6-20 thread — 20 is a real TPI — and the cross-system
+  penalty then rejected every metric row. A metric designation now wins
+  outright; nothing here is both.
+- **`1/4-20 nyloc` proposed a socket head screw.** Fastener-TYPE scoring had been
+  dropped in an earlier rewrite, so the thread matched a dozen rows and nothing
+  distinguished a locknut from a cap screw.
+- **`5/16-18 lock nut` proposed a `1/2"-13` cap nut.** 13 was missing from the
+  TPI set, so the part's thread did not parse at all — and **a row with no
+  thread cannot disagree with the label**. A parse failure read as agreement,
+  which is the dangerous direction for a matcher to fail in.
+
+Widening the TPI set then made `18-8` — the stainless grade, printed on half
+these labels — parse as an 18-8 thread. The diameter must now be a fraction or
+a screw number of 14 or less, which 18 is not.
+
 ## Saying a drawer is empty
 
 Most of a walk is empty drawers, and until 2026-08-22 the UI could not say so.
