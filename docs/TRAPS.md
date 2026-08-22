@@ -1365,3 +1365,35 @@ generated for exactly that pass.
 When reporting coverage, say which granularity the number is measured at.
 "B2 is empty" meant "no drawer in B2 has stock assigned to it" and was read as
 "B2 is empty", which is how a 17-row cabinet disappears.
+
+## Software that lives only on the server falls out of the world
+
+Scott asked whether "our binscan app" could help with the B1/B2 walk. Nothing in
+`~/code` matched — not the name, not a deleted file, not a commit message. The
+only trace on this laptop was `~/Downloads/httpbinscan.internal.png`, a
+screenshot of Safari failing to reach it.
+
+It is real. `/Users/scottdube/binscan` on the Mini, FastAPI under uvicorn on
+8002, Caddy in front, `com.binscan.plist` keeping it alive, thirteen logged runs
+with measured accuracy. **It has no git repo, no remote and no backup**, and its
+version history is three files named `app.py.prelog`, `app.py.prepicker` and
+`app.py.prewrite`.
+
+**Anything not in a repo is invisible to the next session, however real it is.**
+This project's whole premise is that `CLAUDE.md` and `docs/` let a session start
+where the last one ended. A tool that exists only as a running process on
+another machine is outside that mechanism entirely — it cannot be greped, it
+does not show in `git log`, and it survives only in the memory of whoever built
+it.
+
+**The tell was the phrasing.** "Our binscan app" is a possessive about something
+built together, and the right response to not finding it is to widen the search
+to the whole machine and the network, not to conclude it does not exist. The
+first answer given was "no bincheck app exists anywhere" — technically true of
+the misheard name, and useless.
+
+**Practice:** when a service is stood up on the Mini, put its source in a repo
+the same day, and record host, port, launchd label and state paths in a doc.
+`docs/binscan.md` does this retroactively. Check for other unrepo'd services:
+`com.shopstatus.plist`, `com.open-webui.server.plist` and the `photo-frame`
+agents are all running from LaunchAgents and may have the same problem.
