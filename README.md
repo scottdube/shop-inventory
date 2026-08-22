@@ -398,25 +398,35 @@ Decided 2026-08-22, while the wire shelves are mid-transition. Scott: *"get
 containers that make sense for the end state, not just for where we are right
 now."*
 
-**Standard: Sterilite 7 Quart Latch Box — 14 3/8 x 8 1/4 x 6 in.**
+**Target spec: ~11 in wide x ~12 in deep x ~3 in tall.** Two across a wall
+cabinet, four across a wire shelf, single layer so nothing hides.
 
-Chosen 2026-08-22 after checking live stock. $3.98 each at Walmart, pickup
-same day, shipping not offered. Clear with a latching lid, so it stacks and the
-contents are visible without opening it.
+The constraint is the **NewAge Pro Series 28 in wall cabinet**: 14 in exterior
+depth, and Scott measured the clear opening door-to-door at **24 in**. That
+leaves roughly 24 x 12.5 in of usable shelf. A box longer than ~12 in cannot go
+front-to-back at all.
 
-**It beats the 10 x 14 x 3 bin that prompted this, for a non-obvious reason:**
-at 8 1/4 in deep, **two rows fit an 18 in wire shelf**. A 10 in bin cannot —
-2 x 10 = 20 in. So the narrower box gives 6 per shelf instead of 3, and each
-holds 1.7x the volume because it is 6 in tall rather than 3. The 6 in height
-also takes coiled tubing, which a 3 in tray will not.
+**Height is a visibility decision, not a volume one.** Scott: *"I don't know if
+six inches is good. You're gonna end up burying stuff at the bottom of those,
+digging around."* Right — a 6 in box holding small fittings becomes two layers
+and an excavation. 3 in keeps one layer visible, which is the whole reason for
+clear boxes. Buy shallow and buy more of them.
 
-| | 10 x 14 x 3 | Sterilite 7 Qt |
+**Width is an access decision.** Scott: *"narrower boxes that you can pull one
+out to get to the side ones."* Two 11 in boxes across a 24 in opening, each
+pulling straight out, beats one wide box you have to unload in place.
+
+| Layout in a 24 in opening | Box width | Also fits 46 in wire shelf |
 |---|---|---|
-| Per 46 x 18 shelf | 3 | **6** (3 across x 2 deep) |
-| Volume each | 420 cu in | **712 cu in** |
-| Coiled tubing | no | yes |
-| 12 in wall cabinet | 2 in spare | **3.75 in spare** |
+| 2 across | up to 11.2 in | 4 across |
+| 3 across | up to 7.3 in | 6 across |
 
+**The Sterilite 7 Quart (14 3/8 x 8 1/4 x 6, $3.98 at Walmart) is wire-shelf
+only.** It will not go front-to-back in these cabinets — 14 3/8 exceeds the
+~12.5 in interior — and long-ways it takes one slot and wastes 9.6 in. It is
+still a fine buy for the racks, but it is not the standard, because a box that
+only works in the furniture you are trying to get rid of is the wrong thing to
+standardise on.
 The general rule this came from still holds, and is what made the choice
 obvious once the numbers were in:
 
