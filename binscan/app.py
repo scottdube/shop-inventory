@@ -573,6 +573,13 @@ img#prev{width:100%;border-radius:10px;margin-top:12px;display:none}
 <label>Provider</label>
 <select id=prov></select>
 
+<label>After submit</label>
+<select id=adv>
+  <option value="across" selected>advance across the row (C1&rarr;C2&hellip;)</option>
+  <option value="down">advance down the column (R1&rarr;R2&hellip;)</option>
+  <option value="stay">stay on this drawer</option>
+</select>
+
 <label>Photo</label>
 <input id=file type=file accept=image/* capture=environment>
 <img id=prev>
@@ -601,9 +608,8 @@ fetch('/api/providers').then(r=>r.json()).then(ps=>{
 // counting; if it does not, the job is reading the tag. The drawer's state
 // picks the mode -- there is no toggle to get wrong.
 let MODE='estimate';
-$('#loc').onchange=async e=>{
-  const v=e.target.value;
-  $('#known').innerHTML=''; $('#out').innerHTML='';
+async function refreshDrawer(v,keepOut){
+  $('#known').innerHTML=''; if(!keepOut) $('#out').innerHTML='';
   if(!v){MODE='estimate';return;}
   $('#known').innerHTML='<div class=card>checking the record…</div>';
   let d=null;
@@ -629,7 +635,42 @@ $('#loc').onchange=async e=>{
     $('#lpart').textContent='What it holds (unknown — leave blank)';
     $('#go').textContent='Read the tag';
   }
-};
+}
+$('#loc').onchange=e=>refreshDrawer(e.target.value,false);
+
+// Walking a wall means going drawer to drawer, and re-finding your place in a
+// 324-entry select every time is the friction that made the original unusable.
+// The next drawer is taken from the OPTION LIST rather than by incrementing a
+// number, because the grid is irregular: B rows 1-4 are eight wide and rows 5-7
+// are four, so C5 has no neighbour below it and R5C5 does not exist. Walking
+// the real list also means a cabinet that is partly labelled cannot advance
+// onto a drawer that is not there.
+function nextDrawer(cur,dir){
+  const m=/^([A-Z]\d+)-R(\d+)C(\d+)$/.exec(cur||''); if(!m) return null;
+  const cab=m[1]+'-';
+  const rows=[...$('#loc').options].map(o=>o.value)
+    .filter(v=>v.startsWith(cab))
+    .map(v=>{const q=/-R(\d+)C(\d+)$/.exec(v); return {v,r:+q[1],c:+q[2]};});
+  rows.sort(dir==='down' ? (a,b)=>(a.c-b.c)||(a.r-b.r) : (a,b)=>(a.r-b.r)||(a.c-b.c));
+  const i=rows.findIndex(x=>x.v===cur);
+  return (i>=0 && i+1<rows.length) ? rows[i+1].v : null;
+}
+
+async function advance(){
+  const dir=$('#adv').value;
+  if(dir==='stay') return;
+  const nx=nextDrawer($('#loc').value,dir);
+  $('#file').value=''; $('#prev').style.display='none'; $('#prev').removeAttribute('src');
+  $('#go').disabled=true;
+  if(!nx){
+    $('#known').innerHTML='<div class=card><b>End of cabinet.</b>'+
+      '<div class=mut>Pick the next one by hand.</div></div>';
+    return;
+  }
+  $('#loc').value=nx;
+  await refreshDrawer(nx,true);
+  $('#known').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
 $('#file').onchange=e=>{
   const f=e.target.files[0]; $('#go').disabled=!f;
   if(f){$('#prev').src=URL.createObjectURL(f);$('#prev').style.display='block';}
@@ -681,7 +722,9 @@ $('#go').onclick=async()=>{
     const d=await r.json();
     if(identify){
       $('#out').innerHTML = d.error ? `<div class="card err">${d.error}</div>` : renderIdentify(d);
-      $('#go').disabled=false; $('#go').textContent=label; return;
+      $('#go').textContent=label; $('#go').disabled=false;
+      if(!d.error) await advance();
+      return;
     }
     if(d.error){$('#out').innerHTML=`<div class="card err">${d.error}</div>`;}
     else{
@@ -699,12 +742,16 @@ $('#go').onclick=async()=>{
              <input id=truth type=number inputmode=numeric placeholder="how many were really there">
              <button id=savetruth style="margin-top:10px">Record actual</button>
              <div id=tmsg style="margin-top:8px;color:#8a8a8e;font-size:13px"></div></div>`;
+      // Captured now: advancing changes #loc, and the truth being recorded
+      // belongs to the drawer just photographed, not the one queued next.
+      const truthId=d.id, truthLoc=$('#loc').value;
       $('#savetruth').onclick=async()=>{
         const v=$('#truth').value; if(v===''){return;}
-        const fd2=new FormData(); fd2.append('id',window.lastId); fd2.append('actual',v);
+        const fd2=new FormData(); fd2.append('id',truthId); fd2.append('actual',v);
         const rr=await fetch('/api/truth',{method:'POST',body:fd2});
-        $('#tmsg').textContent = rr.ok ? 'Recorded. ' : 'Failed to record.';
+        $('#tmsg').textContent = rr.ok ? `Recorded for ${truthLoc}.` : 'Failed to record.';
       };
+      await advance();
     }
   }catch(err){ $('#out').innerHTML=`<div class="card err">${err}</div>`; }
   $('#go').disabled=false; $('#go').textContent=label;
