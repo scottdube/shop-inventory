@@ -344,6 +344,9 @@ are catalogued in **[docs/TRAPS.md](docs/TRAPS.md)**.
   already returns a speakable answer in one call)
 - **Real HTTPS** via a public domain + DNS-01, so browsers stop grumbling
 - **Club inventory sharing** — see [docs/SHARING.md](docs/SHARING.md)
+- **binscan** — the photo fill-estimate app, which lives on the Mini and NOT
+  in this repo. See [docs/binscan.md](docs/binscan.md) for where it runs and
+  what its accuracy actually measured.
 
 ## License
 
