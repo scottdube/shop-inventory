@@ -96,6 +96,16 @@ def _rows(data):
     return data.get("results", data) if isinstance(data, dict) else data
 
 
+def _one(resp):
+    """POST /api/stock/ returns a LIST, POST /api/part/ returns a dict. Calling
+    .get() on the list threw AttributeError AFTER the part had been created, so
+    the request 500'd having already written half of what it meant to -- the
+    caller saw a failure and the catalogue kept the part."""
+    if isinstance(resp, list):
+        resp = resp[0] if resp else {}
+    return resp if isinstance(resp, dict) else {}
+
+
 def it_patch(path, payload):
     if not IT_TOKEN:
         return None, "no InvenTree token"
@@ -351,6 +361,28 @@ def _counted_from(row):
     return d.group(1) if d else "counted"
 
 
+# A drawer's description carries at most ONE state stamp plus the original
+# label. Without this, marking a mixed drawer empty produced
+# "VERIFIED EMPTY ... previously labelled: PRE-SORT ... previously labelled:
+# ..." -- each state wrapping the last, with the real label buried and the size
+# annotation drifting to the end. Strip any prior stamp before writing a new
+# one; "previously labelled" should mean the human label, not the app's own
+# last opinion.
+_STAMP = re.compile(r"^\s*(?:VERIFIED EMPTY|PRE-SORT)\s+\d{4}-\d\d-\d\d\s*"
+                    r"(?:—|--)?\s*(?:mixed, not itemised)?\s*:?\s*"
+                    r"(?:previously labelled:)?\s*", re.I)
+
+
+def _strip_stamp(desc):
+    d = (desc or "").strip()
+    for _ in range(4):
+        n = _STAMP.sub("", d).strip()
+        if n == d:
+            break
+        d = n
+    return d
+
+
 def _norm_sku(s):
     return re.sub(r"[^A-Z0-9?]", "", (s or "").upper())
 
@@ -380,8 +412,17 @@ def cabinet_unlocated(cab):
     # Found 2026-08-22 when Scott had 1/4in washers in B2-R3C3 and six McMaster
     # washer rows sat locationless where nothing could reach them. A row nobody
     # can select is a row that gets entered twice.
-    nowhere = [r for r in _rows(it_get("stock/", location__isnull=True, limit=200))
-               if skus.get(r.get("part"))]
+    # `location__isnull=true` is SILENTLY IGNORED by this API -- it returns all
+    # 560 stock rows, so the "homeless" list contained every row in the shop and
+    # the picker showed 91251A585 twice, once from the cabinet and once from
+    # here. Third silent filter failure on this install after `name=` on parts
+    # and `stocktake_date` on stock. Filter in Python; the API's word that it
+    # understood a parameter is worth nothing.
+    seen = {r.get("pk") for r in rows}
+    nowhere = [r for r in _rows(it_get("stock/", limit=2000))
+               if r.get("location") is None
+               and r.get("pk") not in seen
+               and skus.get(r.get("part"))]
     out = []
     for r in rows + nowhere:
         pk = r.get("part")
@@ -703,7 +744,7 @@ def api_mixed(location: str = Form(...), note: str = Form(""),
         return JSONResponse({"error": "this drawer has stock filed in it; a mixed "
                                       "bucket holds only unitemised oddments"}, 409)
 
-    desc = (loc.get("description") or "").strip()
+    desc = _strip_stamp(loc.get("description"))
     size = re.search(r"\[[^\]]*\]", desc)
     tag = f"PRE-SORT {datetime.date.today().isoformat()} — mixed, not itemised"
     if note.strip():
@@ -873,7 +914,8 @@ def api_newpart(name: str = Form(...), location: str = Form(...),
     if cat:
         payload["category"] = cat
     part, err = it_post("part/", payload)
-    if err:
+    part = _one(part)
+    if err or not part.get("pk"):
         return JSONResponse({"error": f"could not create the part: {err}"}, 502)
 
     stock = None
@@ -883,7 +925,8 @@ def api_newpart(name: str = Form(...), location: str = Form(...),
                                         "notes": f"binscan {stamp}: filed into "
                                                  f"{loc['name']} and COUNTED at "
                                                  f"{counted:g} by hand."})
-        if err:
+        stock = _one(stock)
+        if err or not stock.get("pk"):
             return JSONResponse({"error": f"part created (#{part['pk']}) but the "
                                           f"stock row failed: {err}",
                                  "part": part["pk"]}, 502)
@@ -948,9 +991,9 @@ def api_empty(location: str = Form(...), confirm: str = Form("")):
                                       f"'{who}'. It has no stock by design; that "
                                       f"is not the same as empty."}, 409)
 
-    desc = (loc.get("description") or "").strip()
+    desc = _strip_stamp(loc.get("description"))
     body = re.sub(r"\[[^\]]*\]", "", desc).strip(" ,;-\u2014")
-    if body.upper().startswith("VERIFIED EMPTY"):
+    if (loc.get("description") or "").upper().startswith("VERIFIED EMPTY"):
         return {"ok": True, "already": True, "description": desc,
                 "note": "already recorded empty; nothing changed"}
     if body and not body.upper().startswith("PRE-SORT"):
@@ -1419,16 +1462,21 @@ details#opts label{margin-top:10px}
    input. Scott: "you really gotta look at it a couple of times in order to find
    the spot where you enter the quantity... if you don't use this for a while
    it's gonna be like learning it all over again." */
-.picklist{max-height:230px;overflow-y:auto;margin-top:8px;
+.picklist{max-height:300px;overflow-y:auto;margin-top:8px;
 border:1px solid var(--line);border-radius:9px}
-.pick{display:flex;gap:8px;align-items:baseline;width:100%;margin:0;padding:9px 10px;
+/* The name WRAPS. It used to be one ellipsised line, which cut off exactly the
+   part that distinguishes two rows -- Scott: "I can see socket head, but I
+   can't see any other attributes like its length." Truncating a fastener name
+   removes the discriminator and keeps the category. */
+.pick{display:block;width:100%;margin:0;padding:9px 11px;
 border:0;border-bottom:1px solid var(--line);border-radius:0;background:var(--card);
-color:var(--fg);text-align:left;font-size:13.5px}
+color:var(--fg);text-align:left;font-size:13.5px;line-height:1.35}
 .pick:last-child{border-bottom:0}
 .pick.on{background:#0e2436;box-shadow:inset 3px 0 0 var(--acc)}
-.pick .sku{color:var(--acc);font-family:ui-monospace,monospace;font-size:12px;flex:0 0 auto}
-.pick .nm{flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pick .qt{color:var(--mut);font-size:12px;flex:0 0 auto}
+.pick .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.pick .sku{color:var(--acc);font-family:ui-monospace,monospace;font-size:12px}
+.pick .nm{display:block;margin-top:3px;white-space:normal;color:var(--fg)}
+.pick .qt{color:var(--mut);font-size:12px;white-space:nowrap}
 .fchip{padding:7px 11px;font-size:13px}
 .fchip .ct{margin-left:6px;font-size:11px;color:var(--mut);font-weight:600}
 .fchip.on .ct{color:#000}
@@ -1875,7 +1923,8 @@ function renderFunnel(){
       : hit.length ? `<b>${hit.length}</b> in the catalogue match so far:` +
           `<div class=picklist style="max-height:150px;margin-top:7px">` +
           hit.slice(0,20).map(x=>`<div class=pick style="cursor:default">
-             <span class=sku>${x.sku||'—'}</span><span class=nm>${x.name}</span></div>`).join('')
+             <span class=top><span class=sku>${x.sku||'—'}</span></span>
+             <span class=nm>${x.name}</span></div>`).join('')
           + `</div>`
       : `<b style="color:#4ade80">&#10003; Nothing in the catalogue matches.</b>
          <div class=mut style="margin-top:5px">Not "you missed it" &mdash; the whole
@@ -2010,9 +2059,9 @@ function renderPicks(q){
          filed in another drawer. If it is genuinely new, create it below.`;
   list.innerHTML = hit.slice(0,60).map(u=>
     `<button class=pick data-stock="${u.stock}">
-       <span class=sku>${u.sku||'—'}</span>
+       <span class=top><span class=sku>${u.sku||'—'}</span>
+         <span class=qt>${(+u.quantity).toLocaleString()} on record</span></span>
        <span class=nm>${u.name}</span>
-       <span class=qt>${(+u.quantity).toLocaleString()}</span>
      </button>`).join('')
     + (hit.length>60?`<div class=mut style="padding:6px 2px">…and ${hit.length-60} more, keep typing</div>`:'');
   list.querySelectorAll('.pick').forEach(b=>b.onclick=()=>{
