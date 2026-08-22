@@ -1153,3 +1153,39 @@ holding it rather than from any record:
 Nothing here was retrievable from a document. Every fix required someone to
 pick the thing up, which is the argument for asking during a drawer walk rather
 than reconstructing afterwards.
+
+## `pathstring` is a cache — a queryset update moves the row and leaves it lying
+
+Re-parenting the Air System bin onto `WS2-S5` with
+`StockLocation.objects.filter(...).update(parent=s5)` **worked** — `parent_id`
+was correct immediately. But `pathstring` still read
+`SLN/Storage/WS2/Air System`, and `MPTT.rebuild()` did not fix it either.
+
+`pathstring` is a **denormalised cache**, recomputed in `save()`, and the model
+exposes `construct_pathstring()` which returns the truth. So after a queryset
+update the tree is right and **everything that reads a location is wrong** —
+displays, searches, reports, and any script matching on
+`location__pathstring__startswith`.
+
+That is a worse failure than the write not landing at all. A failed write is
+visible; this one silently splits the record into a correct half and a stale
+half, and the stale half is the half people look at.
+
+    # after any queryset update that changes parent:
+    for l in StockLocation.objects.all():
+        if l.pathstring != l.construct_pathstring():
+            StockLocation.objects.filter(pk=l.pk).update(
+                pathstring=l.construct_pathstring())
+
+Audited all locations when this surfaced: exactly one was stale, the one just
+touched. Worth re-running after any bulk re-parent.
+
+**The general rule, and it is the same one as `.save()` reporting success while
+writing nothing: verify the field you will later READ, not the field you
+wrote.** Writing `parent` and checking `parent` proves nothing about the
+pathstring every query depends on.
+
+Note this is a *different* fault from the false alarm on 2026-08-21, when
+pathstrings looked wrong only because of a `[:40]` truncation in debug output.
+That one was withdrawn. This one is real, and the difference is that
+`construct_pathstring()` disagrees with the stored value.
