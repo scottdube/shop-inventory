@@ -1281,3 +1281,37 @@ the object, or off something near it?** If the latter, mark it derived and name
 the source. Two of these were caught only because Scott had the part in his
 hand, which is the argument for asking during a walk rather than reconstructing
 afterwards — and one was caught because he knew a road better than a geocoder.
+
+## A closed drawer is not an empty drawer
+
+Scott photographed cabinet A2 with ten drawers pulled and said *"only the ten
+doors that are pulled out have anything in them, and you should know all about
+it."* That is an owner's direct statement about his own shop, and it was still
+one short: **A2-R2C1 is occupied** (hex bolts + nyloc nuts) and was closed in
+the photo.
+
+The reading of the photo was correct. The inference from it — closed therefore
+empty — is what failed. Pulling a drawer is a deliberate act, and the ten pulled
+were the ones Scott had opened *for the walk*; an eleventh he had filled the day
+before did not get opened, because nothing about it needed showing.
+
+**A photograph plus a sweeping statement is still a photograph.** The existing
+rule says photographs show identity, not quantity — this extends it: they do not
+show ABSENCE either. Sixty-four closed drawers and one sentence look like total
+coverage and are not.
+
+**What caught it:** the stock record disagreed, and the disagreement was
+surfaced as a question instead of resolved by picking the more recent claim.
+Had "only the ten pulled" been trusted over the record, `A2-R2C1` would have
+been marked VERIFIED EMPTY on top of live stock — deleting a true record in
+favour of a plausible summary. `mark_empty.py`'s refusal to touch a location
+holding stock is the backstop, and it would have held even if the question had
+not been asked. Both layers earned their keep; neither should be the only one.
+
+**Practice: when a walk contradicts the database, the walk does not
+automatically win.** Recent observation usually beats a stale record, which is
+why the temptation is real. But a record was also written by someone looking at
+the thing, and the failure modes differ — records go stale, walks miss what is
+closed. Ask. Scott's answer here was *"r2c1 is also occupied correct, I'll take
+one more trip thru a2 to verify"*, and 53 drawers stayed unmarked until that
+trip rather than being marked on a summary.
