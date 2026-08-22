@@ -306,6 +306,30 @@ Three rules the tool enforces, each of which would otherwise produce fiction:
   memory test, and it fails safe: a wrong suggestion gets corrected, a blank
   prompt gets a shrug.
 
+### Most consumption has no build order — so grow the vocabulary from answers
+
+Scott's objection to the above, and it is the important one: **a BOM lookup
+only helps when a build order exists, and usually there isn't one.** Repairs,
+fixtures, one-offs and bodges consume most of a shop's small parts and none of
+them get a BO. The red bins are no help either — every one of them maps to a
+build that already exists.
+
+So the candidate list has to be built from the answers themselves. Each answer
+is written to the part as `CONSUMED BY: <project>`, and the report harvests
+every such line to offer back next time. The vocabulary lives **on the parts**,
+not in a side file, so it cannot drift away from the data it describes. After a
+few sessions the open question becomes a menu, which is the same
+recognition-over-recall trick applied to a problem with no BOM to lean on.
+
+    itq run scripts/unaccounted.py --answer 291="pool controller wiring"
+    itq run scripts/unaccounted.py --answer 291=?      # cannot recall
+
+**Group parts that are short together.** Two KF301 terminal blocks, 2-position
+and 3-position, came up short in the same pass — near-certainly one job. The
+report groups by name stem and asks once. The grouping is itself the hint that
+jogs the memory, and it turns several unanswerable questions into one
+answerable one.
+
 It validated itself on first run — flagged one missing Minisplit CN105 PCB and
 independently matched it to BO-0013, which needs exactly one.
 

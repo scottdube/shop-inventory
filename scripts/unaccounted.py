@@ -38,6 +38,9 @@ ap = argparse.ArgumentParser()
 ap.add_argument("--location", help="restrict to parts stocked under this location name")
 ap.add_argument("--min-gap", type=float, default=1.0, help="ignore shortfalls below this")
 ap.add_argument("--all", action="store_true", help="include never-counted parts (noisy)")
+ap.add_argument("--answer", action="append", metavar="PART=WHAT",
+                help='record an answer, e.g. --answer 291="pool controller wiring". '
+                     'Use "?" for cannot-remember so it stops being asked.')
 a = ap.parse_args()
 
 # --- what was bought -----------------------------------------------------
@@ -84,6 +87,49 @@ for pk, buy in bought.items():
     if gap >= a.min_gap:
         rows.append((gap, pk, buy, free[pk], installed[pk]))
 
+MARK = "CONSUMED BY:"
+
+
+def known_projects():
+    """Every project previously named as consuming something.
+
+    Most shop consumption has no build order behind it — a repair, a fixture, a
+    one-off — so a BOM lookup explains only a minority of gaps. The vocabulary
+    has to be grown from the answers themselves, and it is stored ON THE PARTS
+    rather than in a side file so it cannot drift away from the data it
+    describes. Offering that list back turns the next question from recall
+    ("what used these?") into recognition ("one of these?"), which is both
+    easier to answer and much harder to answer wrongly.
+    """
+    seen = {}
+    for prt in Part.objects.exclude(notes="").exclude(notes__isnull=True).only("pk", "notes"):
+        for line in (prt.notes or "").splitlines():
+            if MARK in line:
+                what = line.split(MARK, 1)[1].strip().rstrip(".")
+                if what and what != "?":
+                    seen[what.lower()] = what
+    return sorted(seen.values())
+
+
+if a.answer:
+    from datetime import date
+    for spec in a.answer:
+        pk_s, _, what = spec.partition("=")
+        prt = Part.objects.filter(pk=int(pk_s.strip())).first()
+        if not prt:
+            print(f"  no part #{pk_s}"); continue
+        what = what.strip() or "?"
+        line = (f"{MARK} {what}  (recorded {date.today().isoformat()}, from a "
+                f"purchased-vs-counted shortfall)")
+        if what == "?":
+            line = (f"{MARK} ? — Scott could not recall, asked "
+                    f"{date.today().isoformat()}. Do not ask again; a repeated "
+                    f"unanswerable question trains people to ignore the report.")
+        Part.objects.filter(pk=prt.pk).update(
+            notes=((prt.notes or "").rstrip() + "\n" + line).strip())
+        print(f"  #{prt.pk} {prt.name[:44]}\n     {line}")
+    sys.exit()
+
 # --- can a build already explain the gap? -------------------------------
 # Asking "what used 3 of these?" is a memory test. Asking "BO-0013 needed 1 —
 # was it that?" is a yes/no. Always prefer confirmation to recall: it is far
@@ -102,10 +148,28 @@ if not rows:
     print("  (Parts still on [ESTIMATE] are skipped — a guess cannot reveal a gap.)")
     sys.exit()
 
+# Parts short at the same time, sharing a name stem, were probably used on the
+# same job. Asking about the group is one question instead of several, and the
+# grouping is itself the hint that jogs the memory.
+groups = defaultdict(list)
+for r in rows:
+    groups[Part.objects.get(pk=r[1]).name.split()[0].upper()].append(r)
+
+vocab = known_projects()
 print(f"  {len(rows)} counted part(s) where fewer are on hand than were bought.\n")
+if vocab:
+    print("  Projects named before (recognise, do not recall):")
+    for v in vocab:
+        print(f"     - {v}")
+    print()
 print("  Ask about each ONE AT A TIME, while the part is in hand:\n")
-for gap, pk, buy, fr, ins in rows:
+for stem, grp in sorted(groups.items(), key=lambda kv: -max(g[0] for g in kv[1])):
+  if len(grp) > 1:
+      print(f"  ** {len(grp)} '{stem}' parts are short together — likely ONE job **")
+  for gap, pk, buy, fr, ins in grp:
     p = Part.objects.get(pk=pk)
+    if MARK in (p.notes or ""):
+        continue
     inst = f", {ins:g} installed in an assembly" if ins else ""
     print(f"  #{pk:<5} {p.name[:56]}")
     print(f"        bought {buy:g}, on shelf {fr:g}{inst}  ->  MISSING {gap:g}")
@@ -117,8 +181,10 @@ for gap, pk, buy, fr, ins in rows:
             print(f"        candidate: {ref} ({state}) needs {need:g} — {title[:34]}{match}")
         print(f"        \"Was it {hits[0][0]}?\"  (yes / no / cannot remember)")
     else:
-        print(f"        no build lists this part.")
-        print(f"        \"What used {gap:g}? Any project you remember?\"")
+        print(f"        no build order lists this part — most consumption has none.")
+        print(f"        \"What used {gap:g}?\"  answer with:")
+        print(f"           itq run scripts/unaccounted.py --answer {pk}=\"the project\"")
+        print(f"           itq run scripts/unaccounted.py --answer {pk}=?   (cannot recall)")
 print("\n  An answer becomes a note on the part. 'Cannot remember' is also an")
 print("  answer and should be recorded as one — it stops the question being")
 print("  asked again every time somebody re-counts that drawer.")
