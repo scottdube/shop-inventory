@@ -1517,3 +1517,35 @@ The pattern across all three: **each fault converted "I could not tell" into "I
 am fairly sure".** That is the same direction as the missing 13 TPI, where a
 part whose thread failed to parse could not disagree with the label. A matcher
 must fail toward silence.
+
+## "rod" is inside "product"
+
+The hex-nut box kept matching a threaded rod even after the wrong-type penalty
+was fixed twice — once by adding bearings to the vocabulary, once by making an
+unrecognised type disagree rather than abstain. Both fixes were correct and both
+were firing. They were being outvoted.
+
+The Everbilt label carries the line **"THIS PRODUCT IS APPROVED FOR USE WITH
+A.C.Q. WOOD PRODUCTS"**, and `_kinds()` matched terms as plain substrings. `rod`
+is inside `product`. So the label was tagged **both** `nut` and `rod`, the kind
+sets intersected on `rod`, and a box of hex nuts scored **+3 for agreeing** with
+a threaded rod — enough to outweigh the −5 nut/not-nut penalty that was working
+exactly as designed.
+
+Now `\brods?\b`, word-bounded, with the trailing `s?` so the label's HEX NUTS
+still matches the catalogue's Hex Nut.
+
+**Two lessons, and the second is the expensive one.**
+
+Substring matching on short domain words is unsafe against real-world text. Not
+laboratory text — *retail packaging*, which is mostly legal boilerplate,
+addresses and warnings. `pin` in `shipping`, `key` in `monkey`, `nut` in
+`walnut`: the corpus a label scanner sees is far messier than a part catalogue.
+
+And: **three consecutive fixes to the same symptom, each correct, none
+sufficient.** The first two were verified against synthetic test rows that
+contained no boilerplate — so they passed, while the real input still failed.
+When a fix is verified and the symptom persists, the next move is to reproduce
+with the ACTUAL input, not to reason about the code again. `log.jsonl` had the
+exact reading recorded from every one of Scott's attempts, and reading it took
+one query and found the cause immediately.

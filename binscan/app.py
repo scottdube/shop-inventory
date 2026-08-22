@@ -572,13 +572,24 @@ _KINDS = (("nylon-insert", "nyloc"), ("nyloc", "nyloc"), ("locknut", "nyloc"),
           ("grommet", "grommet"), ("insert", "insert"), ("bearing", "bearing"))
 
 
+_KIND_RE = [(re.compile(r"\b" + re.escape(w) + r"s?\b"), tag) for w, tag in _KINDS]
+
+
 def _kinds(t):
+    """WORD boundaries, not substrings, and this is not fussiness.
+
+    A Home Depot hex-nut label carries "THIS PRODUCT IS APPROVED FOR USE WITH
+    A.C.Q. WOOD PRODUCTS", and "rod" is inside "product". So the label was
+    tagged BOTH nut and rod, the kind sets intersected on rod, and a box of hex
+    nuts scored +3 for AGREEING with a threaded rod. The wrong-type penalty had
+    been fixed twice by then and was firing correctly -- it was simply
+    outvoted by a match manufactured out of boilerplate.
+
+    The trailing `s?` keeps plurals working: the label says HEX NUTS and the
+    catalogue says Hex Nut.
+    """
     tl = (t or "").lower()
-    out = set()
-    for word, tag in _KINDS:
-        if word in tl:
-            out.add(tag)
-    return out
+    return {tag for rx, tag in _KIND_RE if rx.search(tl)}
 
 
 def _facts(t):
