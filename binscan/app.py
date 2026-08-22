@@ -286,17 +286,20 @@ def api_grid(area: str = ""):
             cur = by_pk.get(cur["parent"])
             hops += 1
 
-    filled = set()
+    filled, counted = set(), {}
     for r in _rows(it_get("stock/", location=loc["pk"], cascade=True, limit=1000)):
         kn = owner.get(r.get("location"))
         if kn:
             filled.add(kn)
+            # A drawer counts as counted only if EVERY row in it has been.
+            counted[kn] = counted.get(kn, True) and bool(r.get("stocktake_date"))
 
     cells = []
     for k in kids:
         m = DRAWER_RE.match(k["name"] or "")
         desc = k.get("description") or ""
-        state = ("filled" if k["name"] in filled
+        state = ("filled" if (k["name"] in filled and counted.get(k["name"]))
+                 else "uncounted" if k["name"] in filled
                  else "empty" if desc.upper().startswith("VERIFIED EMPTY")
                  else "unknown")
         cells.append({"name": k["name"], "state": state,
@@ -306,7 +309,7 @@ def api_grid(area: str = ""):
                       "label": re.sub(r"\s*\[[^\]]*\]\s*", "", desc).strip()[:40]})
     cells.sort(key=lambda x: (x["r"] or 0, x["c"] or 0, x["name"]))
     tally = {s: sum(1 for c in cells if c["state"] == s)
-             for s in ("filled", "empty", "unknown")}
+             for s in ("filled", "uncounted", "empty", "unknown")}
     return {"area": loc["name"], "grid": all(c["r"] for c in cells) and bool(cells),
             "cells": cells, "tally": tally}
 
@@ -576,10 +579,18 @@ def drawer_contents(name):
     out = {"location": loc.get("pk"), "name": loc.get("name"),
            "description": loc.get("description") or "", "stock": [], "homes": []}
     for r in _rows(it_get("stock/", location=loc["pk"], cascade=True, limit=100)):
+        # Counted or merely carried? A filed row shows a bare number either way,
+        # and the two have opposite reliability. Scott, mid-walk 2026-08-22:
+        # "it doesn't tell you anywhere that that's an estimate... it looks the
+        # same as one point one, which has in fact been counted."
+        st = r.get("stocktake_date")
         out["stock"].append({
             "part": r.get("part"),
             "name": (r.get("part_detail") or {}).get("name") or f"part {r.get('part')}",
             "quantity": r.get("quantity"),
+            "counted": bool(st),
+            "stocktake_date": st,
+            "estimate": (r.get("notes") or "").startswith("[ESTIMATE]"),
             "sub_location": (r.get("location_detail") or {}).get("name") or loc.get("name"),
         })
     for r in _rows(it_get("part/", default_location=loc["pk"], limit=50)):
@@ -1065,6 +1076,9 @@ button:disabled{opacity:.35}
 img#prev{width:100%;border-radius:10px;margin-top:12px;display:none}
 .ro{margin-top:22px;padding:9px 11px;border-radius:8px;background:#16212a;color:#8fc7ff;font-size:12px}
 .mut{color:var(--mut);font-size:13px}
+.uncount{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;
+background:#16232e;color:#7fc0e0;border:1px solid #284457;font-size:11px;
+text-transform:uppercase;letter-spacing:.04em}
 /* Survives the advance on purpose: the confirmation for the drawer you just
    finished has to still be readable once the app has moved to the next one. */
 .flash{margin-top:12px;padding:11px 13px;border-radius:10px;background:#16291d;
@@ -1081,6 +1095,10 @@ border-radius:7px;border:1px solid var(--line);background:var(--card);color:var(
 .cell.large{height:46px}
 .cell.filled{background:#1d2b20;color:#7fd39b;border-color:#2c4433}
 .cell.unknown{background:#2a2213;color:#ffc978;border-color:#4a3a1c}
+/* Filed, but the quantity was never counted -- it is the purchased figure. A
+   distinct colour because it is a distinct claim: we know WHERE it is and not
+   HOW MANY. Green would say both were settled. */
+.cell.uncounted{background:#16232e;color:#7fc0e0;border-color:#284457}
 .cell.empty{background:var(--card);color:#4a4a4e}
 .cell.on{outline:2px solid var(--acc);color:var(--fg)}
 .legend{display:flex;gap:12px;margin-top:8px;font-size:11.5px;color:var(--mut);flex-wrap:wrap}
@@ -1168,7 +1186,8 @@ async function loadArea(name){
          data-n="${c.name}">${c.name}</button>`).join('')+'</div>';
   }
   html+=`</div><div class=legend>
-    <span style="color:#7fd39b">&#9632; ${t.filled} filled</span>
+    <span style="color:#7fd39b">&#9632; ${t.filled} counted</span>
+    <span style="color:#7fc0e0">&#9632; ${t.uncounted||0} filed, uncounted</span>
     <span style="color:#ffc978">&#9632; ${t.unknown} unknown</span>
     <span style="color:#4a4a4e">&#9632; ${t.empty} verified empty</span></div>`;
   $('#gridwrap').innerHTML=html;
@@ -1204,7 +1223,10 @@ async function refreshDrawer(v,keepOut){
     MODE='estimate';
     const items=(d.stock||[]).map(x=>{
       const sub = x.sub_location && x.sub_location!==v ? ` <span class=mut>(in ${x.sub_location})</span>` : '';
-      return `<div>${(+x.quantity).toLocaleString()} &times; ${x.name}${sub}</div>`;}).join('')
+      const mark = x.counted
+        ? `<span class=high style="font-size:12px"> &#10003; counted ${x.stocktake_date}</span>`
+        : `<span class=uncount> NOT COUNTED &mdash; this is the purchased figure</span>`;
+      return `<div style="margin:4px 0">${(+x.quantity).toLocaleString()} &times; ${x.name}${sub}${mark}</div>`;}).join('')
       || (d.homes||[]).map(h=>`<div class=mut>home of ${h.name} — no stock on hand</div>`).join('');
     $('#known').innerHTML=`<div class=card><b>On record</b>${items}</div>`;
     $('#part').value=(d.stock&&d.stock[0]&&d.stock[0].name)||(d.homes&&d.homes[0]&&d.homes[0].name)||'';
