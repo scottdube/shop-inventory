@@ -165,3 +165,37 @@ Packs of 10* — bought 2023-01. The bag's own number, `CVTN-812355062M`, encode
 **812** OD / **355** ID / **062** thick. Cannon Gasket is McMaster's
 manufacturer for that washer and it shipped in the maker's packaging. The
 falsifiable check written into this file before the run answered itself.
+
+## Links are derived, not stored — but the CONTENT behind them is the fragile part
+
+Every McMaster part now carries `https://www.mcmaster.com/<IPN>/`, written onto
+both `Part.link` and the `SupplierPart`. 92 of 92, no network calls: the URL is
+a pure function of the catalogue number, so there was nothing to scrape and
+nothing to verify.
+
+Scott raised the obvious objection — **durability**. It is the right question
+and it splits into two very different risks:
+
+**The URL scheme changing is a non-event.** These links are *computed*, not
+transcribed. If McMaster reorganises tomorrow, one script regenerates all 92
+from the IPNs we already hold. That is the whole reason to derive a link rather
+than paste one: a hand-pasted URL rots irreversibly, because nobody remembers
+how to rebuild it. **Never hand-edit these** — a hand-edited link is
+indistinguishable from a derived one and quietly breaks that guarantee.
+
+**The page disappearing is the real risk.** When McMaster discontinues a part,
+the specs go with the page, and no amount of link maintenance recovers them.
+
+So the failure mode of a dead link here is "the click does nothing" — not "the
+data is gone." The IPN and the full McMaster spec text already live in the
+description locally. Anything beyond that (dimensioned drawings, STEP models,
+material certs) exists **only** on their server, and that is where local
+capture is worth paying for.
+
+**Scope any CAD pull to parts that need it.** A STEP model earns its storage
+when the part goes into an assembly model; for a washer nobody will ever model,
+it is bytes. The catalogue number plus the spec line is sufficient for
+re-ordering, which is what 90% of these records are for.
+
+McMaster fingerprints clients hard — CAD downloads need a logged-in browser
+session, not curl. See the browser-beats-curl rule.
