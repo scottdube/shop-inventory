@@ -240,3 +240,46 @@ spending tape that, per the section above, the shop does not have.
 - **41 parts are homed to a site** (`SLN`, `LRD`) rather than a drawer.
 - **AT drawers have no `metadata.size`** — they are outside the Akro-Mils
   cabinets and were not part of the 324 measured, so capacity there is guesswork.
+
+## Buying replacement tape — one full roll is the whole shop
+
+The starter roll is 62 mm × **5 m**. A standard DK-2205 replacement is 62 mm ×
+**30.48 m** (100 ft) — **6.1× the starter**. That ratio is the buying decision,
+because the starter roll is the only tape anyone here has ever seen and it
+badly understates what a real roll holds.
+
+| Template | Length | Labels per full 30.48 m roll |
+|---|---|---|
+| Location 62mm Compact | 16 mm | ~1,905 |
+| Part / Stock Item 62mm | 18 mm | ~1,693 |
+| Location 62mm | 25 mm | ~1,219 |
+
+Against the actual shop: 324 drawers at 16 mm plus ~1,050 catalogue parts at
+18 mm is **24.1 m**. One roll does all of it with 21% spare. **Never buy a
+multi-pack** — a 12-pack is roughly a decade of tape, and thermal stock does
+not improve with age.
+
+### Third-party DK-2205 is fine; the spool is the thing to check
+
+The QL-810W identifies media from a **pattern on the black plastic spool
+end-cap**, not from a chip — there is no cryptographic lockout on DK rolls for
+this model, which is why compatible DK-2205 is a routine substitution at about
+half the genuine price. `DK-2205` and `DK-22205` are the same tape under US and
+EU part numbers.
+
+Two rules that make the substitution safe:
+
+- **Keep the Brother starter spool forever.** If a third-party end-cap
+  misreads, transfer the roll onto the genuine spool. Preserving it costs
+  nothing and is the entire fallback.
+- **Test a new roll the day it arrives, on a throwaway label.** Media errors on
+  this printer *latch* — a misread is not a soft retry, it has to be cleared.
+  Discovering that mid-run, at night, is how an evening disappears.
+
+### Do not "upgrade" to wider tape
+
+4in × 100ft is often a dollar or two more for 65% more tape, and it would break
+every template in the shop. **CUPS silently upscales a page narrower than the
+media** — the documented failure that enlarged the QR and pushed text off the
+edge. 62 mm is not a preference, it is what the whole pipeline is authored
+around. Width is a compatibility spec; only length is a quantity.
