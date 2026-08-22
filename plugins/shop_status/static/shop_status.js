@@ -231,7 +231,11 @@ export function renderStats(target, data) {
         const done = have >= elig;
         return `<div class="stat ${done ? 'good' : 'warn'}" ` +
                `title="${have} of ${elig} parts that could have a datasheet">` +
-               `<b>${have}<span style="opacity:.55">/${elig}</span></b>` +
+               // .stat span is display:block for the label underneath, so a
+               // nested span breaks the line. Force it inline and size it
+               // relative to the numeral so it reads as one figure.
+               `<b>${have}<span style="display:inline;font-size:.6em;` +
+               `opacity:.5;font-weight:500">/${elig}</span></b>` +
                `<span>${esc(label)}</span></div>`;
     };
     shell(target,
