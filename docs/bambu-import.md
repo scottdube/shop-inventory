@@ -38,6 +38,15 @@ parts orders shipped to FL are definitely FL, unless I move them north."*
 Filament, plates and hotends get used where they land, so an FL order is LRD
 stock — file it there and earmark it.
 
+**But even for consumables it is a DEFAULT, not a fact.** Scott: *"I also
+seeded the LRD filament inventory with some SLN filament."* Spools have moved
+north-to-south, so imported filament is **per-order provenance, not a per-site
+count**, and the two sites cannot be reconciled from purchase records alone.
+Only a physical count at each site settles it — so do not present imported
+filament as a counted location total. This is the same distinction as
+`[ESTIMATE]` versus a stocktake: the number is fine, the implied confidence is
+what would be wrong.
+
 **Equipment: the ship-to address is only where it ARRIVED.** The X1C shipped to
 Dover in 2023 and now lives in Florida. A printer gets moved; its purchase
 record says nothing about where it is today.
