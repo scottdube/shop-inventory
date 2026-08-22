@@ -348,3 +348,46 @@ are catalogued in **[docs/TRAPS.md](docs/TRAPS.md)**.
 ## License
 
 MIT for the scripts. The lessons are free; they were expensive.
+
+## Trade boxes — a third organizing axis
+
+Added 2026-08-22, Scott's idea: *"I wanna do the same thing for plumbing
+supplies and for electrical supplies. So outlets, boxes, conduit pieces, all our
+conduit connections. All that kind of stuff should be in a plumbing box, an
+electrical box, an air box."*
+
+`SLN/Storage/WS2/Air System`, `/Electrical`, `/Plumbing`.
+
+**Why this is right, and why the existing schemes could not absorb these
+items.** The shop now sorts by three different axes, and each is correct for
+what it holds:
+
+| Axis | Used by | Right because you ask for it that way |
+|---|---|---|
+| **By size / spec** | bin wall — fasteners by thread and length | "I need an M6 x 20" |
+| **By project** | red bins — one build's kit per bin | "where's the Rat GDO stuff" |
+| **By trade** | these boxes | "I'm doing air today" |
+
+A 1/2in push-to-connect ball valve has a size, but nobody reaches for it by
+size. A 6-20R receptacle is not a project. Both were homeless for months
+because the two existing schemes are wrong for them — **filing by an axis
+nobody retrieves along is why things go missing**, and it was not a shortage of
+drawers.
+
+Three rules that keep these from decaying into junk boxes:
+
+- **The BOX is the location, not the shelf.** Recorded as a location in its own
+  right, so it can be moved, relabelled or re-shelved without touching a single
+  stock record. Same pattern as the Triage tote.
+- **A HOME, not a queue.** Unlike Triage or the pre-sort buckets, things here
+  belong here and get `default_location` pointing at the box. That is the whole
+  difference between storage and a pile.
+- **Declare it before it is full.** Plumbing was created empty. A box that
+  exists is somewhere to put the next fitting; a box that does not exist means
+  the fitting sits on a bench and joins the backlog.
+
+**Do not start a second home for a category that already has an informal one.**
+The air box went on WS2 because WS2 already held tubing and ducting — putting it
+at the bench would have split the category, and then "do I have a ball valve"
+has two answers. That failure has already happened here with imperial fasteners
+across A2 and B2.
