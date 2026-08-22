@@ -467,3 +467,32 @@ the layout is settled, which means deferring it indefinitely.
 Recorded as `metadata.size` on the racks and bins, not only in prose — the rack
 dimensions had been sitting in a parent location's description where no query
 could reach them.
+
+## When a fastener gets its own catalogue entry
+
+A mixed drawer can be recorded as **oddments** rather than itemised, which keeps
+a walk moving. That is only honest if the pile does not grow forever. Scott,
+2026-08-22: *"are you gonna just leave it in a big pile and that pile is gonna
+continue to grow, or are you gonna take stuff that you have enough of and try to
+create a catalogue entry?"*
+
+**Four or more of the same thing gets a catalogue entry. Ones and twos go in the
+pile.**
+
+Four is a working threshold, not a law. The real test is **would you go looking
+for this?** If the answer is yes — an unusual length, a thread you cannot buy
+locally, the last of something — it needs an address even if there are two. If
+you would never search for it by name, it is pile material at any quantity.
+
+**The pile only works if countable things keep leaving it.** A drawer marked
+oddments should get smaller over time as recognisable groups are promoted out of
+it. If it only ever grows, it is not a pre-sort queue, it is a place things go
+to be forgotten — and the four buckets at A2-R8C5..C8 already exist to be that
+queue, deliberately, with the understanding that somebody comes back.
+
+`binscan`'s create card builds the name through a **fastener funnel** — type,
+thread size, length, material — so entries come out in one shape. Free text
+drifts: this catalogue already holds "Nyloc Nut 1/4-20, galvanized" and
+"Medium-Strength Steel Nylon-Insert Locknut, Grade 5", the same idea written two
+ways, and the matcher pays for it on every run. The composed name stays editable,
+because a funnel that cannot be overridden lies about the odd one out.
