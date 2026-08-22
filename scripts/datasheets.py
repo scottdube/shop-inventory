@@ -164,44 +164,97 @@ def pdf_text(data, cap=600_000):
     return out.decode("latin-1", "ignore")
 
 
+def readable(txt):
+    """How much of this looks like actual prose rather than decompressed binary?
+
+    pdf_text() inflates every stream, and most of a datasheet's bytes are fonts,
+    images and colour profiles — not text. Counting ASCII words is the cheapest
+    way to tell "I read the document" from "I read its JPEGs".
+    """
+    return len(re.findall(r"[A-Za-z]{4,}", txt))
+
+
 def verify(data, mpn):
-    """A real PDF that is actually about this part. Returns (ok, reason)."""
+    """Is this a real PDF, and is it about this part?
+
+    THREE outcomes, not two. An earlier version had only accept/reject, and it
+    rejected the correct HUBER+SUHNER RG178 sheet — not because the document was
+    wrong but because its text is encoded in a way this crude extractor cannot
+    read, so the marker could not be found. **A check that cannot distinguish
+    "the answer is no" from "I could not look" produces false negatives that are
+    indistinguishable from true ones**, which is worse than not checking, because
+    it is trusted.
+
+    Returns (state, reason) where state is "ok", "no" or "unknown".
+    """
     if not data or data[:4] != b"%PDF":
-        return False, "not a PDF"
+        return "no", "not a PDF"
     stem = re.sub(r"[^A-Z0-9]", "", mpn.upper())[:6]
     if len(stem) < 4:
-        return True, "marker skipped (MPN too short to be distinctive)"
-    body = re.sub(r"[^A-Z0-9]", "", pdf_text(data).upper())
-    if stem in body:
-        return True, f"marker {stem} found"
-    return False, f"marker {stem} ABSENT — probably the wrong document"
-
-
-# Mouser publishes hard limits: 30 calls/minute, 1,000/day. 2.1s between calls
-# keeps us under the per-minute cap with margin. Exceeding it risks the key, and
-# a revoked key costs far more than a slow run -- there are only ~23 candidates.
-_MOUSER_GAP = 2.1
-_last_call = [0.0]
+        return "unknown", "MPN too short to be a distinctive marker"
+    txt = pdf_text(data)
+    words = readable(txt)
+    if words < 200:
+        return "unknown", f"text not extractable ({words} words) — cannot verify"
+    if stem in re.sub(r"[^A-Z0-9]", "", txt.upper()):
+        return "ok", f"marker {stem} found in {words} words"
+    return "no", f"marker {stem} ABSENT in {words} readable words — wrong document"
 
 
 def mouser_lookup(mpn, key):
+    """Resolve a datasheet URL from an MPN via the Mouser Search API.
+
+    Two things learned the hard way on 2026-08-21:
+
+    **Use the keyword endpoint, not partnumber.** `search/partnumber` happily
+    returns 50 hits for BC337 with `DataSheetUrl` empty on every one;
+    `search/keyword` returns fewer but populated. Same catalogue, different
+    field completeness, and the partnumber endpoint gives no hint that it is
+    withholding anything.
+
+    **Never take the first result.** `DataSheetUrl` is blank on most rows even
+    in a good response — for BC337 the onsemi entry is empty and the NXP one
+    carries the sheet. Scan them all, and prefer an exact MPN match so a
+    near-miss part number does not supply the document.
+    """
     wait = _MOUSER_GAP - (time.monotonic() - _last_call[0])
     if wait > 0:
         time.sleep(wait)
     _last_call[0] = time.monotonic()
-    body = json.dumps({"SearchByPartRequest": {"mouserPartNumber": mpn}}).encode()
+
+    body = json.dumps({"SearchByKeywordRequest": {
+        "keyword": mpn, "records": 50, "startingRecord": 0}}).encode()
     req = urllib.request.Request(
-        f"https://api.mouser.com/api/v1/search/partnumber?apiKey={key}",
+        f"https://api.mouser.com/api/v1/search/keyword?apiKey={key}",
         data=body, headers={**UA, "Content-Type": "application/json"})
     try:
         d = json.loads(urllib.request.urlopen(req, timeout=30).read())
+    except urllib.error.HTTPError as e:
+        return None, f"mouser HTTP {e.code}"
     except Exception as e:
         return None, f"mouser {type(e).__name__}"
-    for part in (d.get("SearchResults") or {}).get("Parts") or []:
-        u = part.get("DataSheetUrl")
-        if u:
-            return u, "mouser"
-    return None, "mouser: no datasheet in result"
+
+    errs = [e.get("Message") for e in (d.get("Errors") or []) if e.get("Message")]
+    if errs:
+        return None, f"mouser error: {errs[0]}"
+
+    parts = (d.get("SearchResults") or {}).get("Parts") or []
+    if not parts:
+        return None, "mouser: no results"
+
+    key_norm = re.sub(r"[^A-Z0-9]", "", mpn.upper())
+    exact, loose = [], []
+    for pt in parts:
+        u = (pt.get("DataSheetUrl") or "").strip()
+        if not u:
+            continue
+        got = re.sub(r"[^A-Z0-9]", "", (pt.get("ManufacturerPartNumber") or "").upper())
+        (exact if got == key_norm else loose).append((u, pt.get("Manufacturer") or "?"))
+    for pool, how in ((exact, "exact"), (loose, "near")):
+        if pool:
+            u, mfr = pool[0]
+            return u, f"mouser/{how}:{mfr}"
+    return None, f"mouser: {len(parts)} hits, none carry a datasheet URL"
 
 
 def sources(mpn, key):
@@ -211,8 +264,7 @@ def sources(mpn, key):
         yield pat.format(mpn.lower()), "pattern"
     if key:
         u, why = mouser_lookup(mpn, key)
-        if u:
-            yield u, why
+        yield (u, why) if u else (None, why)
 
 
 def attach(part, mpn, data, comment, who):
@@ -235,9 +287,14 @@ def attach(part, mpn, data, comment, who):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--list", action="store_true", help="show candidates and exit")
+    ap.add_argument("--urls", action="store_true",
+                    help="resolve and print MPN<TAB>URL, for a browser to fetch")
     ap.add_argument("--fetch", action="store_true", help="try to resolve and download")
     ap.add_argument("--from-dir", help="attach PDFs already downloaded; matched by MPN in filename")
     ap.add_argument("--commit", action="store_true", help="actually write (default: dry run)")
+    ap.add_argument("--allow-unverified", action="store_true",
+                    help="attach PDFs whose text could not be read (marker check "
+                         "inconclusive, NOT failed). The attachment says so.")
     ap.add_argument("--limit", type=int, default=0)
     a = ap.parse_args()
 
@@ -247,6 +304,23 @@ def main():
     cfg = load_cfg()
     key = cfg.get("mouser_api_key")
     check_ip(cfg)
+
+    if a.urls:
+        # Mouser resolves the URL fine from here, but its specsheet host returns
+        # 200-with-HTML to curl — fingerprinting, verified from both sites. The
+        # bytes have to come through a real browser. So: resolve here, fetch
+        # there, attach with --from-dir. Three steps because the middle one
+        # cannot be done from a shell, not because it is elegant.
+        if not key:
+            print(f"  no Mouser key at {KEYS}")
+            return
+        for p, mpn in cands:
+            u, why = mouser_lookup(mpn, key)
+            if u:
+                print(f"{mpn}\t{u}")
+            else:
+                print(f"#{mpn}\t{why}")
+        return
 
     if a.list or not (a.fetch or a.from_dir):
         print(f"  {len(cands)} parts could have a datasheet and do not\n")
@@ -264,32 +338,56 @@ def main():
     for p, mpn in cands:
         data = origin = None
         if a.from_dir:
+            want = mpn.lower().replace("-", "")
             for fn in sorted(os.listdir(a.from_dir)):
-                if mpn.lower().replace("-", "") in re.sub(r"[^a-z0-9]", "", fn.lower()):
-                    data = open(os.path.join(a.from_dir, fn), "rb").read()
-                    origin = f"local:{fn}"
-                    break
+                # Skip macOS AppleDouble sidecars and other dotfiles. `._X.pdf`
+                # sorts BEFORE `X.pdf`, matches the same MPN, and is 4KB of
+                # resource fork — so a naive first-match loop picks the junk
+                # file, fails verification, and abandons a part whose real
+                # datasheet is sitting right next to it.
+                if fn.startswith("."):
+                    continue
+                if want not in re.sub(r"[^a-z0-9]", "", fn.lower()):
+                    continue
+                blob = open(os.path.join(a.from_dir, fn), "rb").read()
+                if blob[:4] != b"%PDF":
+                    continue                      # keep looking, do not give up
+                data, origin = blob, f"local:{fn}"
+                break
+        tried = []
         if data is None and a.fetch:
             for url, why in sources(mpn, key):
+                if url is None:
+                    tried.append(why)          # a source explaining its own failure
+                    continue
                 d = get(url)
                 if d and d[:4] == b"%PDF":
                     data, origin = d, f"{why}:{url.split('/')[2]}"
                     break
+                tried.append(f"{why}:{'no response' if d is None else 'not a PDF'}")
         if data is None:
-            print(f"  --   #{p.pk:<5} {mpn:<16} no source")
+            # Say WHY. A flat "no source" hid a wrong-endpoint bug for a whole
+            # run: the API was answering fine and the script looked broken.
+            print(f"  --   #{p.pk:<5} {mpn:<16} {'; '.join(tried[-2:]) or 'no source'}")
             bad += 1
             continue
 
-        good, reason = verify(data, mpn)
-        if not good:
+        state, reason = verify(data, mpn)
+        if state == "no":
             print(f"  --   #{p.pk:<5} {mpn:<16} REJECTED: {reason} ({origin})")
+            bad += 1
+            continue
+        if state == "unknown" and not a.allow_unverified:
+            print(f"  ??   #{p.pk:<5} {mpn:<16} UNVERIFIED: {reason} ({origin})")
+            print(f"       -> re-run with --allow-unverified to attach it anyway")
             bad += 1
             continue
         if not a.commit:
             print(f"  dry  #{p.pk:<5} {mpn:<16} {len(data)//1024:>5} KB  {reason}  [{origin}]")
             ok += 1
             continue
-        comment = (f"Datasheet for {mpn}, via {origin}. Content verified: {reason}. "
+        flag = "" if state == "ok" else "**NOT CONTENT-VERIFIED** — "
+        comment = (f"{flag}Datasheet for {mpn}, via {origin}. {reason}. "
                    f"If this part is a MODULE or breakout, this sheet describes the "
                    f"chip on it, not the board — check before trusting a pinout.")
         if attach(p, mpn, data, comment, who):

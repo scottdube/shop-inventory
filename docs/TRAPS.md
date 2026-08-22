@@ -750,3 +750,29 @@ Solving that is off the table, permanently. When a mirror throws a CAPTCHA, the
 answer is to fix the path to the *source* — see the Malwarebytes entry above —
 or to have a human fetch the handful of files by hand. Working around a bot
 challenge is how an account or an IP gets burned for a few PDFs.
+
+## A check that can't tell "no" from "couldn't look" is worse than no check
+
+The datasheet verifier greps a PDF's text for the part number and refuses the
+file if it is absent. It rejected the HUBER+SUHNER **RG178** sheet — which is
+the correct document. Extraction had produced a megabyte of decompressed
+*binary* (colour profiles, fonts, images) and **99 readable words**. The marker
+was not absent; nothing was legible to look in.
+
+Two states could not express that. "Reject" meant both *this is the wrong
+document* and *I could not read this document*, and those need opposite
+responses. Worse, the failure is silent and confident: a false negative is
+indistinguishable from a true one, so the check gets trusted precisely when it
+is wrong.
+
+Now three states — `ok` / `no` / `unknown` — with readability measured by
+counting ASCII words of 4+ characters. Under 200 means the extractor failed,
+not that the document did. `unknown` needs `--allow-unverified` to attach, and
+the attachment comment is stamped **NOT CONTENT-VERIFIED** so the gap travels
+with the record instead of being lost at the command line.
+
+**The general rule: any validator needs a way to say "inconclusive".** A binary
+pass/fail forces every "I don't know" into one bucket or the other, and
+whichever bucket you choose is wrong half the time — silently. Ask of any check:
+*what does it return when it cannot run?* If that is the same value as failure,
+it will eventually reject something correct and nobody will find out.
