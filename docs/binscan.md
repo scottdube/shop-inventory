@@ -88,6 +88,27 @@ matched an *M6* x 20 socket head, because the thread regex expected McMaster's
 `M6 x` spelling and found no thread at all in the label's, leaving length as the
 only evidence.
 
+## Auto-advance
+
+After a submit the drawer selector moves on by itself — **across** the row,
+**down** the column, or **stay**. Scott, 2026-08-22: re-finding your place in a
+324-entry select every time was *"one of the things that was a problem in
+binscan as it was originally put together."*
+
+**The next drawer comes from the option list, not from incrementing a number,**
+because the grid is irregular. B rows 1-4 are eight wide and rows 5-7 are four,
+so C5 has no neighbour below it: `R4C5` going down is `R1C6`, skipping
+R5C5/R6C5/R7C5, which do not exist. Incrementing would land on a drawer that is
+not there. Walking the real list also means the last drawer differs by
+direction — across ends at `R7C4`, down ends at `R4C8`. Ten ordering cases pass,
+including both ends and both crossings between the small and large row bands.
+
+Advancing clears the photo and disables the button, so the next drawer cannot
+be submitted with the previous drawer's picture. The result of the last read
+stays on screen. For an estimate, the drawer address is captured when the
+"record actual" card is built rather than read at click time — otherwise the
+actual count would be filed against whichever drawer had been advanced to.
+
 ## Why the original design did not solve the B1/B2 walk
 
 The walk needs the drawer address to be an OUTPUT. binscan assumes it is an
