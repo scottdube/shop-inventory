@@ -879,3 +879,33 @@ on every axis at once:
 Applied to the 7-pin DIN cable: it had been sitting in Receiving marked
 "awaiting a home" while wired into the desk controller. Now `belongs_to` stock
 #120, location cleared, quantity untouched.
+
+## A BOM is a plan; an allocation is a record. Do not read one as the other
+
+BO-0003 completed 2026-08-18 with zero allocations — deliberately and correctly,
+because the counts for most of its parts were taken *after* the build and
+already net out the consumption. Allocating would have deducted them twice.
+
+The problem is what the record then looks like to a reader: seven tidy BOM
+lines that appear to describe the contents of a finished box. They do not. They
+were **regenerated from a KiCad extract on 08-19, the day after completion** —
+a description of the current schematic, not an observation of what left the
+drawers. A substitution, a bodge wire, or a different resistor grabbed because
+the right value was missing leaves no trace at all.
+
+Evidence per line varied from proof to nothing, with nothing in the record
+saying so:
+
+| Evidence | Meaning |
+|---|---|
+| **Physical** — item installed via `belongs_to` | provable, survives re-reading |
+| **Inferred** — a count taken after the build already excludes it | reasonable, unfalsifiable |
+| **Design only** — kit estimates; 3 resistors leaving a 28-piece kit is invisible | no evidence at all |
+
+Same shape as the kit-count evidence tiers: the number is not the problem, the
+*undeclared confidence* is. A BOM presents all seven lines identically.
+
+**Going forward: allocate before completing a build**, and the record becomes
+observed rather than reconstructed. **For builds already finished, `belongs_to`
+is the retrofit** — it converts a claim into a fact for the items you can still
+identify, and leaves the rest honestly marked as design.
