@@ -249,3 +249,42 @@ You subscribe to specific part numbers, with a cap on total subscriptions and
 on how many can be added per day, and CAD endpoints are separately
 rate-limited. At 92 parts that is comfortable, but a "sync the whole catalogue"
 design would not be.
+
+### What the web says about getting API access — and a poisoned source
+
+Searched 2026-08-21, while the request was in flight. Two useful findings and
+one trap.
+
+**Trap: secondary sources conflate McMaster-Carr with McMaster University.**
+`mcmaster.com` is the industrial supplier; `mcmaster.ca` is a university in
+Hamilton, Ontario that runs its own developer portal and an eProcurement system
+called MacBuy. Search results blend them freely. In particular, dltHub's page
+titled *"McMaster-Carr Python API Docs"* describes signing in with a **MacID**
+at `developer.api.mcmaster.ca` and lists endpoints (`categories`, `search`)
+that do not exist in the real API. **MacID is a university credential.** That
+page would cost an implementer a day.
+
+Trust `mcmaster.com/help/api/` — read directly, in a browser — and nothing
+else. Its actual endpoints are `/v1/login`, `/v1/products/{partNumber}`,
+`/v1/products/{partNumber}/price`, `/v1/images/*`, `/v1/cad/*`,
+`/v1/datasheets/*`.
+
+**Finding: the public ecosystem is scrapers, not API clients.** GitHub carries
+McMaster CAD *scrapers* and even a `mcmaster-carr-scraper-api` topic, but no
+third-party wrapper for the official API. That is the shape of a hard-to-get
+credential: when access is routine, wrapper libraries appear; when it is not,
+people route around it. No public report was found of an individual or small
+shop being approved, and the API is positioned inside the eProcurement family
+alongside OCI punchout — enterprise procurement integration.
+
+**One genuine point in our favour, and it is structural.** The API is
+**subscription-based**, with per-account caps on total subscribed parts and on
+daily additions. Nobody builds per-user subscription accounting for a handful
+of enterprise partners. Caps of that kind imply many small consumers, which is
+evidence — indirect but real — that modest accounts do get onboarded.
+
+**Do not scrape as a fallback if the request is declined.** It is against this
+project's own guardrails, McMaster actively blocks it (the product page needs a
+login), and it would put a real purchasing account at risk to save some typing.
+The fallback is what already exists: the catalogue number, the derived link,
+and the spec text captured locally at import.
