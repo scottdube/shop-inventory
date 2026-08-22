@@ -29,14 +29,27 @@ queue, not a log.
 
 ## Containers and dividers
 
+- [ ] **BUY: Sterilite 6 Qt 10-pack, Walmart item 5297809753, $10.98.**
+      External 13 1/2 x 8 x 4 5/8; interior bottom 11 1/2 x 6 x 4 1/4. For the
+      WIRE SHELVES only — 3 across x 2 deep = 6 per 46x18 shelf, 72 slots across
+      both racks for eleven dollars. Newington store, low stock as of
+      2026-08-22, so order for pickup rather than driving on spec.
+- [ ] **MAKE: cabinet trays, 7 1/2 x 12 x 3.** Nothing off the shelf fits
+      3-across in the 24 x 12.75 LW opening — the 6 Qt is 13.5 deep and will not
+      go front-to-back, and every common width puts three bins at 24in or over
+      with zero clearance. Laser-cut to the exact opening, with the CENTRE tray
+      sized deliberately as the pull-out key for the hinges. Buy the commodity,
+      make the thing that has to fit exactly.
 - [ ] **Design bin dividers — laser or 3D print.** Scott has both. This changes
       the buying decision: with dividers, buy FEWER and LARGER bins and
       subdivide, rather than many small ones. ~4 cable bins by category (USB /
       video / network+audio / power) each split 3 ways beats 12 separate bins —
       you still pull one container per category, which is how you search.
 
-      **Moulded bins taper** (injection draft, often 1/8-1/4in per side over 3in
-      of height). A cross-lap divider cut to the bottom dimension rattles at the
+      **Moulded bins taper, and by more than you would guess.** Measured on the
+      Sterilite 6 Qt: external 8in wide, interior bottom 6in — a full inch of
+      draft per side. A cross-lap divider cut to the 6in bottom has ~1.5in of
+      slop at the top. A cross-lap divider cut to the bottom dimension rattles at the
       top; cut to the top, it will not seat. Either make the side panels
       trapezoidal to match the draft, or size to the bottom with a locating foot
       and let the top run loose. **Measure top AND bottom internal width before
