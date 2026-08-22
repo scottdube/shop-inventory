@@ -1124,3 +1124,32 @@ or it silently converts "we haven't looked yet" into "it's put away".
 Same shape as the other members of this family: `[ESTIMATE]` versus a count,
 VERIFIED EMPTY versus a drawer with no rows, and a zero with no note. Each time,
 the value is fine and the **undeclared confidence** is the defect.
+
+## The system's size is not the part's size
+
+A ball valve was recorded as **1/2in** because Scott said it fits the PRIMEFIT
+1/2in x 100ft nylon tubing kit. It is **3/8in**.
+
+The inference looked safe and was not. An air system runs more than one tube
+size — a 1/2in main feeding 3/8in branches and 1/4in drops is completely
+ordinary plumbing. *"It belongs to the 1/2in kit"* never implied *"it is a
+1/2in fitting"*, and the kit's headline number is the size of its **tubing**,
+not of every fitting sold alongside it.
+
+Same shape as reading a pack quantity off a SKU, or a material off a listing
+title: **a number that is nearby and plausible is not the number you were
+looking for.** The tell is that the figure came from something *adjacent* to
+the object rather than from the object.
+
+This one part collected four corrections, and every single one came from Scott
+holding it rather than from any record:
+
+1. Logged from a photo as an "air chuck / ball valve assembly" — no chuck
+2. Asked for its NPT port size — push-to-connect has no thread, it is sized by
+   tubing OD
+3. Recorded 1/2in from the kit — it is 3/8in
+4. Recorded as one — there are two
+
+Nothing here was retrievable from a document. Every fix required someone to
+pick the thing up, which is the argument for asking during a drawer walk rather
+than reconstructing afterwards.
