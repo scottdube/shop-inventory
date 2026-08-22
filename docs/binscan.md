@@ -341,6 +341,38 @@ yellow. **A grid that needs hue discrimination to read is a grid that fails at
 arm's length, in a garage, for this user.** Any future state gets a glyph before
 it gets a colour.
 
+## Findable without relearning it
+
+Scott, after several rows: *"the button ends up below the fold, so you don't see
+it... the quantity, you really gotta look at it a couple of times in order to
+find the spot where you enter it. I could see if you don't use this for a while
+how it's gonna be like learning it all over again."*
+
+That is the real test — not whether it works while you are in the rhythm of it,
+but whether it works after a month away. Four changes:
+
+**The action bar is pinned to the bottom** and holds everything needed to act:
+the camera, the photo thumbnail, and the submit. Before, the full-width preview
+pushed the button off-screen. A first attempt pinned only the button and left
+the file input up-page, which moved the problem rather than solving it, and used
+a gradient background so the card underneath showed through. Solid, or it is not
+a bar.
+
+**The preview is a 62 px thumbnail.** It exists to confirm you photographed the
+right thing, which needs no more than that.
+
+**"Read the tag" became "Identify from this photo".** The photo is sometimes a
+tag and sometimes the part itself, and the old label described only one of them.
+
+**The count field announces itself** — its own bordered blue block, large
+centre-aligned input, and the label `# HOW MANY ARE IN THE DRAWER?`. It reads
+"the record says 50, but that is what was PURCHASED, not what is there", which
+puts the reason for the blank field next to the blank field.
+
+Provider and advance-direction moved into a collapsed **Options** section, and
+"What it holds" is hidden except in estimate mode where it is actually read.
+Three set-once controls were sitting between the grid and the action.
+
 ## The write journal — undo and reconciliation from one record
 
 Every `/api/assign` write records the row's full **before** state: location,
