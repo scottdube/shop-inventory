@@ -109,6 +109,60 @@ stays on screen. For an estimate, the drawer address is captured when the
 "record actual" card is built rather than read at click time — otherwise the
 actual count would be filed against whichever drawer had been advanced to.
 
+## The picker
+
+A 478-entry select was the wrong control on a phone. Scott, 2026-08-22: reaching
+B3 meant scrolling past everything *"and b three is not even at the end."*
+
+Two stages now. `/api/areas` returns places you can stand — the six bin-wall
+cabinets as chips, the other 21 behind an "elsewhere" toggle. A drawer that
+holds an assortment kit has a child location and so looked like an area;
+`A3-R8C5` and `B3-R3C2` were listed alongside the cabinets until drawer-shaped
+names were filtered out.
+
+Picking one calls `/api/grid`, which returns every drawer in the area with
+enough state to colour it, in one request. **The grid mirrors the cabinet** —
+eight-wide rows 1-4, four-wide large rows 5-7 — so you tap the drawer where it
+physically sits, and the picker doubles as a progress view: filled / unknown /
+verified empty, with a tally.
+
+That colouring found its own bug. The first version matched stock to drawers by
+pathstring text, but the stock endpoint does not return `location_detail` unless
+asked, so every match was against an empty string and B3 — 41 stocked drawers —
+reported as entirely unfilled. Resolved by primary key now, walking parents up
+to the cabinet's direct child, which also handles kits.
+
+## Filing: the first thing binscan writes
+
+`/api/assign` moves a stock row into a drawer. Added 2026-08-22 after a field
+test: Scott photographed a B2 drawer whose tag was only a description, and the
+label-text path identified the part correctly — *"it actually figured it out
+exactly what they were, minus the quantities."*
+
+**Two facts, deliberately kept apart:**
+
+| | established by | recorded |
+|---|---|---|
+| the DRAWER | a person looking in it | always |
+| the COUNT | a person typing a number | only if they did |
+
+The count box is **blank on purpose**. The quantity already on the row came from
+a purchase order — a real record of what was BOUGHT, not of what is there.
+Leaving it blank moves the row and says so in the note; typing a number records
+a count. Promoting the first silently into the second is how a stock system
+starts lying.
+
+Guards: writes must be enabled, `confirm` must be explicit, the location and
+stock item must resolve, the quantity must parse and be non-negative — and the
+result is **verified by re-reading the row**, returning 500 if location or
+quantity did not land. Round-trip tested against stock 473 with a rollback.
+
+**No model output reaches this endpoint.** The match is a proposal; a person
+confirms it with the drawer open. The drawer name is bound when the card is
+rendered, not when the button is clicked, because auto-advance changes the
+current drawer immediately after — otherwise the second drawer of a walk
+collects the first drawer's contents.
+
 ## Why the original design did not solve the B1/B2 walk
 
 The walk needs the drawer address to be an OUTPUT. binscan assumes it is an
