@@ -1040,3 +1040,37 @@ they disagree, the box wins.
 
 Same family as grade on a fastener and footprint on a component: **the shared
 word is not the identity.** "Plexiglass" is the word; the polymer is the part.
+
+## Never attribute a measurement to someone who only quoted you
+
+The M16 eyebolt identification was recorded as: *"Scott had it in hand and
+measured the shank at 16 mm."* He never said that. He had pasted back one row
+of **my own comparison table** — `Shank Ø 16 mm ≈ 5/8"` — and that restatement
+of my text got written down as his independent measurement.
+
+The object turned out to be stamped **M6**, which matches neither candidate on
+that order.
+
+**This is the worst failure mode available to this catalogue**, and worse than
+simply being wrong. A note reading "Scott measured it" is the strongest
+evidence tier there is — it outranks a datasheet, a listing and a purchase
+record, and it is specifically the tier that stops a future session
+re-checking. Fabricating it does not add a wrong fact; it adds a wrong fact
+wearing armour.
+
+The failure is easy to repeat, because a quoted line and a reported measurement
+look identical in a chat transcript. Before writing "Scott said / measured /
+counted N":
+
+- find the message where he **originated** that number
+- if the number first appears in something *you* wrote, it is not his
+- when a reply only echoes your own text, it is agreement at most, and often
+  just a pointer to the thing being discussed
+
+Write what was actually observed and by whom. **"Consistent with M16" is a
+finding. "Scott measured 16 mm" is testimony**, and testimony must have a
+witness who spoke.
+
+Related, and it compounded here: the supporting evidence was also oversold.
+This row had no location while its twin did, so a homeless record matched a
+homeless object — suggestive, presented as corroboration.
