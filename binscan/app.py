@@ -633,11 +633,19 @@ def drawer_contents(name):
     # instead, and no photograph of a nut shows its thread pitch. The record
     # knew; nobody asked it.
     if not out["assigned"]:
+        m = DRAWER_RE.match(name or "")
+        cab = m.group(1) if m else ""
+        rows = cabinet_unlocated(cab) if cab else []
+        # ALWAYS returned for an unassigned drawer, labelled or not. It was
+        # returned only alongside a label match, so an unlabelled drawer got an
+        # empty list and the pick-by-hand card suppressed itself -- which meant
+        # a person standing at an open drawer, who could see exactly what was in
+        # it, had to photograph it first to unlock a filter box.
+        out["unlocated"] = [{"stock": r["stock"], "sku": r["sku"],
+                             "name": r["name"], "quantity": r["quantity"]}
+                            for r in rows]
         body = re.sub(r"\[[^\]]*\]", "", out["description"]).strip(" ,;-\u2014")
         if body and not body.upper().startswith(("VERIFIED EMPTY", "PRE-SORT")):
-            m = DRAWER_RE.match(name or "")
-            cab = m.group(1) if m else ""
-            rows = cabinet_unlocated(cab) if cab else []
             ranked, basis = match_reading({"tag": "", "labels": [body],
                                            "markings": [], "descriptors": ""}, rows)
             out["label"] = body
@@ -646,9 +654,6 @@ def drawer_contents(name):
                 {"sku": c["row"]["sku"], "name": c["row"]["name"],
                  "stock": c["row"]["stock"], "quantity": c["row"].get("quantity"),
                  "why": c["why"], "strength": c["strength"]} for c in ranked]
-            out["unlocated"] = [{"stock": r["stock"], "sku": r["sku"],
-                                 "name": r["name"], "quantity": r["quantity"]}
-                                for r in rows]
     return out
 
 
@@ -662,6 +667,116 @@ def api_drawer(name: str = ""):
     if d is None:
         return JSONResponse({"error": f"no location named {name}"}, status_code=404)
     return d
+
+
+@app.post("/api/newpart")
+def api_newpart(name: str = Form(...), location: str = Form(...),
+                quantity: str = Form(""), notes: str = Form(""),
+                confirm: str = Form("")):
+    """Create a part that is not in the catalogue, from the drawer, on the walk.
+
+    Two drawers in B2 alone held things that had never been entered -- 1/4in
+    stainless washers and 5/16-18 lock nuts -- and the walk had nowhere to put
+    them. Skipping records nothing, so the drawer stays unknown and the parts
+    stay invisible; filing the wrong row would be worse.
+
+    Guarded, because a create path on a phone is how a catalogue fills with
+    near-duplicates. Two importers have already entered the same item twice
+    under different names.
+    """
+    if not WRITES_ON:
+        return JSONResponse({"error": "writes disabled (BINSCAN_WRITES != 1)"}, 403)
+    if confirm.lower() not in ("1", "true", "yes"):
+        return JSONResponse({"error": "confirm required"}, 400)
+
+    name = " ".join((name or "").split())
+    if len(name) < 8:
+        return JSONResponse({"error": "give it a real name - at least 8 characters, "
+                                      "in the house style, e.g. "
+                                      "'Nyloc Nut 5/16-18, zinc-plated steel'"}, 400)
+
+    # `name=` is NOT an exact-match filter on this API -- it is ignored, so the
+    # first version of this check returned nothing and passed every time. It
+    # created a second "Flat Washer 1/4in ID x 5/8in OD, 18-8 stainless" during
+    # its own guard test. `search=` works. A guard that cannot fail is not a
+    # guard, and this repo already has two importers that entered the same item
+    # twice under different names.
+    def _norm(t):
+        return re.sub(r"[^a-z0-9]", "", (t or "").lower())
+    want = _norm(name)
+    for r in _rows(it_get("part/", search=name[:60], limit=50)):
+        if _norm(r.get("name")) == want:
+            return JSONResponse({"error": f"part #{r.get('pk')} is already called "
+                                          f"'{r.get('name')}'"}, 409)
+
+    locs = [l for l in _rows(it_get("stock/location/", name=location, limit=5))
+            if (l.get("name") or "").upper() == location.upper()]
+    if not locs:
+        return JSONResponse({"error": f"no location named {location}"}, 404)
+    loc = locs[0]
+
+    counted = None
+    if str(quantity).strip():
+        try:
+            counted = float(quantity)
+        except ValueError:
+            return JSONResponse({"error": f"quantity {quantity!r} is not a number"}, 400)
+        if counted < 0:
+            return JSONResponse({"error": "quantity cannot be negative"}, 400)
+
+    # Category from a sibling rather than hard-coded: the tree is the shop's,
+    # not this app's, and guessing an id would break the day it is reorganised.
+    cat = None
+    for probe in (name.split()[0], "Washer", "Nut", "Screw"):
+        sib = _rows(it_get("part/", search=probe, limit=5))
+        cat = next((r.get("category") for r in sib if r.get("category")), None)
+        if cat:
+            break
+
+    stamp = datetime.date.today().isoformat()
+    body = (f"Created on the walk with binscan, {stamp}, at {loc['name']}. "
+            f"**Not from any recorded purchase** - it matched nothing in the "
+            f"catalogue, so it will never reconcile against a purchase order and "
+            f"the purchased-vs-counted report has nothing to say about it.\n\n"
+            + (notes.strip() + "\n\n" if notes.strip() else "")
+            + ("Quantity COUNTED by hand at the drawer."
+               if counted is not None else
+               "[ESTIMATE] No quantity recorded - nobody counted it."))
+
+    payload = {"name": name, "description": name[:250], "active": True,
+               "purchaseable": True, "component": True,
+               "default_location": loc["pk"], "notes": body}
+    if cat:
+        payload["category"] = cat
+    part, err = it_post("part/", payload)
+    if err:
+        return JSONResponse({"error": f"could not create the part: {err}"}, 502)
+
+    stock = None
+    if counted is not None:
+        stock, err = it_post("stock/", {"part": part["pk"], "location": loc["pk"],
+                                        "quantity": counted,
+                                        "notes": f"binscan {stamp}: filed into "
+                                                 f"{loc['name']} and COUNTED at "
+                                                 f"{counted:g} by hand."})
+        if err:
+            return JSONResponse({"error": f"part created (#{part['pk']}) but the "
+                                          f"stock row failed: {err}",
+                                 "part": part["pk"]}, 502)
+
+    again = it_get(f"part/{part['pk']}/") or {}
+    if again.get("default_location") != loc["pk"]:
+        return JSONResponse({"error": "part created but its home did not verify",
+                             "part": part["pk"]}, 500)
+
+    log_append({"id": uuid.uuid4().hex[:8], "kind": "newpart",
+                "at": datetime.datetime.now().isoformat(timespec="seconds"),
+                "part": part["pk"], "name": name, "location": loc["name"],
+                "stock": (stock or {}).get("pk"), "quantity": counted,
+                "counted": counted is not None})
+    return {"ok": True, "part": part["pk"], "name": name,
+            "location": loc["name"], "quantity": counted,
+            "counted": counted is not None, "category": cat}
 
 
 @app.post("/api/empty")
@@ -1173,6 +1288,16 @@ details#opts label{margin-top:10px}
    input. Scott: "you really gotta look at it a couple of times in order to find
    the spot where you enter the quantity... if you don't use this for a while
    it's gonna be like learning it all over again." */
+.picklist{max-height:230px;overflow-y:auto;margin-top:8px;
+border:1px solid var(--line);border-radius:9px}
+.pick{display:flex;gap:8px;align-items:baseline;width:100%;margin:0;padding:9px 10px;
+border:0;border-bottom:1px solid var(--line);border-radius:0;background:var(--card);
+color:var(--fg);text-align:left;font-size:13.5px}
+.pick:last-child{border-bottom:0}
+.pick.on{background:#0e2436;box-shadow:inset 3px 0 0 var(--acc)}
+.pick .sku{color:var(--acc);font-family:ui-monospace,monospace;font-size:12px;flex:0 0 auto}
+.pick .nm{flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pick .qt{color:var(--mut);font-size:12px;flex:0 0 auto}
 .countbox{margin-top:14px;padding:11px 12px;border-radius:10px;
 background:#0e2436;border:1px solid #2f6f9e}
 .countbox label{margin:0 0 7px;color:#7fd0ff;font-size:12px;font-weight:700}
@@ -1273,7 +1398,7 @@ const STATE={
   unknown:   {g:'?',       word:'nobody has looked'},
   empty:     {g:'\u00b7', word:'verified empty'},
 };
-let AREA=null, CELLS=[], CUR=null;
+let AREA=null, CELLS=[], CUR=null, LABEL='';
 fetch('/api/areas').then(r=>r.json()).then(as=>{
   // The bin wall is where the work is; twenty-odd other places are real but
   // rarely the answer, and showing all of them cost nine rows of chips.
@@ -1352,7 +1477,7 @@ async function repaint(){
 }
 
 function pick(name){
-  CUR=name;
+  CUR=name; LABEL='';
   $('#gridwrap').querySelectorAll('.cell').forEach(b=>b.classList.toggle('on',b.dataset.n===name));
   refreshDrawer(name,false);
 }
@@ -1393,7 +1518,7 @@ async function refreshDrawer(v,keepOut){
     if(!$('#file').files[0]) $('#shothint').textContent='On record — photograph it to estimate the count';
   }else{
     MODE='identify';
-    UNLOCATED = d.unlocated || [];
+    UNLOCATED = d.unlocated || []; LABEL = d.label || '';
     if(d.label){
       // The drawer is labelled even though no stock points at it. Offer the
       // match now -- taking a photograph to learn what the label already says
@@ -1415,7 +1540,7 @@ async function refreshDrawer(v,keepOut){
              <div class=msg data-i="${i}" style="margin-top:8px;font-size:13px"></div>
            </div>`).join('')
            : `<div class="card warn">The label reads &ldquo;${d.label}&rdquo; but nothing unlocated in this cabinet matches it. Pick by hand, or photograph the tag.</div>`)
-        + manualCard() + skipCard();
+        + manualCard() + createCard(LABEL) + skipCard();
       setTimeout(()=>wireFiling(v), 0);
     }
     $('#known').innerHTML='<div class=card><b>Nothing on record for this drawer.</b>'+
@@ -1427,7 +1552,15 @@ async function refreshDrawer(v,keepOut){
     $('#part').value='';
     $('#partwrap').style.display='none';
     $('#go').textContent='Identify from this photo';
-    if(!$('#file').files[0]) $('#shothint').textContent='No record — photograph the tag, or say it is empty';
+    if(!$('#file').files[0]) $('#shothint').textContent='No record — photograph it, pick by hand, or say it is empty';
+    // Offer the hand paths straight away, without requiring a photograph. A
+    // drawer with no label still often has a person standing at it who can
+    // read what is in it -- making them photograph it first to unlock a filter
+    // box is the camera getting in the way of the record.
+    if(!d.label){
+      $('#out').innerHTML = manualCard() + createCard('') + skipCard();
+      setTimeout(()=>wireFiling(v), 0);
+    }
   }
 }
 
@@ -1488,28 +1621,132 @@ function skipCard(){
       ${nx?`Skip to ${nx}`:'No next drawer in this direction'}</button></div>`;
 }
 
+// Two B2 drawers held things that were never entered. Skipping records
+// nothing and filing the wrong row is worse, so there has to be a third way
+// out. Collapsed by default: creating a part is the rare case, and an open
+// text box invites a near-duplicate of something already in the catalogue.
+function createCard(seed){
+  const s = (seed||'').trim();
+  return `<details class=card id=newpartbox>
+    <summary style="color:var(--acc);font-size:13px;cursor:pointer">
+      Not in the list? Create it as a new part</summary>
+    <label style="margin-top:12px">Name &mdash; house style, e.g. &ldquo;Nyloc Nut 5/16-18, zinc-plated steel&rdquo;</label>
+    <input id=npname value="${s.replace(/"/g,'&quot;')}" placeholder="what it is, precisely">
+    <label style="margin-top:10px">Anything worth recording (optional)</label>
+    <input id=npnotes placeholder="markings, material, how you identified it">
+    <div class=countbox>
+      <label># HOW MANY ARE IN THE DRAWER?</label>
+      <input id=npqty type=number inputmode=decimal placeholder="tap to count">
+      <div class=why>Leave blank if you did not count.</div>
+    </div>
+    <button id=npgo style="margin-top:10px">Create and file in ${CUR}</button>
+    <div id=npmsg style="margin-top:8px;font-size:13px"></div>
+    <div class=mut style="margin-top:8px">A part created here has no supplier and
+      no purchase record, so it will never appear in the purchased-vs-counted
+      reconciliation. That is honest &mdash; nobody knows where it came from.</div>
+  </details>`;
+}
+
+function wireCreate(drawer){
+  const go=$('#npgo'); if(!go) return;
+  go.onclick=async()=>{
+    const msg=$('#npmsg');
+    const fd=new FormData();
+    fd.append('name',$('#npname').value); fd.append('location',drawer);
+    fd.append('quantity',$('#npqty').value.trim());
+    fd.append('notes',$('#npnotes').value); fd.append('confirm','yes');
+    go.disabled=true; msg.style.color='#8a8a8e'; msg.textContent='creating…';
+    try{
+      const j=await (await fetch('/api/newpart',{method:'POST',body:fd})).json();
+      if(j.ok){
+        setFlash(`&#10003; Created <b>${j.name}</b> and filed it in <b>${j.location}</b>`
+          + (j.counted?`, <b>${j.quantity}</b> counted.`:', quantity <b>not counted</b>.'));
+        await repaint();
+        go.textContent='Created';
+        if($('#adv').value!=='stay') setTimeout(()=>advance(), 1600);
+      }else{
+        msg.style.color='#ff8f8f'; msg.textContent=j.error||'failed'; go.disabled=false;
+      }
+    }catch(e){ msg.style.color='#ff8f8f'; msg.textContent=String(e); go.disabled=false; }
+  };
+}
+
 function manualCard(){
   if(!UNLOCATED.length) return '';
   return `<div class=card>
     <div class=prov>or pick it by hand</div>
-    <label style="margin-top:10px">${UNLOCATED.length} rows still unlocated in ${AREA}</label>
-    <select id=manualsel>
-      <option value="">— choose the part —</option>
-      ${UNLOCATED.map(u=>`<option value="${u.stock}">${u.sku?u.sku+' · ':''}${u.name.slice(0,70)}</option>`).join('')}
-    </select>
+    <input id=manualq placeholder="filter &mdash; name or McMaster number" autocomplete=off>
+    <div id=manualcount class=mut style="margin-top:7px"></div>
+    <div id=manuallist class=picklist></div>
     <div class=countbox>
       <label># HOW MANY ARE IN THE DRAWER?</label>
       <input class=qty data-i="m" type=number inputmode=decimal placeholder="tap to count">
       <div class=why>Leave blank if you did not count.</div>
     </div>
-    <button class=file data-i="m" data-stock="" id=manualfile style="margin-top:10px">File in ${CUR}</button>
+    <button class=file data-i="m" data-stock="" id=manualfile disabled>Choose a part above</button>
     <div class=msg data-i="m" style="margin-top:8px;font-size:13px"></div>
   </div>`;
 }
 
+// A scrolling list cannot tell you whether a thing is absent or whether you
+// missed it. Scott: "you think you're just not seeing it... I've stood there
+// and looked through that list several times." So the filter REPORTS: how many
+// of how many matched, and when nothing does it says so outright and points at
+// the create path. Absence has to be an answer, not a failure to find.
+// Shop words and catalogue words are not the same words. McMaster writes
+// "Nylon-Insert Locknut"; Scott says "nyloc". A filter that misses on
+// vocabulary reports ABSENCE, which is precisely the wrong answer to give
+// someone deciding whether to create a new part.
+const SYN=[['nyloc','nylock','nylon-insert','nylon insert','locknut','lock nut'],
+           ['shcs','socket head','cap screw'],['bhcs','button head'],
+           ['fhcs','flat head','countersink','countersunk'],
+           ['machine screw','pan head','phillips'],
+           ['setscrew','set screw','grub'],
+           ['washer','flat washer'],['stainless','18-8','18/8','304','316'],
+           ['zinc','zinc-plated','galvanized','galvanised'],
+           ['blackox','black-oxide','black oxide']];
+function expand(w){
+  const out=new Set([w]);
+  SYN.forEach(g=>{ if(g.some(x=>x.includes(w)||w.includes(x))) g.forEach(x=>out.add(x)); });
+  return [...out];
+}
+
+function renderPicks(q){
+  const list=$('#manuallist'), cnt=$('#manualcount'); if(!list) return;
+  const t=(q||'').trim().toLowerCase();
+  const terms=t.split(/\s+/).filter(Boolean);
+  const hit=UNLOCATED.filter(u=>{
+    const hay=((u.sku||'')+' '+u.name).toLowerCase();
+    return terms.every(w=>expand(w).some(v=>hay.includes(v)));
+  });
+  cnt.innerHTML = !t
+    ? `${UNLOCATED.length} rows unlocated in ${AREA} &mdash; type to filter`
+    : hit.length
+      ? `<b>${hit.length}</b> of ${UNLOCATED.length} match &ldquo;${t}&rdquo;`
+      : `<b style="color:#fde047">Nothing UNLOCATED in ${AREA} matches &ldquo;${t}&rdquo;.</b>
+         A definite answer, not a scrolling problem. Note it means no row
+         <i>waiting to be filed</i> &mdash; the part may still exist and already be
+         filed in another drawer. If it is genuinely new, create it below.`;
+  list.innerHTML = hit.slice(0,60).map(u=>
+    `<button class=pick data-stock="${u.stock}">
+       <span class=sku>${u.sku||'—'}</span>
+       <span class=nm>${u.name}</span>
+       <span class=qt>${(+u.quantity).toLocaleString()}</span>
+     </button>`).join('')
+    + (hit.length>60?`<div class=mut style="padding:6px 2px">…and ${hit.length-60} more, keep typing</div>`:'');
+  list.querySelectorAll('.pick').forEach(b=>b.onclick=()=>{
+    list.querySelectorAll('.pick').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    const mf=$('#manualfile');
+    mf.dataset.stock=b.dataset.stock; mf.disabled=false;
+    mf.textContent=`File in ${CUR}`;
+  });
+}
+
 function wireFiling(drawer){
-  const sel=$('#manualsel'), mf=$('#manualfile');
-  if(sel&&mf){ sel.onchange=()=>{ mf.dataset.stock=sel.value; }; }
+  wireCreate(drawer);
+  const q=$('#manualq');
+  if(q){ renderPicks(''); q.oninput=()=>renderPicks(q.value); }
   const sk=$('#skipbtn');
   if(sk) sk.onclick=()=>advance();
   $('#out').querySelectorAll('button.file').forEach(btn=>{
@@ -1605,7 +1842,7 @@ function renderIdentify(d){
       : d.basis==='nothing-legible'
       ? 'Nothing legible in the photo. Try again closer — or pick it by hand below.'
       : `Nothing in the <b>unlocated list for ${AREA}</b> obviously matches that text. This says nothing about what is in the drawer — only that the automatic match could not choose.`;
-    return read+`<div class="card warn">${why}</div>`+manualCard()+skipCard();
+    return read+`<div class="card warn">${why}</div>`+manualCard()+createCard(LABEL)+skipCard();
   }
   const here=CUR;
   return read + d.candidates.map((c,i)=>`<div class=card>
@@ -1629,7 +1866,7 @@ function renderIdentify(d){
        observation. Confirm against the open drawer before filing. The count box
        is blank on purpose — the number already on the row is what was BOUGHT,
        not what is there.</div>`
-    + manualCard() + skipCard();
+    + manualCard() + createCard(LABEL) + skipCard();
 }
 
 $('#go').onclick=async()=>{

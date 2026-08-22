@@ -373,6 +373,53 @@ Provider and advance-direction moved into a collapsed **Options** section, and
 "What it holds" is hidden except in estimate mode where it is actually read.
 Three set-once controls were sitting between the grid and the action.
 
+## Absence has to be an answer
+
+Scott, at B2-R4C1 with a hundred 5/16-18 lock nuts and a scrolling picker:
+*"you think you're just not seeing it. Like, you can think it's in the catalogue
+but it's not... I've stood there and looked through that list several times."*
+
+A list you scroll cannot distinguish **not there** from **I missed it**, and the
+cost of guessing wrong runs both ways: file the wrong row, or create a duplicate
+of something already on file.
+
+The picker is now a filter that **reports**: `8 of 66 match "blackox m6"`, or —
+when nothing does — *"Nothing UNLOCATED in B1 matches. A definite answer, not a
+scrolling problem."* The wording is precise on purpose: it means no row
+*waiting to be filed*. The part may exist and already be filed in another
+drawer, which is a different fact from not existing.
+
+**Shop words are not catalogue words.** McMaster writes "Nylon-Insert Locknut";
+Scott says "nyloc". A filter that misses on vocabulary reports absence, which is
+exactly the wrong answer to hand someone deciding whether to create a new part.
+A synonym table covers nyloc/locknut/nylon-insert, shcs/socket head/cap screw,
+bhcs, fhcs/countersunk, stainless/18-8, zinc/galvanized, black-oxide.
+
+Two more paths were requiring a camera they did not need. **Pick-by-hand and
+create now appear the moment an unassigned drawer is selected** — no photograph
+first. A person standing at an open drawer can often just read what is in it,
+and making them photograph it to unlock a filter box is the camera getting in
+the way of the record.
+
+## Creating a part from the walk
+
+Two B2 drawers held things never entered — 1/4in stainless washers and 5/16-18
+lock nuts. Skipping records nothing; filing the wrong row is worse. So there is
+a third way out, collapsed by default because creating a part is the rare case
+and an open text box invites a near-duplicate.
+
+**The duplicate guard failed its own first test**, which is worth recording:
+`name=` is not an exact-match filter on the part API — it is ignored — so the
+check returned nothing and passed every time. It created a second identical
+"Flat Washer 1/4in ID x 5/8in OD, 18-8 stainless" during the guard test that
+was meant to prove it worked. Now normalised comparison over `search=` results.
+**A guard that cannot fail is not a guard**, and this catalogue already has two
+importers that entered the same item twice under different names.
+
+A part created here has no supplier and no purchase record, so it never appears
+in the purchased-vs-counted reconciliation. That is honest: nobody knows where
+it came from.
+
 ## The write journal — undo and reconciliation from one record
 
 Every `/api/assign` write records the row's full **before** state: location,
