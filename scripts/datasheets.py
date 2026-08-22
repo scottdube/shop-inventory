@@ -76,15 +76,42 @@ MPN_RE = re.compile(
     r"[A-Z][A-Z0-9]*[0-9][A-Z0-9\-]*\b")
 
 
-def load_key():
+def load_cfg():
     try:
         with open(KEYS) as fh:
-            return json.load(fh).get("mouser_api_key")
+            return json.load(fh)
     except FileNotFoundError:
-        return None
+        return {}
     except Exception as e:
         print(f"  ! {KEYS} unreadable: {type(e).__name__}")
-        return None
+        return {}
+
+
+def check_ip(cfg):
+    """Warn if our egress IP has drifted from the one registered with Mouser.
+
+    The Search API application form REQUIRES an IP literal for the calling host
+    and will not take a hostname, so a DDNS setup cannot be registered honestly
+    — you pin whatever the address is that day. Both sites here are dynamic.
+
+    If Mouser enforces that IP, a lease change turns every call into an auth
+    failure, which reads as "the API is broken" rather than "the address moved".
+    Recording the registered value and comparing costs one HTTP call and makes
+    that failure self-diagnosing. Store it as "mouser_registered_ips": [...]
+    alongside the key.
+    """
+    want = cfg.get("mouser_registered_ips")
+    if not want:
+        return
+    try:
+        now = urllib.request.urlopen("https://api.ipify.org", timeout=10).read().decode().strip()
+    except Exception:
+        print("  ! could not determine egress IP — skipping drift check")
+        return
+    if now not in want:
+        print(f"  !! EGRESS IP DRIFTED: now {now}, registered {', '.join(want)}")
+        print("     If Mouser calls start failing auth, this is why — both sites")
+        print("     are dynamic. Update the application or the config, not the code.")
 
 
 def candidates():
@@ -217,7 +244,9 @@ def main():
     cands = candidates()
     if a.limit:
         cands = cands[:a.limit]
-    key = load_key()
+    cfg = load_cfg()
+    key = cfg.get("mouser_api_key")
+    check_ip(cfg)
 
     if a.list or not (a.fetch or a.from_dir):
         print(f"  {len(cands)} parts could have a datasheet and do not\n")

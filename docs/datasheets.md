@@ -117,6 +117,19 @@ Three further blockers, any one of which would matter on its own:
    throttles to 2.1 s between calls — a revoked key costs more than a slow run,
    and there are only ~23 candidates.
 
+   **The application form demands an IP literal and will not take a hostname**,
+   so a DDNS setup cannot be registered honestly — you pin whatever the address
+   is that day. Note that the calling host is the **Mini**, not the laptop:
+   `itq run` ships the script to LRD and executes it there, so the egress IP is
+   LRD's, not SLN's. The field is plural; register both sites if it accepts a
+   list.
+
+   Both sites are dynamic, so if Mouser enforces that IP a lease change turns
+   every call into an auth failure that reads as "the API is broken". Put the
+   registered addresses in the same config as `"mouser_registered_ips": [...]`
+   and the script compares them against the live egress IP each run, warning on
+   drift. Config only — **no IP literals in this repo.**
+
    Worth knowing: the response carries **Image URL as well as Data Sheet URL**,
    plus manufacturer, lifecycle, RoHS and pricing. So this key also feeds the
    603-part image backlog for anything with a real MPN, not just datasheets.
