@@ -156,43 +156,59 @@ whole repo private.
 Before any first push of a repo, and before adding data to a public one, grep for
 order numbers, emails, tokens, internal IPs and street addresses.
 
-## Written-down constraints expire — schedule the re-test
+## Re-test recorded constraints — then find out WHY, not just whether
 
-The rule at the top of this file is "write it down in the same turn". Here is
-its failure mode, found on 2026-08-21.
+Two lessons, an hour apart, and the second one corrects the first.
 
-Since mid-August every piece of remote work here has been shaped by a recorded
+Since mid-August every piece of remote work here was shaped by a recorded
 constraint: rapid cross-site SSH trips the UniFi IPS, so batch everything into
-one uploaded script. It was written down properly, with evidence — a named
-signature and a differential port test. It was cited in `CLAUDE.md`, in two
-scheduled-task files, in the memory index, and in the design of `itq`.
+one uploaded script. Properly written down, with evidence — a named signature
+and a differential port test — and cited in `CLAUDE.md`, two scheduled-task
+files, the memory index, and the design of `itq`.
 
 Scott, in passing: *"I'm not sure the IPS will trip — I believe that was
-solved. It was an inference before, based on a stale condition."*
+solved."*
 
-Tested it: **ten back-to-back SSH sessions in nine seconds, all ~0.85 s, no
-trip** — twice the old threshold and faster. Gone, and probably gone for a
-while. Nobody noticed, because a constraint that makes you avoid something
-never announces that it has lifted. **You do not get an error from a wall you
-stopped walking into.**
+**Lesson one: test it.** Ten back-to-back SSH sessions in nine seconds, all
+~0.85 s, no trip — twice the old threshold and faster. The test cost nine
+seconds and had gone a week unrun, purely because nobody thought to question a
+note that looked authoritative. A constraint that makes you *avoid* something
+never announces that it lifted: **you get no error from a wall you stopped
+walking into.**
 
-So the discipline that preserves hard-won knowledge preserves expired knowledge
-identically, and the expired kind is worse than no knowledge: it carries
-citations and a date and reads as settled.
+**Lesson two, which cost four files of wrong documentation: a test that shows
+an effect is absent does not explain the absence.** From "it does not trip" the
+conclusion written down was *"retired — the condition passed."* Scott supplied
+the actual mechanism: *"it works because I excluded the IP pair from that
+signature check."*
 
-**The distinction that matters:**
+The signature is **still live**. One source→destination pair is exempted.
+Those two states produce identical test results and completely different
+guidance:
 
-| Kind of recorded finding | Ages how |
+| What was written | What is true |
 |---|---|
-| A **symptom→diagnosis** note ("if 22 is dark, check another port first") | Stays useful even after the cause is gone |
-| A **constraint that shapes design** ("never do X, batch instead") | Expires silently, and keeps costing after it does |
+| The block is gone | The block is active, one pair is excluded |
+| Any host can SSH freely | Only this laptop, only to this host |
+| Nothing to monitor | A firmware update or controller restore drops the exclusion silently |
+| Batching is now just style | Batching is style *and* insurance against a lost exemption |
 
-The second kind earns a **re-test date and a cheap test**, recorded next to the
-claim. This one's test was ten SSH calls and nine seconds — trivially cheap,
-and it went a week unrun purely because nobody thought to question a note that
-looked authoritative.
+The measurement was right. The *story* attached to it was invented, and the
+story is what a reader acts on. "Gone" invites relaxing; "exempted for one
+pair" tells you exactly what to watch and what will bring it back.
 
-Ask of any constraint: *what would it cost to check that this is still true?*
-If the answer is "almost nothing", the honest thing is to check rather than
-inherit it. And when a constraint is retired, keep the diagnostic that came
-with it — the wall is gone, but knowing what a wall felt like still helps.
+**So: measuring an outcome is not measuring a cause.** When a test comes back
+clean, the honest write-up records what was observed and says the mechanism is
+unknown — or asks the person who changed something. An inferred cause presented
+as fact is worse than the original stale note, because it is fresh, cited, and
+confident.
+
+Practical form of both lessons:
+
+- A **symptom→diagnosis** note ("if 22 is dark, check another port first") ages
+  well. Keep it even after the cause changes — here it became the *detector*
+  for a lost exemption.
+- A **constraint that shapes design** ("never do X") expires silently and keeps
+  costing. Record a cheap re-test next to it.
+- When the re-test passes, **write down what you measured, not why you think it
+  passed** — unless someone tells you the mechanism.
