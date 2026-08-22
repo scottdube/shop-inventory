@@ -1,0 +1,61 @@
+# Bambu Lab import
+
+Supplier created 2026-08-22 (company #29). **12 order confirmations exist,
+2023-06-21 → 2026-03-26**, all from `noreply@bambulab.com` with subject
+`Order <ref> confirmed` or `Your order <ref> is confirmed`. Nothing 3D-printer
+related was in the catalogue before this — no filament, plates, hotends or AMS
+parts at all.
+
+Parser: `scripts/bambu_parse.py`, verified against all three template eras.
+
+## The traps, all paid for during the survey
+
+**Prices are EXTENDED — divide by quantity.** Same as Tormach, Shars, Haas and
+Pololu. An AMS Flipper line reading `x 2 ... $6.40` is $3.20 each.
+
+**Three email templates, and the discount column MOVES between them.** A
+discounted line shows two prices, and which one was paid is not consistent:
+
+| Order | Line | Paid |
+|---|---|---|
+| 2025-11 | `$19.99 $12.99` | the **second** |
+| 2026-03 | `$65.99 $91.96` | the **first** |
+
+Do not guess, and do not hardcode a rule per era. **Sum both interpretations
+and keep whichever matches the stated Subtotal.** The email carries its own
+checksum, and using it is the only approach that survives the next template
+change. Verified: 2026 pipe-table → first, 2025 pipe-table → second, 2023
+plain-text → first, all three reconciling to the cent.
+
+**2023 mails use a multiplication sign (`×`), later ones the letter `x`.** Match
+both. Also anchor the item name to a single line — with `re.DOTALL` a lazy
+`.+?` swallows the `Order summary\n-----` header into the first item.
+
+## Locations: the rule differs by what was bought
+
+**Consumables: the ship-to address IS the location.** Scott: *"the filament and
+parts orders shipped to FL are definitely FL, unless I move them north."*
+Filament, plates and hotends get used where they land, so an FL order is LRD
+stock — file it there and earmark it.
+
+**Equipment: the ship-to address is only where it ARRIVED.** The X1C shipped to
+Dover in 2023 and now lives in Florida. A printer gets moved; its purchase
+record says nothing about where it is today.
+
+## Printers are equipment, not stock
+
+These orders contain an **X1-Carbon Combo ($1,449)** and an **H2D AMS Combo
+($2,099)**. Those belong in the Equipment tree as one-of instruments, per the
+existing rule that instruments owned one-of and never consumed are not stock
+lines. The consumables around them — plates, hotends, AMS parts — are stock.
+
+## Still to do
+
+The 12 confirmations have been located and the parser proven, but **the orders
+are not yet imported**. Remaining: fetch the 8 unread bodies, run them through
+the parser, and create POs the same way `mcmaster_import.py` does — idempotent
+on the vendor order number, PLACED first and status moved by queryset
+`.update()`, never `save()` on a completed order.
+
+Also add `noreply@bambulab.com` to the overnight agent's vendor list so new
+orders are swept automatically rather than needing another historical import.
