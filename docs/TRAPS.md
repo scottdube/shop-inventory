@@ -1315,3 +1315,41 @@ the thing, and the failure modes differ — records go stale, walks miss what is
 closed. Ask. Scott's answer here was *"r2c1 is also occupied correct, I'll take
 one more trip thru a2 to verify"*, and 53 drawers stayed unmarked until that
 trip rather than being marked on a summary.
+
+## The B wall is sorted by thread system, and nobody wrote that down
+
+B1 holds 31 McMaster rows, **all metric, zero imperial**. B2 holds 17, **all
+imperial, zero metric**. Not one part crosses. That is an organising principle
+in active use, and it existed only in the physical cabinets and in Scott's
+head — no note, no location description, no metadata field recorded it.
+
+Three separate layout proposals were argued on 2026-08-22 — hardware to A1+B1,
+hardware to A2+A1, hardware to B1+B2 — and **all three would have broken it**,
+because none of them knew it was there. The discussion was about cabinets and
+drawer sizes; the actual structure was about threads.
+
+**Before proposing a reorganisation, query what the existing arrangement
+already sorts by.** One `GROUP BY` over the part names would have surfaced this
+in the first minute. The tell that it was missing: every proposal treated
+"hardware" as a single undifferentiated category, which is exactly the
+assumption a person who owns the shop would never make.
+
+Consequence worth acting on: A2's eleven hardware drawers are entirely
+imperial, so their home is B2, not A1.
+
+## Contents recorded, drawer not — a third state between known and unknown
+
+48 McMaster rows sit at CABINET level in B1/B2 with no drawer assigned. A
+drawer-level query sees empty drawers; a cabinet-level query sees 48 stocked
+rows. Both are correct and they disagree, which produced the claim that "15
+large drawers hold things with no record at all" — wrong, and it made a
+matching job sound like a cataloguing job.
+
+**"Unlocated" is not "unknown".** The parts, quantities and McMaster numbers
+are all on file; only the drawer is missing, and the drawers carry Brady
+labels. That is a worksheet, not a survey. `docs/b1-b2-worksheet.md` is
+generated for exactly that pass.
+
+When reporting coverage, say which granularity the number is measured at.
+"B2 is empty" meant "no drawer in B2 has stock assigned to it" and was read as
+"B2 is empty", which is how a 17-row cabinet disappears.
