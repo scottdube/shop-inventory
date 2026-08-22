@@ -292,7 +292,7 @@ def api_grid(area: str = ""):
         if kn:
             filled.add(kn)
             # A drawer counts as counted only if EVERY row in it has been.
-            counted[kn] = counted.get(kn, True) and bool(r.get("stocktake_date"))
+            counted[kn] = counted.get(kn, True) and bool(_counted_from(r))
 
     cells = []
     for k in kids:
@@ -331,6 +331,24 @@ def parts_at(q: str = ""):
 # tag; the matching below is plain Python, because a model asked to choose from
 # a candidate list always chooses, while a number either matches a SKU or does
 # not.
+
+# The one durable marker of "a human counted this", written into notes because
+# every other field that could carry it is unwritable through the API.
+COUNTED_RE = re.compile(r"binscan \d{4}-\d\d-\d\d: filed into \S+ and COUNTED at "
+                        r"([\d.]+) by hand", re.I)
+
+
+def _counted_from(row):
+    """A stocktake date if InvenTree recorded one, else binscan's own marker."""
+    st = row.get("stocktake_date")
+    if st:
+        return st
+    m = COUNTED_RE.search(row.get("notes") or "")
+    if not m:
+        return None
+    d = re.search(r"binscan (\d{4}-\d\d-\d\d)", row.get("notes") or "")
+    return d.group(1) if d else "counted"
+
 
 def _norm_sku(s):
     return re.sub(r"[^A-Z0-9?]", "", (s or "").upper())
@@ -594,7 +612,7 @@ def drawer_contents(name):
         # and the two have opposite reliability. Scott, mid-walk 2026-08-22:
         # "it doesn't tell you anywhere that that's an estimate... it looks the
         # same as one point one, which has in fact been counted."
-        st = r.get("stocktake_date")
+        st = _counted_from(r)
         out["stock"].append({
             "part": r.get("part"),
             "name": (r.get("part_detail") or {}).get("name") or f"part {r.get('part')}",
@@ -834,9 +852,41 @@ def api_assign(stock: int = Form(...), location: str = Form(...),
         kept.append(q)
     prior = "\n\n".join(kept)
     body_notes = note + (("\n\n" + prior) if prior else "")
+    # Counted-ness is recorded in METADATA, not in stocktake_date, and this is
+    # forced rather than chosen.
+    #
+    # stocktake_date is READ-ONLY on the stock API: a PATCH setting it returns
+    # HTTP 200 and changes nothing -- a write reporting success while doing
+    # nothing, which is the failure mode this install is already known for.
+    # The only route that sets it is stock/count/, and that is a NO-OP when the
+    # counted figure equals the stored one. So B2-R3C8, where Scott counted 50
+    # against a purchased 50, ended up with notes saying COUNTED and no
+    # stocktake date, and the grid called it uncounted.
+    #
+    # A count that CONFIRMS the existing number is still a count, and arguably
+    # the most valuable one -- it is the only thing that turns a purchased
+    # figure into a verified one. Recording it must not depend on the number
+    # having changed.
+    #
+    # scripts/sync_stocktake.py copies these into the real stocktake_date via
+    # the ORM, which is not bound by the serializer, so InvenTree's own
+    # never-counted reports stay correct.
+    # NOTES ARE THE ONLY WRITABLE CHANNEL, and that is measured, not assumed:
+    #   stocktake_date   read_only on the serializer. PATCH returns 200 and
+    #                    changes nothing.
+    #   metadata         same -- 200, ignored. The dedicated
+    #                    /stock/<pk>/metadata/ endpoint returns 403 CSRF.
+    #   stock/count/     sets stocktake_date, but is a NO-OP when the counted
+    #                    figure equals the stored one.
+    # So B2-R3C8, counted at 50 against a purchased 50, could not record that it
+    # had been counted at all. Two writes returned success and did nothing,
+    # which is this install's signature failure.
+    #
+    # The marker below is therefore the authoritative record of a count, and
+    # COUNTED_RE is what reads it back. scripts/sync_stocktake.py mirrors it
+    # into the real stocktake_date through the ORM, which the serializer does
+    # not gate, so InvenTree's own never-counted reports stay right.
     patch = {"notes": body_notes}
-    if counted is None:
-        patch["stocktake_date"] = None      # never counted -> no stocktake date
     _b, perr = it_patch(f"stock/{stock}/", patch)
     if perr:
         return JSONResponse({"error": f"moved, but could not stamp the row: {perr}",
@@ -849,10 +899,14 @@ def api_assign(stock: int = Form(...), location: str = Form(...),
     got_qty = float(after.get("quantity", -1))
     ok_loc = got_loc == loc["pk"]
     ok_qty = counted is None or abs(got_qty - counted) < 1e-6
-    if not (ok_loc and ok_qty):
+    got_st = _counted_from(after)
+    ok_st = bool(got_st) == (counted is not None)
+    if not (ok_loc and ok_qty and ok_st):
         return JSONResponse({"error": "write did not verify on re-read",
                              "wanted_location": loc["pk"], "got_location": got_loc,
-                             "wanted_quantity": counted, "got_quantity": got_qty}, 500)
+                             "wanted_quantity": counted, "got_quantity": got_qty,
+                             "wanted_stocktake": bool(counted is not None),
+                             "got_stocktake": got_st}, 500)
 
     # Journal the BEFORE state in full, including notes. Two things depend on
     # it and neither is optional:

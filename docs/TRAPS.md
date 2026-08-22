@@ -1397,3 +1397,38 @@ the same day, and record host, port, launchd label and state paths in a doc.
 `docs/binscan.md` does this retroactively. Check for other unrepo'd services:
 `com.shopstatus.plist`, `com.open-webui.server.plist` and the `photo-frame`
 agents are all running from LaunchAgents and may have the same problem.
+
+## Three fields, three silent refusals — and the confirming count that vanished
+
+Scott counted 50 washers into B2-R3C8 against a purchased 50, filed it, and the
+grid still showed it uncounted. The notes said `COUNTED at 50 by hand`. The
+`[ESTIMATE]` flag was correctly off. And `stocktake_date` was `None`.
+
+Three attempts to record "a human counted this", all failing without an error:
+
+| route | what happened |
+|---|---|
+| `PATCH /api/stock/<pk>/ {"stocktake_date": ...}` | **HTTP 200, field unchanged** — it is `read_only` on the serializer |
+| `PATCH /api/stock/<pk>/ {"metadata": ...}` | **HTTP 200, field unchanged** |
+| `PATCH /api/stock/<pk>/metadata/` | **403 CSRF** for a token client |
+| `POST /api/stock/count/` | works — but is a **NO-OP when the counted figure equals the stored one** |
+
+**A count that CONFIRMS the existing number was the one case that could not be
+recorded**, and it is the most valuable kind: it is the only thing that turns a
+purchased figure into a verified one. Every count that *changed* something
+recorded fine, which is why this survived several drawers before surfacing.
+
+**Two of those routes returned 200 and did nothing.** That is this install's
+signature failure — the same shape as `.save()` reporting success and writing
+nothing. The rule already in CLAUDE.md is verify every write by re-read, and it
+worked here only because the verify step was checking the wrong thing at first:
+it confirmed location and quantity, both of which HAD landed.
+
+**Practice: when a write must record a FACT rather than a VALUE, verify the fact
+you meant to record, not the fields that happened to change.** `assign` now
+re-reads and refuses if counted-ness did not land.
+
+Notes turned out to be the only writable channel, so the marker
+`binscan <date>: filed into <drawer> and COUNTED at <n> by hand` is the
+authoritative record, and `scripts/sync_stocktake.py` mirrors it into the real
+`stocktake_date` through the ORM, which the serializer does not gate.
