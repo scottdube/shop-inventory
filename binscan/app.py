@@ -1189,13 +1189,20 @@ def api_unlocated(cabinet: str = ""):
 async def api_identify(image: UploadFile = File(...),
                        cabinet: str = Form(""),
                        location: str = Form(""),
+                       more: str = Form(""),
                        provider: str = Form("anthropic")):
     """READ-ONLY. Reads the tag, proposes a match, writes nothing.
 
     Short-circuits if the drawer is already assigned. The UI should not get
     here in that case, but a guard in the endpoint costs nothing and the UI is
     not the only caller."""
-    if location:
+    # `more` means the caller is deliberately adding a SECOND part to a drawer
+    # that already holds one. The short-circuit below exists so a model is never
+    # asked what the record already knows -- correct for the normal flow, and
+    # exactly wrong here, where the drawer being assigned is the premise rather
+    # than the objection. Scott hit this filing a second part into B1-R1C1: he
+    # photographed it and got "already on record" with no way forward.
+    if location and more.lower() not in ("1", "true", "yes"):
         known = drawer_contents(location)
         if known and known["assigned"]:
             return {"id": None, "kind": "identify", "basis": "already-assigned",
@@ -1531,7 +1538,7 @@ const STATE={
   empty:     {g:'\u00b7', word:'verified empty'},
   mixed:     {g:'\u2261', word:'mixed jumble, not itemised'},
 };
-let AREA=null, CELLS=[], CUR=null, LABEL='';
+let AREA=null, CELLS=[], CUR=null, LABEL='', MORE=false;
 fetch('/api/areas').then(r=>r.json()).then(as=>{
   // The bin wall is where the work is; twenty-odd other places are real but
   // rarely the answer, and showing all of them cost nine rows of chips.
@@ -1611,7 +1618,7 @@ async function repaint(){
 }
 
 function pick(name){
-  CUR=name; LABEL='';
+  CUR=name; LABEL=''; MORE=false;
   $('#gridwrap').querySelectorAll('.cell').forEach(b=>b.classList.toggle('on',b.dataset.n===name));
   refreshDrawer(name,false);
 }
@@ -2074,12 +2081,17 @@ function wireFiling(drawer){
 // that would now report the drawer as ASSIGNED -- correctly, it holds what was
 // just filed -- and offer an estimate rather than another filing.
 async function fileAnother(drawer){
-  setFlash('');
+  setFlash(''); MORE=true;
   try{
     const cab=cabinetOf(drawer);
     UNLOCATED = await (await fetch('/api/unlocated?cabinet='+encodeURIComponent(cab))).json();
   }catch(_){ UNLOCATED = []; }
   CUR = drawer;
+  MODE='identify';
+  $('#go').textContent='Identify from this photo';
+  $('#go').disabled = !$('#file').files[0];
+  $('#partwrap').style.display='none';
+  $('#shothint').textContent='Adding another part — photograph it, or pick by hand';
   $('#known').innerHTML =
     `<div class=card><b>Adding another part to ${drawer}</b>
        <div class=mut>What is already filed here stays. Pick or create the next
@@ -2097,7 +2109,7 @@ async function advance(){
   if(dir==='stay') return;
   const nx=nextDrawer(CUR,dir);
   $('#file').value=''; $('#prev').style.display='none'; $('#prev').removeAttribute('src');
-  $('#go').disabled=true; $('#out').innerHTML=''; UNLOCATED=[];
+  $('#go').disabled=true; $('#out').innerHTML=''; UNLOCATED=[]; MORE=false;
   if(!nx){
     $('#known').innerHTML='<div class=card><b>End of cabinet.</b>'+
       '<div class=mut>Pick the next one by hand.</div></div>';
@@ -2174,7 +2186,7 @@ $('#go').onclick=async()=>{
   const fd=new FormData();
   fd.append('image',f); fd.append('provider',$('#prov').value);
   fd.append('location',CUR||'');
-  if(identify) fd.append('cabinet',cabinetOf(CUR));
+  if(identify){ fd.append('cabinet',cabinetOf(CUR)); if(MORE) fd.append('more','1'); }
   else fd.append('part_name',$('#part').value||'unknown part');
   try{
     const r=await fetch(identify?'/api/identify':'/api/estimate',{method:'POST',body:fd});
