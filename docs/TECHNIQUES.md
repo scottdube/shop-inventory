@@ -236,26 +236,39 @@ Octopart's PerimeterX interstitial is still a hard stop, and solving one is
 never on the table. If a page challenges the browser, that is a refusal from a
 human-facing system and it gets respected.
 
-### Amazon images: the page needs a browser, the CDN does not
+### Amazon images: the block was never real, and the docs already said so
 
-Re-tested 2026-08-21, and the standing conclusion was wrong.
+Re-tested 2026-08-21. Product page via driven Chrome: loads fully, **no bot
+challenge**, correct title, `"hiRes"` URLs extract clean. Image CDN
+`m.media-amazon.com` via **plain curl**: 200, `image/jpeg`, 1500x1500, 0.07 s.
+Proven end to end on part #14 — image attached, thumbnail generated.
 
-| Step | Needs | Result |
-|---|---|---|
-| Product page `amazon.com/dp/<ASIN>` | **driven Chrome** | loads fully, **no bot challenge**, correct title |
-| Extract `"hiRes"` URLs from page HTML | in-page JS | clean |
-| Fetch the image from `m.media-amazon.com` | **plain curl** | 200, `image/jpeg`, 1500×1500, 0.07 s |
+**None of that mechanism is new, and it should not be written up as if it
+were.** The overnight task file already carried it under "Amazon image trap
+(verified)": hiRes lives in the `/dp/<ASIN>` page HTML, the LRD network is
+challenged but **the laptop is not**, *"which is why the fetch happens on the
+laptop and the bytes are scp'd over."* Correct, and on record for days.
 
-Note the shape: **only the product page is defended.** The image CDN serves
-curl happily. So the pipeline is browser-for-the-URL, curl-for-the-bytes — no
-blob juggling, and no CORS problem. (A cross-origin `fetch()` from the product
-page to the CDN *is* blocked by CORS; do not bother — curl the URL instead.)
+**The real finding is a documentation conflict, not a networking one.**
 
-Proven end to end on part #14, RFP30N06LE: image attached, thumbnail generated.
+| Source | Says |
+|---|---|
+| Task file, "Amazon image trap (verified)" | LRD blocked, **laptop fine** — fetch there |
+| Overnight journal, most recent run | "bot-blocked from **both** the Mini and the laptop — two independent confirmations" |
 
-**This retires "Amazon is bot-blocked, the image queue is dead."** That was
-recorded from *two* independent confirmations — the Mini and the laptop — and
-both were curl from a shell hitting the product page. Two confirmations of the
-same wrong instrument is not corroboration; it is the same experiment run
-twice. 603 parts currently have no image; 32 of them have a usable ASIN today,
-and the rest depend on other suppliers, not on this block.
+They contradict. The journal is wrong, and **the wrong one won**: the image
+queue was reported dead and stopped being worked, while a correct procedure sat
+in the same file the job reads every night.
+
+Two lessons, and the second is the sharp one:
+
+- **"Two independent confirmations" was one experiment run twice.** Both were
+  curl against the product page. Agreement between two runs of the same wrong
+  method feels like corroboration and is not — it is the strongest way to make
+  a wrong result stick.
+- **A running journal outranks a static doc in practice, whatever the intent.**
+  The journal is what the next run reads first and treats as current state. So
+  when a run's conclusion contradicts the task file, that is not a note to
+  file — it is a conflict to resolve *then*, in both places, or the fresher
+  wrong answer silently wins.
+
