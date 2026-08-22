@@ -489,7 +489,7 @@ class ShopStatusPlugin(UserInterfaceMixin, InvenTreePlugin):
     def _unchecked_drawers(self):
         """Bin-wall drawers with no stock rows that nobody has actually looked in."""
         from stock.models import StockItem, StockLocation
-        pat = re.compile(r'^[AB][1-3]-R\d+C\d+$')
+        pat = re.compile(r'^[A-Z][0-9]+-R\d+C\d+$')
         occupied = set(StockItem.objects.filter(location__isnull=False)
                        .values_list('location_id', flat=True))
         n = 0

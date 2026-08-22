@@ -23,7 +23,7 @@ from stock.models import StockLocation  # noqa: E402
 
 # A1-R3C5 / B3-R2C4 - the drawer address form and nothing else. Cabinets,
 # areas and every other location in the 467 are deliberately left alone.
-DRAWER = re.compile(r"^[AB][1-3]-R\d+C\d+$")
+DRAWER = re.compile(r"^[A-Z][0-9]+-R\d+C\d+$")
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--undo", action="store_true", help="strip the barcodes again")

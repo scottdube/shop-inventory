@@ -54,5 +54,5 @@ for pk, qty in COUNTS:
             p.save()
 
 print(f"\n{'WROTE' if a.commit else 'DRY RUN'}")
-tot = StockItem.objects.filter(location__name__regex=r"^[AB][1-3]-R").count()
+tot = StockItem.objects.filter(location__name__regex=r"^[A-Z][0-9]+-R").count()
 print(f"stock items in the bin wall now: {tot}")
