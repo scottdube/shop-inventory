@@ -1089,3 +1089,38 @@ witness who spoke.
 Related, and it compounded here: the supporting evidence was also oversold.
 This row had no location while its twin did, so a homeless record matched a
 homeless object — suggestive, presented as corroboration.
+
+## A cabinet is not a location — filing at cabinet level claims a place that doesn't exist
+
+Scott, 2026-08-22, holding an eyebolt the record said lived in B1: *"B1 is an
+area, not a storage location. It's not a discrete location. How do I store
+something in B1? That doesn't make sense."*
+
+He is right, and 49 rows had the problem — 32 in B1, 17 in B2. Both cabinets
+have 44 drawers each and **zero** rows in any actual drawer.
+
+The state came from the McMaster import, which knew the cabinet but not the
+drawer and refused to invent one. That decision was correct and should stand: a
+guessed drawer reads as knowledge and sends people to the wrong place. The
+mistake was leaving the result **indistinguishable from a filed row**. A
+cabinet-level location renders exactly like a drawer-level one, so the record
+claims the item is put away when nothing physical corresponds to it:
+
+- **Retrieval fails** — "it's in B1" means opening up to 44 drawers
+- **Put-away has nowhere to go** — you cannot place an object into a container
+  of containers
+- **Counting cannot proceed** — there is no drawer to open and verify
+
+All 49 now carry `DRAWER UNKNOWN` in their notes, so one query finds them and
+nobody mistakes the state for filing:
+
+    StockItem.objects.filter(notes__contains='DRAWER UNKNOWN')
+
+**The general rule: a location that cannot be physically occupied is not a
+location, it is an address prefix.** Filing to one is a legitimate transitional
+state — better than inventing a drawer — but it must be *visibly* transitional,
+or it silently converts "we haven't looked yet" into "it's put away".
+
+Same shape as the other members of this family: `[ESTIMATE]` versus a count,
+VERIFIED EMPTY versus a drawer with no rows, and a zero with no note. Each time,
+the value is fine and the **undeclared confidence** is the defect.
