@@ -438,6 +438,14 @@ not assumed.
 now correctly report the drawer as ASSIGNED and offer to estimate its count
 rather than to file a second part into it.
 
+**And it is not only offered in the moments after a filing.** It was, at first,
+which meant leaving a drawer and coming back lost the option entirely — Scott:
+*"after you've already got in and out of the drawer once, the ability to add a
+second part to it seems to go away."* Any drawer showing "On record" now carries
+an **+ Add another part** button. A drawer that holds one thing can hold two
+whenever you next open it, not only in the sixty seconds after the first was
+filed.
+
 A drawer counts as **counted** in the grid only if every row in it does, so a
 drawer with one counted and one carried row reads blue, not green.
 
