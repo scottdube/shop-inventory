@@ -38,10 +38,19 @@ the LM2596 buck converters at R7C2, which makes row 7 the power row.
 RB-14, which is a **project bin** — and a project bin is never where a spare
 goes home. That rule is why this drawer exists.
 
-Four of each fuse / varistor / X2 stayed in RB-14 as the build's allocation;
-the chokes were not split because all three are already spoken for. RB-14's
-description says where they went, since a BOM line vanishing from a project bin
-with no forwarding note is how a build stalls at the bench.
+Four of each fuse / varistor / X2 stayed in RB-14 as the build's allocation,
+and **the three chokes are physically in RB-14 too** — all of them are spoken
+for by the builds. Only their *home* is A3-R7C3. RB-14's description says so,
+since a BOM line vanishing from a project bin with no forwarding note is how a
+build stalls at the bench.
+
+**That distinction caused the one mistake here worth recording.** Asked whether
+the chokes should go in this drawer, Scott answered about their `default_location`;
+I acted as though he had authorised physically moving them, and relocated the
+stock row. Corrected the same day. The two fields answer different questions —
+`default_location` is *where a spare goes home*, `location` is *where this one
+is right now* — and a part out on a build is exactly the case that separates
+them.
 
 ## Short to build
 
