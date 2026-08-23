@@ -150,9 +150,11 @@ constraint. Any purchase should therefore be all-large.
 - [ ] **Measure a drawer first.** Confirm it really is the large class
       (6 x 4-9/16 x 2-3/16). The spec came from Walmart's AI-generated block,
       not from Akro-Mils. Free returns for 90 days, so this is the moment.
-- [ ] **The Thread Detective gauge hangs in that 22 in.** It has to go
-      somewhere, and it needs to stay near the bin wall to be useful — step 2
-      of the fastener funnel assumes it is within reach.
+- The **Thread Detective gauge is NOT in the way** — it hangs off the electrical
+  panel itself, not on the wall the cabinets need. Raised as an obstruction from
+  a photograph and corrected by Scott; recorded so it is not raised again. The
+  22 in is genuinely clear: conduit sits behind the panel face, gauge hangs on
+  the panel.
 - [ ] **Use A3 as the hole template**, not a tape measure: pull its drawers,
       take it off the wall, hold it in the A0 position, mark through the
       keyholes, remount A3, hang the new one on the marks. Confirm the 10124's

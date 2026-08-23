@@ -552,10 +552,14 @@ the part NAME are deliberately different strings: "socket head" narrows well and
 reads badly, so it is saved as "Socket Head Cap Screw".
 
 **The instrument this assumes exists.** Scott has a Thread Detective gauge
-hanging to the left of the Akro-Mils cabinets, which is what makes step 2
-answerable at the drawer. Two things follow: it is not in the catalogue and
-should be, and **it hangs in the 22 in of clearance where A0/B0 are meant to
-go** — that wall is not as empty as `docs/OPEN.md` assumes.
+hanging on the electrical panel beside the Akro-Mils cabinets, which is what
+makes step 2 answerable at the drawer. It is **not** in the catalogue and should
+be.
+
+It is also not in the way of A0/B0 — that was raised as an obstruction from
+reading a photograph and corrected: the gauge hangs off the panel itself, not on
+the wall run. A photograph flattens depth, and "next to" in an image is not
+"attached to the same surface".
 
 ## The guard that was right until it was not
 
