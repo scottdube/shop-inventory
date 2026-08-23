@@ -220,3 +220,39 @@ without erroring. Widened to `^[A-Z][0-9]+-R\d+C\d+$` and checked against
 **Dependency worth stating: row C cannot exist until the plywood table goes.**
 That makes the table's removal a prerequisite for wall expansion, not just
 tidying.
+
+## LRD layout — decide on site, not from here
+
+Scott photographed the Florida bench wall 2026-08-22: **four upper wall cabinets**
+(two doors each) over a base run with a **black worktop** — one tall single-door
+cabinet at the left, then **three drawer banks**. Carpeted floor, finished room.
+
+**Nothing has been built for it, deliberately.** He has not thought about naming
+yet and cannot recall the shelf counts, and the drawer counts must not be read
+off a photograph. Two placeholder containers exist at LRD (`LRD Storage`,
+`LRD Bench`), each marked as a placeholder in its description, purely so the
+site switcher has somewhere to point.
+
+**A proposal to react to, not a decision:**
+
+```
+LRD / Bench Wall
+  BW-U1 … BW-U4          the four upper cabinets
+  BW-U1-S1 … BW-U1-Sn    shelves within each, top to bottom
+  BW-C1                  the single-door base cabinet
+  BW-D1-1 … BW-D1-n      bank 1 drawers, top to bottom
+  BW-D2-…  BW-D3-…
+```
+
+It mirrors the SLN convention — a container, then a positional address inside it
+— so both sites read alike and `scripts/` regexes already match
+`^[A-Z][0-9]+-…`. Whether the uppers address by **door** or by **shelf** is the
+real question, and it depends on what actually gets stored there: shelves if
+things sit loose on them, doors if each bay holds one kind of thing.
+
+**What is needed before any of it is built:** shelves per upper cabinet, drawers
+per bank, and whether the three banks are identical. All three are one walk with
+a notebook, and none can be guessed from here.
+
+Once the locations exist, BinScan walks LRD exactly as it walks the bin wall —
+the site switcher and the placeholder containers are already in place for it.
