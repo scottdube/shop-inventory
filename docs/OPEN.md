@@ -8,6 +8,24 @@ queue, not a log.
 
 ## At the bench
 
+- [ ] **TEST the 100 PSI pressure transducer (#1071).** Scott, 2026-08-23: *"I
+      have a recollection that there could have been a problem with this one.
+      So it does need to be tested."* Its wires are cut and stripped, so it has
+      been wired up at least once. Its stock row is **QUARANTINED** until it
+      reads correctly — that is the tracking, not a note somebody has to
+      remember to read.
+
+      A bench test is minutes: 5 V across red/black, meter on the signal wire,
+      and it should sit near 0.5 V at atmosphere and rise smoothly with
+      pressure. If it reads rail-high, rail-low, or does not move, it is dead
+      and should be marked DAMAGED rather than left QUARANTINED forever.
+
+      **While at it:** #219's note claims *"both bags SEALED"* and *"PSI rating
+      NOT verified"*. If this third unit is 100 PSI, the pair's listing claim of
+      150 PSI deserves doubt too — same vendor, same style. Read a label through
+      the bag at B3-R7C2 without breaking the seal.
+
+
 - [ ] **BL-D2 wiring drawer — identify the rest.** Four items filed (depin kit,
       UV solder mask, UV lamp, ACT-232). The photo shows at least four more:
       Klein Tools stripper, Haisstronica, a hex self-adjusting ferrule crimper,
