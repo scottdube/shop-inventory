@@ -1873,8 +1873,10 @@ does not block.
 
 **A second bug was hiding behind the first, and would have been silent.** The
 stamp was built as `VERIFIED EMPTY <date> — previously labelled: <old>`,
-truncated to the 250-character column. Those A3 descriptions plus their
-bracketed size annotation run past 250, and **truncation falls on the end of
+truncated by the stamp builder's own `[:250]`. **That 250 is the code's
+choice, not a database limit** — measured 2026-08-23, a `StockLocation`
+description accepted 308 characters and re-read intact. Those A3 descriptions
+plus their bracketed size run past 250, and **truncation falls on the end of
 the string, which is exactly where the size annotation lives** — so preserving
 the claim would have quietly eaten the dimensions off 31 drawers. `[6 x 2-7/32
 x 1-9/16 in, small]` is measured data that nothing else records.
