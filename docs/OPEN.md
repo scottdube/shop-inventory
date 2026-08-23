@@ -6,6 +6,35 @@ docs and a backlog you cannot read in one place is hiding, not parking.
 Add here when something is deliberately deferred. Delete when done — this is a
 queue, not a log.
 
+## Red Bins — walk and empty out
+
+**Goal, Scott 2026-08-23: get the rack as close to empty as possible.** *"We
+should file it in one of the wall bins and get it out of these red bins. Goal
+is to get down to zero if you can on red bins. We won't get there, but cleaning
+them out."*
+
+The rule that follows, now on the rack's own record: **a red bin is for a
+project kit being worked, or for bulk with nowhere better. Loose parts belong
+in the wall cabinets, where they have a home and an address.** Anything found
+loose in a red bin gets filed to the wall rather than tidied within the rack.
+
+State after the 2026-08-23 walk, 28 bins:
+
+| | |
+|---|---|
+| never opened | **14** (RB-17 … RB-28, plus 2 earlier) |
+| holds stock | 8 |
+| verified empty | 4 (RB-09, 10, 15, 16) |
+| declared | 2 (RB-05 bags, RB-08 prototypes) |
+
+- [ ] **RB-17 through RB-28 have never been opened.** The largest single block
+      of unknown space left in the shop now that the bin wall is at 89%.
+- [ ] **RB-12, the RAT GDO kit** — 9 uncounted rows, skipped deliberately on
+      2026-08-23. One stop converts nine purchased figures into counts.
+- [ ] **RB-13, the Hakko FX-951** — Scott named it during the walk but no count
+      was taken and it is unclear whether the bin holds the station, a spare, or
+      accessories. #311 `Soldering Station, FX951-66` exists with no stock.
+
 ## At the bench
 
 - [ ] **TEST the 100 PSI pressure transducer (#1071).** Scott, 2026-08-23: *"I
