@@ -650,7 +650,10 @@ up — tested by injecting A0/B0, which lays out correctly with no change.
 **A mark and a proper name.** The logo is the drawer grid in nine rectangles with
 the middle one lit; the wordmark is `BinScan`, not lowercase.
 
-**"elsewhere" is two tiles wide**, not one and not full width. One would size
+**"Elsewhere" is two tiles wide**, centred under the wall rather than
+left-aligned — it belongs to all the cabinets, not to the first column — and set
+in the same weight and size as `A1`, so it reads as a place you can go rather
+than a footnote. Not one tile and not full width. One would size
 twenty-odd places like a single cabinet; full width would read as the whole
 wall. It is dashed because it is a door to somewhere else rather than a thing on
 this wall, and it sizes itself off the measured column count so it stays two
