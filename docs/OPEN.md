@@ -27,6 +27,21 @@ queue, not a log.
 - [x] ~~**A2 walk**~~ — **done.** 53 verified empty, 7 counted, 4 parking
       spots, zero unseen.
 
+## Short to build
+
+- [ ] **BUY: C2, 220uF electrolytic, for the AC Wall Adapter for IoT (RB-14).**
+      The shop has 220uF at 10V (#687) and 16V (#879) and **zero stock of
+      either**; the BOM asks for 35V. C2 sits on the Hi-Link's 5V OUTPUT, so
+      16V is ample and 35V is the author being generous — but none of them
+      exist here, so the build is blocked on one capacitor. Everything else on
+      the mains side is now counted in RB-14, and D1/R1 come off the bin wall
+      (LED 3mm Red #814 in B3-R2C2; the EAONE 1/4W resistor kit).
+
+      Two assembly warnings from the project README, recorded on the bin
+      because both are discovered too late otherwise: **fit the shim and AC
+      plug BEFORE soldering the Hi-Link module**, and **if L1 is left
+      unpopulated, jumpers must be installed in its place**.
+
 ## Containers and dividers
 
 - [ ] **BUY: Sterilite 6 Qt 10-pack, Walmart item 5297809753, $10.98.**
