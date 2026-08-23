@@ -27,7 +27,21 @@ State after the 2026-08-23 walk, 28 bins:
 | verified empty | 4 (RB-09, 10, 15, 16) |
 | declared | 2 (RB-05 bags, RB-08 prototypes) |
 
-- [ ] **RB-17 through RB-28 have never been opened.** The largest single block
+- [ ] **RB-17 is opened but NOT itemised.** Round displays and dev boards.
+      Identified from a photo 2026-08-23: a Waveshare **ESP32-S3-LCD-2.8C**
+      (2.8in round display dev board, boxed — no part record yet, and distinct
+      from #67 which is the 5in touch LCD in RB-07) and a **Waveshare 1.28in
+      round LCD 240x240** (#70, no stock recorded; #470 is an inactive
+      duplicate of it).
+
+      **Four things in that bin are unidentified** and were deliberately not
+      guessed: a second round module in a clear clamshell, a bare round panel
+      marked `JT280-022-02A0 / BL-HD276001` with a flex tail — possibly the
+      display for the 2.8C, possibly a spare — two small modules in black
+      anti-static boxes, and a small blue breakout with header pins. Each needs
+      a look or a close photo.
+
+- [ ] **RB-18 through RB-28 have never been opened.** The largest single block
       of unknown space left in the shop now that the bin wall is at 89%.
 - [ ] **RB-12, the RAT GDO kit** — 9 uncounted rows, skipped deliberately on
       2026-08-23. One stop converts nine purchased figures into counts.
