@@ -140,10 +140,51 @@ silently deletes the only record that the thing exists.
 ### A received quantity is a purchase record, not a count
 Closing the 2024 Tormach orders received the **ordered** quantity: 2 each of
 three end-mill holders whose placeholders had assumed 1 each. Neither figure was
-ever verified by eye. The received rows therefore carry no `stocktake_date` and
-say so in their notes. Receiving moves provenance onto the row; it does not
-count anything, and a row that arrives from a purchase record must not be
-allowed to read like one that arrived from a person opening a drawer.
+ever verified by eye. The received rows therefore carried no `stocktake_date`.
+Receiving moves provenance onto the row; it does not count anything, and a row
+that arrives from a purchase record must not be allowed to read like one that
+arrived from a person opening a drawer.
+
+**Both halves of that were then tested the same day, and split.** Scott, asked
+directly: *"those were all rec as ordered"* — the holders are 2 each, the
+purchase record was right and the placeholder's assumed 1 was wrong. But the
+same question about pull studs came back *"20 total, 2 diff kinds"* against 36
+on paper. **Ordered-and-arrived is a fact about the past; on-hand is a fact
+about now, and only a person can close the gap.** Ask; do not promote one to
+the other.
+
+### The receive check that misses: a part CONSUMED INTO another part
+The double-count guard before receiving was "does a stock row already exist for
+this part". For nine Tormach pull studs it did not, so the receive looked safe —
+and wrote nine studs into stock that are screwed into nine tool holders on the
+rack. Scott's count caught it, nothing in the data would have.
+
+**A pull stud lives inside a tool holder. An insert lives in a face mill. A
+battery lives in the tool it came with.** For anything that gets installed into
+something else, "we bought N and no row exists" does not imply "there are N on a
+shelf". The tell is in the order itself: PO-0025 carried 7 holders and 8 studs,
+PO-0026 carried 1 arbor and 1 stud. **Near 1:1 with a host part on the same
+order is the signature of a consumable, and it is visible before you receive
+anything.**
+
+Zeroed rows keep the price and the PO link — they are the spent history of a
+real purchase, not an error. See #292 for the same shape.
+
+### `stocktake()` does not stamp the date when nothing changes
+`StockItem.stocktake(count, user)` stamps `stocktake_date` only if the quantity
+changes, or a status/location/reference field changes. **A confirming count
+changes nothing by definition** — you counted 2, it says 2 — so the stamp is
+silently skipped and the row goes on reading *never counted*, which is the exact
+opposite of what just happened.
+
+Eleven rows came back `stocktake_date_set=False` from a run that reported no
+error. The verify block is the only reason it was caught. Write the stamp
+yourself after the call:
+
+```python
+StockItem.objects.filter(pk=it.pk).update(
+    stocktake_date=TODAY, stocktake_user=user)
+```
 
 ### A stale explanation on a zero row is worse than no explanation
 Part #292 sat at zero with the note *"Empty bin at RB-12 until PO-0028 lands."*
@@ -151,6 +192,53 @@ Once PO-0028 landed, that sentence sent a reader to look for an empty bin with
 two sensors in it. The rule that a zero needs a reason has a second half:
 **when the condition the reason names resolves, the reason has to be rewritten
 in the same pass.**
+
+### Counting a row to zero DELETES it
+`STOCK_DELETE_DEPLETED_DEFAULT` is **True** on this install, so every row
+created by a receive or an import carries `delete_on_deplete=True`, and
+`updateQuantity(0)` — which `stocktake(0, ...)` calls — erases the row. "Count
+it down to zero" and "destroy the record that it ever existed" are the same
+call.
+
+That takes the price, the PO link and the note explaining the zero with it,
+which is the whole value of the #292 pattern. Four pull-stud rows went this way
+on 2026-08-23 and had to be recreated by hand. Before zeroing anything you want
+to keep:
+
+```python
+StockItem.objects.filter(pk=pk).update(delete_on_deplete=False)
+```
+
+### A verify over an empty queryset passes every check
+The run that deleted those rows **reported success**, because the verify block
+asked:
+
+```python
+sum(float(i.quantity) for i in items) == 0   # sum([]) == 0      -> True
+all(i.stocktake_date for i in items)         # all([]) -> True
+all(i.notes for i in items)                  # all([]) -> True
+```
+
+Every one of those is vacuously true against zero rows. The check could not
+tell *correctly zero* from *gone*, which is precisely the distinction it
+existed to make. **Assert the row COUNT first**, then the values. Any `all()`
+or `sum()` over a queryset that the operation itself could empty needs a
+`len(items) == expected` in front of it.
+
+### `stocktake_date` on a stock row is NOT the Stocktake tab on a part
+Two different things, and the UI shows the second:
+
+| | |
+|---|---|
+| `StockItem.stocktake_date` | per-row, "when did a person last count this row" |
+| `PartStocktake` | part-level snapshot table, written by the stocktake **report** task |
+
+Setting the row field does not create a `PartStocktake` entry, so a part whose
+rows were all counted today can still show a stale part-level date — this
+install has 683 `PartStocktake` rows all stamped 2026-08-16, from one report
+run. Do not hand-write `PartStocktake` rows to make the tab agree; they are
+generated history. Run `part.stocktake.perform_stocktake(part_id=...)` if a
+fresh snapshot is actually wanted.
 
 ## Labels & QR
 
