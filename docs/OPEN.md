@@ -508,7 +508,8 @@ Still outstanding:
       BinScan's pick-by-hand offers them directly.
 - [ ] **41 stock rows have no location at all.** They appear in BinScan's picker
       tagged `(NOT LOCATED ANYWHERE)`.
-- [ ] **A fourth state: DECLARED.** Three places today rendered as *nobody has
+- [x] ~~**A fourth state: DECLARED.**~~ **BUILT 2026-08-23** — see
+      `binscan.md`. A2 went from 4 unseen to 0. Three places today rendered as *nobody has
       looked* when the record was in fact complete and the absence of a count
       deliberate: the **A2 parking spots**, the **A3-R8C5 kit** before it was
       seeded, and **RB-05**, whose description reads *"CONSUMABLE: not
@@ -525,9 +526,8 @@ Still outstanding:
       while standing at it — a report from the person at the bin IS the
       evidence, and treating it as provisional invented a doubt nobody had.
       Corrected to VERIFIED EMPTY the same day.
-- [ ] **A2's four unknowns are the pre-sort parking spots** at R8C5–C8, not
-      unwalked drawers. Worth deciding whether they should read as their own
-      state rather than amber, since looking at them will not resolve them.
+- [x] ~~**A2's four unknowns are the pre-sort parking spots**~~ — **resolved
+      2026-08-23**: they render as `declared` now, and A2 reports zero unseen.
 - [ ] After a walk: `itq run scripts/sync_stocktake.py --commit` mirrors
       confirming counts into `stocktake_date`, then
       `scripts/binscan_undo.py --reconcile` lists the bought-vs-counted gaps to
