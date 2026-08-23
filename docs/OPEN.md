@@ -508,8 +508,53 @@ just the date:
   approaches can be ruled out on paper, cheaply, and the rulings-out are the
   valuable artifact.
 
-**Open question raised 2026-08-23, not yet answered: LRD may be the first real
-user, not SLN.** The queue auto-scopes to the current site, and Scott is at LRD
+**Residency is SEASONAL — approx 6 months at each site per year (Scott,
+2026-08-23), and that is a design input, not a scheduling detail.**
+
+**LRD is the pilot, targeted early Feb 2027.** Scott: *"we can implement at LRD
+quickly as it has a lot less inventory/complexity... we could definitely be
+piloting there by early Feb is my guess."* Measured the same day, the size gap
+is not marginal:
+
+| | LRD | SLN |
+|---|---|---|
+| locations | **12** | 475 |
+| leaf locations | 10 | 442 |
+| stock rows | **28** | 494 |
+| counted | 2 | 264 |
+
+Ten of LRD's twelve locations are the bench-wall cabinets, still unbuilt below
+cabinet level, so the pilot site is close to greenfield and gets seeded as it is
+built. A system proven on 12 locations before it meets 442 is the right order.
+
+### What seasonality does to a freshness metric — open, and it may be the crux
+
+Each site sits **unoccupied for six months a year**. Under a plain calendar
+clock every count at a site is *by construction* at least six months old the day
+you walk back in, so the dashboard would open red every single arrival — a
+condition that is structural, not a lapse. A metric that always reads bad on
+arrival will be ignored by March.
+
+The question that follows, **raised 2026-08-23 and NOT decided**: should the
+freshness clock run on **days present at the site** rather than days elapsed? An
+empty shop does not drift, because nobody is taking screws out of it. If drift
+is a function of presence, then presence is what the clock should count.
+
+The counter-argument, which is why this is not settled: **it is not true that
+nothing changes while a site is empty.** Shipments land in `Receiving`, someone
+else may be in the building, and this catalogue has an explicit mechanism for
+stock crossing between sites — `scripts/florida.py` earmarks parts that then
+travel physically in luggage. A **cross-site transfer invalidates counts at both
+ends**, and it happens exactly at the seasonal boundary when a days-present
+clock would say everything is still fresh.
+
+So the honest shape is probably neither a pure calendar clock nor a pure
+presence clock, but presence-based ageing plus **explicit invalidation events**
+(arrival, a transfer, a delivery). That is a hypothesis to test against the
+research, not a decision.
+
+**Open question raised 2026-08-23, and now answered: LRD is the first real
+user, not SLN.** Original framing kept because the reasoning is what matters — The queue auto-scopes to the current site, and Scott is at LRD
 from October until spring. The Florida bench wall is unbuilt below cabinet
 level, so it is greenfield — locations get seeded with first counts as they are
 created, which is exactly the boundary already drawn, and the winter would then
