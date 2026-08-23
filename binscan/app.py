@@ -1836,6 +1836,9 @@ button.quiet{background:var(--surface-2);color:var(--fg);border:1px solid var(--
 /* ── the record panel ───────────────────────────────────────────────────── */
 .known .card{margin-top:var(--s2)}
 .known b{display:block;margin-bottom:var(--s1);font-size:14.5px}
+.onrow{padding:8px 0;border-top:1px solid var(--line)}
+.onrow:first-of-type{border-top:0}
+.onrow .countbox{margin-top:9px}
 .uncount{display:inline-block;margin-left:5px;padding:1px 7px;border-radius:999px;
   background:#0b2333;color:var(--info);border:1px solid #245a7e;font-size:10.5px;
   text-transform:uppercase;letter-spacing:.05em;font-weight:800}
@@ -2289,6 +2292,38 @@ let HOME = localStorage.getItem('binscan.home') || 'SLN';
 // Quiet when you are viewing where you stand, amber when you are not -- the
 // distinction still earns its keep, it just no longer decides whether the
 // label exists.
+function wireRecount(drawer){
+  $('#known').querySelectorAll('button.recount').forEach(b=>{
+    // Stash the original label ONCE, before it can be overwritten by "Cancel".
+    if(!b.dataset.was) b.dataset.was = b.textContent.trim();
+    b.onclick=()=>{
+      const box=$('#known').querySelector(`.recountbox[data-i="${b.dataset.i}"]`);
+      const open = box.style.display !== 'none';
+      box.style.display = open ? 'none' : '';
+      b.textContent = open ? b.dataset.was : 'Cancel';
+      if(!open) box.querySelector('.rq').focus();
+    };
+  });
+  $('#known').querySelectorAll('button.rgo').forEach(b=>b.onclick=async()=>{
+    const i=b.dataset.i;
+    const msg=$('#known').querySelector(`.rmsg[data-i="${i}"]`);
+    const q=$('#known').querySelector(`.rq[data-i="${i}"]`).value.trim();
+    if(!q){ msg.style.color='#ff8f8f'; msg.textContent='enter a number, or cancel'; return; }
+    b.disabled=true; msg.style.color='#8a8a8e'; msg.textContent='recording…';
+    const fd=new FormData();
+    fd.append('stock',b.dataset.stock); fd.append('location',drawer);
+    fd.append('site',SITE); fd.append('quantity',q); fd.append('confirm','yes');
+    try{
+      const j=await (await fetch('/api/assign',{method:'POST',body:fd})).json();
+      if(j.ok){
+        setFlash(`&#10003; <b>${drawer}</b> counted at <b>${j.quantity}</b>, verified.`);
+        await repaint();
+        await refreshDrawer(drawer,true);
+      }else{ msg.style.color='#ff8f8f'; msg.textContent=j.error||'failed'; b.disabled=false; }
+    }catch(e){ msg.style.color='#ff8f8f'; msg.textContent=String(e); b.disabled=false; }
+  });
+}
+
 function setWhere(t){
   const b=$('#sitebtn');
   if(b){
@@ -2331,12 +2366,33 @@ async function refreshDrawer(v,keepOut){
   if(d.error){ $('#known').innerHTML=`<div class="card err">${d.error}</div>`; return; }
   if(d.assigned){
     MODE='estimate';
-    const items=(d.stock||[]).map(x=>{
+    // Every filed row gets a way to correct its count. Without this a drawer
+    // that had already been filed was read-only -- Scott went to A2-R1C1
+    // knowing the real number and had nowhere to put it. Counting an existing
+    // row is the commonest correction there is, and it was the one path the
+    // app did not have.
+    const items=(d.stock||[]).map((x,i)=>{
       const sub = x.sub_location && x.sub_location!==v ? ` <span class=mut>(in ${x.sub_location})</span>` : '';
       const mark = x.counted
         ? `<span class=high style="font-size:12px"> &#10003; counted ${x.stocktake_date}</span>`
         : `<span class=uncount>~ NOT COUNTED &mdash; purchased figure</span>`;
-      return `<div style="margin:4px 0">${(+x.quantity).toLocaleString()} &times; ${x.name}${sub}${mark}</div>`;}).join('')
+      return `<div class=onrow style="margin:6px 0">
+        <div>${(+x.quantity).toLocaleString()} &times; ${x.name}${sub}${mark}</div>
+        <button class="quiet recount" data-i="${i}" data-stock="${x.stock}"
+                style="margin-top:6px;padding:7px 11px;font-size:12.5px;width:auto">
+          ${x.counted ? 'Recount' : 'Count it'}</button>
+        <div class=recountbox data-i="${i}" style="display:none">
+          <div class=countbox>
+            <label># HOW MANY ARE IN THE DRAWER?</label>
+            <input class=rq data-i="${i}" type=number inputmode=decimal
+                   placeholder="tap to count" value="">
+            <div class=why>Recording <b>${(+x.quantity).toLocaleString()}</b> again
+              is still a count &mdash; it turns the purchased figure into a
+              verified one.</div>
+          </div>
+          <button class="rgo" data-i="${i}" data-stock="${x.stock}">Record count</button>
+          <div class=rmsg data-i="${i}" style="margin-top:8px;font-size:13px"></div>
+        </div></div>`;}).join('')
       || (d.homes||[]).map(h=>`<div class=mut>home of ${h.name} — no stock on hand</div>`).join('');
     // "Add another" used to exist only in the moments after a filing, so
     // leaving the drawer and coming back lost it. A drawer that holds one thing
@@ -2346,6 +2402,7 @@ async function refreshDrawer(v,keepOut){
       <button id=addmorebtn style="margin-top:12px;background:var(--card);color:var(--fg);border:1px solid var(--line)">
         + Add another part to ${v}</button></div>`;
     $('#addmorebtn').onclick=()=>fileAnother(v);
+    wireRecount(v);
     $('#part').value=(d.stock&&d.stock[0]&&d.stock[0].name)||(d.homes&&d.homes[0]&&d.homes[0].name)||'';
     $('#lpart').textContent='What it holds';
     $('#partwrap').style.display='';
