@@ -203,6 +203,34 @@ in the spindle.
       Sensors 23, Tooling 20. Every one of them is a part someone can find in a
       drawer and be unable to record from where they are standing.
 
+      **Hit again from the IDENTIFY direction, 2026-08-23 10:17**, which is
+      worse because the model had already done the expensive part. Scott
+      photographed a Shelly Plus 2PM retail box; the read was perfect — brand,
+      model, ratings, terminal legend, EAN, manufacturer address — and the
+      result was `basis: no-thread-read`, `candidates: []`, no proposal.
+      Scott: *"it finds it, creates a label for it, markings and all that, but
+      it doesn't make it a proposal so that I can commit that to that drawer."*
+
+      **Two causes stacked, and neither is the vision step:**
+
+      1. **`match_reading()` is a FASTENER matcher.** It scores a reading
+         against the cabinet's unlocated McMaster rows by SKU, thread and
+         length. A retail box has no thread, so it bails. It never consults the
+         catalogue by name — it did not fail to find the Shelly, it never
+         looked. `/api/fasteners` already learned exactly this lesson, and its
+         docstring says so: *"The whole catalogue, not just the cabinet's
+         unlocated rows: a part you are holding may well exist already."*
+         Identify never got that treatment.
+      2. **Nothing could have been proposed anyway.** `Shelly Plus 2PM` is
+         part #79, active, **zero stock rows**. A proposal means "file this
+         existing unlocated row here", and there is no row.
+
+      So the two halves need building together: **match by name across the
+      catalogue when the reading is label text rather than a SKU**, and **let
+      the target of a filing be a PART, not only a stock row.** Fixing either
+      alone still leaves a dead end — a name match with nothing to file, or a
+      filing path nothing routes to.
+
       The gap is narrow and the shape is known: *existing part + this drawer +
       a counted quantity → first stock row, `stocktake_date` set.*
       `scripts/first_stock.py` already does exactly this from a desk, with
