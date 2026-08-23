@@ -665,10 +665,28 @@ can go". Two per row rather than three, because these names are words —
 Metrology Bench, Florida Staging — and a name wrapping to three lines is worse
 than a shorter row.
 
-The longest are **abbreviated on the tile only**: `Metro Bench`, `FL Staging`,
-`Assy & Test`, `Mach Shop`. The location's real name is untouched and stays in
-the tooltip — renaming the record would break every barcode, printed label and
-query that uses it. A display alias is safe; a rename is not.
+The tile label does two jobs. It **shortens** the long ones — `Metro Bench`,
+`FL Staging`, `Assy & Test`, `Mach Shop` — and it **explains** the arcane ones:
+
+| record | tile | what it is |
+|---|---|---|
+| `BL` / `BR` | Bench Left / Bench Right | the pedestals under the electronics bench |
+| `L1` / `L2` | Laser Cab L / Laser Cab R | cabinets under the laser bench |
+| `LW1`–`LW3` | Laser Wall 1–3 | wall cabinets above the laser bench |
+| `WS1` / `WS2` | Wire Rack 1 / 2 | the wire shelving in Storage |
+| `WS2-S5` | Rack 2 Sh 5 | shelf 5 of six on that rack |
+| `Kits` | Kit Boxes | assortment kits, each its own location |
+
+`BL` means something only if you already know it. That is precisely the
+knowledge someone returning after a month has lost, and every label above is
+taken from the location's own description, so the tile says what the record
+says.
+
+**The location's real name is untouched** and stays in `data-a` and the tooltip.
+Renaming the record would break every barcode, printed label and query that uses
+it — a display alias is safe, a rename is not.
+
+Three per row, matching the cabinet rows, which the abbreviations made possible.
 
 **Brighter edges on anything that is an object.** A separate `--edge` token,
 lighter than the hairline used between lines of text, for cabinets and drawers.
