@@ -297,6 +297,39 @@ Bonus: for radial electrolytics, **body diameter fixes pitch** (standard
 series: Ø5→2.0mm, Ø6.3→2.5, Ø8→3.5, Ø10→5.0), and diameter is the
 *trustworthy* measurement — calipers across splayed leads over-read.
 
+### A TSC pull stud on this shop's BT30 has nothing to do with coolant
+**The 1100MX does not support through-spindle coolant at all.** Every general
+source, and plain reading of the name, therefore says the TSC (drilled)
+retention knobs were a mistaken purchase. They were not, and the reason is
+invisible from the catalogue:
+
+Scott, 2026-08-23: *"the TSC studs are to allow for a welding wire to be run up
+through the holder during heat shrink removal of a tool."*
+
+A drilled knob leaves a clear passage from behind the taper through to the tool
+pocket. When a shank will not release from a hot shrink-fit holder, you push it
+out from behind with a length of welding wire. A solid knob closes that path and
+there is no other way in.
+
+**So the stud type is NOT a free per-holder choice — the holder decides it:**
+
+| Holder | Stud |
+|---|---|
+| Shrink-fit (#109, #111, #112 — all named TSC) | **TSC / drilled, mandatory** |
+| Everything else BT30 | Standard |
+
+There is a **second, independent** reason the same hole matters, already recorded
+as `MR-16` in `shrink-fit/docs/requirements.md`: a drilled knob **vents the blind
+bore**, which is why the spring-loaded hold-down was downgraded to optional.
+Vapor lock — sealed air expanding and pushing the tool out in the seconds before
+the steel grips — is moot on a vented holder. MR-16 says to build the hold-down
+*only if a solid knob is ever fitted*.
+
+Fitting a standard stud to a shrink-fit holder therefore does two bad things at
+once: it re-creates the vapor-lock problem the induction machine was allowed to
+ignore, and it removes the only push-out path for a stuck tool. **Neither is
+recoverable at the bench** — you find out with a hot holder in your hand.
+
 ### Body size is the envelope; PIN COUNT is the footprint
 Two 6x6mm tactile switches were merged on 2026-08-21 because both measured
 6x6mm. Scott turned them over: the SparkFun ones have **four legs**, the ones
