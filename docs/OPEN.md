@@ -233,22 +233,32 @@ off a photograph. Two placeholder containers exist at LRD (`LRD Storage`,
 `LRD Bench`), each marked as a placeholder in its description, purely so the
 site switcher has somewhere to point.
 
-**A proposal to react to, not a decision:**
+**Scott's convention, 2026-08-22 — `Cap` for cabinet, upper and lower:**
 
 ```
 LRD / Bench Wall
-  BW-U1 … BW-U4          the four upper cabinets
-  BW-U1-S1 … BW-U1-Sn    shelves within each, top to bottom
-  BW-C1                  the single-door base cabinet
-  BW-D1-1 … BW-D1-n      bank 1 drawers, top to bottom
-  BW-D2-…  BW-D3-…
+  UCap1 … UCap4          the four upper cabinets, left to right
+  UCap1-S1 … UCap1-Sn    shelves within each, numbered from the TOP down
+  LCap1                  the single-door base cabinet at the left
+  LCap2 … LCap4          the three drawer banks
+  LCap2-D1 … LCap2-Dn    drawers, numbered from the top down
 ```
 
-It mirrors the SLN convention — a container, then a positional address inside it
-— so both sites read alike and `scripts/` regexes already match
-`^[A-Z][0-9]+-…`. Whether the uppers address by **door** or by **shelf** is the
-real question, and it depends on what actually gets stored there: shelves if
-things sit loose on them, doors if each bay holds one kind of thing.
+Numbering from the top matches the bin wall, where `R1` is the top row.
+
+**`Cap` also dodges a collision that `Cabinet 1 → C1` would have caused.** SLN
+has `C1 C2 C3` reserved for the third row below B, once the plywood table goes.
+Two locations named `C1` would be legal — location names are **not unique** in
+InvenTree, and `Receiving` already exists at both sites — but BinScan resolved
+locations by name and took the first match, which is a silent write to the wrong
+site. It now refuses when a name matches twice and accepts a `site` to
+disambiguate. The convention avoids the situation rather than relying on the
+guard.
+
+The remaining open question is whether the uppers address by **door** or by
+**shelf**. It depends on what gets stored there — shelves if things sit loose on
+them, doors if each bay holds one kind of thing — and cannot be answered from a
+photograph.
 
 **What is needed before any of it is built:** shelves per upper cabinet, drawers
 per bank, and whether the three banks are identical. All three are one walk with

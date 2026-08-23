@@ -1584,3 +1584,23 @@ Related and previously recorded: after any re-parent, verify with
 `pathstring == construct_pathstring()` **and** check `level` against the actual
 depth. Agreement between those two alone proves nothing when both derive from
 MPTT.
+
+## Location names are not unique, and every lookup took the first match
+
+`Receiving` exists at both SLN and LRD. InvenTree does not enforce unique
+location names — no `unique=True`, no `unique_together` — and BinScan resolved
+locations with `name=<x>` then took `[0]`, in six places including every write
+path.
+
+Nothing had gone wrong yet because the only duplicate was unreachable. It was
+about to: Scott's first instinct for the Florida uppers was "Cabinet 1", which
+becomes `C1`, and SLN already has `C1 C2 C3` reserved for the row below B. Two
+`C1`s, one of them a write target.
+
+**A name that matches twice is not a location.** `resolve_loc()` now refuses
+rather than picking, and takes an optional site to disambiguate; the client
+sends the current site with every lookup and every write.
+
+The naming convention avoids the situation anyway — `UCap1`, not `C1` — but the
+guard matters more than the convention, because the convention only protects the
+names somebody thought about.
