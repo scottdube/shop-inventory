@@ -1709,17 +1709,23 @@ body{margin:0 auto;max-width:560px;padding:0 var(--s3) 4px;background:var(--bg);
    Putting margin-left:auto on the badge alone meant that hiding the badge --
    which is the normal case, at home -- left the drawer address stranded beside
    the ? button instead of at the right edge. */
-.hdrright{margin-left:auto;display:flex;align-items:center;gap:8px}
-.appbar .where{font-size:13px;color:var(--fg);font-weight:700;
+.hdrright{margin-left:auto;display:flex;align-items:center;gap:7px}
+.appbar .where{font-size:11.5px;color:var(--mut);font-weight:600;
   font-variant-numeric:tabular-nums;white-space:nowrap}
 .appbar .where b{color:var(--fg);font-weight:700}
 
 p.sub{color:var(--dim);margin:8px 0 2px;font-size:12.5px;line-height:1.45}
 
 /* ── site switcher: in the header, tap to toggle ────────────────────────── */
-.sitebtn{width:auto;min-height:0;margin:0;padding:3px 10px;font-size:11px;
-  font-weight:800;letter-spacing:.07em;background:#3a2f07;color:var(--warn);
-  border:1px solid #7a6410;border-radius:999px}
+/* The SITE is the prominent one and the drawer address is context. Scott: the
+   drawer is already shown twice -- the cabinet tile is highlighted and the
+   drawer cell is outlined -- while the house has no visual anywhere else on
+   screen. Emphasis follows what is NOT otherwise visible, not what is most
+   specific. */
+.sitebtn{width:auto;min-height:0;margin:0;padding:4px 12px;font-size:13px;
+  font-weight:800;letter-spacing:.04em;background:var(--surface-2);
+  color:var(--fg);border:1px solid var(--edge);border-radius:999px}
+.sitebtn.away{background:#3a2f07;color:var(--warn);border-color:#7a6410}
 
 /* ── section labels ─────────────────────────────────────────────────────── */
 label{display:block;margin:14px 0 5px;color:var(--mut);font-size:11px;
@@ -2115,7 +2121,13 @@ fetch('/api/areas').then(r=>r.json()).then(as=>{
   }
   // The header badge only exists when you are away, and its only job is to
   // bring you home.
-  $('#sitebtn').onclick=()=>switchTo(HOME, false);
+  // Tapping the badge toggles. Leaving home asks; coming home does not.
+  $('#sitebtn').onclick=()=>{
+    if(SITES.length < 2) return;
+    const other = SITES.find(x=>x!==SITE);
+    if(SITE === HOME) switchTo(other, true);
+    else switchTo(HOME, false);
+  };
   setWhere('');
   // The bin wall is where the work is; twenty-odd other places are real but
   // rarely the answer, and showing all of them cost nine rows of chips.
@@ -2267,13 +2279,26 @@ async function repaint(){
 // other than where you are standing", which is the only time it is worth
 // screen space.
 let HOME = localStorage.getItem('binscan.home') || 'SLN';
+// The site is ALWAYS shown, and it comes first. Scott: "the house is even more
+// important -- make sure you're in the right place when you're working this."
+// Right, and it overturns the earlier hide-at-home design: getting the drawer
+// wrong costs a correction, getting the HOUSE wrong files Dover stock into
+// Florida. An indicator that disappears when correct cannot reassure you that
+// it is correct.
+//
+// Quiet when you are viewing where you stand, amber when you are not -- the
+// distinction still earns its keep, it just no longer decides whether the
+// label exists.
 function setWhere(t){
   const b=$('#sitebtn');
   if(b){
     const away = SITE && SITE !== HOME;
-    b.style.display = away ? '' : 'none';
+    b.style.display = SITE ? '' : 'none';
     b.textContent = SITE;
-    b.title = `Viewing ${SITE}; you are at ${HOME}. Tap to go back.`;
+    b.classList.toggle('away', !!away);
+    b.title = away
+      ? `Viewing ${SITE}; you are at ${HOME}. Tap to go back.`
+      : `You are at ${SITE}.` + (SITES.length > 1 ? ` Tap to view ${SITES.find(x=>x!==SITE)}.` : '');
   }
   const e=$('#whereat'); if(e) e.innerHTML = t || '';
 }
