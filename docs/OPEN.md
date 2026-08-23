@@ -93,6 +93,32 @@ queue, not a log.
 - [ ] **B2** — 17 rows the same. Settles whether A2 and B2 duplicate each other
       on imperial fasteners.
 
+## Machine shop — the walk that settles the PO receives
+
+The 2022–2024 Tormach and MSC orders were received into stock on 2026-08-23 to
+clear the PO backlog. Receiving carried the **purchased** quantity onto each
+row, which is a document, not a count. None of these rows has a
+`stocktake_date` and every one says so in its notes.
+
+- [ ] **Three BT30 end-mill holders read 2 each and may be 1 each.** #535
+      (1/4in), #536 (1/8in), #537 (3/8in). The orders say 2; the placeholder
+      rows deleted on 08-23 assumed 1. Nobody has ever counted them. Same for
+      #540, the PathPilot USB camera, at 2. **This is one glance at the
+      toolholder rack.**
+- [ ] **Empty the `Unfiled - Machine Shop` waiting room.** It gained four rows
+      on 08-23: 9 BT30 45-degree pull studs (#539), the carbide face-mill insert
+      (#543), and the **Tapmatic No.90X tapping head (#927, $2,005.80)** — a
+      two-thousand-dollar tool whose location the catalogue records as "somewhere
+      in the machine shop". Its description is explicit that it is a waiting
+      room and should trend toward empty.
+- [ ] **Four pull-stud parts, 36 units, all unfiled — how many are one thing?**
+      #120 `M12x45` (7), #110 `Standard (pack of 10)` (10), #113 `TSC (pack of
+      10)` (10), #539 `45-Degree` (9). BT30 pull studs differ by thread and
+      flange angle, so these may be four real parts or two — and the two named
+      "(pack of 10)" holding quantity 10 is exactly the pack-vs-unit ambiguity
+      that has bitten twice. **Not resolvable from here; needs the studs in
+      hand.**
+
 ## Imports and enrichment
 
 - [ ] **Bambu Lab** — 12 orders located, parser proven against all three
@@ -131,6 +157,14 @@ queue, not a log.
       changed. Queue A images + queue D keywords both ran; next run resumes
       queue D at **pk 240** (559 empty keyword rows left, ~8 nights), and
       queue A is down to ~25 scrapeable parts.
+- [ ] **Two POs still open, both correctly.** The 2026-08-23 sweep took Placed
+      POs from 9 to 2. **PO-0020** uxcell fiberglass sleeve, in transit, ETA
+      Aug 25 – Sep 3. **PO-0133** Brother DK-2205 roll, was expected 08-23 and
+      Scott says it has not arrived — chase it if it is still absent in a few
+      days. Also still resting correctly: `TO-ORDER` (a draft standing list,
+      never issued) and **PO-0029** (PET sheet, Returned, nothing received).
+      `TO-ORDER`'s SHT31-D line is now **stale** — PO-0028 covered it and has
+      been received.
 - [ ] **McMaster API request** sent 2026-08-22 to eprocurement@mcmaster.com —
       check for a reply before doing anything else with McMaster data.
 

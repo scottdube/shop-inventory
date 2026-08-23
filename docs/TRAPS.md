@@ -101,6 +101,57 @@ the record with stock, then retire the twin in place with a pointer — deleting
 it loses the audit trail. Eighteen pairs surfaced in a single day's walk; assume
 more.
 
+### A "Complete" PO can still have `received = 0` on every line
+PO-0016's five MBR60100PT diodes were counted in hand on 2026-08-19 and written
+as two stock rows correctly tagged to PO-0016 — but the **line** counter was
+never advanced. So the header said Complete while a line-level sweep said five
+outstanding, and the obvious fix (receive it) would have written a *second*
+five and reported ten.
+
+**PO status is not the answer to "has this arrived".** Before receiving
+anything, ask the stock instead:
+
+```python
+StockItem.objects.filter(purchase_order=po)
+```
+
+If rows already exist, the goods are on the books and the job is bookkeeping —
+set `received` on the line with a queryset `.update()` and create nothing.
+
+### `receive_line_item` refuses unless the order is PLACED
+Which is exactly the state a Complete-but-unreceived PO is not in. There is no
+API path back; the line has to be written directly. Corollary in the other
+direction: **receiving the last outstanding line auto-completes the PO.** Seven
+POs went Placed → Complete on 2026-08-23 with no explicit `complete_order()`
+call. Do not add one, and do not read the status flip as a bug.
+
+### Receiving a historical PO double-counts against "confirmed owned" rows
+Purchase-history imports create placeholder rows — `[CONFIRMED OWNED — NOT
+COUNTED]`, qty 1 assumed, no PO link — for things Scott confirmed he owns.
+Receiving the original PO on top of one adds a second row for the same physical
+object. Either delete the placeholder in the same transaction as the receive,
+or do not receive at all. Doing half of it is how a shop ends up with three
+BT30 holders on paper and one on the rack.
+
+The delete must be **guarded on the receive having actually happened** — filter
+for a PO-backed row on that part and refuse otherwise, or a failed receive
+silently deletes the only record that the thing exists.
+
+### A received quantity is a purchase record, not a count
+Closing the 2024 Tormach orders received the **ordered** quantity: 2 each of
+three end-mill holders whose placeholders had assumed 1 each. Neither figure was
+ever verified by eye. The received rows therefore carry no `stocktake_date` and
+say so in their notes. Receiving moves provenance onto the row; it does not
+count anything, and a row that arrives from a purchase record must not be
+allowed to read like one that arrived from a person opening a drawer.
+
+### A stale explanation on a zero row is worse than no explanation
+Part #292 sat at zero with the note *"Empty bin at RB-12 until PO-0028 lands."*
+Once PO-0028 landed, that sentence sent a reader to look for an empty bin with
+two sensors in it. The rule that a zero needs a reason has a second half:
+**when the condition the reason names resolves, the reason has to be rewritten
+in the same pass.**
+
 ## Labels & QR
 
 ### segno.make() silently produces Micro QR — iPhones won't read it
