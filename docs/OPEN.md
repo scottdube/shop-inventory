@@ -274,3 +274,33 @@ a notebook, and none can be guessed from here.
 
 Once the locations exist, BinScan walks LRD exactly as it walks the bin wall —
 the site switcher and the placeholder containers are already in place for it.
+
+## Where the walk stands — end of 2026-08-22
+
+| cabinet | drawers | counted | uncounted | empty | unseen |
+|---|---|---|---|---|---|
+| A1 | 64 | 0 | 0 | 64 | **0** |
+| A2 | 64 | 5 | 2 | 53 | 4 |
+| A3 | 64 | 19 | 1 | 11 | **33** |
+| B1 | 44 | 4 | 0 | 10 | **30** |
+| B2 | 44 | 14 | 1 | 23 | 6 |
+| B3 | 44 | 34 | 7 | 3 | **0** |
+| **all** | **324** | 76 | 11 | 164 | **73** |
+
+**251 of 324 accounted, 77%.** A1 and B3 complete; B2 nearly. The 73 unseen are
+concentrated in A3 (33) and B1 (30).
+
+Still outstanding:
+
+- [ ] **32 McMaster rows** sit at cabinet level in B1/B2 — located to the
+      cabinet, not to a drawer. `docs/b1-b2-worksheet.md` is the paper version;
+      BinScan's pick-by-hand offers them directly.
+- [ ] **41 stock rows have no location at all.** They appear in BinScan's picker
+      tagged `(NOT LOCATED ANYWHERE)`.
+- [ ] **A2's four unknowns are the pre-sort parking spots** at R8C5–C8, not
+      unwalked drawers. Worth deciding whether they should read as their own
+      state rather than amber, since looking at them will not resolve them.
+- [ ] After a walk: `itq run scripts/sync_stocktake.py --commit` mirrors
+      confirming counts into `stocktake_date`, then
+      `scripts/binscan_undo.py --reconcile` lists the bought-vs-counted gaps to
+      work through at a desk.
