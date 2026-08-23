@@ -1730,9 +1730,11 @@ button.quiet{background:var(--surface-2);color:var(--fg);border:1px solid var(--
    Two per row rather than three, because these names are words -- Metrology
    Bench, Florida Staging -- not two characters, and a name that wraps to three
    lines is worse than a shorter row. */
-#rest{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-top:5px}
-#rest .chip{flex:none;width:auto;font-size:13px;font-weight:800;padding:9px 8px 8px;
-  line-height:1.2;hyphens:auto}
+/* Three wide, matching the cabinet rows above -- possible only because the long
+   names are abbreviated on the tile. */
+#rest{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:5px}
+#rest .chip{flex:none;width:auto;font-size:12.5px;font-weight:800;padding:9px 4px 8px;
+  line-height:1.2}
 #rest .chip .mut{font-size:10.5px}
 
 /* ── the drawer grid ────────────────────────────────────────────────────── */
@@ -1981,11 +1983,20 @@ fetch('/api/areas').then(r=>r.json()).then(as=>{
   // Shorter labels for the tiles only. The location's REAL name is unchanged
   // and stays in data-a and the tooltip -- this is display, not a rename, and
   // renaming would break every barcode, label and query that uses it.
+  // Two jobs: shorten the long ones, and EXPLAIN the arcane ones. BL and BR are
+  // meaningful only if you already know they are the pedestals under the
+  // electronics bench -- which is exactly the knowledge someone returning after
+  // a month has lost. Every label below comes from the location's own
+  // description, so the tile says what the record says.
   const SHORT={
     'Metrology Bench':'Metro Bench', 'Florida Staging':'FL Staging',
     'Assembly & Test':'Assy & Test', 'Machine Shop':'Mach Shop',
-    'Mobile Cart':'Mobile Cart', 'Electronics Bench':'Elec Bench',
-    'Tool Chest':'Tool Chest', 'Red Bins':'Red Bins',
+    'Electronics Bench':'Elec Bench',
+    'BL':'Bench Left',    'BR':'Bench Right',      // pedestals under the e-bench
+    'L1':'Laser Cab L',   'L2':'Laser Cab R',      // cabinets under the laser bench
+    'LW1':'Laser Wall 1', 'LW2':'Laser Wall 2', 'LW3':'Laser Wall 3',
+    'WS1':'Wire Rack 1',  'WS2':'Wire Rack 2', 'WS2-S5':'Rack 2 Sh 5',
+    'Kits':'Kit Boxes',   'SLN':'SLN site',    'LRD':'LRD Florida',
   };
   const label=n=>SHORT[n]||n;
   const chip=a=>`<button class=chip data-a="${a.name}" title="${a.name} — ${a.drawers} drawers">`
