@@ -29,16 +29,23 @@ queue, not a log.
 
 ## Short to build
 
-- [ ] **BUY: C2, 220uF electrolytic, for the AC Wall Adapter for IoT (RB-14).**
-      **No supplier part exists** for either 220uF record (#687 10V, #879 16V),
-      so this cannot go on a purchase order without inventing a SKU — it needs
-      a source picked first. Four wanted.
-      The shop has 220uF at 10V (#687) and 16V (#879) and **zero stock of
-      either**; the BOM asks for 35V. C2 sits on the Hi-Link's 5V OUTPUT, so
-      16V is ample and 35V is the author being generous — but none of them
-      exist here, so the build is blocked on one capacitor. Everything else on
-      the mains side is now counted in RB-14, and D1/R1 come off the bin wall
-      (LED 3mm Red #814 in B3-R2C2; the EAONE 1/4W resistor kit).
+- [ ] **C2 is 470uF 25V, not 220uF — and it is probably already owned.**
+      Scott, 2026-08-23, correcting the BOM against the unit he actually
+      built: *"470 uF 25 volt on this build. It has a larger footprint than
+      the 220 uF 10 volt that I have in the drawer."* The README lists C2 as
+      220uF 35V; the working board uses **470uF 25V**, and its footprint is
+      bigger than the 220uF 10V part.
+
+      `Capacitor Electrolytic 470uF 25V (8x12mm)` is **#670**, a value in the
+      **Xuansn kit** at `L2-D4/Kits` — **15 pcs when new**, showing as zero
+      stock only because that kit has never been seeded. **Check the kit
+      before ordering anything.**
+
+      **Second wrong purchase averted by the same cause in one session.** The
+      unseeded electrolytic kits are not merely an untidy backlog: they make
+      the catalogue report zero for parts the shop owns, and a zero is what a
+      buying decision is made against. That is a concrete cost to set against
+      "cataloguing them is expensive".
 
 - [x] ~~The choke and the HLK module~~ — **on `TO-ORDER-ALI`, 2026-08-23.**
       A sibling shopping list to `TO-ORDER`, because that one is an Amazon PO
