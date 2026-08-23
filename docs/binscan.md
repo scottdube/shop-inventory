@@ -665,6 +665,11 @@ can go". Two per row rather than three, because these names are words —
 Metrology Bench, Florida Staging — and a name wrapping to three lines is worse
 than a shorter row.
 
+The longest are **abbreviated on the tile only**: `Metro Bench`, `FL Staging`,
+`Assy & Test`, `Mach Shop`. The location's real name is untouched and stays in
+the tooltip — renaming the record would break every barcode, printed label and
+query that uses it. A display alias is safe; a rename is not.
+
 **Brighter edges on anything that is an object.** A separate `--edge` token,
 lighter than the hairline used between lines of text, for cabinets and drawers.
 Under shop lighting the dim rule made the tiles read as a flat field rather than

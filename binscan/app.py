@@ -1978,7 +1978,18 @@ let AREA=null, CELLS=[], CUR=null, LABEL='', MORE=false, SUGGEST=null;
 fetch('/api/areas').then(r=>r.json()).then(as=>{
   // The bin wall is where the work is; twenty-odd other places are real but
   // rarely the answer, and showing all of them cost nine rows of chips.
-  const chip=a=>`<button class=chip data-a="${a.name}">${a.name}<span class=mut>${a.drawers}</span></button>`;
+  // Shorter labels for the tiles only. The location's REAL name is unchanged
+  // and stays in data-a and the tooltip -- this is display, not a rename, and
+  // renaming would break every barcode, label and query that uses it.
+  const SHORT={
+    'Metrology Bench':'Metro Bench', 'Florida Staging':'FL Staging',
+    'Assembly & Test':'Assy & Test', 'Machine Shop':'Mach Shop',
+    'Mobile Cart':'Mobile Cart', 'Electronics Bench':'Elec Bench',
+    'Tool Chest':'Tool Chest', 'Red Bins':'Red Bins',
+  };
+  const label=n=>SHORT[n]||n;
+  const chip=a=>`<button class=chip data-a="${a.name}" title="${a.name} — ${a.drawers} drawers">`
+    + `${label(a.name)}<span class=mut>${a.drawers}</span></button>`;
   const wall=as.filter(a=>a.grid), rest=as.filter(a=>!a.grid);
   // Group by the LETTER, one flex row per wall row, so the picker keeps
   // mirroring the wall as the wall changes. A0 and B0 arrive next week, making
