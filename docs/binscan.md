@@ -130,6 +130,28 @@ matter for a walk.
 480 capacitors — is filed at the site root, which is the Florida equivalent of
 "in the building somewhere". It needs a real location inside LRD.
 
+## Which site you are in
+
+The header reads `SLN · B2-R4C1`. Everything walkable is at SLN today, so the
+site label is currently redundant — deliberately.
+
+A **site switcher** was considered and deferred. Measured 2026-08-22:
+
+| | SLN | LRD |
+|---|---|---|
+| locations | 474 | 2 |
+| containers you could walk | 32 | **0** |
+| stock rows | 494 | 24 |
+
+A switcher would toggle between the whole shop and one misfiled kit beside an
+empty Receiving — a control that does nothing, which teaches you to ignore
+controls. **The trigger to add it: when LRD has more than one walkable
+container.**
+
+The site label goes in now regardless, because the error it guards against is
+filing an SLN part into an LRD drawer, and that is far easier to prevent before
+the ambiguity exists than to detect afterwards.
+
 ## The picker
 
 A 478-entry select was the wrong control on a phone. Scott, 2026-08-22: reaching

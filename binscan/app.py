@@ -270,9 +270,16 @@ def api_areas():
         # destination alongside B2 implies a parity that does not exist.
         if par.get("parent") is None:
             continue
+        full = par.get("pathstring") or par["name"]
         out.append({"name": par["name"], "pk": pk, "drawers": len(leaves),
                     "grid": bool(DRAWER_RE.match(leaves[0]["name"] or "")),
-                    "path": (par.get("pathstring") or par["name"]).replace("SLN/", "")})
+                    # The site is carried explicitly so the header can say which
+                    # one you are in. Everything is SLN today; the error worth
+                    # pre-empting is filing an SLN part into an LRD drawer once
+                    # Florida has drawers, and that is much easier to prevent
+                    # before the ambiguity exists than after.
+                    "site": full.split("/")[0],
+                    "path": full.replace("SLN/", "")})
     grid_first = sorted(out, key=lambda a: (not a["grid"], a["path"]))
     return grid_first
 
@@ -1654,6 +1661,8 @@ body{margin:0 auto;max-width:560px;padding:0 var(--s3) 4px;background:var(--bg);
 .appbar .where{font-size:13px;color:var(--mut);font-variant-numeric:tabular-nums;
   margin-left:auto;white-space:nowrap}
 .appbar .where b{color:var(--fg);font-weight:700}
+.appbar .site{color:var(--dim);font-weight:700;font-size:11px;letter-spacing:.06em}
+.appbar .sep{color:var(--line);margin:0 6px}
 p.sub{color:var(--dim);margin:8px 0 2px;font-size:12.5px;line-height:1.45}
 
 /* ── section labels ─────────────────────────────────────────────────────── */
@@ -1984,7 +1993,11 @@ const STATE={
   mixed:     {g:'\u2261', word:'mixed jumble, not itemised'},
 };
 let AREA=null, CELLS=[], CUR=null, LABEL='', MORE=false, SUGGEST=null;
+let SITE='', as_cache=[];
 fetch('/api/areas').then(r=>r.json()).then(as=>{
+  as_cache = as;
+  SITE = (as[0]||{}).site || '';
+  setWhere('');
   // The bin wall is where the work is; twenty-odd other places are real but
   // rarely the answer, and showing all of them cost nine rows of chips.
   // Shorter labels for the tiles only. The location's REAL name is unchanged
@@ -2043,6 +2056,7 @@ fetch('/api/areas').then(r=>r.json()).then(as=>{
 
 async function loadArea(name){
   AREA=name; CUR=null;
+  SITE=(as_cache.find(a=>a.name===name)||{}).site||SITE;
   setWhere(name);
   $('#areas').querySelectorAll('.chip').forEach(b=>b.classList.toggle('on',b.dataset.a===name));
   $('#gridwrap').innerHTML='<div class=card>loading…</div>';
@@ -2105,7 +2119,11 @@ async function repaint(){
   }catch(_){}
 }
 
-function setWhere(t){ const e=$('#whereat'); if(e) e.innerHTML=t; }
+function setWhere(t){
+  const e=$('#whereat'); if(!e) return;
+  e.innerHTML = (SITE ? `<span class=site>${SITE}</span>` : '')
+              + (SITE && t ? '<span class=sep>&middot;</span>' : '') + (t||'');
+}
 
 function pick(name){
   CUR=name; LABEL=''; MORE=false; SUGGEST=null;
