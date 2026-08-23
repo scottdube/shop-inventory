@@ -1658,22 +1658,16 @@ body{margin:0 auto;max-width:560px;padding:0 var(--s3) 4px;background:var(--bg);
 .logo rect.lit{fill:var(--acc)}
 .appbar h1{font-size:17px;font-weight:800;margin:0;letter-spacing:-.02em}
 .appbar h1 span{color:var(--acc)}
-.appbar .where{font-size:13px;color:var(--mut);font-variant-numeric:tabular-nums;
-  margin-left:auto;white-space:nowrap}
+.appbar .where{font-size:13px;color:var(--fg);font-weight:700;
+  font-variant-numeric:tabular-nums;white-space:nowrap}
 .appbar .where b{color:var(--fg);font-weight:700}
-.appbar .site{color:var(--dim);font-weight:700;font-size:11px;letter-spacing:.06em}
-.appbar .sep{color:var(--line);margin:0 6px}
+
 p.sub{color:var(--dim);margin:8px 0 2px;font-size:12.5px;line-height:1.45}
 
-/* ── site switcher ──────────────────────────────────────────────────────── */
-.sites{display:flex;gap:4px;margin-top:11px;padding:3px;background:var(--surface);
-  border:1px solid var(--edge);border-radius:var(--r2)}
-.sitebtn{flex:1 1 0;width:auto;min-height:0;margin:0;padding:8px 0;font-size:14px;
-  font-weight:800;background:transparent;color:var(--mut);border:0;
-  border-radius:var(--r1);letter-spacing:.01em}
-.sitebtn .mut{margin-left:6px;font-size:11px;font-weight:700}
-.sitebtn.on{background:var(--acc);color:var(--acc-ink)}
-.sitebtn.on .mut{color:rgba(4,18,31,.65)}
+/* ── site switcher: in the header, tap to toggle ────────────────────────── */
+.sitebtn{width:auto;min-height:0;margin:0 0 0 auto;padding:3px 10px;font-size:11px;
+  font-weight:800;letter-spacing:.07em;background:#3a2f07;color:var(--warn);
+  border:1px solid #7a6410;border-radius:999px}
 
 /* ── section labels ─────────────────────────────────────────────────────── */
 label{display:block;margin:14px 0 5px;color:var(--mut);font-size:11px;
@@ -1907,7 +1901,8 @@ img#prev{height:58px;width:auto;max-width:34%;object-fit:cover;
   </svg>
   <h1>Bin<span>Scan</span></h1>
   <button class=hintbtn id=hintbtn title="how this works">?</button>
-  <span class=where id=whereat>no drawer</span></div>
+  <button class=sitebtn id=sitebtn title="tap to switch site"></button>
+  <span class=where id=whereat></span></div>
 <div class="helppanel hint">
   <div class=hh>How this works</div>
   <ol>
@@ -1938,7 +1933,6 @@ img#prev{height:58px;width:auto;max-width:34%;object-fit:cover;
   <div class=hp-foot>Tap <b>?</b> again to hide this.</div>
 </div>
 
-<div id=sites class=sites></div>
 <label>Where</label>
 <div id=areas class=chips></div>
 <div id=gridwrap></div>
@@ -1952,7 +1946,13 @@ img#prev{height:58px;width:auto;max-width:34%;object-fit:cover;
 </div>
 
 <details id=opts>
-  <summary>Options &mdash; model, advance direction</summary>
+  <summary>Options &mdash; site, model, advance direction</summary>
+  <div id=siterow style="display:none">
+    <label>Site &mdash; which places to show</label>
+    <select id=sitesel></select>
+    <button id=sethome class=quiet style="display:none">Set as where I am</button>
+    <div class="mut hint" id=homenote></div>
+  </div>
   <label>Provider</label>
   <select id=prov></select>
   <label>After submit</label>
@@ -2004,29 +2004,64 @@ const STATE={
   mixed:     {g:'\u2261', word:'mixed jumble, not itemised'},
 };
 let AREA=null, CELLS=[], CUR=null, LABEL='', MORE=false, SUGGEST=null;
-let SITE='', as_cache=[];
+let SITE='', SITES=[], as_cache=[];
 fetch('/api/areas').then(r=>r.json()).then(as=>{
   as_cache = as;
   // Two sites, and Scott is about to lay Florida out properly. A switcher was
   // deferred on the grounds that LRD had nothing walkable -- he overruled it as
   // a timing question rather than a design one, which is right: he knows the
   // trajectory and the measurement only knew the snapshot.
-  const sites=[...new Set(as.map(a=>a.site))].sort();
-  SITE = sites.includes('SLN') ? 'SLN' : sites[0] || '';
-  if(sites.length > 1){
-    $('#sites').innerHTML = sites.map(x=>{
-      const n = as.filter(a=>a.site===x).length;
-      return `<button class="sitebtn${x===SITE?' on':''}" data-s="${x}">${x}<span class=mut>${n}</span></button>`;
-    }).join('');
-    $('#sites').querySelectorAll('.sitebtn').forEach(b=>b.onclick=()=>{
-      SITE=b.dataset.s;
-      $('#sites').querySelectorAll('.sitebtn').forEach(x=>x.classList.toggle('on',x.dataset.s===SITE));
-      AREA=null; CUR=null; CELLS=[]; UNLOCATED=[];
-      $('#gridwrap').innerHTML=''; $('#known').innerHTML=''; $('#out').innerHTML='';
-      $('#go').disabled=true; setWhere('');
-      renderAreas();
-    });
+  SITES=[...new Set(as.map(a=>a.site))].sort();
+  SITE = SITES.includes('SLN') ? 'SLN' : SITES[0] || '';
+  function switchTo(s, ask){
+    // Confirm only when leaving HOME. Scott: "it's not like you're going to be
+    // switching back and forth -- it's one switch six months later, switch it
+    // back." A rare action deserves a question; the return trip does not, and
+    // nagging on the safe direction is how people learn to dismiss dialogs
+    // without reading them.
+    if(ask && s !== HOME && !confirm(
+        `Switch to ${s}?\n\nYou are working in ${HOME}. This only changes which `
+      + `places BinScan shows you — nothing is written, and nothing already `
+      + `filed is affected.`)){
+      if($('#sitesel')) $('#sitesel').value = SITE;
+      return;
+    }
+    SITE=s;
+    AREA=null; CUR=null; CELLS=[]; UNLOCATED=[]; LABEL=''; SUGGEST=null; MORE=false;
+    $('#gridwrap').innerHTML=''; $('#known').innerHTML=''; $('#out').innerHTML='';
+    $('#flash').innerHTML=''; $('#go').disabled=true;
+    if($('#sitesel')) $('#sitesel').value=SITE;
+    syncHomeUI();
+    setWhere(''); renderAreas();
   }
+
+  function syncHomeUI(){
+    const b=$('#sethome'), n=$('#homenote');
+    if(!b) return;
+    const away = SITE && SITE !== HOME;
+    b.style.display = away ? '' : 'none';
+    b.textContent = `I am at ${SITE} now`;
+    if(n) n.textContent = away
+      ? `You are recorded as being at ${HOME}, so ${SITE} shows a badge in the header.`
+      : `You are at ${HOME}. No badge is shown while you are viewing it.`;
+  }
+  if(SITES.length > 1){
+    $('#siterow').style.display='';
+    $('#sitesel').innerHTML = SITES.map(x=>{
+      const n = as.filter(a=>a.site===x).length;
+      return `<option value="${x}"${x===SITE?' selected':''}>${x} — ${n} place${n===1?'':'s'}</option>`;
+    }).join('');
+    $('#sitesel').onchange=e=>switchTo(e.target.value, true);
+    $('#sethome').onclick=()=>{
+      HOME = SITE;
+      localStorage.setItem('binscan.home', HOME);
+      syncHomeUI(); setWhere($('#whereat').innerHTML);
+    };
+    syncHomeUI();
+  }
+  // The header badge only exists when you are away, and its only job is to
+  // bring you home.
+  $('#sitebtn').onclick=()=>switchTo(HOME, false);
   setWhere('');
   // The bin wall is where the work is; twenty-odd other places are real but
   // rarely the answer, and showing all of them cost nine rows of chips.
@@ -2154,10 +2189,39 @@ async function repaint(){
   }catch(_){}
 }
 
+// The site lives in the header, as the thing you tap to change it -- Scott's
+// idea, and better than the segmented control it replaced: a segmented control
+// is for three or more, and this gives back a row above the grid. An accidental
+// tap is contained, because switching only changes what is DISPLAYED; a drawer
+// still has to be picked before anything can be written, and the header reads
+// the new site the whole time.
+// The site is shown ONLY when you are away from home. Scott: "it's too big and
+// distracting, and really probably unnecessary most of the time" -- true, you
+// are at SLN essentially always, and a label that never changes is a label
+// nobody reads. So SLN shows nothing and LRD shows a loud badge: the indicator
+// earns its space precisely when it is telling you something.
+// The control itself lives in Options, with the set-once settings.
+// WHERE YOU PHYSICALLY ARE, persisted. Scott: "by home you mean the one you're
+// at geographically?" -- yes, and hard-coding SLN was wrong the moment he is
+// actually in Florida. Two different intents needed separating:
+//
+//   "I have moved to Florida"        durable  -> changes HOME
+//   "let me peek at Florida from NH" temporary -> changes only what is shown
+//
+// So the Options select changes the VIEW, and a separate one-tap action makes
+// the viewed site your location. The badge means "you are looking somewhere
+// other than where you are standing", which is the only time it is worth
+// screen space.
+let HOME = localStorage.getItem('binscan.home') || 'SLN';
 function setWhere(t){
-  const e=$('#whereat'); if(!e) return;
-  e.innerHTML = (SITE ? `<span class=site>${SITE}</span>` : '')
-              + (SITE && t ? '<span class=sep>&middot;</span>' : '') + (t||'');
+  const b=$('#sitebtn');
+  if(b){
+    const away = SITE && SITE !== HOME;
+    b.style.display = away ? '' : 'none';
+    b.textContent = SITE;
+    b.title = `Viewing ${SITE}; you are at ${HOME}. Tap to go back.`;
+  }
+  const e=$('#whereat'); if(e) e.innerHTML = t || '';
 }
 
 function pick(name){
