@@ -324,9 +324,24 @@ def api_grid(area: str = ""):
     for k in kids:
         m = DRAWER_RE.match(k["name"] or "")
         desc = k.get("description") or ""
+        # DECLARED: the record here is finished and the absence of a count is
+        # deliberate -- a pre-sort bucket, a consumable, a bin of prototypes.
+        # Without it these fall through to "unknown", which the UI calls
+        # "nobody has looked", and they stay amber forever: opening one shows
+        # exactly what the description already said and changes nothing. Five
+        # places were in that state on 2026-08-23, and a walk that keeps
+        # offering settled places teaches people to ignore amber.
+        #
+        # The marker lives in the DESCRIPTION rather than in metadata because
+        # the location serializer does not expose metadata and the dedicated
+        # metadata endpoint answers 403 CSRF to a token client. Bracketed, so
+        # it is stripped from the cell label by the same rule that hides the
+        # size annotation -- machine-readable, invisible to the walker.
+        declared = bool(_DECLARED_RE.search(desc))
         state = ("filled" if (k["name"] in filled and counted.get(k["name"]))
                  else "uncounted" if k["name"] in filled
                  else "empty" if desc.upper().startswith("VERIFIED EMPTY")
+                 else "declared" if declared
                  else "mixed" if desc.upper().startswith("PRE-SORT")
                  else "unknown")
         cells.append({"name": k["name"], "pk": k["pk"], "state": state,
@@ -342,7 +357,8 @@ def api_grid(area: str = ""):
     cells.sort(key=lambda x: (x["r"] or 0, x["c"] or 0, x["pk"])
                if x["r"] else (0, 0, x["pk"]))
     tally = {s: sum(1 for c in cells if c["state"] == s)
-             for s in ("filled", "uncounted", "mixed", "empty", "unknown")}
+             for s in ("filled", "uncounted", "mixed", "declared", "empty",
+                       "unknown")}
     return {"area": loc["name"], "grid": all(c["r"] for c in cells) and bool(cells),
             "cells": cells, "tally": tally}
 
@@ -390,6 +406,8 @@ def _counted_from(row):
 # annotation drifting to the end. Strip any prior stamp before writing a new
 # one; "previously labelled" should mean the human label, not the app's own
 # last opinion.
+_DECLARED_RE = re.compile(r"\[DECLARED\]", re.I)
+
 _STAMP = re.compile(r"^\s*(?:VERIFIED EMPTY|PRE-SORT)\s+\d{4}-\d\d-\d\d\s*"
                     r"(?:—|--)?\s*(?:mixed, not itemised)?\s*:?\s*"
                     r"(?:previously labelled:)?\s*", re.I)
@@ -2147,6 +2165,7 @@ button.quiet{background:var(--surface-2);color:var(--fg);border:1px solid var(--
 .cell.unknown{background:#332a06;color:var(--warn);border-color:#7a6410}
 .cell.empty{background:var(--surface);color:#6a6a76;border-color:#3a3a46}
 .cell.mixed{background:#271433;color:var(--mix);border-color:#5a3570}
+.cell.declared{background:#0d2a2a;color:#6fd0c4;border-color:#2c6660}
 .cell.on{outline:2px solid var(--acc);outline-offset:1px;color:var(--fg)}
 .legend{display:flex;flex-wrap:wrap;gap:3px 12px;margin-top:8px;
   font-size:11px;font-weight:600;line-height:1.5}
@@ -2390,6 +2409,7 @@ const STATE={
   unknown:   {g:'?',       word:'nobody has looked'},
   empty:     {g:'\u00b7', word:'verified empty'},
   mixed:     {g:'\u2261', word:'mixed jumble, not itemised'},
+  declared:  {g:'\u25c6', word:'declared \u2014 nothing left to count here'},
 };
 let AREA=null, CELLS=[], CUR=null, LABEL='', MORE=false, SUGGEST=null;
 let SITE='', SITES=[], as_cache=[];

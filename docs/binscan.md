@@ -910,3 +910,54 @@ matched on, so a wrong one is obvious rather than plausible.
 undoing it means deleting it. `filepart` and `split` are both handled, and the
 delete refuses if the quantity has changed since filing — that means somebody
 edited it afterwards, and deleting would throw away their work.
+
+## DECLARED — the record is finished, looking again changes nothing
+
+The grid picked a colour with four states, and the last one was a fallback:
+
+```
+filled     — has stock rows, all counted
+uncounted  — has stock rows, not all counted
+empty      — description starts with VERIFIED EMPTY
+unknown    — anything else
+```
+
+`unknown` is what the UI calls **"nobody has looked"**. So anything with no
+stock rows and no empty stamp landed there regardless of what its description
+said — and five places on 2026-08-23 had a complete record and no rows by
+design:
+
+| place | what it is |
+|---|---|
+| `A2-R8C5..C8` | the four pre-sort buckets — unsorted by design, `metadata.unsorted`, *"contents not counted"* |
+| `RB-05` | 2 mil zip bags, *"CONSUMABLE: not counted"* |
+| `RB-08` | cord-retraction prototype prints — iterations have no meaningful quantity |
+
+Scott, asked what the problem was: *"I'm unclear what the confusion is."* Fair
+— the shorthand was doing the work. Concretely: **A2 reported "4 unseen"
+forever.** Opening A2-R8C5 shows unsorted machine-threaded hardware, exactly
+as its description says, and nothing done at the drawer can change the colour.
+A walk that keeps offering settled places is how amber stops meaning anything.
+
+`A3-R8C5` was the same until it was seeded: a named kit as a child location
+with zero rows read as `unknown`, and the panel said *"Nothing on record for
+this drawer"* while the record knew it held a 10-value electrolytic kit. That
+is what sent Scott looking for a lost record that had never been lost.
+
+**The marker lives in the description**, as `[DECLARED]`, because the location
+serializer does not expose `metadata` and the dedicated metadata endpoint
+answers 403 CSRF to a token client — checked, not assumed. Bracketed
+deliberately: the cell label already strips bracketed spans, so the flag is
+machine-readable and invisible to the walker, the same trick the size
+annotation uses.
+
+**Set per place, never inferred.** A rule like *"the description mentions not
+counted"* is the brittle string-matching that produced the empty-guard bug the
+same morning. Each of these is flagged because somebody decided it was
+finished.
+
+**Stock wins.** If a declared place ever holds a row it renders `filled` or
+`uncounted` — the flag says "no count is expected", not "ignore what is here".
+
+Measured after deploy: **A2 went from `unknown: 4` to `unknown: 0`** (7 filled,
+53 empty, 4 declared), and the Red Bins from 19 unknown to 17.
