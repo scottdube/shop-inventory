@@ -828,6 +828,10 @@ def drawer_contents(name, site=""):
         # same as one point one, which has in fact been counted."
         st = _counted_from(r)
         out["stock"].append({
+            # The STOCK ROW's own pk. Its absence is why the recount button
+            # posted stock=None and got a 422: the panel had everything needed
+            # to display a row and nothing needed to act on one.
+            "stock": r.get("pk"),
             "part": r.get("part"),
             "name": (r.get("part_detail") or {}).get("name") or f"part {r.get('part')}",
             "quantity": r.get("quantity"),
@@ -2292,6 +2296,17 @@ let HOME = localStorage.getItem('binscan.home') || 'SLN';
 // Quiet when you are viewing where you stand, amber when you are not -- the
 // distinction still earns its keep, it just no longer decides whether the
 // label exists.
+// FastAPI returns validation failures under `detail`, not `error`, so a 422
+// surfaced as a bare "failed" with the actual reason thrown away -- which cost
+// a round trip to diagnose something the response had already explained.
+function errText(j){
+  if(j && j.error) return j.error;
+  if(j && Array.isArray(j.detail))
+    return j.detail.map(d=>`${(d.loc||[]).slice(-1)[0]}: ${d.msg}`).join('; ');
+  if(j && j.detail) return String(j.detail);
+  return 'failed — no reason given';
+}
+
 function wireRecount(drawer){
   $('#known').querySelectorAll('button.recount').forEach(b=>{
     // Stash the original label ONCE, before it can be overwritten by "Cancel".
@@ -2319,7 +2334,7 @@ function wireRecount(drawer){
         setFlash(`&#10003; <b>${drawer}</b> counted at <b>${j.quantity}</b>, verified.`);
         await repaint();
         await refreshDrawer(drawer,true);
-      }else{ msg.style.color='#ff8f8f'; msg.textContent=j.error||'failed'; b.disabled=false; }
+      }else{ msg.style.color='#ff8f8f'; msg.textContent=errText(j); b.disabled=false; }
     }catch(e){ msg.style.color='#ff8f8f'; msg.textContent=String(e); b.disabled=false; }
   });
 }
@@ -2502,7 +2517,7 @@ async function markEmpty(drawer){
       if($('#adv').value!=='stay') setTimeout(()=>advance(), 1100);
       else { msg.style.color='#7fd39b'; msg.textContent='recorded'; }
     }else{
-      msg.style.color='#ff8f8f'; msg.textContent=j.error||'failed'; btn.disabled=false;
+      msg.style.color='#ff8f8f'; msg.textContent=errText(j); btn.disabled=false;
     }
   }catch(e){ msg.style.color='#ff8f8f'; msg.textContent=String(e); btn.disabled=false; }
 }
@@ -2521,7 +2536,7 @@ async function markMixed(drawer){
       setFlash(`&#8801; <b>${j.location}</b> recorded as a mixed jumble &mdash; looked at, not itemised.`);
       await repaint();
       if($('#adv').value!=='stay') setTimeout(()=>advance(), 1200);
-    }else{ msg.style.color='#ff8f8f'; msg.textContent=j.error||'failed'; btn.disabled=false; }
+    }else{ msg.style.color='#ff8f8f'; msg.textContent=errText(j); btn.disabled=false; }
   }catch(e){ msg.style.color='#ff8f8f'; msg.textContent=String(e); btn.disabled=false; }
 }
 
@@ -2703,7 +2718,7 @@ function wireCreate(drawer){
           `<button id=morebtn2 style="margin-top:10px;background:var(--card);color:var(--fg);border:1px solid var(--line)">Anything else in ${drawer}?</button>`;
         $('#morebtn2').onclick=()=>fileAnother(drawer);
       }else{
-        msg.style.color='#ff8f8f'; msg.textContent=j.error||'failed'; go.disabled=false;
+        msg.style.color='#ff8f8f'; msg.textContent=errText(j); go.disabled=false;
       }
     }catch(e){ msg.style.color='#ff8f8f'; msg.textContent=String(e); go.disabled=false; }
   };
@@ -2858,7 +2873,7 @@ function wireFiling(drawer){
           if(nx) $('#nextbtn').onclick=()=>advance();
           $('#morebtn').onclick=()=>fileAnother(drawer);
         }else{
-          msg.style.color='#ff8f8f'; msg.textContent=j.error||'failed'; btn.disabled=false;
+          msg.style.color='#ff8f8f'; msg.textContent=errText(j); btn.disabled=false;
         }
       }catch(e){ msg.style.color='#ff8f8f'; msg.textContent=String(e); btn.disabled=false; }
     };

@@ -304,3 +304,34 @@ Still outstanding:
       confirming counts into `stocktake_date`, then
       `scripts/binscan_undo.py --reconcile` lists the bought-vs-counted gaps to
       work through at a desk.
+
+## After the walk: cycle counts, not a finished inventory
+
+An inventory is never done — it drifts the moment someone takes a screw. Scott,
+2026-08-22: *"we talked about doing occasional bin checks on a small number of
+bins so that you can keep up with the inventory without doing a complete
+inventory all the time. So the tool could assign bins to go check, and then
+you'd set it up so it would advance through the bins you want to count."*
+
+That is standard cycle counting, and it settles a question raised the same day.
+Auto-advance looked like a walk-only feature that the tool would outgrow. It is
+not: **a cycle count is a walk, just a short repeating one over a chosen set.**
+Advance is the mechanism; only the source of the list changes.
+
+**What it needs, none of it built:**
+
+- [ ] **A queue.** A set of drawers to check, and advance stepping through *that
+      list* rather than across the grid. A third option beside "across" and
+      "down": *"advance through the check list"*.
+- [ ] **A way to choose the set.** The obvious axis is staleness — oldest
+      `stocktake_date` first, and never-counted before ever-counted. Other axes
+      worth considering: rows whose purchased-vs-counted gap is largest, and
+      drawers holding parts consumed by recent projects.
+- [ ] **A cadence that fits the shop.** Ten drawers a week finishes the bin wall
+      in about eight months, which is roughly the right period for fasteners.
+- [ ] **Progress that reads as maintenance, not as a walk.** "14 of 324 counted"
+      is the wrong frame afterwards; "oldest count: 6 months" is the right one.
+
+The pieces already exist: `stocktake_date` distinguishes counted from carried,
+`scripts/sync_stocktake.py` keeps it honest, and the grid already shows counted
+and uncounted as different states.
