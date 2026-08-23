@@ -88,12 +88,25 @@ State after the 2026-08-23 walk, 28 bins:
       | 1075 | Relay Churod A1-S-112VA | coil, then contacts for welding |
       | 1076 | Cap 820uF 400V RUC CD293 x2 | **discharge first**, then C + ESR |
       | 1079 | Terminal block R/S/T/PE | measure pitch: 7.62 / 9.5 / 10.16 |
-      | 1080 | IGBT DXG20N65FS x6 | diode-test IN PLACE before unsoldering |
+      | ~~1080~~ | ~~IGBT DXG20N65FS x6~~ | **ALL SIX DEAD — scrap** |
 
-      **Scott does not remember the failure symptoms**, so every electrical part
-      is suspect and their rows get QUARANTINED when filed. Test all six IGBTs
-      rather than assuming: a drive usually dies with one leg shorted while the
-      rest survive, so six devices may be five good ones and a casualty.
+      **The failure mode is now known, 2026-08-23.** All six IGBTs tested dead
+      out of circuit — every gate destroyed — while the DC bus is NOT shorted.
+      Those two facts together rule out the ordinary modes: a shorted device
+      shows on the bus, a single failure is one device. Six at once with an
+      intact power path means something hit every gate together — a gate-drive
+      supply gone overvoltage, or a surge coupling into the gate circuits. The
+      power stage did not kill itself.
+
+      **That raises the bar on the rest.** Whatever punched six gate oxides went
+      through everything else. **Bin the varistor** — first line of defence,
+      likely died doing its job. And treat the bus caps with more suspicion than
+      a normal salvage: a surge is exactly the history that leaves an
+      electrolytic measuring fine and behaving badly.
+
+      The one good semiconductor on the board was an **MS5N10DS**, the little
+      control-supply switcher, which tested clean (N-channel enhancement FET,
+      Vt 3.86V). Not catalogued — a generic small MOSFET worth pennies.
 
       Also grab: the **thermistor** bolted to the heatsink end (over-temp
       sensor) and the **long black bar** across the board — probably a bleed or
