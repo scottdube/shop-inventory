@@ -635,6 +635,21 @@ toggles `body.hints-on`, the setting persists in `localStorage`, and it is
 explanation returns. Nothing was deleted; ten blocks of reasoning are one tap
 away.
 
+**The picker mirrors the wall.** Cabinets are rectangles, not pills — a pill
+reads as a tag, a rectangle reads as an object you could point at — and they are
+grouped **by letter**, one flex row per wall row: `A1 A2 A3` over `B1 B2 B3`.
+Same idea as the drawer grid: a picker shaped like the thing it picks from needs
+no legend.
+
+Grouped by letter rather than three-per-row **because the wall is about to
+change**. A0 and B0 arrive the week of 2026-08-24, making both rows four wide,
+and row C is planned below B once the plywood table goes. A hard-coded column
+count would have quietly stopped matching the shop the day the new cabinets went
+up — tested by injecting A0/B0, which lays out correctly with no change.
+
+**A mark and a proper name.** The logo is the drawer grid in nine rectangles with
+the middle one lit; the wordmark is `BinScan`, not lowercase.
+
 The rest of the pass:
 
 - **A sticky header** carrying the app name and the current drawer, so you
