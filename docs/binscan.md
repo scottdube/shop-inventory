@@ -837,3 +837,76 @@ propose matches for confirmation rather than writing them — same discipline as
 - Runs from the internal disk deliberately: anything under `/Volumes` needs a
   TCC grant to run from launchd, which is what silently broke the InvenTree
   backup for weeks.
+
+## Filing a PART, not just a stock row
+
+`/api/assign` MOVES an existing row. That covered the import backlog — every
+part in it already had a row parked at cabinet level — and covered nothing
+else. Measured 2026-08-23: **465 of 992 active parts (47%) have no stock row
+anywhere.** Capacitors 42, Solder 46, Modules 43, Connectors 24, Sensors 23,
+Tooling 20.
+
+It cost three dead ends in one morning, all with the drawer open:
+
+- a bagged 10-value capacitor kit Scott had just counted
+- a Shelly Plus 2PM, identified perfectly from its retail box
+- an MHCOZY 2-channel relay, likewise
+
+In each case the part existed, and the only way to record it was to walk back
+to a desk. `/api/newpart` could not help: it duplicate-checks and refuses,
+correctly, because the part is already there. **The missing verb was never
+"create a part" — it was "put this part HERE".**
+
+`/api/filepart` is that verb: `part` + `location` + `quantity` → a new stock
+row, verified by re-read, empty stamp retired, journalled.
+
+**A count is REQUIRED, unlike assign.** Assign may leave it blank because the
+row already carries a purchased figure, and blank honestly means "moved, not
+counted". A new row has no such figure: creating one means stating how much is
+in the drawer, and the only source for that is somebody looking. A blank would
+be an invented number, so it is refused.
+
+If the part already has rows elsewhere, the note says this row is what is
+HERE and not the shop total — the same wording as a split, and for the same
+reason.
+
+## Identify searches the catalogue, not just the fastener list
+
+`match_reading()` is a **fastener** matcher: it scores against the cabinet's
+unlocated McMaster rows using SKU, thread and length. Photograph a retail box
+and it finds no thread, bails with `no-thread-read`, and proposes nothing.
+
+Scott, 2026-08-23: *"it finds it, creates a label for it, markings and all
+that, but it doesn't make it a proposal so that I can commit that to that
+drawer."* The read was flawless — brand, model, ratings, terminal legend, EAN,
+manufacturer address — and the answer was `candidates: []`. Part #79 had
+existed the whole time. **It did not fail to find it; it never looked.**
+
+`catalogue_matches()` gives identify the reach `/api/fasteners` already had,
+and for the reason that docstring already gave: *a part you are holding may
+well exist already, and creating a second one is the outcome worth
+preventing.*
+
+It scores by **shared distinctive tokens** rather than asking a model to
+choose, because a model asked to pick from a list always picks, while token
+overlap can come back empty — and empty is a real answer. Longer catalogue
+names are discounted by √(token count): a long name sharing three tokens had
+more chances than a short one sharing three.
+
+Verified against the photo that failed, replayed through the new path:
+
+| part | score | why |
+|---|---|---|
+| **#79 Shelly Plus 2PM** | **1.387** | metering, shelly, power, plus, 2pm |
+| #159 Enbrighten Z-Wave Fan Control | 0.655 | switch, white, plus |
+| #844 MB102 Breadboard PSU | 0.626 | switch, power, plus |
+
+The right answer ranks first by more than 2×, and the runners-up are visibly
+weak — they match only on generic words. The candidate card shows what each
+matched on, so a wrong one is obvious rather than plausible.
+
+**Undo covers created rows now too.** `binscan_undo.py` only understood
+`assign`, which restores a before-state. A created row has no before-state:
+undoing it means deleting it. `filepart` and `split` are both handled, and the
+delete refuses if the quantity has changed since filing — that means somebody
+edited it afterwards, and deleting would throw away their work.
