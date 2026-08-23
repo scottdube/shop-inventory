@@ -138,16 +138,38 @@ database.** Scott counted 2026-08-22: B1 3 empty of 12, B2 5 of 12, B3 3 of 11.
 10164s, all small). Small drawers are 289 at ~22% and will never be the
 constraint. Any purchase should therefore be all-large.
 
-- [ ] **Candidate: 2x Akro-Mils 10124**, 24 large drawers each, $49.99 (Walmart,
+- [x] **ORDERED 2026-08-22, arriving Tuesday 2026-08-25: 2x Akro-Mils 10124**, 24 large drawers each, $49.99 (Walmart,
       verified live 2026-08-22, free ship, no same-day). 48 larges takes the
       shop from 35 to 83. Same 20 x 6-3/8 x 15-13/16 shell as the A cabinets;
       two stacked are 31-5/8 in, level with the A row over the B row.
       **The Walmart URL slug says "44-Drawer" and the page is the 24-Drawer** —
       the variant picker offers 16/24/26/64 and has no 44 at all.
 
-- [ ] **Measure the wall left of the A1/B1 column** before ordering — 20 in plus
-      clearance, and confirm two-high clears what is above. No dimension for
-      that run exists yet.
+### Tuesday, when they arrive
+
+- [ ] **Measure a drawer first.** Confirm it really is the large class
+      (6 x 4-9/16 x 2-3/16). The spec came from Walmart's AI-generated block,
+      not from Akro-Mils. Free returns for 90 days, so this is the moment.
+- [ ] **The Thread Detective gauge hangs in that 22 in.** It has to go
+      somewhere, and it needs to stay near the bin wall to be useful — step 2
+      of the fastener funnel assumes it is within reach.
+- [ ] **Use A3 as the hole template**, not a tape measure: pull its drawers,
+      take it off the wall, hold it in the A0 position, mark through the
+      keyholes, remount A3, hang the new one on the marks. Confirm the 10124's
+      keyhole pattern matches before drilling — "same shell" is a listing
+      claim.
+- [ ] **Pull the drawers before lifting anything.** Akro-Mils drawers slide
+      free and a loaded cabinet tipped a few degrees empties onto the floor.
+- [ ] **Butt them hard against A1/B1, zero clearance.** All six existing
+      cabinets touch; the 2 in of slack belongs on the panel side for breaker-
+      door swing.
+- [ ] `itq run scripts/make_a0b0.py --commit` — creates both cabinets and all
+      48 drawers, named and described. **Run it after they are on the wall**,
+      not before: locations for cabinets still in a box claim a place exists
+      that does not.
+- [ ] Then `link_barcodes.py --commit`, then print labels. BinScan picks them up
+      with no change — it groups the picker by wall row, so A0/B0 simply make
+      those rows four wide.
 
 **Naming: the letter is the ROW, the number is the column left to right, and
 the new pair is A0 / B0.**
