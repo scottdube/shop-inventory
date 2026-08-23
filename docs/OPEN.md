@@ -100,24 +100,30 @@ clear the PO backlog. Receiving carried the **purchased** quantity onto each
 row, which is a document, not a count. None of these rows has a
 `stocktake_date` and every one says so in its notes.
 
-- [ ] **Three BT30 end-mill holders read 2 each and may be 1 each.** #535
-      (1/4in), #536 (1/8in), #537 (3/8in). The orders say 2; the placeholder
-      rows deleted on 08-23 assumed 1. Nobody has ever counted them. Same for
-      #540, the PathPilot USB camera, at 2. **This is one glance at the
-      toolholder rack.**
+- [x] ~~Three BT30 end-mill holders read 2 each and may be 1 each.~~
+      **ANSWERED 2026-08-23.** Scott: *"those were all rec as ordered."* The
+      orders were right and the deleted placeholders' assumed 1 was wrong. #535,
+      #536, #537 and #540 are stocktaken to the confirmed quantities. Evidence
+      tier is a person's statement that the shipments arrived complete, not a
+      rack tally — recorded as such on each row.
 - [ ] **Empty the `Unfiled - Machine Shop` waiting room.** It gained four rows
       on 08-23: 9 BT30 45-degree pull studs (#539), the carbide face-mill insert
       (#543), and the **Tapmatic No.90X tapping head (#927, $2,005.80)** — a
       two-thousand-dollar tool whose location the catalogue records as "somewhere
       in the machine shop". Its description is explicit that it is a waiting
       room and should trend toward empty.
-- [ ] **Four pull-stud parts, 36 units, all unfiled — how many are one thing?**
-      #120 `M12x45` (7), #110 `Standard (pack of 10)` (10), #113 `TSC (pack of
-      10)` (10), #539 `45-Degree` (9). BT30 pull studs differ by thread and
-      flange angle, so these may be four real parts or two — and the two named
-      "(pack of 10)" holding quantity 10 is exactly the pack-vs-unit ambiguity
-      that has bitten twice. **Not resolvable from here; needs the studs in
-      hand.**
+- [x] ~~Four pull-stud parts, 36 units — how many are one thing?~~
+      **ANSWERED 2026-08-23.** Scott: *"pull studs are 20 total, 2 diff kinds,
+      TSC and normal, 1 pack of 10 each."* Not a duplicate-part problem at all —
+      the four parts are four real vendor items. It was a **consumption**
+      finding: the Shars (#120, 7) and Tormach (#539, 9) studs bought in
+      2024–2025 are screwed into the holders they were bought alongside, and
+      only the two Haas packs (#110, #113) are spares. #120 and #539 now read
+      zero with the reason on the row; #110 and #113 are counted at 10 each.
+
+      The pack-vs-unit worry was unfounded — both Haas parts already carried
+      `pack-corrected: 1 pack(s) of 10 = 10 units` in their notes from the
+      08-19 pass. The catalogue had answered it; the sweep had not read it.
 
 ## Imports and enrichment
 
