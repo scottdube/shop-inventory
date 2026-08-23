@@ -1896,3 +1896,35 @@ drawer; a bulk `--cabinet` sweep has nobody looking.** Relaxing it there would
 convert 31 unverified claims into verified ones by fiat, which is precisely the
 fabrication the whole guard exists to prevent. If per-drawer use of that script
 ever needs it, that wants an explicit flag, not a looser rule.
+
+## A kit lid can be wrong about which VALUES are in the box
+
+The SparkFun kit established that the list loses to the object on counts and
+markings. The 10-value 4x7 electrolytic kit extends it: **the lid was wrong
+about the value list itself.**
+
+Its printed table names ten rows including `22uF 16V`. Scott opened it and
+counted, 2026-08-23: there is no 16V bag. There are **two bags of 22uF 25V**,
+8 and 10. So the box holds **nine distinct values, not ten** — "10value" on the
+lid counts bags.
+
+Had the lid been trusted, the catalogue would have gained 8 or 10 pieces of a
+capacitor that is not in the building, filed at a drawer address, looking
+exactly as authoritative as the eight correct rows beside it. Nothing later
+would have contradicted it: a wrong quantity gets caught by the next count, but
+**a wrong VALUE is never counted, because nobody opens a bag looking for a
+value the record does not claim is there.**
+
+Part #736 (`Capacitor Electrolytic 22uF 16V (4x7)`) stays in the catalogue at
+zero stock — it may belong to one of the other two electrolytic kits — and now
+carries a note saying it is not in this box, so the lid does not re-persuade
+the next reader.
+
+**Practical form: a lid photo settles what to ASK, not what to record.** It is
+worth taking, because it tells you which bags should be there and which parts
+already exist. What goes in the database still comes from the bags.
+
+**And check for a vendor total before assuming a photo unblocks a kit.** The
+other two electrolytic kits carry theirs on the location record ("15 values,
+200 pcs"; "Xuansn 270 pcs, 18 values"). This one never had one, so the photo
+resolved the values and left the counts exactly as unknown as before.
