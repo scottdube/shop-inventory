@@ -289,6 +289,20 @@ in the spindle.
       the SHT31 rows. Low risk — three are in daily use — but the practice is
       what produced the failure.
 
+## Parts filed away from their home
+
+- [ ] **#107 MPXV6115VC6U pressure sensor is in `Unfiled - Machine Shop`**
+      while its `default_location` says B3-R7C2, the pressure-sensor drawer.
+      A surface-mount pressure sensor living with the BT30 tooling. Found
+      2026-08-23 when Scott looked in B3-R7C2, counted three items, and asked
+      why the record implied five.
+
+      **Worth a sweep, not just this one fix:** any row whose location differs
+      from its part's `default_location` is either out on a build — legitimate,
+      like the chokes in RB-14 — or misplaced. The two look identical in the
+      database and only a person can tell them apart, so the useful output is a
+      LIST to walk, not an automatic correction.
+
 ## Rows that disagree with themselves
 
 - [ ] **Two rows carry a count date AND notes saying they were never counted.**
