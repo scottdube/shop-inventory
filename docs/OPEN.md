@@ -188,57 +188,21 @@ in the spindle.
       in seconds and the person has already done the counting. See `TRAPS.md`
       for the writer-contention rule this came from.
 
-## BinScan cannot create a part's FIRST stock row
+## BinScan can file a part now — built 2026-08-23
 
-- [ ] **A part that exists with no stock anywhere is unreachable from the
-      phone.** Found 2026-08-23 with Scott at A3-R8C5, counting a bagged
-      electrolytic kit: *"I can count them and put them in... I think I can do
-      it through Binscan. Right?"* No — three paths and all three refuse:
-      `/api/newpart` duplicate-checks and the parts already exist,
-      `/api/assign` needs an existing stock row to move, and Count / Recount
-      acts on rows already in the drawer.
-
-      **This is not a corner case: 465 of 992 active parts (47%) have no stock
-      row anywhere** — Capacitors 42, Solder 46, Modules 43, Connectors 24,
-      Sensors 23, Tooling 20. Every one of them is a part someone can find in a
-      drawer and be unable to record from where they are standing.
-
-      **Hit again from the IDENTIFY direction, 2026-08-23 10:17**, which is
-      worse because the model had already done the expensive part. Scott
-      photographed a Shelly Plus 2PM retail box; the read was perfect — brand,
-      model, ratings, terminal legend, EAN, manufacturer address — and the
-      result was `basis: no-thread-read`, `candidates: []`, no proposal.
-      Scott: *"it finds it, creates a label for it, markings and all that, but
-      it doesn't make it a proposal so that I can commit that to that drawer."*
-
-      **Two causes stacked, and neither is the vision step:**
-
-      1. **`match_reading()` is a FASTENER matcher.** It scores a reading
-         against the cabinet's unlocated McMaster rows by SKU, thread and
-         length. A retail box has no thread, so it bails. It never consults the
-         catalogue by name — it did not fail to find the Shelly, it never
-         looked. `/api/fasteners` already learned exactly this lesson, and its
-         docstring says so: *"The whole catalogue, not just the cabinet's
-         unlocated rows: a part you are holding may well exist already."*
-         Identify never got that treatment.
-      2. **Nothing could have been proposed anyway.** `Shelly Plus 2PM` is
-         part #79, active, **zero stock rows**. A proposal means "file this
-         existing unlocated row here", and there is no row.
-
-      So the two halves need building together: **match by name across the
-      catalogue when the reading is label text rather than a SKU**, and **let
-      the target of a filing be a PART, not only a stock row.** Fixing either
-      alone still leaves a dead end — a name match with nothing to file, or a
-      filing path nothing routes to.
-
-      The gap is narrow and the shape is known: *existing part + this drawer +
-      a counted quantity → first stock row, `stocktake_date` set.*
-      `scripts/first_stock.py` already does exactly this from a desk, with
-      hardcoded `(pk, count)` pairs, and its docstring has the reasoning —
-      the bag is the compartment, and the date is set because these ARE a
-      physical count.
-
-      Worth building; not built mid-walk.
+- [x] ~~A part that exists with no stock anywhere is unreachable from the
+      phone.~~ **Built and deployed.** `/api/filepart` creates a first stock
+      row from the drawer, and identify now matches against the whole
+      catalogue by name rather than only the cabinet's unlocated fastener
+      rows. Verified end to end against the Shelly photo that failed: #79
+      ranks first at 1.387 against 0.655 for the next candidate. See
+      `binscan.md`.
+- [ ] **Second-order: the catalogue matcher's tail is noisy.** Runners-up
+      match on generic tokens — "plus", "switch", "power" — and score around
+      0.5-0.65 against the right answer's 1.39. Harmless while the gap is that
+      wide and the matched tokens are shown, but a stop-list tuned on real
+      readings would sharpen it. Not worth doing from guesses; worth doing
+      after a few dozen real identifies.
 
 ## Guards that mirror each other, but should not
 

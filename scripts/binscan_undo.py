@@ -48,7 +48,7 @@ a = ap.parse_args()
 if not LOG.exists():
     sys.exit(f"no journal at {LOG}")
 
-rows = []
+rows, created = [], []
 for line in LOG.read_text().splitlines():
     try:
         r = json.loads(line)
@@ -56,8 +56,13 @@ for line in LOG.read_text().splitlines():
         continue
     if r.get("kind") == "assign" and r.get("before"):
         rows.append(r)
+    # A row that was CREATED has no before-state to restore -- undoing it means
+    # deleting it. `filepart` (a part's first stock row, added 2026-08-23) and
+    # `split` (a second lot of a part filed elsewhere) both create.
+    elif r.get("kind") in ("filepart", "split") and r.get("new_stock"):
+        created.append(r)
 
-if not rows:
+if not rows and not created:
     sys.exit("no filings journalled yet — the journal only records writes made "
              "after 2026-08-22, when before-state capture was added")
 
@@ -74,6 +79,14 @@ if a.list or not (a.reconcile or a.undo or a.undo_since):
         print(f"  {r['at'][:16]:<17} {r['stock']:>6} {str(b['location'])[:8]:<8} -> "
               f"{af['location'][:10]:<10} {af['quantity']:>7g} "
               f"{'yes' if r['counted'] else 'no':<8} {(r.get('part') or '')[:38]}")
+    if created:
+        print(f"\n  {len(created)} CREATED row(s) — undo deletes these rather "
+              f"than restoring them\n")
+        print(f"  {'when':<17} {'stock':>6} {'drawer':<10} {'qty':>7}  part")
+        for r in created:
+            print(f"  {r['at'][:16]:<17} {r['new_stock']:>6} "
+                  f"{str(r.get('location'))[:10]:<10} {r['quantity']:>7g}  "
+                  f"{(r.get('part_name') or r.get('part') or '')}"[:100])
     if not a.reconcile:
         raise SystemExit
 
@@ -109,6 +122,34 @@ if a.reconcile:
         print("  which writes 'CONSUMED BY:' onto the part and builds the project")
         print("  vocabulary the Project column reads.")
     raise SystemExit
+
+# A created row is undone by deleting it: there is no prior state, because
+# before the write the part had no stock in that drawer at all. Restoring
+# "nothing" means removing the row.
+if a.undo:
+    made = [r for r in created if r["new_stock"] == a.undo]
+    if made:
+        r = made[-1]
+        s_item = StockItem.objects.filter(pk=a.undo).first()
+        if not s_item:
+            sys.exit(f"stock {a.undo} is already gone")
+        print(f"  stock {a.undo} was CREATED by binscan "
+              f"({r['at'][:16]}, {r.get('kind')})")
+        print(f"    part      {(r.get('part_name') or r.get('part'))}")
+        print(f"    drawer    {s_item.location.name if s_item.location else None}")
+        print(f"    quantity  {float(s_item.quantity):g}")
+        print("    undo means DELETING this row — there was no prior state")
+        if abs(float(s_item.quantity) - float(r["quantity"])) > 1e-9:
+            sys.exit(f"    quantity has changed since it was filed "
+                     f"({r['quantity']:g} then, {float(s_item.quantity):g} now) — "
+                     f"refusing to delete a row somebody has since edited")
+        if a.commit:
+            s_item.delete()
+            print(f"    deleted and verified: "
+                  f"{not StockItem.objects.filter(pk=a.undo).exists()}")
+        else:
+            print("\n  DRY RUN — add --commit")
+        raise SystemExit
 
 targets = []
 if a.undo:

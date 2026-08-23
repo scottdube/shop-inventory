@@ -854,6 +854,110 @@ def match_reading(reading, rows):
              for _sc, r in top[:5]], "label-text")
 
 
+_STOP = {"the", "and", "for", "with", "from", "this", "that", "your", "not",
+         "all", "new", "pcs", "pack", "set", "kit", "x1", "inc", "ltd", "co",
+         "made", "china", "ce", "rohs", "compliant", "manufacturer", "works",
+         "smart", "module", "type", "model", "max", "min", "dc", "ac", "v",
+         "mm", "cm", "in", "of", "to", "by", "or", "a", "an"}
+
+
+def _tokens(text):
+    """Distinctive lowercase tokens: what two descriptions of one object share."""
+    out = set()
+    for t in re.findall(r"[a-z0-9][a-z0-9.\-/]*", (text or "").lower()):
+        t = t.strip(".-/")
+        if len(t) >= 2 and t not in _STOP:
+            out.add(t)
+    return out
+
+
+def catalogue_matches(reading, limit=6):
+    """Parts whose NAME matches the label text, searched across the CATALOGUE.
+
+    `match_reading()` is a fastener matcher: it scores a reading against the
+    cabinet's unlocated McMaster rows using SKU, thread and length. A retail
+    box has no thread, so it bails with `no-thread-read` and proposes nothing.
+
+    Scott photographed a Shelly Plus 2PM on 2026-08-23. The read was perfect --
+    brand, model, ratings, terminal legend, EAN, manufacturer address -- and the
+    answer was `candidates: []`. The part existed as #79 the whole time. It did
+    not fail to find it; it never looked.
+
+    `/api/fasteners` already carried the right instinct in its own docstring:
+    *the whole catalogue, not just the cabinet's unlocated rows, because a part
+    you are holding may well exist already and creating a second one is the
+    outcome worth preventing.* This gives identify the same reach.
+
+    Scores by shared distinctive tokens rather than by asking a model to
+    choose. A model asked to pick from a list always picks; token overlap can
+    come back empty, and empty is a real answer.
+    """
+    r = reading or {}
+    text = " ".join(filter(None, [
+        r.get("tag") or "",
+        " ".join(r.get("labels") or []),
+        " ".join(r.get("markings") or []),
+        r.get("descriptors") or "",
+    ]))
+    want = _tokens(text)
+    if not want:
+        return []
+
+    # A handful of targeted searches beats one long query: InvenTree's `search`
+    # is a substring match, so a 300-character blob matches nothing at all.
+    queries, seen_q = [], set()
+    for cand in ([r.get("tag") or ""] + (r.get("labels") or [])
+                 + (r.get("markings") or []))[:8]:
+        cand = " ".join(str(cand).split())[:48].strip()
+        if len(cand) >= 3 and cand.lower() not in seen_q:
+            seen_q.add(cand.lower())
+            queries.append(cand)
+    # plus the single most distinctive long token, which is usually the model
+    for t in sorted(want, key=len, reverse=True)[:2]:
+        if len(t) >= 5 and t not in seen_q:
+            seen_q.add(t)
+            queries.append(t)
+
+    found = {}
+    for q in queries[:8]:
+        for row in _rows(it_get("part/", search=q, limit=12)):
+            pk = row.get("pk")
+            if pk and pk not in found:
+                found[pk] = row
+
+    scored = []
+    for pk, row in found.items():
+        have = _tokens(f"{row.get('name') or ''} {row.get('description') or ''}")
+        shared = want & have
+        if not shared:
+            continue
+        # Favour agreement on the part's OWN words: a long catalogue name that
+        # shares three tokens is a weaker claim than a short one that shares
+        # three, because the long one had more chances.
+        score = len(shared) / (len(have) ** 0.5 or 1)
+        scored.append((score, sorted(shared, key=len, reverse=True)[:6], row))
+
+    scored.sort(key=lambda s: -s[0])
+    out = []
+    for score, shared, row in scored[:limit]:
+        pk = row["pk"]
+        rows = _rows(it_get("stock/", part=pk, limit=20))
+        where = [{"stock": s.get("pk"), "quantity": s.get("quantity"),
+                  "location": (s.get("location_detail") or {}).get("name")}
+                 for s in rows]
+        out.append({
+            "part": pk,
+            "name": row.get("name") or "",
+            "description": (row.get("description") or "")[:160],
+            "score": round(score, 3),
+            "shared": shared,
+            "stock_rows": len(rows),
+            "where": where,
+            "why": ("matches on " + ", ".join(shared)) if shared else "",
+        })
+    return out
+
+
 def drawer_contents(name, site=""):
     """What the DATABASE already says is in this drawer. Checked before any
     model is called: asking vision what the record already knows introduces
@@ -1496,6 +1600,108 @@ def api_assign(stock: int = Form(...), location: str = Form(...),
             "estimate_flag": flagged, "cleared_empty": cleared, "note": note}
 
 
+@app.post("/api/filepart")
+def api_filepart(part: int = Form(...), location: str = Form(...),
+                 quantity: str = Form(""), site: str = Form(""),
+                 confirm: str = Form("")):
+    """Create a part's FIRST stock row, from the drawer, on the walk.
+
+    `/api/assign` MOVES an existing row. That covers the import backlog, where
+    every part already had a row sitting at cabinet level -- and covers nothing
+    else. Measured 2026-08-23: **465 of 992 active parts have no stock row
+    anywhere**, 47% of the catalogue. Every one of them is a thing you can find
+    in a drawer and be unable to record from where you are standing.
+
+    It cost three separate dead ends in one morning: a bagged capacitor kit, a
+    Shelly Plus 2PM identified perfectly from its box, and an MHCOZY relay. In
+    each case the part existed, the drawer was open, and the only route was to
+    walk back to a desk.
+
+    `/api/newpart` cannot be that route -- it duplicate-checks and refuses,
+    correctly, because the part is already there. The missing verb was never
+    "create a part"; it was "put this part HERE".
+
+    **A quantity is required, unlike assign.** Assign can leave it blank because
+    the row already carries a purchased figure and blank means "moved, not
+    counted". There is no such figure here: creating a row means stating how
+    much is in the drawer, and the only honest source for that is someone
+    looking. So the count is the price of admission rather than an option.
+    """
+    if not WRITES_ON:
+        return JSONResponse({"error": "writes disabled (BINSCAN_WRITES != 1)"}, 403)
+    if confirm.lower() not in ("1", "true", "yes"):
+        return JSONResponse({"error": "confirm required"}, 400)
+
+    try:
+        loc = resolve_loc(location, site)
+    except Ambiguous as e:
+        return JSONResponse({"error": str(e)}, 409)
+    if loc is None:
+        return JSONResponse({"error": f"no location named {location}"}, 404)
+
+    p = it_get(f"part/{part}/")
+    if not p:
+        return JSONResponse({"error": f"no part {part}"}, 404)
+
+    if not str(quantity).strip():
+        return JSONResponse({"error": "a count is required to create stock - "
+                                      "there is no purchased figure to carry "
+                                      "over, so a blank would be an invented "
+                                      "number"}, 400)
+    try:
+        n = float(quantity)
+    except ValueError:
+        return JSONResponse({"error": f"quantity {quantity!r} is not a number"}, 400)
+    if n < 0:
+        return JSONResponse({"error": "quantity cannot be negative"}, 400)
+
+    existing = _rows(it_get("stock/", part=part, limit=50))
+    here = [s for s in existing if s.get("location") == loc["pk"]]
+    if here:
+        return JSONResponse({"error": f"part {part} already has stock in "
+                                      f"{loc['name']} (row {here[0].get('pk')}) - "
+                                      f"use Recount rather than adding a row"}, 409)
+
+    stamp = datetime.date.today().isoformat()
+    note = (f"binscan {stamp}: filed into {loc['name']} and COUNTED at {n:g} by "
+            f"hand. First stock row for this part.")
+    if existing:
+        # Same rule as a split: this row is what is HERE, not the shop total.
+        note = (f"binscan {stamp}: filed into {loc['name']} and COUNTED at {n:g} "
+                f"by hand. The same part is also filed in "
+                f"{len(existing)} other row(s); this row is what is HERE, not "
+                f"the total. Sum the rows for the shop figure.")
+
+    body, err = it_post("stock/", {"part": part, "location": loc["pk"],
+                                   "quantity": n, "notes": note})
+    body = _one(body)
+    if err or not body.get("pk"):
+        return JSONResponse({"error": f"could not create the stock row: {err}"}, 502)
+
+    # Verify by re-read. The API's word is worth nothing on this install --
+    # four parameters are silently ignored and still return success.
+    chk = it_get(f"stock/{body['pk']}/") or {}
+    if (chk.get("location") != loc["pk"]
+            or abs(float(chk.get("quantity", -1)) - n) > 1e-6):
+        return JSONResponse({"error": "the new row did not verify on re-read",
+                             "got": {"location": chk.get("location"),
+                                     "quantity": chk.get("quantity")}}, 500)
+
+    cleared = clear_empty_stamp(loc)
+    log_append({"id": uuid.uuid4().hex[:8], "kind": "filepart",
+                "at": datetime.datetime.now().isoformat(timespec="seconds"),
+                "part": part, "part_name": p.get("name"),
+                "new_stock": body["pk"], "location": loc["name"],
+                "location_pk": loc["pk"], "quantity": n, "counted": True,
+                "first_row": not existing, "cleared_empty": bool(cleared)})
+    return {"ok": True, "verified": True, "created": True,
+            "stock": body["pk"], "part": part, "name": p.get("name"),
+            "location": loc["name"], "quantity": n, "counted": True,
+            "first_row": not existing, "cleared_empty": cleared,
+            "note": ("first stock row for this part" if not existing
+                     else "another row for a part filed elsewhere too")}
+
+
 @app.get("/api/unlocated")
 def api_unlocated(cabinet: str = ""):
     return cabinet_unlocated(cabinet) if cabinet else []
@@ -1582,10 +1788,15 @@ async def api_identify(image: UploadFile = File(...),
                        "thread": thread, "head": head, "finish": fin,
                        "length": length if not nolen else ""}
 
+    # The fastener matcher has had its say. If it found nothing, ask the
+    # catalogue by NAME -- most of what is in these drawers is not a fastener,
+    # and a module's box carries a brand and a model rather than a thread.
+    catalogue = [] if ranked else catalogue_matches(reading)
+
     rec_id = uuid.uuid4().hex[:8]
     ext = {"image/png": "png", "image/webp": "webp"}.get(media, "jpg")
     (SHOTS / f"{rec_id}.{ext}").write_bytes(raw)
-    rec = {"id": rec_id, "kind": "identify",
+    rec = {"id": rec_id, "kind": "identify", "catalogue": catalogue,
            "at": datetime.datetime.now().isoformat(timespec="seconds"),
            "cabinet": cabinet, "photo": f"{rec_id}.{ext}",
            "reading": reading, "basis": basis,
@@ -2897,6 +3108,7 @@ function renderPicks(q){
 
 function wireFiling(drawer){
   wireCreate(drawer);
+  wireFileParts(drawer);
   const q=$('#manualq');
   if(q){ renderPicks(''); q.oninput=()=>renderPicks(q.value); }
   const sk=$('#skipbtn');
@@ -3014,6 +3226,92 @@ $('#file').onchange=e=>{
 };
 function cabinetOf(drawer){ const m=/^([A-Z]\d+)-/.exec(drawer||''); return m?m[1]:''; }
 
+// Filing a PART rather than a stock row. Separate from the button.file loop
+// because that one refuses without a data-stock, which is exactly the case
+// here: these parts may have no stock row at all, and creating the first one
+// is the whole point.
+function wireFileParts(drawer){
+  $('#out').querySelectorAll('button.filepart').forEach(btn=>{
+    btn.onclick=async()=>{
+      const i=btn.dataset.p;
+      const msg=$('#out').querySelector(`.msg[data-p="${i}"]`);
+      const qty=$('#out').querySelector(`.pqty[data-p="${i}"]`).value.trim();
+      if(!qty){
+        msg.style.color='#ff8f8f';
+        msg.textContent='a count is required — creating stock means saying how many are in the drawer';
+        return; }
+      btn.disabled=true; msg.textContent='filing…'; msg.style.color='#8a8a8e';
+      const fd=new FormData();
+      fd.append('part',btn.dataset.part); fd.append('location',drawer);
+      fd.append('site',SITE); fd.append('quantity',qty); fd.append('confirm','yes');
+      try{
+        const r=await fetch('/api/filepart',{method:'POST',body:fd});
+        const j=await r.json();
+        if(j.ok){
+          msg.style.color='#7fd39b';
+          msg.textContent=`Filed in ${j.location}, verified. Counted ${j.quantity}.`;
+          btn.textContent='Filed';
+          await repaint();
+          $('#out').querySelectorAll('.card').forEach(c=>{
+            if(!c.contains(btn)) c.style.display='none'; });
+          $('#out').querySelectorAll('.warn').forEach(w=>w.style.display='none');
+          setFlash(`&#10003; <b>${j.name}</b> filed into <b>${j.location}</b>
+                    &mdash; <b>${j.quantity}</b> counted`
+                   + (j.first_row?' (first stock row for this part)':'')
+                   + `. Verified on re-read.`);
+          const nx=nextDrawer(drawer,$('#adv').value);
+          const bar=document.createElement('div');
+          bar.className='card';
+          bar.innerHTML =
+            `<div class=mut style="margin-bottom:10px">Filed into <b>${drawer}</b>.
+               Is there anything else in that drawer?</div>
+             <button id=morebtn style="background:var(--card);color:var(--fg);border:1px solid var(--line)">
+               Yes &mdash; file another part in ${drawer}</button>`
+            + (nx ? `<button id=nextbtn style="margin-top:9px">No &mdash; next drawer &rarr; ${nx}</button>`
+                  : `<div class=mut style="margin-top:9px">That was the last drawer in this direction.</div>`);
+          $('#out').appendChild(bar);
+          if(nx) $('#nextbtn').onclick=()=>advance();
+          $('#morebtn').onclick=()=>fileAnother(drawer);
+        }else{
+          msg.style.color='#ff8f8f'; msg.textContent=errText(j); btn.disabled=false;
+        }
+      }catch(e){ msg.style.color='#ff8f8f'; msg.textContent=String(e); btn.disabled=false; }
+    };
+  });
+}
+
+// Parts the CATALOGUE matched by name, when the fastener matcher had nothing.
+// These carry a part number rather than a stock number: the whole point is
+// that they may have no stock row yet, which is why filing them needs
+// /api/filepart instead of /api/assign.
+function catalogueCards(list){
+  if(!list || !list.length) return '';
+  return list.map((c,i)=>{
+    const none = !c.stock_rows;
+    const where = none
+      ? `<span class=low>no stock anywhere yet</span>`
+      : (c.where||[]).map(w=>`${w.location||'unlocated'} &times;${(+w.quantity).toLocaleString()}`).join(' · ');
+    return `<div class=card>
+      <div class=big style="font-size:17px">${c.name}</div>
+      ${c.description?`<div class=mut style="margin-top:4px">${c.description}</div>`:''}
+      <div class=row><span>part</span><span><b>#${c.part}</b></span></div>
+      <div class=row><span>on record</span><span>${where}</span></div>
+      <div style="margin-top:8px;color:#aaa;font-size:13.5px">${c.why}</div>
+      <div class=countbox>
+        <label># HOW MANY ARE IN THE DRAWER?</label>
+        <input class=pqty data-p="${i}" type=number inputmode=decimal
+               placeholder="count them">
+        <div class=why>${none
+          ? 'Required &mdash; this part has never had stock, so there is no purchased figure to carry over. A blank would be an invented number.'
+          : 'Required &mdash; this would be a second lot, and only a count says how many are in THIS drawer.'}</div>
+      </div>
+      <button class=filepart data-p="${i}" data-part="${c.part}"
+              style="margin-top:10px">File in ${CUR}</button>
+      <div class=msg data-p="${i}" style="margin-top:8px;font-size:13px"></div>
+    </div>`;
+  }).join('');
+}
+
 function renderIdentify(d){
   if(d.basis==='already-assigned')
     return `<div class=card><b>Already on record</b><div class=mut>${d.note}</div></div>`;
@@ -3036,7 +3334,14 @@ function renderIdentify(d){
       : `Nothing in the <b>unlocated list for ${AREA}</b> obviously matches that text. This says nothing about what is in the drawer — only that the automatic match could not choose.`;
     // Seed the create card from what was just READ, not from the drawer label.
     SUGGEST = d.suggest || null;
-    return read+`<div class="card warn">${why}</div>`+manualCard()
+    const cat = catalogueCards(d.catalogue||[]);
+    // With catalogue matches the fastener advisory is misleading -- it says
+    // nothing matched, when something did, just not in the fastener list.
+    const lead = cat
+      ? `<div class="card">The fastener matcher found nothing, but these are
+           already in the <b>catalogue</b> by name. Check against the drawer.</div>`
+      : `<div class="card warn">${why}</div>`;
+    return read + lead + cat + manualCard()
          + createCard((d.suggest && d.suggest.name) || LABEL) + skipCard();
   }
   const here=CUR;
