@@ -85,9 +85,9 @@ State after the 2026-08-23 walk, 28 bins:
       |---|---|---|
       | 1077 | Heatsink, extruded finned | measure TO-220 hole spacing |
       | 1078 | Fan X6015D12MB 60x15 12V | **done — filed B3-R5C3** |
-      | 1075 | Relay Churod A1-S-112VA | coil, then contacts for welding |
+      | ~~1075~~ | ~~Relay Churod A1-S-112VA~~ | **broke on removal — scrap** |
       | 1076 | Cap 820uF 400V RUC CD293 x2 | **discharge first**, then C + ESR |
-      | 1079 | Terminal block R/S/T/PE | measure pitch: 7.62 / 9.5 / 10.16 |
+      | 1079 | Terminal block R/S/T/PE | **recovered** — measure pitch, then file |
       | ~~1080~~ | ~~IGBT DXG20N65FS x6~~ | **ALL SIX DEAD — scrap** |
 
       **The failure mode is now known, 2026-08-23.** All six IGBTs tested dead
