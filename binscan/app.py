@@ -1665,6 +1665,16 @@ body{margin:0 auto;max-width:560px;padding:0 var(--s3) 4px;background:var(--bg);
 .appbar .sep{color:var(--line);margin:0 6px}
 p.sub{color:var(--dim);margin:8px 0 2px;font-size:12.5px;line-height:1.45}
 
+/* ── site switcher ──────────────────────────────────────────────────────── */
+.sites{display:flex;gap:4px;margin-top:11px;padding:3px;background:var(--surface);
+  border:1px solid var(--edge);border-radius:var(--r2)}
+.sitebtn{flex:1 1 0;width:auto;min-height:0;margin:0;padding:8px 0;font-size:14px;
+  font-weight:800;background:transparent;color:var(--mut);border:0;
+  border-radius:var(--r1);letter-spacing:.01em}
+.sitebtn .mut{margin-left:6px;font-size:11px;font-weight:700}
+.sitebtn.on{background:var(--acc);color:var(--acc-ink)}
+.sitebtn.on .mut{color:rgba(4,18,31,.65)}
+
 /* ── section labels ─────────────────────────────────────────────────────── */
 label{display:block;margin:14px 0 5px;color:var(--mut);font-size:11px;
   font-weight:700;text-transform:uppercase;letter-spacing:.07em}
@@ -1928,6 +1938,7 @@ img#prev{height:58px;width:auto;max-width:34%;object-fit:cover;
   <div class=hp-foot>Tap <b>?</b> again to hide this.</div>
 </div>
 
+<div id=sites class=sites></div>
 <label>Where</label>
 <div id=areas class=chips></div>
 <div id=gridwrap></div>
@@ -1996,7 +2007,26 @@ let AREA=null, CELLS=[], CUR=null, LABEL='', MORE=false, SUGGEST=null;
 let SITE='', as_cache=[];
 fetch('/api/areas').then(r=>r.json()).then(as=>{
   as_cache = as;
-  SITE = (as[0]||{}).site || '';
+  // Two sites, and Scott is about to lay Florida out properly. A switcher was
+  // deferred on the grounds that LRD had nothing walkable -- he overruled it as
+  // a timing question rather than a design one, which is right: he knows the
+  // trajectory and the measurement only knew the snapshot.
+  const sites=[...new Set(as.map(a=>a.site))].sort();
+  SITE = sites.includes('SLN') ? 'SLN' : sites[0] || '';
+  if(sites.length > 1){
+    $('#sites').innerHTML = sites.map(x=>{
+      const n = as.filter(a=>a.site===x).length;
+      return `<button class="sitebtn${x===SITE?' on':''}" data-s="${x}">${x}<span class=mut>${n}</span></button>`;
+    }).join('');
+    $('#sites').querySelectorAll('.sitebtn').forEach(b=>b.onclick=()=>{
+      SITE=b.dataset.s;
+      $('#sites').querySelectorAll('.sitebtn').forEach(x=>x.classList.toggle('on',x.dataset.s===SITE));
+      AREA=null; CUR=null; CELLS=[]; UNLOCATED=[];
+      $('#gridwrap').innerHTML=''; $('#known').innerHTML=''; $('#out').innerHTML='';
+      $('#go').disabled=true; setWhere('');
+      renderAreas();
+    });
+  }
   setWhere('');
   // The bin wall is where the work is; twenty-odd other places are real but
   // rarely the answer, and showing all of them cost nine rows of chips.
@@ -2021,7 +2051,9 @@ fetch('/api/areas').then(r=>r.json()).then(as=>{
   const label=n=>SHORT[n]||n;
   const chip=a=>`<button class=chip data-a="${a.name}" title="${a.name} — ${a.drawers} drawers">`
     + `${label(a.name)}<span class=mut>${a.drawers}</span></button>`;
-  const wall=as.filter(a=>a.grid), rest=as.filter(a=>!a.grid);
+  window.renderAreas = function(){
+  const here = as_cache.filter(a=>a.site===SITE);
+  const wall=here.filter(a=>a.grid), rest=here.filter(a=>!a.grid);
   // Group by the LETTER, one flex row per wall row, so the picker keeps
   // mirroring the wall as the wall changes. A0 and B0 arrive next week, making
   // those rows four wide, and row C is planned below B once the plywood table
@@ -2043,15 +2075,18 @@ fetch('/api/areas').then(r=>r.json()).then(as=>{
   const cols = Math.max(...Object.values(byRow).map(v=>v.length), 1);
   $('#areas').style.setProperty('--cols', cols);
   $('#areas').innerHTML = rows
-    + `<div class="wallrow centred"><button class=chip id=more>Elsewhere<span class=mut>${rest.length}</span></button></div>`
-    + `<div id=rest style="display:none;width:100%;margin-top:7px" class=chips>${rest.map(chip).join('')}</div>`;
-  const wire=()=>$('#areas').querySelectorAll('.chip[data-a]').forEach(b=>b.onclick=()=>loadArea(b.dataset.a));
-  wire();
-  $('#more').onclick=()=>{ const r=$('#rest');
+    + (rest.length
+       ? `<div class="wallrow centred"><button class=chip id=more>Elsewhere<span class=mut>${rest.length}</span></button></div>`
+         + `<div id=rest style="display:none;width:100%;margin-top:7px" class=chips>${rest.map(chip).join('')}</div>`
+       : '');
+  $('#areas').querySelectorAll('.chip[data-a]').forEach(b=>b.onclick=()=>loadArea(b.dataset.a));
+  if($('#more')) $('#more').onclick=()=>{ const r=$('#rest');
     // 'grid', not 'flex': #rest lays out as a two-column grid of tiles, and an
     // inline style beats the stylesheet, so setting flex here silently undid it.
     const open=r.style.display!=='none'; r.style.display=open?'none':'grid';
     $('#more').classList.toggle('on',!open); };
+  };
+  renderAreas();
 }).catch(()=>{ $('#areas').innerHTML='<div class="card err">could not load areas</div>'; });
 
 async function loadArea(name){
