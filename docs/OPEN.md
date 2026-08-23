@@ -217,6 +217,35 @@ in the spindle.
       the SHT31 rows. Low risk — three are in daily use — but the practice is
       what produced the failure.
 
+## Rows that disagree with themselves
+
+- [ ] **Two rows carry a count date AND notes saying they were never counted.**
+      Found 2026-08-23 while checking something else; 2 of 336 counted rows, so
+      not systemic.
+      - **stock 556**, Terminal Removal Tool Set 41pc, BL-D2, counted
+        2026-08-22 — notes say *"[ESTIMATE] 41 is the LISTING count, not a
+        count of what is in hand. Never used and never opened out."*
+      - **stock 482**, M5 cup-point set screws, B1, counted 2026-08-22 —
+        notes say *"[ESTIMATE] ... NOT COUNTED, nobody has looked in the
+        drawer and tallied it"*, then refer to *"the count above"*.
+
+      `sync_stocktake.py` did not do this — its regex requires the full
+      `binscan <date>: filed into <loc> and COUNTED at N by hand`, which
+      neither note contains. Most likely the notes were rewritten after a date
+      was set, losing the marker and leaving the date.
+
+      **Only Scott can resolve it**, since the question is whether anybody
+      actually tallied those two. Left alone rather than guessed: clearing a
+      real count and clearing a false one look identical afterwards.
+
+- [ ] **The `[ESTIMATE]` marker is matched as a bare substring**, so prose that
+      merely mentions it flags the row. Stock 504's note says it *"graduated
+      from [ESTIMATE] to a real count"* — a correct, well-written note that
+      makes a counted row read as an estimate. Nearly repeated today when a
+      note about superseding an estimate was almost written with the literal
+      marker in it. Either the marker needs to be positional (line start) or
+      the prose convention is: never write the token unless you mean the flag.
+
 ## Imports and enrichment
 
 - [ ] **Bambu Lab** — 12 orders located, parser proven against all three
