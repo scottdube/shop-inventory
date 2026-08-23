@@ -488,12 +488,51 @@ because there is no row to rank. Locations too big for one sitting — `L2` hold
 and **tracked skips**. Not a fixed trip count: the budget is time, and the
 system has to fit the week to it.
 
-*The arithmetic this forces, stated 2026-08-23:* seven weeks to the FL departure
-at 20 minutes a week is **~2.3 hours**, and the 29-trip first count is several
-times that at any believable per-trip cost. **The weekly cycle is therefore the
-maintenance rhythm, not the vehicle for the first count** — which is consistent
-with the tool not being in use before FL, but it means no schedule should ever
-be drawn that has the cycle clearing the backlog.
+**Not in use at SLN until NEXT SUMMER — Scott, 2026-08-23.** The shop is empty
+of people from the October departure until the return north, so the first SLN
+cycle is roughly **ten months out**, not seven weeks. Scott: *"I want to iterate
+on this to get it right... we have time to research/scope/design and build a
+robust system."*
+
+That is a licence to do this properly, and it changes the method rather than
+just the date:
+
+- **Research is in scope.** Cycle counting is an established discipline with
+  real literature — ABC classification, control groups, count tolerances,
+  hit-rate accuracy rather than piece accuracy. Worth reading before inventing,
+  which is not the usual position here.
+- **The design is a LIVING document**, revisited across sessions, not a spec
+  written once and executed. Sessions will be months apart, so every decision
+  needs its *reason* recorded or the next session re-litigates it.
+- **Nothing is committed to code yet.** No implementation pressure means
+  approaches can be ruled out on paper, cheaply, and the rulings-out are the
+  valuable artifact.
+
+**Open question raised 2026-08-23, not yet answered: LRD may be the first real
+user, not SLN.** The queue auto-scopes to the current site, and Scott is at LRD
+from October until spring. The Florida bench wall is unbuilt below cabinet
+level, so it is greenfield — locations get seeded with first counts as they are
+created, which is exactly the boundary already drawn, and the winter would then
+exercise the system on a small site before it ever meets the 324-drawer wall.
+Whether that is desirable or a distraction is Scott's call and is NOT assumed
+here.
+
+**The first count is NOT part of the cycle-count system.** Scott, 2026-08-23,
+correcting a softer version of this that had been written here: *"the first
+count is not included in the cycle count system, that is implimentation."* It is
+initial population — getting the catalogue to reflect the shop — and it is
+finished by walks, by BinScan as it stands, and by the 29 trips listed above.
+The cycle system starts from an already-counted shop and keeps it that way.
+
+That is a scope boundary, not a sequencing note, and it settles several things
+at once: the design owes nothing to the backlog, `backlog`-mode ranking is a
+convenience for whatever is still uncounted when the tool ships rather than the
+tool's purpose, and no readout should be built around a completion bar for a job
+the system does not own.
+
+*The arithmetic that made the boundary obvious:* seven weeks to the FL departure
+at 20 minutes a week is **~2.3 hours**, while the 29-trip first count is several
+times that at any believable per-trip cost. The two were never the same job.
 
 **Ranking is a POLICY THAT CHANGES AS THE SYSTEM MATURES**, not a fixed rule.
 Scott: *"this will change as the system matures — initially it might be never
@@ -510,6 +549,42 @@ reuses an existing control rather than adding one. The LRD ceramic kit's 24 rows
 wait until October instead of showing as overdue work nobody in Dover can do.
 A place you cannot stand in front of is not work, and listing it as work teaches
 people to ignore the list.
+
+**Decided 2026-08-23 — the remaining four.**
+
+**The week is packed to a COST ESTIMATE, not to a place count.** Each candidate
+is scored from what it holds — a qty <= 2 row is a glance, an `[ESTIMATE] 100`
+is a real tally — and places are selected until the 20 minutes is filled. So one
+week is six tooling drawers and the next is a single resistor kit, which is the
+correct behaviour rather than a bug. Actual times get recorded as they
+accumulate so the estimate improves; the first version's numbers are a guess and
+must be labelled as one.
+
+**Skip defers, counts, and ESCALATES.** A skipped place moves to a later cycle
+and increments a counter, and repeated skips *raise* its priority. The failure
+this prevents is specific: a place that is awkward to reach gets skipped every
+time it comes up and, under any sink-to-the-bottom scheme, is never counted
+again while the readout stays green. Escalation makes avoidance visible instead
+of silent.
+
+**New locations are SEEDED with first counts — the cycle system never
+establishes an initial dataset.** Scott: *"new locations should be seeded with
+first counts not rely on cycle count system for initial dataset."* This is the
+same boundary as the first count, generalised: whatever creates a location is
+responsible for its opening state. For Tuesday that means **`make_a0b0.py`
+stamps all 48 A0/B0 drawers verified-empty at creation** — they come out of the
+box empty, which is an observation, not a guess. The rule outlives Tuesday: the
+LRD bench-wall shelves and drawers get seeded by whatever builds them too.
+
+Stated as a principle, because it is the third time the same line has been
+drawn: **the cycle system maintains freshness; it does not create data.** First
+count, new locations, and initial population are all implementation.
+
+**The readout is a DASHBOARD, not a single number** — oldest outstanding count,
+the freshness distribution by age band, rolling coverage, and what is past its
+interval, together. Scott: *"probably all of that in dashboard form."* The
+earlier note here arguing for one number was arguing against a *completion bar*,
+which is a different objection and still holds.
 
 **Still open:**
 
