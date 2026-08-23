@@ -1549,3 +1549,38 @@ When a fix is verified and the symptom persists, the next move is to reproduce
 with the ACTUAL input, not to reason about the code again. `log.jsonl` had the
 exact reading recorded from every one of Scott's attempts, and reading it took
 one query and found the cause immediately.
+
+## queryset .update(parent=) moves the row and lies about it
+
+Moving `Kit - EMGTMS` back to the LRD root with
+`StockLocation.objects.filter(pk=471).update(parent=lrd)` set `parent_id`
+correctly — and left the location reporting its OLD path. Worse, it looked
+convincing:
+
+```
+parent_id = 2          <- LRD, correct
+level     = 2          <- stale, should be 1
+pathstring = LRD/LRD Storage/Kit - EMGTMS ...
+construct_pathstring() = LRD/LRD Storage/Kit - EMGTMS ...
+```
+
+**`construct_pathstring()` walks the MPTT ancestors, not `parent_id`**, so it
+agreed with the stale tree and the usual repair — recompute the pathstring —
+recomputed the wrong answer. Two independent-looking checks both confirmed a
+move that had not happened, because both read the same stale source.
+
+`.update()` bypasses `save()`, and MPTT maintains `lft`/`rght`/`level` in
+`save()`. The FK moves; the tree does not.
+
+**Move locations with `obj.parent = x; obj.save()`.** Where the FK has already
+been corrupted this way, moving it somewhere else and back forces MPTT to run:
+
+```python
+k.parent = wrong_place; k.save()   # makes the tree agree with the bad FK
+k.parent = right_place; k.save()   # then move it properly
+```
+
+Related and previously recorded: after any re-parent, verify with
+`pathstring == construct_pathstring()` **and** check `level` against the actual
+depth. Agreement between those two alone proves nothing when both derive from
+MPTT.
