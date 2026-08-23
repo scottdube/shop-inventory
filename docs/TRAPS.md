@@ -1633,3 +1633,23 @@ thing the tool can record.
 
 **Worth asking of anything else built here: what does this look like once the
 migration is over?**
+
+## Deciding which kind of evidence you were given, instead of asking
+
+The 100 lag screws split across A2-R1C1 and A2-R1C2 were recorded as
+`[ESTIMATE]` per drawer, on the reasoning that Scott had *confirmed* a 50/50
+split I proposed rather than *reported* one — a weaker tier of evidence, and the
+distinction that had gone wrong with the eyebolt the same morning.
+
+He had counted them. *"I counted it. I told you that much earlier today."*
+
+The distinction is sound and worth keeping. Applying it **by inference** is not.
+Asked "is that a count or a confirmation?", he would have said count in four
+words. Instead the caution was applied silently, two drawers were flagged as
+estimates for a day, and the correction cost more than the question would have.
+
+**Guarding against over-claiming can itself become a claim.** Recording
+"confirmed, not counted" asserts something about how the number was obtained,
+and that assertion needs the same evidence as any other. When the person is
+right there, ask; when they are not, record the ambiguity as ambiguity rather
+than resolving it toward caution.
