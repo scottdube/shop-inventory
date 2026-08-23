@@ -466,25 +466,40 @@ a notebook, and none can be guessed from here.
 Once the locations exist, BinScan walks LRD exactly as it walks the bin wall —
 the site switcher and the placeholder containers are already in place for it.
 
-## Where the walk stands — 2026-08-23
+## Where the walk stands — 2026-08-23, end of day
+
+**Bin wall**
 
 | cabinet | drawers | counted | uncounted | empty | unseen | parking |
 |---|---|---|---|---|---|---|
 | A1 | 64 | 0 | 0 | 64 | **0** | 0 |
 | A2 | 64 | 7 | 0 | 53 | **0** | 4 |
-| A3 | 64 | 21 | 0 | 43 | **0** | 0 |
+| A3 | 64 | 24 | 0 | 40 | **0** | 0 |
 | B1 | 44 | 4 | 0 | 10 | **30** | 0 |
-| B2 | 44 | 14 | 1 | 23 | 6 | 0 |
-| B3 | 44 | 35 | 6 | 3 | **0** | 0 |
-| **all** | **324** | 81 | 7 | 196 | **36** | 4 |
+| B2 | 44 | 14 | 1 | 24 | 5 | 0 |
+| B3 | 44 | 39 | 2 | 3 | **0** | 0 |
+| **all** | **324** | 88 | 3 | 194 | **35** | 4 |
 
-**288 of 324 accounted, 88%** — up from 251 / 77% on 2026-08-22. **A3 is
-complete** (Scott, 2026-08-23): 43 verified empty, 21 counted, all 74 of its
-stock rows carrying a count date. A1, A2, A3 and B3 are all at zero unseen.
-**Every remaining unseen drawer is in B1 (30) or B2 (6)**, which makes the B1
-walk the last large piece of the bin wall.
+**289 of 324 accounted, 89%** — from 251 / 77% at the start of the day. A1, A2,
+A3 and B3 all at zero unseen. **Every unseen drawer left is in B1 (30) or B2
+(5)**, so the B1 walk is the last large piece of the wall.
 
-Shop-wide: **295 of 581 rows counted (51%)**, up from 268 of 563.
+**Red Bins — first walk, 2026-08-23**
+
+| state | bins |
+|---|---|
+| counted | 6 |
+| part-counted | 1 (RB-12, the RAT GDO kit) |
+| verified empty | 1 (RB-10) |
+| never looked at | **20** |
+
+RB-08 through RB-12 were worked: RB-08 now holds the **cord retraction system**
+prototype prints (overflow from the RB-07 bench PSU kit — one project across two
+bins, and both descriptions now name the other), RB-09 was freed by that move,
+RB-10 is verified empty, RB-11 holds the Vilros Pi 4 kit and a new Kill A Watt
+P4400.01 (#1070, created today).
+
+Shop-wide: **313 of 587 rows counted (53%)**, from 268 of 563 this morning.
 
 Still outstanding:
 
@@ -493,6 +508,15 @@ Still outstanding:
       BinScan's pick-by-hand offers them directly.
 - [ ] **41 stock rows have no location at all.** They appear in BinScan's picker
       tagged `(NOT LOCATED ANYWHERE)`.
+- [ ] **A fourth state: DECLARED.** Three places today rendered as *nobody has
+      looked* when the record was in fact complete and the absence of a count
+      deliberate: the **A2 parking spots**, the **A3-R8C5 kit** before it was
+      seeded, and **RB-05**, whose description reads *"CONSUMABLE: not
+      counted"*. RB-08 and RB-09 just joined them — real descriptions, no stock
+      rows, and so amber forever. The walk keeps sending Scott to places that
+      are already settled, which is how a walk teaches people to ignore amber.
+      The state wanted is *the record here is finished; looking again changes
+      nothing*.
 - [ ] **A2's four unknowns are the pre-sort parking spots** at R8C5–C8, not
       unwalked drawers. Worth deciding whether they should read as their own
       state rather than amber, since looking at them will not resolve them.
