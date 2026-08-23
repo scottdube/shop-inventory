@@ -490,12 +490,12 @@ A3 and B3 all at zero unseen. **Every unseen drawer left is in B1 (30) or B2
 |---|---|
 | counted | 6 |
 | part-counted | 1 (RB-12, the RAT GDO kit) |
-| verified empty | 1 (RB-10) |
-| never looked at | **20** |
+| verified empty | 2 (RB-09, RB-10) |
+| never looked at | **19** |
 
 RB-08 through RB-12 were worked: RB-08 now holds the **cord retraction system**
 prototype prints (overflow from the RB-07 bench PSU kit — one project across two
-bins, and both descriptions now name the other), RB-09 was freed by that move,
+bins, and both descriptions now name the other), RB-09 is empty after that move,
 RB-10 is verified empty, RB-11 holds the Vilros Pi 4 kit and a new Kill A Watt
 P4400.01 (#1070, created today).
 
@@ -512,11 +512,19 @@ Still outstanding:
       looked* when the record was in fact complete and the absence of a count
       deliberate: the **A2 parking spots**, the **A3-R8C5 kit** before it was
       seeded, and **RB-05**, whose description reads *"CONSUMABLE: not
-      counted"*. RB-08 and RB-09 just joined them — real descriptions, no stock
-      rows, and so amber forever. The walk keeps sending Scott to places that
-      are already settled, which is how a walk teaches people to ignore amber.
-      The state wanted is *the record here is finished; looking again changes
-      nothing*.
+      counted"*. RB-08 just joined them — a real description, no stock
+      rows, and so amber forever. RB-08 joined them — prototype prints, real
+      description, deliberately no stock. The walk keeps sending Scott to
+      places that are already settled, which is how a walk teaches people to
+      ignore amber. The state wanted is *the record here is finished; looking
+      again changes nothing*.
+
+      **RB-09 is NOT an example and was wrongly listed as one.** It is simply
+      empty, which the system already handles. It got hedged into "reported
+      free, not yet eyeballed" when Scott had told me plainly it was empty
+      while standing at it — a report from the person at the bin IS the
+      evidence, and treating it as provisional invented a doubt nobody had.
+      Corrected to VERIFIED EMPTY the same day.
 - [ ] **A2's four unknowns are the pre-sort parking spots** at R8C5–C8, not
       unwalked drawers. Worth deciding whether they should read as their own
       state rather than amber, since looking at them will not resolve them.
