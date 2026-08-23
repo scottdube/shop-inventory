@@ -30,12 +30,27 @@ queue, not a log.
 ## Short to build
 
 - [ ] **BUY: C2, 220uF electrolytic, for the AC Wall Adapter for IoT (RB-14).**
+      **No supplier part exists** for either 220uF record (#687 10V, #879 16V),
+      so this cannot go on a purchase order without inventing a SKU — it needs
+      a source picked first. Four wanted.
       The shop has 220uF at 10V (#687) and 16V (#879) and **zero stock of
       either**; the BOM asks for 35V. C2 sits on the Hi-Link's 5V OUTPUT, so
       16V is ample and 35V is the author being generous — but none of them
       exist here, so the build is blocked on one capacitor. Everything else on
       the mains side is now counted in RB-14, and D1/R1 come off the bin wall
       (LED 3mm Red #814 in B3-R2C2; the EAONE 1/4W resistor kit).
+
+- [x] ~~The choke and the HLK module~~ — **on `TO-ORDER-ALI`, 2026-08-23.**
+      A sibling shopping list to `TO-ORDER`, because that one is an Amazon PO
+      and InvenTree binds line items to the order's supplier. 1 x HLK-5M05B
+      (the SKU is a 5-pack) and 5 x choke (1 needed, four spare).
+
+- **The fifth HLK module is not missing.** Bought as a 5-pack; 3 loose in
+      RB-14, 1 on the assembled board there, and **1 in service** — Scott built
+      a complete unit on this board and it runs the shop temperature/humidity
+      sensor under ESPHome. Recorded on #491 so the 5-versus-3 gap does not get
+      re-investigated. **That deployed unit is also the proof the design
+      works**, which is worth knowing before ordering parts for four more.
 
       Two assembly warnings from the project README, recorded on the bin
       because both are discovered too late otherwise: **fit the shim and AC
