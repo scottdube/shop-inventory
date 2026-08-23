@@ -178,6 +178,16 @@ in the spindle.
       unit lifetime, predates two orders, quotes a 4-pack price as a unit
       price. Other parts may carry the same stale auto-generated blocks.
 
+## SQLite gives one writer, and the walker should win
+
+- [ ] **A failed count leaves NO trace.** B3-R1C3, 2026-08-23: Scott's tap hit
+      `database is locked` and his 22 vanished — recorded by hand afterwards
+      only because the walk was being compared against the database. BinScan
+      shows the 500 and then... nothing; the number is not queued, retried, or
+      kept. **Worth building: hold the figure and retry**, since a lock clears
+      in seconds and the person has already done the counting. See `TRAPS.md`
+      for the writer-contention rule this came from.
+
 ## BinScan cannot create a part's FIRST stock row
 
 - [ ] **A part that exists with no stock anywhere is unreachable from the

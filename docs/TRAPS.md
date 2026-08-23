@@ -1928,3 +1928,35 @@ already exist. What goes in the database still comes from the bags.
 other two electrolytic kits carry theirs on the location record ("15 values,
 200 pcs"; "Xuansn 270 pcs, 18 values"). This one never had one, so the photo
 resolved the values and left the counts exactly as unknown as before.
+
+## Do not run write scripts while somebody is walking
+
+InvenTree on this install is **SQLite** — `/Volumes/4TB_Removable/inventree/data/inventree.sqlite3`,
+WAL journal, a **10-second** lock timeout. SQLite allows many readers but
+**exactly one writer**, so a write from the laptop and a tap on the phone are
+in direct competition for the same slot.
+
+2026-08-23, 13:34:54 UTC: Scott pressed *Record count* on B3-R1C3 and got
+
+    transfer failed: 500 OperationalError ... /api/stock/transfer/
+
+with `database is locked` in InvenTree's error log. His count of 22 was
+discarded. At that moment this session was running `--commit` scripts against
+the same database — kit seeding, `sync_stocktake.py`, description updates.
+
+**The cost is asymmetric and that is what makes it worth a rule.** A blocked
+script fails visibly, in front of someone who will rerun it. A blocked tap
+fails in a shop, on a phone, to someone with a drawer open and both hands
+full — and the natural reading of a 500 is *"the tool is broken"*, not
+*"try again in ten seconds"*. Worse, the count is simply gone: it was never a
+row, so nothing later surfaces it as missing. Only comparing the walk against
+the database found this one.
+
+**Rule: while a walk is in progress, reads only.** Batch the writes and run
+them when the walker stops, or ask first. This costs nothing — nothing about
+seeding a kit or syncing stocktake dates is urgent — and the alternative is
+silently eating counts that somebody physically performed.
+
+Worth knowing for the cycle-count design too: a scheduled count and a
+background enrichment job will eventually want the same writer slot, and the
+overnight job already writes to this database at 02:05.
