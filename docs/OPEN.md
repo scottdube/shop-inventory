@@ -27,6 +27,22 @@ queue, not a log.
 - [x] ~~**A2 walk**~~ — **done.** 53 verified empty, 7 counted, 4 parking
       spots, zero unseen.
 
+## A3-R7C3 is the mains-protection drawer
+
+Created 2026-08-23. Holds the input-protection set from the Hi-Link
+application circuit — **44 fuses, 4 varistors, 14 X2 caps, 3 chokes** — because
+you reach for all four together when putting something on mains. Sits beside
+the LM2596 buck converters at R7C2, which makes row 7 the power row.
+
+`default_location` for all four parts now points here. It previously pointed at
+RB-14, which is a **project bin** — and a project bin is never where a spare
+goes home. That rule is why this drawer exists.
+
+Four of each fuse / varistor / X2 stayed in RB-14 as the build's allocation;
+the chokes were not split because all three are already spoken for. RB-14's
+description says where they went, since a BOM line vanishing from a project bin
+with no forwarding note is how a build stalls at the bench.
+
 ## Short to build
 
 - [x] ~~**C2 for the AC Wall Adapter**~~ — **RESOLVED 2026-08-23, no purchase
