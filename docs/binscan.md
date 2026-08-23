@@ -109,6 +109,27 @@ stays on screen. For an estimate, the drawer address is captured when the
 "record actual" card is built rather than read at click time — otherwise the
 actual count would be filed against whichever drawer had been advanced to.
 
+## Site roots are not places
+
+`SLN` and `LRD` appeared as area tiles because a couple of leaves hang directly
+off each one — `Receiving`, `Triage`, and at LRD a 24-row assortment kit filed at
+the top of the tree. They satisfied the rule (a parent whose children are
+leaves) and failed the intent. Scott: *"why is there an LRD tile? How would that
+get used?"* It would not — nobody walks the Florida site from the Dover shop,
+and offering it beside B2 implies a parity that does not exist.
+
+Areas with no parent are now excluded.
+
+**What that costs, stated rather than discovered later:** `SLN/Receiving` (2
+rows), `SLN/Triage` (3 rows) and `LRD/Receiving` are no longer reachable from
+BinScan. They are staging spots rather than drawers to walk, so this is probably
+right — but it is a real loss and they would need their own route if they ever
+matter for a walk.
+
+**And it surfaced a filing gap.** `LRD/Kit - EMGTMS 24-Value Ceramic` — 24 rows,
+480 capacitors — is filed at the site root, which is the Florida equivalent of
+"in the building somewhere". It needs a real location inside LRD.
+
 ## The picker
 
 A 478-entry select was the wrong control on a phone. Scott, 2026-08-22: reaching

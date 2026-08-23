@@ -263,6 +263,13 @@ def api_areas():
         # and B3-R3C2 alongside the cabinets was pure noise.
         if DRAWER_RE.match(par.get("name") or ""):
             continue
+        # A SITE ROOT is not a place you can stand. SLN and LRD qualified as
+        # areas because a couple of leaves hang directly off them -- Receiving,
+        # Triage, and at LRD an assortment kit filed at the top of the tree --
+        # but nobody walks "LRD" from the Dover shop, and offering it as a
+        # destination alongside B2 implies a parity that does not exist.
+        if par.get("parent") is None:
+            continue
         out.append({"name": par["name"], "pk": pk, "drawers": len(leaves),
                     "grid": bool(DRAWER_RE.match(leaves[0]["name"] or "")),
                     "path": (par.get("pathstring") or par["name"]).replace("SLN/", "")})
