@@ -659,6 +659,12 @@ wall. It is dashed because it is a door to somewhere else rather than a thing on
 this wall, and it sizes itself off the measured column count so it stays two
 cabinets wide when the wall becomes four across.
 
+**The places behind "Elsewhere" get the same treatment** — bordered rectangles,
+name over count, same height as a cabinet. One visual language for "a place you
+can go". Two per row rather than three, because these names are words —
+Metrology Bench, Florida Staging — and a name wrapping to three lines is worse
+than a shorter row.
+
 **Brighter edges on anything that is an object.** A separate `--edge` token,
 lighter than the hairline used between lines of text, for cabinets and drawers.
 Under shop lighting the dim rule made the tiles read as a flat field rather than
