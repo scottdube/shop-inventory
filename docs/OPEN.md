@@ -29,23 +29,18 @@ queue, not a log.
 
 ## Short to build
 
-- [ ] **C2 is 470uF 25V, not 220uF — and it is probably already owned.**
-      Scott, 2026-08-23, correcting the BOM against the unit he actually
-      built: *"470 uF 25 volt on this build. It has a larger footprint than
-      the 220 uF 10 volt that I have in the drawer."* The README lists C2 as
-      220uF 35V; the working board uses **470uF 25V**, and its footprint is
-      bigger than the 220uF 10V part.
+- [x] ~~**C2 for the AC Wall Adapter**~~ — **RESOLVED 2026-08-23, no purchase
+      needed.** Use **#670, 470uF 25V, 8x12**, from the Xuansn kit at
+      `L2-D4/Kits`. The board's C2 footprint is **8x12**, measured by Scott at
+      the board — which also rules out #687 (220uF 10V, 6x7) permanently. The
+      README's BOM names a value and no body, so that constraint is recorded on
+      the bin AND on both capacitor parts, findable from either direction.
 
-      `Capacitor Electrolytic 470uF 25V (8x12mm)` is **#670**, a value in the
-      **Xuansn kit** at `L2-D4/Kits` — **15 pcs when new**, showing as zero
-      stock only because that kit has never been seeded. **Check the kit
-      before ordering anything.**
-
-      **Second wrong purchase averted by the same cause in one session.** The
-      unseeded electrolytic kits are not merely an untidy backlog: they make
-      the catalogue report zero for parts the shop owns, and a zero is what a
-      buying decision is made against. That is a concrete cost to set against
-      "cataloguing them is expensive".
+      Worth keeping from how this went: the catalogue reported zero for a part
+      the shop owns, twice in one session, because the Xuansn and 15-value
+      electrolytic kits have never been seeded. A near-miss on a purchase is a
+      cost, and it belongs on the "counting 600 capacitors is expensive" side
+      of the ledger.
 
 - [x] ~~The choke and the HLK module~~ — **on `TO-ORDER-ALI`, 2026-08-23.**
       A sibling shopping list to `TO-ORDER`, because that one is an Amazon PO
