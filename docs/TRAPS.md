@@ -2113,3 +2113,70 @@ unverified in exactly the same way.
 **What would prevent it:** receive to `Receiving`, and let the walk move it
 to a drawer. `Receiving` already exists at both sites and already holds two
 items *"awaiting a home"*, which is the pattern working correctly.
+
+
+## An attachment lives on the PART, and a stock item shows none
+
+Scott, 2026-08-23, right after a datasheet was attached: *"When I look at the
+part, I get the data sheet. When I look at the part in stock as a stock item,
+there's no attachment, no data sheet attached. It seems like a trap."*
+
+It is. InvenTree attachments are keyed by model — the row carries
+`model_type='part'` and `model_id=<part pk>`. A StockItem has its own
+attachment list, which is empty, and **nothing on that screen says the
+document exists one level up.**
+
+That matters here more than in a normal InvenTree install, because **this
+shop's whole physical workflow arrives at stock and locations, not at parts.**
+Scan a drawer barcode, open BinScan, follow a stock row — every one of those
+paths lands somewhere the datasheet is invisible. Someone holding the part,
+at the bench, in the exact moment they need the pinout, is looking at the one
+screen guaranteed not to show it.
+
+**Do not fix it by duplicating the file onto stock items.** The same document
+on four rows of the same part is four things to update and three chances to
+read a stale one. Documents belong to the part, which is the thing that has a
+datasheet; a stock item is a quantity in a place.
+
+**Practical rule: look up the part, not the stock row, for anything that is
+about the OBJECT rather than the amount.** Datasheets, footprints, pinouts and
+supplier links are part-level. Quantity, location and count date are
+stock-level.
+
+Worth considering later: BinScan already renders part names on its cards and
+could surface a "has datasheet" marker with a link, since it is the screen the
+walker is actually holding.
+
+## poppler was there all along — I checked the wrong environment
+
+Recorded as a correction, because the first version of this note was wrong and
+was committed.
+
+InvenTree's error log carried `PDFInfoNotInstalledError` from
+`plugin/base/label/mixins.py render_to_png`, dated 2026-08-20. A check through
+`itq` reported no `pdfinfo`, `pdftoppm` or `pdftotext`, and the conclusion
+written down was *"poppler is not installed on the Mini"*.
+
+Poppler was installed the whole time, at `/opt/homebrew/bin/pdfinfo`. **What
+`itq` reports is the ssh session's PATH** — `/Users/scottdube/.local/bin:
+/usr/bin:/bin:/usr/sbin:/sbin` — which has no Homebrew in it. The InvenTree
+service is launched by launchd with its own PATH from the plist, and that one
+**does** include `/opt/homebrew/bin`.
+
+Tested rather than argued, by running `pdf2image` under both:
+
+| PATH | result |
+|---|---|
+| the ssh PATH `itq` gets | `PDFInfoNotInstalledError` |
+| the server PATH from the plist | **OK — 1 page rendered** |
+
+So label PNG rendering works, and the 2026-08-20 errors are stale.
+
+**The general trap: `itq` is not the server.** It runs the server's Python, in
+the server's directory, against the server's database — which makes it feel
+like the server and hides that the *environment* is a different one. Anything
+about PATH, environment variables, or subprocesses answers a question about
+the ssh session unless it is explicitly given the launchd environment.
+
+Same shape as the deploy verified by md5 while Scott kept hitting old code:
+**check the thing where it actually runs.**

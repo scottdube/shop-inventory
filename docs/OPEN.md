@@ -275,15 +275,10 @@ in the spindle.
 
 ## Labelling
 
-- [ ] **poppler is not installed on the Mini, so InvenTree cannot render a
-      label to PNG.** Confirmed 2026-08-23: no `pdfinfo`, `pdftoppm` or
-      `pdftotext` on PATH. InvenTree's error log carries
-      `PDFInfoNotInstalledError` from `plugin/base/label/mixins.py
-      render_to_png` dated 2026-08-20. **Printing is unaffected** — that goes
-      through CUPS/AirPrint — so this fails only in the PNG path and has been
-      silent. Fix is `brew install poppler` on the Mini; note `brew` is not on
-      the non-interactive PATH there, so it needs a login shell.
-
+- [x] ~~poppler is not installed on the Mini~~ — **WRONG, corrected same day.**
+      It was installed all along; `itq` reports the ssh PATH, not the launchd
+      PATH the service runs with. Label PNG rendering works — tested under
+      both. See `TRAPS.md`.
 
 - [ ] **Wire shelves have no flat face to take a label.** Scott, 2026-08-22:
       *"gotta figure out how we're gonna mount the label because there's no flat
