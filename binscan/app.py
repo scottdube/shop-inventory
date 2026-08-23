@@ -25,7 +25,7 @@ import uuid
 
 import httpx
 from fastapi import FastAPI, File, Form, UploadFile
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, Response
 
 import providers
 
@@ -1002,6 +1002,64 @@ def catalogue_search(text, limit=6, floor=0.9):
     return out
 
 
+def part_docs(part_pk):
+    """Attachments belonging to a PART, for showing on a STOCK screen.
+
+    Scott, 2026-08-23: *"you're gonna go in through stock ninety nine percent
+    of the time because you wanna know if you have it. So having to go in
+    through parts doesn't really help you."*
+
+    Right, and it is worse than an inconvenience: InvenTree keys attachments by
+    model, so a stock screen shows an EMPTY attachment list. Not "see the
+    part" -- nothing. A datasheet that exists is indistinguishable from one
+    that does not, at the bench, holding the component.
+
+    The document still belongs to the part. What was missing was any sign of it
+    where people actually look.
+    """
+    out = []
+    for a in _rows(it_get("attachment/", model_type="part", model_id=part_pk,
+                          limit=20)):
+        name = (a.get("attachment") or a.get("link") or "").rstrip("/").split("/")[-1]
+        out.append({"pk": a.get("pk"), "name": name or "document",
+                    "comment": (a.get("comment") or "")[:90]})
+    return out
+
+
+@app.get("/api/doc/{pk}")
+def api_doc(pk: int):
+    """Stream an InvenTree attachment through binscan.
+
+    InvenTree serves /media/ behind authentication -- a direct link answers 401
+    on a phone that has no InvenTree session, which is most phones at a drawer.
+    binscan already holds a token, so it fetches the file server-side and hands
+    it over. The walker taps once and the PDF opens.
+
+    Read-only, and by attachment pk rather than by path: a path parameter that
+    reaches the filesystem is how a file server becomes an exfiltration tool.
+    """
+    meta = _one(it_get(f"attachment/{pk}/"))
+    if not meta:
+        return JSONResponse({"error": f"no attachment {pk}"}, 404)
+    url = meta.get("attachment") or meta.get("link") or ""
+    if not url:
+        return JSONResponse({"error": "attachment has no file"}, 404)
+    if url.startswith("/"):
+        url = INVENTREE + url
+    try:
+        r = httpx.get(url, headers={"Authorization": f"Token {IT_TOKEN}"},
+                      timeout=30, follow_redirects=True)
+        r.raise_for_status()
+    except Exception as e:
+        return JSONResponse({"error": f"could not fetch: {e}"}, 502)
+    fname = url.rstrip("/").split("/")[-1] or "document"
+    return Response(content=r.content,
+                    media_type=r.headers.get("content-type",
+                                             "application/octet-stream"),
+                    headers={"Content-Disposition":
+                             f'inline; filename="{fname}"'})
+
+
 def drawer_contents(name, site=""):
     """What the DATABASE already says is in this drawer. Checked before any
     model is called: asking vision what the record already knows introduces
@@ -1035,6 +1093,7 @@ def drawer_contents(name, site=""):
             "name": (r.get("part_detail") or {}).get("name") or f"part {r.get('part')}",
             "quantity": r.get("quantity"),
             "counted": bool(st),
+            "docs": part_docs(r.get("part")),
             "stocktake_date": st,
             "estimate": (r.get("notes") or "").startswith("[ESTIMATE]"),
             "sub_location": (r.get("location_detail") or {}).get("name") or loc.get("name"),
@@ -2179,6 +2238,11 @@ button.quiet{background:var(--surface-2);color:var(--fg);border:1px solid var(--
 .onrow{padding:8px 0;border-top:1px solid var(--line)}
 .onrow:first-of-type{border-top:0}
 .onrow .countbox{margin-top:9px}
+.docs{margin-top:5px;display:flex;flex-wrap:wrap;gap:6px}
+.doclink{display:inline-flex;align-items:center;gap:5px;font-size:12px;
+  font-weight:600;color:var(--acc);text-decoration:none;padding:3px 8px;
+  border:1px solid var(--line);border-radius:999px;background:var(--surface)}
+.doclink:active{background:#0b2333}
 .uncount{display:inline-block;margin-left:5px;padding:1px 7px;border-radius:999px;
   background:#0b2333;color:var(--info);border:1px solid #245a7e;font-size:10.5px;
   text-transform:uppercase;letter-spacing:.05em;font-weight:800}
@@ -2747,8 +2811,20 @@ async function refreshDrawer(v,keepOut){
       const mark = x.counted
         ? `<span class=high style="font-size:12px"> &#10003; counted ${x.stocktake_date}</span>`
         : `<span class=uncount>~ NOT COUNTED &mdash; purchased figure</span>`;
+      // A datasheet lives on the PART, and this is a STOCK screen, so
+      // InvenTree shows nothing here at all -- not even a hint one exists.
+      // Scott: "you're gonna go in through stock ninety nine percent of the
+      // time because you wanna know if you have it." So the sign of the
+      // document goes where the walker already is, and the link is served by
+      // binscan rather than by InvenTree, whose /media/ answers 401 to a phone
+      // with no session.
+      const docs = (x.docs||[]).map(dd =>
+        `<a class=doclink href="/api/doc/${dd.pk}" target="_blank" rel="noopener"
+            title="${(dd.comment||'').replace(/"/g,'&quot;')}">&#128196; ${dd.name}</a>`
+      ).join('');
       return `<div class=onrow style="margin:6px 0">
         <div>${(+x.quantity).toLocaleString()} &times; ${x.name}${sub}${mark}</div>
+        ${docs ? `<div class=docs>${docs}</div>` : ''}
         <button class="quiet recount" data-i="${i}" data-stock="${x.stock}"
                 style="margin-top:6px;padding:7px 11px;font-size:12.5px;width:auto">
           ${x.counted ? 'Recount' : 'Count it'}</button>
