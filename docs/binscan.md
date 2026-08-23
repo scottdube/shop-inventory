@@ -617,6 +617,38 @@ VERIFIED EMPTY stamp.** The drawer returns to unknown rather than re-asserting
 an emptiness nobody has re-checked since. That is the conservative direction —
 after an undo the drawer should be looked at again anyway.
 
+## The visual pass
+
+Settled with Scott 2026-08-22: **iPhone first** (a small iPad later, so the
+column caps at 560px rather than stretching), **dark only** — it lives under
+shop lighting — **its own identity**, not InvenTree's, because it does a job
+InvenTree's UI does not and looking different is honest about that.
+
+Then: *"it is really too busy with text in its current form"* — against his own
+earlier requirement that the explanations stay, since he will not be in this
+daily once the inventory settles and it has to be legible to someone who last
+saw it a month ago.
+
+Both are true, so **the prose is behind one switch.** The `?` in the header
+toggles `body.hints-on`, the setting persists in `localStorage`, and it is
+**off by default**. Off, the screen shows state and controls. On, every
+explanation returns. Nothing was deleted; ten blocks of reasoning are one tap
+away.
+
+The rest of the pass:
+
+- **A sticky header** carrying the app name and the current drawer, so you
+  always know what the buttons below will act on. It replaced a two-line
+  subtitle that repeated on every scroll.
+- **A design token set** — one spacing scale, one radius scale, one palette —
+  replacing ad-hoc pixel values accumulated over a day of edits.
+- **Tighter chips and a one-line legend**, reclaiming about 90px above the grid,
+  which is the part actually read.
+- **Shorter labels where the short form loses nothing**: "Blank = not counted"
+  in place of a sentence; "unseen" in place of "not looked at".
+- Glyph-first state colours unchanged and pushed a little further toward
+  primaries.
+
 ## The write journal — undo and reconciliation from one record
 
 Every `/api/assign` write records the row's full **before** state: location,
