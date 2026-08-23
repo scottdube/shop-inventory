@@ -20,10 +20,10 @@ queue, not a log.
       pressure. If it reads rail-high, rail-low, or does not move, it is dead
       and should be marked DAMAGED rather than left QUARANTINED forever.
 
-      **While at it:** #219's note claims *"both bags SEALED"* and *"PSI rating
-      NOT verified"*. If this third unit is 100 PSI, the pair's listing claim of
-      150 PSI deserves doubt too — same vendor, same style. Read a label through
-      the bag at B3-R7C2 without breaking the seal.
+      **The sibling question is already closed:** #219's pair read **150 PSI**,
+      confirmed by Scott the same day, so that part's long-standing "PSI rating
+      NOT verified" flag is retired. Two ratings, two parts — 150 in B3-R7C2,
+      100 quarantined.
 
 
 - [ ] **BL-D2 wiring drawer — identify the rest.** Four items filed (depin kit,
