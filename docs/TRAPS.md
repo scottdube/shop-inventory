@@ -1601,6 +1601,6 @@ becomes `C1`, and SLN already has `C1 C2 C3` reserved for the row below B. Two
 rather than picking, and takes an optional site to disambiguate; the client
 sends the current site with every lookup and every write.
 
-The naming convention avoids the situation anyway — `UCap1`, not `C1` — but the
+The naming convention avoids the situation anyway — `UCab1`, not `C1` — but the
 guard matters more than the convention, because the convention only protects the
 names somebody thought about.

@@ -233,20 +233,20 @@ off a photograph. Two placeholder containers exist at LRD (`LRD Storage`,
 `LRD Bench`), each marked as a placeholder in its description, purely so the
 site switcher has somewhere to point.
 
-**Scott's convention, 2026-08-22 — `Cap` for cabinet, upper and lower:**
+**Scott's convention, 2026-08-22 — `Cab` for cabinet, upper and lower:**
 
 ```
 LRD / Bench Wall
-  UCap1 … UCap4          the four upper cabinets, left to right
-  UCap1-S1 … UCap1-Sn    shelves within each, numbered from the TOP down
-  LCap1                  the single-door base cabinet at the left
-  LCap2 … LCap4          the three drawer banks
-  LCap2-D1 … LCap2-Dn    drawers, numbered from the top down
+  UCab1 … UCab4          the four upper cabinets, left to right
+  UCab1-S1 … UCab1-Sn    shelves within each, numbered from the TOP down
+  LCab1                  the single-door base cabinet at the left
+  LCab2 … LCab4          the three drawer banks
+  LCab2-D1 … LCab2-Dn    drawers, numbered from the top down
 ```
 
 Numbering from the top matches the bin wall, where `R1` is the top row.
 
-**`Cap` also dodges a collision that `Cabinet 1 → C1` would have caused.** SLN
+**`Cab` also dodges a collision that `Cabinet 1 → C1` would have caused.** SLN
 has `C1 C2 C3` reserved for the third row below B, once the plywood table goes.
 Two locations named `C1` would be legal — location names are **not unique** in
 InvenTree, and `Receiving` already exists at both sites — but BinScan resolved
