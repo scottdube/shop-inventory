@@ -124,9 +124,13 @@ queue, not a log.
       for 2026-09-17. Then re-enrol via the Amex Platinum credit — **monthly
       plan only**, the annual plan forfeits the $12.95/mo credit entirely.
 
-- [ ] **Tonight's overnight run** is the first test of the permission fix. If
-      the journal shows a RUN STARTED with no completion, Chrome automation
-      during preflight is the next suspect.
+- [x] ~~Tonight's overnight run is the first test of the permission fix.~~
+      **PASSED, 2026-08-23.** RUN STARTED 02:05, RUN COMPLETE 06:57, no human
+      awake — the first unattended run to go start-to-finish since the 08-18
+      and 08-22 permission stalls. `journal.py`'s fixed invocation is what
+      changed. Queue A images + queue D keywords both ran; next run resumes
+      queue D at **pk 240** (559 empty keyword rows left, ~8 nights), and
+      queue A is down to ~25 scrapeable parts.
 - [ ] **McMaster API request** sent 2026-08-22 to eprocurement@mcmaster.com —
       check for a reply before doing anything else with McMaster data.
 
