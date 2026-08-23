@@ -229,6 +229,30 @@ in the spindle.
 
 - [ ] ~240 locations are **printed but not affixed**. A1 sheet still to install.
 
+## Florida — decided in principle, quantity not yet
+
+- [ ] **Take some RF pigtails / U.FL adapters to LRD.** Scott, 2026-08-23,
+      after stowing them: *"we're definitely gonna take some of those to
+      Florida... I can't do it right now."* Both rows are in **A3-R6C6**:
+
+      | stock | part | qty here |
+      |---|---|---|
+      | 603 | SMA Female to U.FL/IPEX Pigtail Cable, 1.13, 15cm (#732) | 8 |
+      | 604 | 10PCS IPX IPEX U.FL Female Connector to open single-end | 9 |
+
+      **Deliberately NOT earmarked yet.** `scripts/florida.py add` wants a
+      quantity, and the decision so far is *some*. An earmark carrying an
+      invented number is worse than no earmark: it reads as a decision that
+      was never made, and the packing list is built from those numbers.
+
+      Do it before the **~2026-10-12** departure. One question answers it:
+      how many of each. Then `itq run scripts/florida.py add <pk> A3-R6C6 <n>
+      "<why>"` for each, and the packing list picks them up.
+
+      Worth asking at the same time: the LRD bench has no RF work set up yet,
+      so the honest quantity may depend on what is actually going to be built
+      there rather than on splitting the pile evenly.
+
 ## Watch
 
 - [ ] **CANCEL the $1 Walmart+ trial before ~2026-09-21.** Taken 2026-08-22
