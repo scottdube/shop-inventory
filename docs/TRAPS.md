@@ -1604,3 +1604,32 @@ sends the current site with every lookup and every write.
 The naming convention avoids the situation anyway — `UCab1`, not `C1` — but the
 guard matters more than the convention, because the convention only protects the
 names somebody thought about.
+
+## Built for the walk, not for the steady state
+
+Scott opened A2-R1C1 knowing the real count and found nowhere to type it. His
+verdict: *"That seems like fundamental functionality for a bin scan tool.
+Right? We need to be able to adjust counts."*
+
+Correct, and the omission has a shape worth naming. **Every path in BinScan was
+built around the WALK** — the one-way journey from *unseen* to *identified* to
+*filed*. Identify, pick-by-hand, create-a-part, mark-empty, mark-mixed,
+auto-advance: all of them assume the drawer has not been done yet.
+
+A drawer that is already filed and merely has the wrong number is the **steady
+state**, and it is what the tool does for years after the walk ends — the walk
+is a few weeks. It had no path at all.
+
+**The bias: a tool designed while doing a migration gets built for the
+migration.** Every session was spent walking drawers, so every feature answered
+a question that comes up while walking. The question that comes up afterwards —
+"this says 50 and there are 47" — never arose during construction, and so was
+never built.
+
+Fix: every filed row in the "On record" panel now carries a **Count it** /
+**Recount** control. Recording the same number again is still a count; it turns
+the purchased figure into a verified one, which is the single most valuable
+thing the tool can record.
+
+**Worth asking of anything else built here: what does this look like once the
+migration is over?**
