@@ -367,6 +367,152 @@ longest ago* (nothing qualifies).
 Counted rows cluster hard: B3 has 104, A3 64, and B1 only 6. That is a record of
 where the walk has been, not of where the risk is.
 
+**Measured 2026-08-23, and it inverts the framing above: the bin wall is the
+BEST-counted area in the shop, and the never-counted mass is somewhere else.**
+
+| area | rows | counted | never |
+|---|---|---|---|
+| SLN/Bin Wall | 250 | 198 | **52** |
+| SLN/Machine Shop | 84 | 3 | **81** |
+| SLN/Laser Area | 73 | 11 | **62** |
+| (no location) | 41 | 2 | **39** |
+| SLN/Electronics Bench | 41 | 31 | 10 |
+| LRD ceramic kit | 24 | 0 | **24** |
+| SLN/Assembly & Test | 20 | 6 | 14 |
+| everything else | 30 | 17 | 13 |
+
+The bin wall is **79% counted**; the Machine Shop is **4%**. Every earlier
+number in this section was a bin-wall number — 87 drawers, 324 drawers, the
+per-cabinet walk table — so "47% counted" read as *the wall is half done* when
+it actually means *the wall is nearly done and four other areas were never
+started*. A cycle count scoped to drawers would repeatedly re-count the one
+region that does not need it.
+
+**The never-counted rows are not one kind of thing, and the count cost differs
+by an order of magnitude:**
+
+| pocket | rows | what they are | cost to count |
+|---|---|---|---|
+| Machine Shop unfiled + toolholder rack | 32 | BT30 holders, collets, reamers, gages — nearly all qty 1 | a glance; a 1 is a 1 |
+| `AT-D1` heat-set inserts | 12 | all `[ESTIMATE]` 100 / 50 / 20 from pack sizes | a real tally |
+| `L2` | 59 | resistor kit values, `[ESTIMATE]` | a real tally, or never |
+| Red Bins | 9 | SMD passives and modules, purchased figures | a real tally |
+| unlocated | 39 | McMaster springs, pins, taps — `[ESTIMATE]` | needs a HOME first, not a count |
+
+**147 of the 150 `[ESTIMATE]` rows have never been counted** — those figures are
+wrong by an unknown amount *right now*, which is a different problem from a real
+count going stale, and it argues for estimate-first over stale-first.
+
+**Age is now a 6-day spread (29/48/39/101/23/28 rows at 1-6 days), not a single
+bar** — but still nothing that could be called stale, so the first cycles remain
+never-counted-driven.
+
+**Scope, decided 2026-08-23 (Scott):** *"it's a whole shop inventory/asset
+freshness tool — my goal would be to have all bins all locations in the cycle
+with the ability to direct a focus, skip a section, or have randoms assigned by
+the system."* So the queue covers every location, not the bin wall, and it is
+**steerable three ways**: focus an area, exclude an area, or let the system
+choose. Bin-wall-only was rejected on the measurement above — it would
+re-count the one region that is already 79% done.
+
+**Enrollment is DERIVED, never a stored list.** Scott, same conversation: it
+must *"recognize as new locations are added to the system."* The queue is
+computed from the live location tree at selection time, so a location created
+after the feature ships is in the cycle without anyone enrolling it. A frozen
+snapshot or a hand-maintained roster is ruled out — the shop grows, and the
+locations most likely to be forgotten are the newest ones.
+
+Two near-term cases prove it rather than hypothesise it: **48 A0/B0 drawers
+land Tuesday 2026-08-25**, and the LRD bench-wall shelves and drawers get built
+whenever that walk happens. Both must appear in the cycle on their own.
+
+Open sub-question that touches Tuesday's script: a brand-new drawer arrives
+**known empty from the box**, which is not the same state as *nobody has ever
+looked*. `make_a0b0.py` could stamp them verified-empty at creation. Otherwise
+48 drawers enter the queue as never-checked and the first cycle spends itself
+opening drawers that were empty by construction.
+
+**Timeline, Scott 2026-08-23: this is a LONG-TERM project and will not be in
+use before the Florida departure, approx 2026-10-12** — *"we'll be lucky to get
+thru the first count by then."* That is **~50 days from 2026-08-23**. It sets
+the priority order and one hard design constraint:
+
+- The **first count** is the pre-FL job, and it runs on BinScan exactly as it
+  stands today. Nothing in the cycle-count design may become a prerequisite for
+  finishing it.
+- The cycle tool is what keeps the count alive **afterwards**, which is
+  precisely when nobody will remember the reasoning. Hence a written spec now,
+  built later.
+- The departure date is **approx 2026-10-12** (Scott, 2026-08-23). That is the
+  deadline the first count runs against.
+
+**The first count is 29 TRIPS, not 295 rows — measured 2026-08-23.** The
+never-counted backlog looks enormous stated as rows and is modest stated as
+places to stand, which is the unit that costs forty minutes:
+
+| trip | rows | character |
+|---|---|---|
+| `Machine Shop` | 49 | **all qty <= 2, zero estimates** — one trip, 49 glances |
+| `Kit - EAONE Resistor 30-value` | 30 | all `[ESTIMATE]` — 30 real tallies |
+| `B1` (cabinet level) | 26 | all `[ESTIMATE]` — needs the drawer walk anyway |
+| `Unfiled - Machine Shop` | 25 | 17 of them qty <= 2 |
+| `Kit - EMGTMS 24-Value Ceramic` | 24 | all `[ESTIMATE]`, and it is at **LRD** |
+| `AT-D1` | 12 | all `[ESTIMATE]` heat-set inserts |
+| 23 further trips | 51 | **nine of them are a single row** |
+
+Plus **39 rows with no location at all**, which need a *home*, not a count, and
+are desk work rather than a trip.
+
+**116 of the 295 rows are qty <= 2 — a glance, not a tally. Only 56 are qty >=
+50.** So the backlog is not uniformly expensive: one Machine Shop trip clears
+49 rows in the time one resistor kit clears three.
+
+At 29 trips over ~50 days that is **roughly four trips a week**, and the top six
+trips clear 166 of the 256 located rows. The tally-heavy kits are the real cost;
+the tooling is nearly free. Worth knowing before the schedule gets planned
+around the row count.
+
+**Decided 2026-08-23 — four of the eight scoping questions.** The other four
+(time-budget filling, skip semantics, new-location state, readout) are still
+open; Scott stopped the survey before them.
+
+**The unit is a LOCATION, and empty ones are in.** You are assigned a place and
+the work is whatever is in it, which may be nothing. *"Still empty"* is a real
+observation with its own date, which is the only way the 337 empty leaves stay
+in a cycle that is supposed to cover all bins and all locations. Row-as-unit was
+rejected for exactly that: a row-driven queue can never assign an empty place,
+because there is no row to rank. Locations too big for one sitting — `L2` holds
+70 rows — get split by a size cap rather than landing whole.
+
+**A cycle is once per week, no more than 20 minutes**, plus a **standing queue**
+and **tracked skips**. Not a fixed trip count: the budget is time, and the
+system has to fit the week to it.
+
+*The arithmetic this forces, stated 2026-08-23:* seven weeks to the FL departure
+at 20 minutes a week is **~2.3 hours**, and the 29-trip first count is several
+times that at any believable per-trip cost. **The weekly cycle is therefore the
+maintenance rhythm, not the vehicle for the first count** — which is consistent
+with the tool not being in use before FL, but it means no schedule should ever
+be drawn that has the cycle clearing the backlog.
+
+**Ranking is a POLICY THAT CHANGES AS THE SYSTEM MATURES**, not a fixed rule.
+Scott: *"this will change as the system matures — initially it might be never
+counted and estimates, as those are cleared it will be fast moving parts and
+random."* So the selector must be **pluggable, with named modes**, and the
+active mode has to be visible in the readout — a queue whose ranking silently
+changed is a queue nobody trusts. Two modes are known now: `backlog`
+(never-counted + `[ESTIMATE]` first) and `maintenance` (fast-moving + random).
+Neither is hardcoded as *the* rule.
+
+**Site auto-scoping: the queue only assigns places at the site you are
+currently at.** BinScan already persists *"I have moved to Florida"*, so this
+reuses an existing control rather than adding one. The LRD ceramic kit's 24 rows
+wait until October instead of showing as overdue work nobody in Dover can do.
+A place you cannot stand in front of is not work, and listing it as work teaches
+people to ignore the list.
+
+**Still open:**
+
 **Questions to answer, not assume:**
 
 - What is a **cycle** — a fixed count of drawers, a fixed time, or everything
