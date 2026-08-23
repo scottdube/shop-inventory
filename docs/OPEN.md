@@ -252,8 +252,12 @@ in the spindle.
       template eras, **not imported**. See `bambu-import.md`.
 - [x] ~~**The three electrolytic kits**~~ — **all seeded 2026-08-23** from
       photographed lids. 10-value: hand-counted, 95 pcs, 9 values. 15-value:
-      200 pcs, 15 values. Xuansn: 270 pcs, 18 values. The last two are
-      `[ESTIMATE]`, uncounted, so they stay on the never-counted report.
+      200 pcs, 15 values. Xuansn: 267 pcs, 18 values. **All three are now
+      COUNTED** — the 10-value by hand tally, the other two verified at factory
+      figures on Scott's report that the compartments are undisturbed
+      (inspection, not a piece tally, and every row says which). The one
+      compartment that had been drawn from, 470uF 25V, tallied at 12 against a
+      factory 15.
 - [ ] **Datasheets** — 16 candidates unresolved; needs the Mouser path or a
       browser fetch. See `datasheets.md`.
 - [ ] **Amazon hardware sweep** — never done. The 2026-08-19 reconcile covered
