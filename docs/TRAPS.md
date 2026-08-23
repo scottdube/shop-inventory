@@ -1831,3 +1831,66 @@ estimates for a day, and the correction cost more than the question would have.
 and that assertion needs the same evidence as any other. When the person is
 right there, ask; when they are not, record the ambiguity as ambiguity rather
 than resolving it toward caution.
+
+## A description that says "empty" is not a description that names contents
+
+The mark-empty guard refuses when the drawer's description names something, on
+the sound principle that *"no rows" is not evidence of emptiness* and the
+description is often the only place the contents were ever written.
+
+It asked the wrong question. It tested whether there was **any text**, using
+that as a proxy for **text that names contents**. Those are different, and the
+gap swallowed a third of a cabinet.
+
+Scott, mid-walk on A3, 2026-08-23: *"1.2 wont allow me to mark it empty."*
+A3-R1C2's description reads:
+
+> Reported AVAILABLE by Scott 2026-08-21 — "most of A3 is empty; the two bottom
+> rows have stuff in them". A cabinet-level statement, not a per-drawer check:
+> glance in before filling.
+
+That is a **claim of emptiness**, and the guard read it as evidence of
+contents — the exact opposite of what it says. Measured across the cabinet:
+**31 of A3's 64 drawers would have refused the same way**, carrying one of two
+bulk statements written on 2026-08-21 (`Reported AVAILABLE`, 15 drawers;
+`Reported EMPTY ... a bulk statement covering A3-R4C1..R5C8`, 16 drawers).
+
+The irony is the point: **those bulk claims are exactly what a walk exists to
+replace.** They are one person's cabinet-level recollection, explicitly labelled
+in their own text as *not a per-drawer check*. Standing at the open drawer is
+the moment that upgrades them to a verified fact, and the guard blocked the
+upgrade because the weaker claim had been written down.
+
+Same failure class as the identify short-circuit already recorded here: **a
+guard keyed on a proxy will eventually block the case that shares the proxy and
+not the intent.** There, the proxy was "the drawer has stock" standing in for
+"you meant to estimate". Here it was "there is text" standing in for "the text
+names contents".
+
+`_names_contents()` now distinguishes them: a body matching
+`^(REPORTED )?(AVAILABLE|EMPTY|VERIFIED EMPTY|PRE-SORT)` claims emptiness and
+does not block.
+
+**A second bug was hiding behind the first, and would have been silent.** The
+stamp was built as `VERIFIED EMPTY <date> — previously labelled: <old>`,
+truncated to the 250-character column. Those A3 descriptions plus their
+bracketed size annotation run past 250, and **truncation falls on the end of
+the string, which is exactly where the size annotation lives** — so preserving
+the claim would have quietly eaten the dimensions off 31 drawers. `[6 x 2-7/32
+x 1-9/16 in, small]` is measured data that nothing else records.
+
+`_empty_description()` now keeps the size annotation explicitly and **retires**
+a superseded emptiness claim rather than carrying it forward. Preserving it was
+wrong on its own terms too: *"glance in before filling"* is an instruction that
+the verified check has just answered, and two statements of different strength
+sitting side by side send the next reader to look again.
+
+A real content label is still preserved, unchanged.
+
+**The sibling has NOT been fixed, deliberately.** `scripts/mark_empty.py`
+carries the same guard, mirrored on purpose — but it must keep refusing, and
+for a reason the phone does not share: **BinScan has a human at the open
+drawer; a bulk `--cabinet` sweep has nobody looking.** Relaxing it there would
+convert 31 unverified claims into verified ones by fiat, which is precisely the
+fabrication the whole guard exists to prevent. If per-drawer use of that script
+ever needs it, that wants an explicit flag, not a looser rule.

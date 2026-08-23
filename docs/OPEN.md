@@ -178,6 +178,19 @@ in the spindle.
       unit lifetime, predates two orders, quotes a 4-pack price as a unit
       price. Other parts may carry the same stale auto-generated blocks.
 
+## Guards that mirror each other, but should not
+
+- [ ] **`scripts/mark_empty.py` still refuses on any description text**, while
+      `binscan`'s `/api/empty` now distinguishes a claim of emptiness from a
+      naming of contents (fixed 2026-08-23, see `TRAPS.md`). The divergence is
+      **deliberate and should stay** until decided otherwise: the phone has a
+      person at the open drawer, a `--cabinet` sweep has nobody looking, and
+      relaxing the script would stamp 31 unverified A3 claims as verified by
+      fiat. If the script ever needs the same behaviour for a single named
+      drawer, give it an explicit flag — do not widen the rule.
+      The docs say these two mirror exactly; they no longer do, and that is
+      recorded here so the next reader does not "fix" the asymmetry.
+
 ## Labelling
 
 - [ ] **Wire shelves have no flat face to take a label.** Scott, 2026-08-22:
