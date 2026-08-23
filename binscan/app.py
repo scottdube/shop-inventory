@@ -1603,132 +1603,211 @@ def shot(name: str):
 PAGE = r"""<!doctype html><html><head>
 <meta name=viewport content="width=device-width,initial-scale=1">
 <title>binscan</title><style>
-:root{--bg:#111;--fg:#eee;--mut:#8a8a8e;--acc:#4ea1ff;--card:#1c1c1e;--line:#2c2c2e}
-*{box-sizing:border-box}body{margin:0;padding:16px 16px 4px;background:var(--bg);color:var(--fg);
-font:16px/1.45 -apple-system,system-ui,sans-serif}
-body{padding-bottom:8px}
-h1{font-size:19px;margin:0 0 2px}p.sub{color:var(--mut);margin:0 0 18px;font-size:13px}
-label{display:block;margin:14px 0 6px;color:var(--mut);font-size:12px;
-text-transform:uppercase;letter-spacing:.06em}
-input,select,button{width:100%;padding:13px;font-size:16px;border-radius:10px;
-border:1px solid var(--line);background:var(--card);color:var(--fg)}
-button{background:var(--acc);color:#000;font-weight:600;border:0;margin-top:18px}
-button:disabled{opacity:.35}
-.card{margin-top:14px;padding:14px 16px;background:var(--card);border-radius:12px}
-.big{font-size:27px;font-weight:700;margin:2px 0;text-transform:capitalize}
-.row{display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid var(--line);font-size:14px}
+/* ── binscan visual system ────────────────────────────────────────────────
+   iPhone first, dark only, its own identity — not InvenTree's.
+   Read at arm's length in a garage, one-handed, with the other hand holding
+   a part. Every state carries a GLYPH as well as a colour (Scott is mildly
+   colourblind), and the explanatory notes STAY: this gets used in bursts
+   weeks apart, so it has to be legible to someone who last saw it a month
+   ago. They are demoted, not deleted.
+   Capped at 560px so a small iPad reads as a column, not a stretched phone.
+   ──────────────────────────────────────────────────────────────────────── */
+:root{
+  --bg:#0b0b0e; --surface:#15151a; --surface-2:#1c1c22; --line:#2a2a32;
+  --fg:#f2f2f5; --mut:#8e8e9a; --dim:#65656f;
+  --acc:#4ea1ff; --acc-ink:#04121f;
+  --ok:#4ade80; --info:#38bdf8; --warn:#fde047; --bad:#ff8f8f; --mix:#d8a0ff;
+  --s1:6px; --s2:10px; --s3:16px; --s4:24px;
+  --r1:8px; --r2:12px; --r3:16px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0 auto;max-width:560px;padding:0 var(--s3) 4px;background:var(--bg);
+  color:var(--fg);font:15px/1.5 -apple-system,system-ui,"SF Pro Text",sans-serif;
+  -webkit-font-smoothing:antialiased}
+
+/* ── header: compact, sticky, always says where you are ─────────────────── */
+.appbar{position:sticky;top:0;z-index:30;margin:0 calc(var(--s3) * -1);
+  padding:10px var(--s3) 9px;background:rgba(11,11,14,.92);
+  backdrop-filter:saturate(140%) blur(12px);border-bottom:1px solid var(--line);
+  display:flex;align-items:baseline;gap:9px}
+.appbar h1{font-size:16px;font-weight:800;margin:0;letter-spacing:-.01em}
+.appbar .where{font-size:13px;color:var(--mut);font-variant-numeric:tabular-nums;
+  margin-left:auto;white-space:nowrap}
+.appbar .where b{color:var(--fg);font-weight:700}
+p.sub{color:var(--dim);margin:8px 0 2px;font-size:12.5px;line-height:1.45}
+
+/* ── section labels ─────────────────────────────────────────────────────── */
+label{display:block;margin:14px 0 5px;color:var(--mut);font-size:11px;
+  font-weight:700;text-transform:uppercase;letter-spacing:.07em}
+
+/* ── controls ───────────────────────────────────────────────────────────── */
+input,select,button{width:100%;padding:12px 13px;font-size:16px;border-radius:var(--r2);
+  border:1px solid var(--line);background:var(--surface);color:var(--fg);
+  font-family:inherit}
+input::placeholder{color:var(--dim)}
+select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--mut) 50%),
+  linear-gradient(135deg,var(--mut) 50%,transparent 50%);
+  background-position:calc(100% - 18px) 21px,calc(100% - 13px) 21px;
+  background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:34px}
+button{background:var(--acc);color:var(--acc-ink);font-weight:700;border:0;
+  margin-top:var(--s2);min-height:46px;letter-spacing:-.01em}
+button:disabled{opacity:.3}
+button.quiet{background:var(--surface-2);color:var(--fg);border:1px solid var(--line);
+  font-weight:600}
+
+/* ── cards ──────────────────────────────────────────────────────────────── */
+.card{margin-top:var(--s2);padding:13px 14px;background:var(--surface);
+  border:1px solid var(--line);border-radius:var(--r3)}
+.card>b:first-child{display:block;margin-bottom:var(--s1);font-size:14.5px}
+.big{font-size:17px;font-weight:700;margin:1px 0 2px;letter-spacing:-.01em;line-height:1.3}
+.row{display:flex;justify-content:space-between;gap:10px;padding:7px 0;
+  border-top:1px solid var(--line);font-size:13.5px}
 .row span:first-child{color:var(--mut)}
-.prov{font-size:12px;color:var(--acc);text-transform:uppercase;letter-spacing:.06em}
-.low{color:#ff9f43}.medium{color:#feca57}.high{color:#4ecd7b}
-.warn{margin-top:10px;padding:9px 11px;border-radius:8px;background:#2a2213;color:#ffc978;font-size:13px}
-.err{background:#2a1616;color:#ff8f8f}
-/* A thumbnail, not a full-bleed photo. At full width the preview pushed the
-   submit button below the fold, so the one thing you have to press next was
-   invisible unless you knew to scroll. */
-img#prev{height:62px;width:auto;max-width:40%;object-fit:cover;border-radius:8px;
-display:none;border:1px solid var(--line)}
+.prov{font-size:10.5px;color:var(--acc);text-transform:uppercase;letter-spacing:.08em;
+  font-weight:700;margin-bottom:var(--s1)}
+
+/* ── notes and hints: kept, demoted ─────────────────────────────────────── */
+.mut{color:var(--mut);font-size:12.5px;line-height:1.45}
+.warn{margin-top:var(--s2);padding:9px 11px;border-radius:var(--r1);
+  background:#241d0d;color:#f4d38a;font-size:12.5px;line-height:1.45;
+  border-left:3px solid #8a6d1a}
+.err{background:#2a1517;color:var(--bad);border-left-color:#7a2b31}
+.ro{margin:var(--s3) 0 var(--s2);padding:9px 11px;border-radius:var(--r1);
+  background:#101c26;color:#8fc7ff;font-size:11.5px;line-height:1.5;
+  border-left:3px solid #23516f}
+
+/* ── state colours: glyph first, colour second ──────────────────────────── */
+.low{color:#ff9f43}.medium{color:var(--warn)}.high{color:var(--ok)}
+.clear{color:var(--ok)}.partial{color:var(--warn)}.none{color:#ff9f43}
+
+/* ── area chips ─────────────────────────────────────────────────────────── */
+/* One tight row per four. The chips are the least interesting thing on screen
+   and were taking two tall rows above the grid, which is the part you actually
+   read. */
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{width:auto;min-height:0;padding:6px 11px;margin:0;font-size:13px;font-weight:700;
+  background:var(--surface);color:var(--fg);border:1px solid var(--line);
+  border-radius:999px;letter-spacing:0}
+.chip .mut{font-size:11px;margin-left:4px}
+.chip.on{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}
+.chip.on .mut{color:rgba(4,18,31,.6)}
+
+/* ── the drawer grid ────────────────────────────────────────────────────── */
+.gridbox{margin-top:var(--s2);overflow-x:auto;-webkit-overflow-scrolling:touch}
+.grow{display:flex;gap:4px;margin-bottom:4px}
+.cell{flex:1 1 0;min-width:32px;height:44px;padding:0;margin:0;font-size:9.5px;
+  line-height:1.05;border-radius:var(--r1);border:1px solid var(--line);
+  background:var(--surface);color:var(--dim);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:2px;font-weight:600;min-height:0}
+.cell .g{font-size:16px;font-weight:800;line-height:1}
+.cell.large{height:52px}
+.cell.filled{background:#0f2a19;color:var(--ok);border-color:#2c6b43}
+.cell.uncounted{background:#0b2333;color:var(--info);border-color:#245a7e}
+.cell.unknown{background:#332a06;color:var(--warn);border-color:#7a6410}
+.cell.empty{background:var(--surface);color:#4d4d56}
+.cell.mixed{background:#271433;color:var(--mix);border-color:#5a3570}
+.cell.on{outline:2px solid var(--acc);outline-offset:1px;color:var(--fg)}
+.legend{display:flex;flex-wrap:wrap;gap:3px 12px;margin-top:8px;
+  font-size:11px;font-weight:600;line-height:1.5}
+
+/* ── the record panel ───────────────────────────────────────────────────── */
+.known .card{margin-top:var(--s2)}
+.known b{display:block;margin-bottom:var(--s1);font-size:14.5px}
+.uncount{display:inline-block;margin-left:5px;padding:1px 7px;border-radius:999px;
+  background:#0b2333;color:var(--info);border:1px solid #245a7e;font-size:10.5px;
+  text-transform:uppercase;letter-spacing:.05em;font-weight:800}
+
+/* ── pick list ──────────────────────────────────────────────────────────── */
+.picklist{max-height:300px;overflow-y:auto;margin-top:var(--s2);
+  border:1px solid var(--line);border-radius:var(--r2);background:var(--bg)}
+.pick{display:block;width:100%;margin:0;padding:10px 12px;border:0;min-height:0;
+  border-bottom:1px solid var(--line);border-radius:0;background:transparent;
+  color:var(--fg);text-align:left;font-size:13.5px;line-height:1.35;font-weight:400}
+.pick:last-child{border-bottom:0}
+.pick.on{background:#0b2333;box-shadow:inset 3px 0 0 var(--acc)}
+.pick .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.pick .sku{color:var(--acc);font-family:ui-monospace,SFMono-Regular,monospace;
+  font-size:11.5px;font-weight:600}
+.pick .nm{display:block;margin-top:2px;white-space:normal;color:var(--fg)}
+.pick .qt{color:var(--mut);font-size:11.5px;white-space:nowrap;
+  font-variant-numeric:tabular-nums}
+.pick.split{background:#1b1526}
+.pick .elsewhere{display:block;margin-top:4px;font-size:11.5px;color:#c3a6ff;
+  line-height:1.4}
+
+/* ── the count box: the point of the exercise ───────────────────────────── */
+.countbox{margin-top:var(--s3);padding:12px;border-radius:var(--r2);
+  background:#0b2333;border:1px solid #2c6f9e}
+.countbox label{margin:0 0 var(--s1);color:#8fd3ff;font-size:11px;font-weight:800}
+.countbox input{background:#061520;border-color:#2c6f9e;font-size:22px;
+  font-weight:800;text-align:center;padding:12px;font-variant-numeric:tabular-nums}
+.countbox .why{margin-top:var(--s1);color:#86aec6;font-size:11.5px;line-height:1.45}
+
+/* ── the funnel ─────────────────────────────────────────────────────────── */
+.fchip{padding:7px 11px;font-size:13px;font-weight:600}
+.fchip .ct{margin-left:6px;font-size:10.5px;color:var(--mut);font-weight:700;
+  font-variant-numeric:tabular-nums}
+.fchip.on .ct{color:rgba(4,18,31,.65)}
+.fchip.zero{opacity:.5;border-style:dashed}
+.fchip.zero .ct{color:var(--warn)}
+.fresult{margin-top:var(--s3);padding:11px 12px;border-radius:var(--r2);
+  background:var(--bg);border:1px solid var(--line);font-size:13px;line-height:1.45}
+
+/* ── options drawer ─────────────────────────────────────────────────────── */
+details#opts{margin-top:var(--s3);border:1px solid var(--line);border-radius:var(--r2);
+  padding:9px 12px;background:var(--surface)}
+details#opts summary{color:var(--mut);font-size:11px;text-transform:uppercase;
+  letter-spacing:.07em;cursor:pointer;font-weight:700;list-style:none}
+details#opts summary::-webkit-details-marker{display:none}
+details#opts summary::before{content:"\203A  ";display:inline-block;
+  transition:transform .15s}
+details#opts[open] summary::before{transform:rotate(90deg)}
+details#opts label{margin-top:var(--s2)}
+details.card summary{list-style:none;font-weight:700}
+details.card summary::-webkit-details-marker{display:none}
+
+/* ── hints: kept, but off by default ────────────────────────────────────────
+   Scott: "it is really too busy with text in its current form" -- and earlier,
+   that he will not be in this daily once the inventory settles, so the
+   explanations cannot simply be deleted. Both are true, so the prose is behind
+   one switch. Off, the screen shows state and controls. On, it explains itself
+   to someone who last used it a month ago. The setting persists.            */
+.hint{display:none}
+body.hints-on .hint{display:revert}
+.hintbtn{width:auto;min-height:0;margin:0;padding:3px 9px;font-size:12px;
+  font-weight:800;border-radius:999px;background:var(--surface-2);
+  color:var(--mut);border:1px solid var(--line)}
+.hintbtn.on{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}
+
+/* ── flash: survives the advance ────────────────────────────────────────── */
+.flash{margin-top:var(--s2);padding:11px 13px;border-radius:var(--r2);
+  background:#0f2a19;color:#a7e8c0;border:1px solid #2c6b43;font-size:13px;
+  line-height:1.45}
+.flash b{color:#d6f8e3}
+
+/* ── the action bar: everything needed to act, never scrolls away ───────── */
+.actionbar{position:sticky;bottom:0;z-index:20;margin:var(--s3) calc(var(--s3) * -1) 0;
+  padding:10px var(--s3) calc(12px + env(safe-area-inset-bottom));
+  background:var(--bg);border-top:1px solid var(--line);
+  box-shadow:0 -14px 26px -10px rgba(0,0,0,.9)}
+.actionbar button{margin-top:8px}
 .shot{display:flex;gap:10px;align-items:center}
-/* Everything needed to act on a drawer lives here and never scrolls away: the
-   camera, the thumbnail, the submit. An earlier version pinned only the button
-   and left the file input up-page, which moved the problem rather than fixing
-   it -- and used a gradient background, so the card underneath showed through
-   the bar. Solid, or it is not a bar. */
-.actionbar{position:sticky;bottom:0;z-index:20;margin:16px -16px 0;
-padding:11px 16px calc(14px + env(safe-area-inset-bottom));
-background:var(--bg);border-top:1px solid var(--line);
-box-shadow:0 -12px 22px -8px rgba(0,0,0,.85)}
-.actionbar button{margin-top:9px}
+.shot .hint{color:var(--mut);font-size:12px;line-height:1.4}
 #file{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
 .camera{display:inline-flex;align-items:center;gap:6px;margin:0;padding:11px 14px;
-border-radius:10px;background:var(--card);color:var(--fg);
-border:1px solid var(--line);font-size:14px;font-weight:600;
-text-transform:none;letter-spacing:0;white-space:nowrap;cursor:pointer}
-.camera:active{background:#2a2a2e}
-details#opts{margin-top:14px;border:1px solid var(--line);border-radius:10px;
-padding:8px 12px;background:var(--card)}
-details#opts summary{color:var(--mut);font-size:12px;text-transform:uppercase;
-letter-spacing:.06em;cursor:pointer}
-details#opts label{margin-top:10px}
-.shot .hint{color:var(--mut);font-size:12.5px}
-.ro{margin-top:22px;padding:9px 11px;border-radius:8px;background:#16212a;color:#8fc7ff;font-size:12px}
-.mut{color:var(--mut);font-size:13px}
-/* The count is the point of the whole exercise and it read as just another
-   input. Scott: "you really gotta look at it a couple of times in order to find
-   the spot where you enter the quantity... if you don't use this for a while
-   it's gonna be like learning it all over again." */
-.picklist{max-height:300px;overflow-y:auto;margin-top:8px;
-border:1px solid var(--line);border-radius:9px}
-/* The name WRAPS. It used to be one ellipsised line, which cut off exactly the
-   part that distinguishes two rows -- Scott: "I can see socket head, but I
-   can't see any other attributes like its length." Truncating a fastener name
-   removes the discriminator and keeps the category. */
-.pick{display:block;width:100%;margin:0;padding:9px 11px;
-border:0;border-bottom:1px solid var(--line);border-radius:0;background:var(--card);
-color:var(--fg);text-align:left;font-size:13.5px;line-height:1.35}
-.pick:last-child{border-bottom:0}
-.pick.on{background:#0e2436;box-shadow:inset 3px 0 0 var(--acc)}
-.pick .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
-.pick .sku{color:var(--acc);font-family:ui-monospace,monospace;font-size:12px}
-.pick .nm{display:block;margin-top:3px;white-space:normal;color:var(--fg)}
-.pick .qt{color:var(--mut);font-size:12px;white-space:nowrap}
-.pick.split{background:#1d1930}
-.pick .elsewhere{display:block;margin-top:4px;font-size:11.5px;color:#c3a6ff}
-.fchip{padding:7px 11px;font-size:13px}
-.fchip .ct{margin-left:6px;font-size:11px;color:var(--mut);font-weight:600}
-.fchip.on .ct{color:#000}
-.fchip.zero{opacity:.55;border-style:dashed}
-.fchip.zero .ct{color:#fde047}
-.fresult{margin-top:12px;padding:10px 11px;border-radius:9px;background:#0f0f11;
-border:1px solid var(--line);font-size:13.5px}
-.countbox{margin-top:14px;padding:11px 12px;border-radius:10px;
-background:#0e2436;border:1px solid #2f6f9e}
-.countbox label{margin:0 0 7px;color:#7fd0ff;font-size:12px;font-weight:700}
-.countbox input{background:#08161f;border-color:#2f6f9e;font-size:19px;
-font-weight:700;text-align:center;padding:11px}
-.countbox .why{margin-top:7px;color:#8fb8d0;font-size:12px}
-.uncount{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;
-background:#0e2436;color:#38bdf8;border:1px solid #26597d;font-size:11px;
-text-transform:uppercase;letter-spacing:.04em;font-weight:700}
-/* Survives the advance on purpose: the confirmation for the drawer you just
-   finished has to still be readable once the app has moved to the next one. */
-.flash{margin-top:12px;padding:11px 13px;border-radius:10px;background:#16291d;
-color:#9fe0b5;border:1px solid #2c4433;font-size:13.5px}
-.flash b{color:#c9f4d8}
-.chips{display:flex;flex-wrap:wrap;gap:7px}
-.chip{width:auto;padding:9px 13px;margin:0;font-size:14px;font-weight:600;
-background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:999px}
-.chip.on{background:var(--acc);color:#000;border-color:var(--acc)}
-.gridbox{margin-top:12px;overflow-x:auto}
-.grow{display:flex;gap:5px;margin-bottom:5px}
-/* Every state carries a GLYPH as well as a colour. Scott is mildly colourblind:
-   "subtle colours are difficult... I can definitely deal with primary colours."
-   So the hues are pushed toward primaries, and more importantly the grid stays
-   readable with no colour discrimination at all -- the mark, not the shade,
-   carries the meaning. */
-.cell{flex:1 1 0;min-width:30px;height:40px;padding:0;margin:0;font-size:10px;
-line-height:1.05;border-radius:7px;border:1px solid var(--line);
-background:var(--card);color:var(--mut);display:flex;flex-direction:column;
-align-items:center;justify-content:center;gap:1px}
-.cell .g{font-size:15px;font-weight:800}
-.cell.large{height:48px}
-.cell.filled{background:#12301c;color:#4ade80;border-color:#2f6b41}
-.cell.uncounted{background:#0e2436;color:#38bdf8;border-color:#26597d}
-.cell.unknown{background:#3a2f07;color:#fde047;border-color:#7a6410}
-/* Filed, but the quantity was never counted -- it is the purchased figure. A
-   distinct colour because it is a distinct claim: we know WHERE it is and not
-   HOW MANY. Green would say both were settled. */
-
-.cell.empty{background:var(--card);color:#5a5a5e}
-.cell.mixed{background:#2b1836;color:#d8a0ff;border-color:#5a3570}
-.cell.on{outline:2px solid var(--acc);color:var(--fg)}
-.legend{display:flex;gap:12px;margin-top:8px;font-size:11.5px;color:var(--mut);flex-wrap:wrap}
-.known .card{margin-top:10px}
-.known b{display:block;margin-bottom:6px;font-size:14px}
-/* legibility of the READING, distinct from confidence in a COUNT: clear means
-   the text was readable, not that the match is right. */
-.clear{color:#4ecd7b}.partial{color:#feca57}.none{color:#ff9f43}
+  border-radius:var(--r2);background:var(--surface-2);color:var(--fg);
+  border:1px solid var(--line);font-size:14px;font-weight:700;text-transform:none;
+  letter-spacing:0;white-space:nowrap;cursor:pointer}
+.camera:active{background:#2a2a32}
+img#prev{height:58px;width:auto;max-width:34%;object-fit:cover;
+  border-radius:var(--r1);display:none;border:1px solid var(--line)}
 </style></head><body>
-<h1>binscan</h1><p class=sub>The record first &middot; the camera only when it is silent &middot; nothing is written</p>
+<div class=appbar><h1>binscan</h1>
+  <button class=hintbtn id=hintbtn title="show or hide the explanations">?</button>
+  <span class=where id=whereat>no drawer</span></div>
+<p class="sub hint">The record first &middot; the camera only when it is silent
+&middot; nothing is written without you.</p>
 
 <label>Where</label>
 <div id=areas class=chips></div>
@@ -1766,10 +1845,21 @@ align-items:center;justify-content:center;gap:1px}
   </div>
   <button id=go disabled>Estimate</button>
 </div>
-<div class=ro><b>Reading is free; writing needs you.</b> Photographs and matches are never written by themselves &mdash; a row moves only when you press File, and the count is only recorded if you typed one. Every run is logged. <a href="/log" style="color:#8fc7ff">view log</a></div>
+<div class="ro hint"><b>Reading is free; writing needs you.</b> Photographs and matches are never written by themselves &mdash; a row moves only when you press File, and the count is only recorded if you typed one. Every run is logged. <a href="/log" style="color:#8fc7ff">view log</a></div>
 
 <script>
 const $=s=>document.querySelector(s);
+(function(){
+  const on = localStorage.getItem('binscan.hints') === '1';
+  document.body.classList.toggle('hints-on', on);
+  const b=$('#hintbtn'); b.classList.toggle('on', on);
+  b.onclick=()=>{
+    const now=!document.body.classList.contains('hints-on');
+    document.body.classList.toggle('hints-on', now);
+    b.classList.toggle('on', now);
+    localStorage.setItem('binscan.hints', now?'1':'0');
+  };
+})();
 // A 478-entry select is the wrong control on a phone: reaching B3 meant
 // scrolling past everything, and B3 is not even last. Two stages instead --
 // pick a place, then tap the drawer where it physically sits. The grid mirrors
@@ -1800,6 +1890,7 @@ fetch('/api/areas').then(r=>r.json()).then(as=>{
 
 async function loadArea(name){
   AREA=name; CUR=null;
+  setWhere(name);
   $('#areas').querySelectorAll('.chip').forEach(b=>b.classList.toggle('on',b.dataset.a===name));
   $('#gridwrap').innerHTML='<div class=card>loading…</div>';
   $('#known').innerHTML=''; $('#out').innerHTML=''; $('#go').disabled=true;
@@ -1827,8 +1918,8 @@ async function loadArea(name){
   }
   html+=`</div><div class=legend>
     <span style="color:#4ade80"><b>&#10003;</b> ${t.filled} counted</span>
-    <span style="color:#38bdf8"><b>~</b> ${t.uncounted||0} filed, not counted</span>
-    <span style="color:#fde047"><b>?</b> ${t.unknown} not looked at</span>
+    <span style="color:#38bdf8"><b>~</b> ${t.uncounted||0} uncounted</span>
+    <span style="color:#fde047"><b>?</b> ${t.unknown} unseen</span>
     <span style="color:#d8a0ff"><b>&equiv;</b> ${t.mixed||0} mixed</span>
     <span style="color:#5a5a5e"><b>&middot;</b> ${t.empty} empty</span></div>`;
   $('#gridwrap').innerHTML=html;
@@ -1855,14 +1946,17 @@ async function repaint(){
     });
     const t=g.tally, L=$('#gridwrap').querySelector('.legend');
     if(L) L.innerHTML=`<span style="color:#4ade80"><b>&#10003;</b> ${t.filled} counted</span>
-      <span style="color:#38bdf8"><b>~</b> ${t.uncounted||0} filed, not counted</span>
-      <span style="color:#fde047"><b>?</b> ${t.unknown} not looked at</span>
+      <span style="color:#38bdf8"><b>~</b> ${t.uncounted||0} uncounted</span>
+      <span style="color:#fde047"><b>?</b> ${t.unknown} unseen</span>
       <span style="color:#5a5a5e"><b>&middot;</b> ${t.empty} empty</span>`;
   }catch(_){}
 }
 
+function setWhere(t){ const e=$('#whereat'); if(e) e.innerHTML=t; }
+
 function pick(name){
   CUR=name; LABEL=''; MORE=false; SUGGEST=null;
+  setWhere(`<b>${name}</b>`);
   $('#gridwrap').querySelectorAll('.cell').forEach(b=>b.classList.toggle('on',b.dataset.n===name));
   refreshDrawer(name,false);
 }
@@ -1936,11 +2030,11 @@ async function refreshDrawer(v,keepOut){
       setTimeout(()=>wireFiling(v), 0);
     }
     $('#known').innerHTML='<div class=card><b>Nothing on record for this drawer.</b>'+
-      '<div class=mut>Photograph the McMaster bag tag if there is one, '+
+      '<div class="mut hint">Photograph the McMaster bag tag if there is one, '+
       'or say it is empty.</div>'+
       `<button id=emptybtn style="margin-top:12px;background:var(--card);color:var(--fg);border:1px solid var(--line)">&middot; This drawer is empty</button>`+
       `<button id=mixedbtn style="margin-top:8px;background:var(--card);color:var(--fg);border:1px solid var(--line)">&equiv; Oddments &mdash; ones and twos, not worth a row each</button>`+
-      `<div class=mut style="margin-top:7px">Four or more of the same thing? Catalogue it above instead &mdash; the pile only works if the countable stuff keeps leaving it.</div>`+
+      `<div class="mut hint" style="margin-top:7px">Four or more of the same thing? Catalogue it above instead &mdash; the pile only works if the countable stuff keeps leaving it.</div>`+
       '<div id=emptymsg class=mut style="margin-top:8px"></div></div>';
     $('#emptybtn').onclick=()=>markEmpty(v);
     $('#mixedbtn').onclick=()=>markMixed(v);
@@ -2152,12 +2246,12 @@ function createCard(seed){
     <div class=countbox>
       <label># HOW MANY ARE IN THE DRAWER?</label>
       <input id=npqty type=number inputmode=decimal placeholder="tap to count">
-      <div class=why>Leave blank if you did not count.</div>
+      <div class=why>Blank = not counted.</div>
     </div>
     <button id=npgo style="margin-top:10px">Create and file in ${CUR}</button>
     <div id=npmsg style="margin-top:8px;font-size:13px"></div>
-    <div class=mut style="margin-top:8px">A part created here has no supplier and
-      no purchase record, so it will never appear in the purchased-vs-counted
+    <div class="mut hint" style="margin-top:8px">A part created here has no supplier
+      and no purchase record, so it will never appear in the purchased-vs-counted
       reconciliation. That is honest &mdash; nobody knows where it came from.</div>
   </details>`;
 }
@@ -2226,7 +2320,7 @@ function manualCard(){
       <div class=countbox>
         <label># HOW MANY ARE IN THE DRAWER?</label>
         <input class=qty data-i="m" type=number inputmode=decimal placeholder="tap to count">
-        <div class=why>Leave blank if you did not count.</div>
+        <div class=why>Blank = not counted.</div>
       </div>
       <button class=file data-i="m" data-stock="" id=manualfile>File it</button>
       <div class=msg data-i="m" style="margin-top:8px;font-size:13px"></div>
@@ -2383,8 +2477,8 @@ async function fileAnother(drawer){
   $('#shothint').textContent='Adding another part — photograph it, or pick by hand';
   $('#known').innerHTML =
     `<div class=card><b>Adding another part to ${drawer}</b>
-       <div class=mut>What is already filed here stays. Pick or create the next
-       thing in the drawer.</div></div>`;
+       <div class="mut hint">What is already filed here stays. Pick or create the
+       next thing in the drawer.</div></div>`;
   $('#out').innerHTML = manualCard() + createCard('') +
     `<div class=card><div class=mut>Done with this drawer?</div>
        <button id=skipbtn style="background:var(--card);color:var(--fg);border:1px solid var(--line)">
@@ -2404,7 +2498,7 @@ async function advance(){
       '<div class=mut>Pick the next one by hand.</div></div>';
     return;
   }
-  CUR=nx;
+  CUR=nx; setWhere(`<b>${nx}</b>`);
   $('#gridwrap').querySelectorAll('.cell').forEach(b=>b.classList.toggle('on',b.dataset.n===nx));
   await refreshDrawer(nx,false);
   $('#known').scrollIntoView({behavior:'smooth',block:'nearest'});
@@ -2455,18 +2549,18 @@ function renderIdentify(d){
         <label># HOW MANY ARE IN THE DRAWER?</label>
         <input class=qty data-i="${i}" type=number inputmode=decimal
                placeholder="tap to count">
-        <div class=why>Leave blank if you did not count. The record says
+        <div class=why>Blank = not counted.<span class=hint> The record says
           <b>${(+c.quantity).toLocaleString()}</b>, but that is what was
-          <b>purchased</b>, not what is there.</div>
+          <b>purchased</b>, not what is there.</span></div>
       </div>
       <button class=file data-i="${i}" data-stock="${c.stock}"
               style="margin-top:10px">File in ${here}</button>
       <div class=msg data-i="${i}" style="margin-top:8px;font-size:13px"></div>
     </div>`).join('')
-    + `<div class=warn>A match made from a photograph is a proposal, not an
-       observation. Confirm against the open drawer before filing. The count box
-       is blank on purpose — the number already on the row is what was BOUGHT,
-       not what is there.</div>`
+    + `<div class=warn>Confirm against the open drawer before filing.
+       <span class=hint><br>A match made from a photograph is a proposal, not an
+       observation. The count box is blank on purpose — the number already on the
+       row is what was BOUGHT, not what is there.</span></div>`
     + manualCard() + createCard(LABEL) + skipCard();
 }
 
