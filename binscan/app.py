@@ -1725,8 +1725,15 @@ button.quiet{background:var(--surface-2);color:var(--fg);border:1px solid var(--
   font-size:16px;font-weight:800;color:var(--fg);border-style:dashed;
   letter-spacing:-.01em}
 .chip#more.on{color:var(--acc-ink);border-style:solid}
-#rest{flex-direction:row;flex-wrap:wrap}
-#rest .chip{flex:0 0 auto;padding:6px 11px;font-size:12.5px;font-weight:700}
+/* The places behind "Elsewhere" get the same treatment as the cabinets: bordered
+   rectangles, name over count, one visual language for "a place you can go".
+   Two per row rather than three, because these names are words -- Metrology
+   Bench, Florida Staging -- not two characters, and a name that wraps to three
+   lines is worse than a shorter row. */
+#rest{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-top:5px}
+#rest .chip{flex:none;width:auto;font-size:13px;font-weight:800;padding:9px 8px 8px;
+  line-height:1.2;hyphens:auto}
+#rest .chip .mut{font-size:10.5px}
 
 /* ── the drawer grid ────────────────────────────────────────────────────── */
 .gridbox{margin-top:var(--s2);overflow-x:auto;-webkit-overflow-scrolling:touch}
@@ -1999,7 +2006,9 @@ fetch('/api/areas').then(r=>r.json()).then(as=>{
   const wire=()=>$('#areas').querySelectorAll('.chip[data-a]').forEach(b=>b.onclick=()=>loadArea(b.dataset.a));
   wire();
   $('#more').onclick=()=>{ const r=$('#rest');
-    const open=r.style.display!=='none'; r.style.display=open?'none':'flex';
+    // 'grid', not 'flex': #rest lays out as a two-column grid of tiles, and an
+    // inline style beats the stylesheet, so setting flex here silently undid it.
+    const open=r.style.display!=='none'; r.style.display=open?'none':'grid';
     $('#more').classList.toggle('on',!open); };
 }).catch(()=>{ $('#areas').innerHTML='<div class="card err">could not load areas</div>'; });
 
