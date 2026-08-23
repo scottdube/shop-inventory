@@ -178,6 +178,30 @@ in the spindle.
       unit lifetime, predates two orders, quotes a 4-pack price as a unit
       price. Other parts may carry the same stale auto-generated blocks.
 
+## BinScan cannot create a part's FIRST stock row
+
+- [ ] **A part that exists with no stock anywhere is unreachable from the
+      phone.** Found 2026-08-23 with Scott at A3-R8C5, counting a bagged
+      electrolytic kit: *"I can count them and put them in... I think I can do
+      it through Binscan. Right?"* No — three paths and all three refuse:
+      `/api/newpart` duplicate-checks and the parts already exist,
+      `/api/assign` needs an existing stock row to move, and Count / Recount
+      acts on rows already in the drawer.
+
+      **This is not a corner case: 465 of 992 active parts (47%) have no stock
+      row anywhere** — Capacitors 42, Solder 46, Modules 43, Connectors 24,
+      Sensors 23, Tooling 20. Every one of them is a part someone can find in a
+      drawer and be unable to record from where they are standing.
+
+      The gap is narrow and the shape is known: *existing part + this drawer +
+      a counted quantity → first stock row, `stocktake_date` set.*
+      `scripts/first_stock.py` already does exactly this from a desk, with
+      hardcoded `(pk, count)` pairs, and its docstring has the reasoning —
+      the bag is the compartment, and the date is set because these ARE a
+      physical count.
+
+      Worth building; not built mid-walk.
+
 ## Guards that mirror each other, but should not
 
 - [ ] **`scripts/mark_empty.py` still refuses on any description text**, while
