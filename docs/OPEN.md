@@ -166,6 +166,25 @@ in the spindle.
       the pull studs had. Bought 2024, received 1 on 2026-08-23, no stocktake
       date. An insert that old may be worn out and gone.
 
+## Receipts that were never put away
+
+- [ ] **Find the SHT31-D delivery, or settle what PO-0028 actually was.**
+      Scott ordered on 2026-08-20 (Amazon, $16.9x) and recalls it as the
+      SHT31s; Amazon reports delivered; the parts are not in B3-R4C8 and not
+      in `Receiving`. Both rows (573, 574, two each) now sit at
+      `(NOT LOCATED ANYWHERE)` — see `TRAPS.md`. **The Amazon order page is the
+      thing that settles it**, since the confirmation email carried no line
+      items at all. Until then the shop believes it owns four sensors it
+      cannot find.
+- [ ] **Reconcile the 23 stub POs.** Their line items were inferred from
+      confirmations with no line items. Receiving one mints stock at a planned
+      address — which is how the SHT31 claim was born. Worth a pass that flags
+      any stub PO already marked received.
+- [ ] **Receive to `Receiving`, not to a drawer.** Four rows (570, 571, 572,
+      583) carry a drawer and have never been counted, on the same footing as
+      the SHT31 rows. Low risk — three are in daily use — but the practice is
+      what produced the failure.
+
 ## Imports and enrichment
 
 - [ ] **Bambu Lab** — 12 orders located, parser proven against all three

@@ -2069,3 +2069,47 @@ via `/api/partsearch`, and any hit can be filed straight into the drawer.
 And it **rendered nothing at all when a cabinet had no unlocated rows** — so
 in a cabinet whose backlog was already filed there was no search box in the
 UI whatsoever. It always renders now.
+
+## A paper receipt is not a put-away
+
+Scott, at B3-R4C8 on 2026-08-23: *"I cannot seem to find these, we marked them
+as here and Amazon shows them delivered but right now theyre MIA."*
+
+The record said two SHT31-D sensors were in that drawer. Nobody had ever put
+them there. Marking **PO-0028 received** created two stock rows at their
+**planned** destinations — 2 to RB-12 for the RAT GDO Florida pair, 2 to
+B3-R4C8 as spares — and a plan written at receipt is indistinguishable, in the
+database, from a person carrying parts to a drawer.
+
+Both rows were `NOT COUNTED`, which is the system telling the truth in a voice
+nobody hears: **the drawer was a claim, not an observation.** The colour said
+"filed", and filed is not counted.
+
+**And the line item under it was itself a guess.** PO-0028's own note:
+
+> STUB PURCHASE ORDER — needs manual reconciliation. Amazon order confirmation
+> of 2026-08-20 carries NO line items: only the order number, the category
+> hint "1 Hardware item", and a grand total of $16.9…
+
+So `SHT31-D × 4` was attributed to an order that never said what it contained,
+flagged for reconciliation, and then **receiving it turned that inference into
+stock at an address.** Two soft facts stacked into one hard-looking one.
+Scott's recollection supports the attribution, and it remains a recollection.
+
+**23 stub POs exist.** Receiving any of them does this.
+
+Corrected by retracting the location rather than deleting the rows: the
+purchase is probably real, so the honest state is `(NOT LOCATED ANYWHERE)` —
+owned, location unknown — which 41 other rows already occupy and BinScan's
+picker surfaces by name. Quantities untouched; nobody has counted these.
+
+**The general rule: a receipt records that something ARRIVED, never where it
+ended up.** Those are two events, usually minutes to weeks apart, and only the
+second one is a location. Four other rows currently rest on the same footing
+(PO-0134 label printer, PO-0136 Avery sheets, PO-0030 LCR tester, PO-0026
+carbide insert) — all low risk, since three are in daily use, but all
+unverified in exactly the same way.
+
+**What would prevent it:** receive to `Receiving`, and let the walk move it
+to a drawer. `Receiving` already exists at both sites and already holds two
+items *"awaiting a home"*, which is the pattern working correctly.
