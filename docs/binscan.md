@@ -650,6 +650,19 @@ up — tested by injecting A0/B0, which lays out correctly with no change.
 **A mark and a proper name.** The logo is the drawer grid in nine rectangles with
 the middle one lit; the wordmark is `BinScan`, not lowercase.
 
+**"elsewhere" is two tiles wide**, not one and not full width. One would size
+twenty-odd places like a single cabinet; full width would read as the whole
+wall. It is dashed because it is a door to somewhere else rather than a thing on
+this wall, and it sizes itself off the measured column count so it stays two
+cabinets wide when the wall becomes four across.
+
+**Brighter edges on anything that is an object.** A separate `--edge` token,
+lighter than the hairline used between lines of text, for cabinets and drawers.
+Under shop lighting the dim rule made the tiles read as a flat field rather than
+as things you can press — and for a mildly colourblind reader edge contrast does
+more work than fill colour, which is the same reason every state carries a
+glyph.
+
 The rest of the pass:
 
 - **A sticky header** carrying the app name and the current drawer, so you
