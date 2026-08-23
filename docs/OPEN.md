@@ -550,8 +550,15 @@ clock would say everything is still fresh.
 
 So the honest shape is probably neither a pure calendar clock nor a pure
 presence clock, but presence-based ageing plus **explicit invalidation events**
-(arrival, a transfer, a delivery). That is a hypothesis to test against the
-research, not a decision.
+(arrival, a transfer, a delivery).
+
+**The research pass was run 2026-08-23 and found NO prior art for this** —
+warehouses do not close for six months, so the case never arises in the
+literature. The prediction recorded here that established practice would have
+an answer was wrong. This has to be designed from first principles; the nearest
+support is opportunity-based counting's premise that errors cluster around
+*movement*, which is consistent with a presence clock without validating it.
+See `cycle-counting-research.md`.
 
 **Open question raised 2026-08-23, and now answered: LRD is the first real
 user, not SLN.** Original framing kept because the reasoning is what matters — The queue auto-scopes to the current site, and Scott is at LRD
@@ -630,6 +637,15 @@ the freshness distribution by age band, rolling coverage, and what is past its
 interval, together. Scott: *"probably all of that in dashboard form."* The
 earlier note here arguing for one number was arguing against a *completion bar*,
 which is a different objection and still holds.
+
+**Research pass done 2026-08-23 — see `docs/cycle-counting-research.md`.** It
+carries the methods catalogue, what was ruled out as warehouse ceremony and why,
+five things the research changed about decisions already made, and **eight new
+or reopened questions for the next session**. Headlines: ABC-by-value inverts
+the true priority in a shop (a 12-cent screw outranks a $180 toolholder);
+**opportunity-based counting may matter more than the weekly schedule**; the
+control group method is the right instrument for the LRD pilot; and BinScan has
+already silently taken the informed-count position by showing quantities.
 
 **Still open:**
 
