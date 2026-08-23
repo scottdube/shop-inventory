@@ -132,25 +132,39 @@ matter for a walk.
 
 ## Which site you are in
 
-The header reads `SLN · B2-R4C1`. Everything walkable is at SLN today, so the
-site label is currently redundant — deliberately.
+Two sites, and Scott is laying Florida out shortly. A switcher was first
+deferred on measurement — SLN had 474 locations and 32 walkable containers, LRD
+had 2 and none — and he overruled that: *"I would normally agree with that
+rationale about controls, but in this case it's just a timing issue."* Correct.
+The measurement knew the snapshot; he knows the trajectory. Two clearly-marked
+placeholder containers went in at LRD so the switcher has somewhere to go.
 
-A **site switcher** was considered and deferred. Measured 2026-08-22:
+Three of his corrections shaped what it became:
 
-| | SLN | LRD |
-|---|---|---|
-| locations | 474 | 2 |
-| containers you could walk | 32 | **0** |
-| stock rows | 494 | 24 |
+**It does not belong in the body.** A segmented control above the grid cost a
+row and read as a decision you make constantly. It is not.
 
-A switcher would toggle between the whole shop and one misfiled kit beside an
-empty Receiving — a control that does nothing, which teaches you to ignore
-controls. **The trigger to add it: when LRD has more than one walkable
-container.**
+**It is unnecessary most of the time.** *"It's just too big and distracting."*
+So the control lives in **Options**, with the other set-once settings, and the
+header shows a badge **only when you are looking somewhere other than where you
+are standing**. A label that never changes is a label nobody reads.
 
-The site label goes in now regardless, because the error it guards against is
-filing an SLN part into an LRD drawer, and that is far easier to prevent before
-the ambiguity exists than to detect afterwards.
+**It is a rare act, so it asks.** *"It's one switch six months later, switch it
+back."* Leaving your location asks for confirmation; coming back does not.
+Nagging on the safe direction is how people learn to dismiss dialogs unread.
+
+**And "home" means where you physically are.** It was hard-coded to SLN until
+Scott asked *"by home you mean the one you're at geographically?"* — which is
+wrong the moment he is in Florida. Two intents needed separating:
+
+| intent | what changes |
+|---|---|
+| "let me peek at Florida from NH" | the view only — badge appears |
+| "I have moved to Florida" | `Set as where I am`, persisted |
+
+So the Options select changes what is shown, a one-tap action changes where you
+are, and the badge means *you are looking somewhere other than where you are
+standing* — which is the only condition worth spending header space on.
 
 ## The picker
 
