@@ -342,6 +342,42 @@ Auto-advance looked like a walk-only feature that the tool would outgrow. It is
 not: **a cycle count is a walk, just a short repeating one over a chosen set.**
 Advance is the mechanism; only the source of the list changes.
 
+**Scoping session: 2026-08-23.** The numbers that shape it, measured
+2026-08-22 so the conversation starts from facts:
+
+| | |
+|---|---|
+| stock rows | 563 |
+| ever counted | 268 (**47%**) |
+| never counted | 295 |
+| flagged `[ESTIMATE]` | 149 |
+| no location at all | 41 |
+| drawers holding something | **87** of 324 |
+
+**Every count on file is from today.** The age histogram is a single bar at
+zero months, because counting only began today — which means staleness cannot
+yet be used to prioritise anything, and will not be a useful axis for months.
+The first cycle has to be driven by *never counted* (295 rows), not by *counted
+longest ago* (nothing qualifies).
+
+Counted rows cluster hard: B3 has 104, A3 64, and B1 only 6. That is a record of
+where the walk has been, not of where the risk is.
+
+**Questions to answer, not assume:**
+
+- What is a **cycle** — a fixed count of drawers, a fixed time, or everything
+  older than a threshold? 87 drawers hold stock today; ten a week clears them in
+  nine weeks and the wall grows.
+- Does a cycle sample **drawers** or **rows**? A drawer with eight rows costs
+  eight counts but one trip. The trip is the expensive part.
+- Does **never counted** outrank **counted long ago** permanently, or only until
+  the backlog clears?
+- What makes a row **worth** counting? The 149 `[ESTIMATE]` rows carry purchased
+  figures nobody has verified — those are wrong by an unknown amount right now,
+  which is different from a real count going stale.
+- What does **done** look like? There is no done. The readout has to be a
+  freshness statistic, not a completion bar.
+
 **What it needs, none of it built:**
 
 - [ ] **A queue.** A set of drawers to check, and advance stepping through *that
