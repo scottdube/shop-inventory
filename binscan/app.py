@@ -1839,7 +1839,10 @@ button.quiet{background:var(--surface-2);color:var(--fg);border:1px solid var(--
 
 /* ── the record panel ───────────────────────────────────────────────────── */
 .known .card{margin-top:var(--s2)}
-.known b{display:block;margin-bottom:var(--s1);font-size:14.5px}
+/* Only the panel HEADING is a block. Scoping this to every <b> inside .known
+   turned the number inside "Recording 50 again is still a count" into its own
+   line, which read as three broken fragments. */
+.known > .card > b:first-child{display:block;margin-bottom:var(--s1);font-size:14.5px}
 .onrow{padding:8px 0;border-top:1px solid var(--line)}
 .onrow:first-of-type{border-top:0}
 .onrow .countbox{margin-top:9px}
@@ -1936,6 +1939,10 @@ body.hints-on .hint{display:revert}
 .flash b{color:#d6f8e3}
 
 /* ── the action bar: everything needed to act, never scrolls away ───────── */
+/* Hidden while a count is being typed. The keypad shrinks the viewport and the
+   sticky bar then sits on top of the very button you are reaching for -- and
+   the bar is useless mid-count anyway: you are not taking a photo. */
+body.counting .actionbar{display:none}
 .actionbar{position:sticky;bottom:0;z-index:20;margin:var(--s3) calc(var(--s3) * -1) 0;
   padding:10px var(--s3) calc(12px + env(safe-area-inset-bottom));
   background:var(--bg);border-top:1px solid var(--line);
@@ -2307,6 +2314,18 @@ function errText(j){
   return 'failed — no reason given';
 }
 
+function countingMode(on){ document.body.classList.toggle('counting', !!on); }
+
+// Any count field, anywhere, puts the app in counting mode while it has focus.
+document.addEventListener('focusin', e=>{
+  if(e.target.matches('.countbox input')) countingMode(true);
+});
+document.addEventListener('focusout', e=>{
+  if(e.target.matches('.countbox input')) setTimeout(()=>{
+    if(!document.querySelector('.countbox input:focus')) countingMode(false);
+  }, 120);
+});
+
 function wireRecount(drawer){
   $('#known').querySelectorAll('button.recount').forEach(b=>{
     // Stash the original label ONCE, before it can be overwritten by "Cancel".
@@ -2316,7 +2335,9 @@ function wireRecount(drawer){
       const open = box.style.display !== 'none';
       box.style.display = open ? 'none' : '';
       b.textContent = open ? b.dataset.was : 'Cancel';
-      if(!open) box.querySelector('.rq').focus();
+      countingMode(!open);
+      if(!open){ box.querySelector('.rq').focus();
+                 box.scrollIntoView({behavior:'smooth',block:'center'}); }
     };
   });
   $('#known').querySelectorAll('button.rgo').forEach(b=>b.onclick=async()=>{
@@ -2331,6 +2352,7 @@ function wireRecount(drawer){
     try{
       const j=await (await fetch('/api/assign',{method:'POST',body:fd})).json();
       if(j.ok){
+        countingMode(false);
         setFlash(`&#10003; <b>${drawer}</b> counted at <b>${j.quantity}</b>, verified.`);
         await repaint();
         await refreshDrawer(drawer,true);
