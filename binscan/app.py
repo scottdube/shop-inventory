@@ -1615,6 +1615,12 @@ PAGE = r"""<!doctype html><html><head>
 :root{
   --bg:#0b0b0e; --surface:#15151a; --surface-2:#1c1c22; --line:#2a2a32;
   --fg:#f2f2f5; --mut:#8e8e9a; --dim:#65656f;
+  /* A brighter rule for things that are OBJECTS -- cabinets, drawers -- as
+     opposed to the hairlines that merely separate text. Under shop lighting the
+     dim rule made the tiles read as a flat field rather than as things you can
+     press, and for a mildly colourblind reader edge contrast does more work
+     than fill colour. */
+  --edge:#4d4d5c;
   --acc:#4ea1ff; --acc-ink:#04121f;
   --ok:#4ade80; --info:#38bdf8; --warn:#fde047; --bad:#ff8f8f; --mix:#d8a0ff;
   --s1:6px; --s2:10px; --s3:16px; --s4:24px;
@@ -1697,16 +1703,25 @@ button.quiet{background:var(--surface-2);color:var(--fg);border:1px solid var(--
    picks from needs no legend, because you already know where to look. */
 .chips{flex-direction:column;gap:5px}
 .wallrow{display:flex;gap:5px}
-.chip{width:auto;min-height:0;margin:0;padding:8px 0 7px;font-weight:800;
+/* One min-height for every tile so "elsewhere", whose label is smaller, still
+   lines up with the cabinets rather than sitting 4px short. */
+.chip{width:auto;min-height:51px;margin:0;padding:8px 0 7px;font-weight:800;
+  justify-content:center;
   flex:1 1 0;font-size:16px;letter-spacing:-.01em;
-  background:var(--surface);color:var(--fg);border:1px solid var(--line);
+  background:var(--surface);color:var(--fg);border:1px solid var(--edge);
   border-radius:var(--r1);display:flex;flex-direction:column;align-items:center;
   gap:1px;line-height:1.1}
 .chip .mut{font-size:10.5px;margin:0;font-weight:700;font-variant-numeric:tabular-nums}
 .chip.on{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}
 .chip.on .mut{color:rgba(4,18,31,.65)}
-.chip#more{flex:0 0 auto;width:100%;flex-direction:row;gap:6px;font-size:12px;
-  font-weight:700;padding:7px 0;color:var(--mut)}
+/* Two tiles wide, not one: it stands for twenty-odd places, and a single tile
+   would size it like one cabinet. Not full width either -- that would read as
+   the whole wall. Dashed, because it is a door to somewhere else rather than a
+   thing on this wall. */
+.chip#more{flex:0 0 calc(((100% - (var(--cols,3) - 1) * 5px) / var(--cols,3)) * 2 + 5px);
+  font-size:13px;font-weight:700;color:var(--mut);border-style:dashed;
+  letter-spacing:-.01em}
+.chip#more.on{color:var(--acc-ink);border-style:solid}
 #rest{flex-direction:row;flex-wrap:wrap}
 #rest .chip{flex:0 0 auto;padding:6px 11px;font-size:12.5px;font-weight:700}
 
@@ -1714,7 +1729,7 @@ button.quiet{background:var(--surface-2);color:var(--fg);border:1px solid var(--
 .gridbox{margin-top:var(--s2);overflow-x:auto;-webkit-overflow-scrolling:touch}
 .grow{display:flex;gap:4px;margin-bottom:4px}
 .cell{flex:1 1 0;min-width:32px;height:44px;padding:0;margin:0;font-size:9.5px;
-  line-height:1.05;border-radius:var(--r1);border:1px solid var(--line);
+  line-height:1.05;border-radius:var(--r1);border:1px solid var(--edge);
   background:var(--surface);color:var(--dim);display:flex;flex-direction:column;
   align-items:center;justify-content:center;gap:2px;font-weight:600;min-height:0}
 .cell .g{font-size:16px;font-weight:800;line-height:1}
@@ -1722,7 +1737,7 @@ button.quiet{background:var(--surface-2);color:var(--fg);border:1px solid var(--
 .cell.filled{background:#0f2a19;color:var(--ok);border-color:#2c6b43}
 .cell.uncounted{background:#0b2333;color:var(--info);border-color:#245a7e}
 .cell.unknown{background:#332a06;color:var(--warn);border-color:#7a6410}
-.cell.empty{background:var(--surface);color:#4d4d56}
+.cell.empty{background:var(--surface);color:#6a6a76;border-color:#3a3a46}
 .cell.mixed{background:#271433;color:var(--mix);border-color:#5a3570}
 .cell.on{outline:2px solid var(--acc);outline-offset:1px;color:var(--fg)}
 .legend{display:flex;flex-wrap:wrap;gap:3px 12px;margin-top:8px;
@@ -1969,8 +1984,14 @@ fetch('/api/areas').then(r=>r.json()).then(as=>{
   const rows=Object.keys(byRow).sort().map(k=>
     `<div class=wallrow>` + byRow[k].sort((x,y)=>x.n-y.n).map(chip).join('') + `</div>`
   ).join('');
+  // "elsewhere" is a tile like any other, so it is sized against the widest
+  // wall row rather than stretched across. The column count is whatever the
+  // wall currently has -- three today, four once A0/B0 are up -- so it is
+  // measured, not assumed.
+  const cols = Math.max(...Object.values(byRow).map(v=>v.length), 1);
+  $('#areas').style.setProperty('--cols', cols);
   $('#areas').innerHTML = rows
-    + `<button class=chip id=more style="border-style:dashed">elsewhere <span class=mut>${rest.length}</span></button>`
+    + `<div class=wallrow><button class=chip id=more>elsewhere<span class=mut>${rest.length}</span></button></div>`
     + `<div id=rest style="display:none;width:100%;margin-top:7px" class=chips>${rest.map(chip).join('')}</div>`;
   const wire=()=>$('#areas').querySelectorAll('.chip[data-a]').forEach(b=>b.onclick=()=>loadArea(b.dataset.a));
   wire();
