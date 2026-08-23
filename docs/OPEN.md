@@ -77,6 +77,34 @@ State after the 2026-08-23 walk, 28 bins:
 
 ## At the bench
 
+- [ ] **Strip the dead VFD (RB-18 area / bench).** Six parts catalogued
+      2026-08-23 with identify-on-the-board and test-before-use notes; nothing
+      filed except the fan, which is already tested and in B3-R5C3.
+
+      | # | part | test |
+      |---|---|---|
+      | 1077 | Heatsink, extruded finned | measure TO-220 hole spacing |
+      | 1078 | Fan X6015D12MB 60x15 12V | **done — filed B3-R5C3** |
+      | 1075 | Relay Churod A1-S-112VA | coil, then contacts for welding |
+      | 1076 | Cap 820uF 400V RUC CD293 x2 | **discharge first**, then C + ESR |
+      | 1079 | Terminal block R/S/T/PE | measure pitch: 7.62 / 9.5 / 10.16 |
+      | 1080 | IGBT DXG20N65FS x6 | diode-test IN PLACE before unsoldering |
+
+      **Scott does not remember the failure symptoms**, so every electrical part
+      is suspect and their rows get QUARANTINED when filed. Test all six IGBTs
+      rather than assuming: a drive usually dies with one leg shorted while the
+      rest survive, so six devices may be five good ones and a casualty.
+
+      Also grab: the **thermistor** bolted to the heatsink end (over-temp
+      sensor) and the **long black bar** across the board — probably a bleed or
+      inrush resistor, unread.
+
+      **Before scrapping the board:** discharge the bus caps, and photograph the
+      SOLDER side. The component side is already photographed; the solder side
+      is the one that cannot be recovered afterwards. It is e-waste, not trash.
+
+
+
 - [ ] **TEST the 100 PSI pressure transducer (#1071).** Scott, 2026-08-23: *"I
       have a recollection that there could have been a problem with this one.
       So it does need to be tested."* Its wires are cut and stripped, so it has
