@@ -1989,7 +1989,7 @@ fetch('/api/areas').then(r=>r.json()).then(as=>{
   // a month has lost. Every label below comes from the location's own
   // description, so the tile says what the record says.
   const SHORT={
-    'Metrology Bench':'Metro Bench', 'Florida Staging':'FL Staging',
+    'Metrology Bench':'Metrology', 'Florida Staging':'FL Staging',
     'Assembly & Test':'Assy & Test', 'Machine Shop':'Mach Shop',
     'Electronics Bench':'Elec Bench',
     'BL':'Bench Left',    'BR':'Bench Right',      // pedestals under the e-bench
