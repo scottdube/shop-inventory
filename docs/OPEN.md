@@ -24,8 +24,8 @@ queue, not a log.
       plumbing that needs separating** into the Plumbing box; the WaterPEX P-412
       was the first one pulled out.
 - [ ] ~~Ball valve #1053 has no home~~ — **done**, 2 off, 3/8in, in the Air box.
-- [ ] **A2 walk** — `mark_empty.py --cabinet A2` dry-runs to *would mark 54,
-      skipped 10*. Mostly opening drawers.
+- [x] ~~**A2 walk**~~ — **done.** 53 verified empty, 7 counted, 4 parking
+      spots, zero unseen.
 
 ## Containers and dividers
 
@@ -421,20 +421,25 @@ a notebook, and none can be guessed from here.
 Once the locations exist, BinScan walks LRD exactly as it walks the bin wall —
 the site switcher and the placeholder containers are already in place for it.
 
-## Where the walk stands — end of 2026-08-22
+## Where the walk stands — 2026-08-23
 
-| cabinet | drawers | counted | uncounted | empty | unseen |
-|---|---|---|---|---|---|
-| A1 | 64 | 0 | 0 | 64 | **0** |
-| A2 | 64 | 5 | 2 | 53 | 4 |
-| A3 | 64 | 19 | 1 | 11 | **33** |
-| B1 | 44 | 4 | 0 | 10 | **30** |
-| B2 | 44 | 14 | 1 | 23 | 6 |
-| B3 | 44 | 34 | 7 | 3 | **0** |
-| **all** | **324** | 76 | 11 | 164 | **73** |
+| cabinet | drawers | counted | uncounted | empty | unseen | parking |
+|---|---|---|---|---|---|---|
+| A1 | 64 | 0 | 0 | 64 | **0** | 0 |
+| A2 | 64 | 7 | 0 | 53 | **0** | 4 |
+| A3 | 64 | 21 | 0 | 43 | **0** | 0 |
+| B1 | 44 | 4 | 0 | 10 | **30** | 0 |
+| B2 | 44 | 14 | 1 | 23 | 6 | 0 |
+| B3 | 44 | 35 | 6 | 3 | **0** | 0 |
+| **all** | **324** | 81 | 7 | 196 | **36** | 4 |
 
-**251 of 324 accounted, 77%.** A1 and B3 complete; B2 nearly. The 73 unseen are
-concentrated in A3 (33) and B1 (30).
+**288 of 324 accounted, 88%** — up from 251 / 77% on 2026-08-22. **A3 is
+complete** (Scott, 2026-08-23): 43 verified empty, 21 counted, all 74 of its
+stock rows carrying a count date. A1, A2, A3 and B3 are all at zero unseen.
+**Every remaining unseen drawer is in B1 (30) or B2 (6)**, which makes the B1
+walk the last large piece of the bin wall.
+
+Shop-wide: **295 of 581 rows counted (51%)**, up from 268 of 563.
 
 Still outstanding:
 
