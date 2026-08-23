@@ -125,6 +125,47 @@ row, which is a document, not a count. None of these rows has a
       `pack-corrected: 1 pack(s) of 10 = 10 units` in their notes from the
       08-19 pass. The catalogue had answered it; the sweep had not read it.
 
+## Pull studs — converge to two parts, once the geometry is checked
+
+Scott, 2026-08-23: *"should we be tracking the pull studs as 2 part #'s, 1 for
+TSC and another for non TSC regardless of vendor? They are the same things."*
+
+**Agreed in principle, and it is the correct model** — vendor is not part
+identity, it belongs on `SupplierPart`. Four records for what is probably two
+real items is the import-twins shape.
+
+**Blocked on one physical check, deliberately.** The four records each name a
+DIFFERENT attribute, so nothing on file establishes they interchange:
+
+| Part | Name says | Axis it pins |
+|---|---|---|
+| #110 Haas 04-1421 | "Standard" | TSC: no |
+| #113 Haas 04-1420 | "TSC" | TSC: yes |
+| #539 Tormach 37553 | "45-Degree" | flange **angle** |
+| #120 Shars 202-5921 | "M12x45" | thread x **length** |
+
+Two of them contain "45" meaning different things. A BT30 stud's identity is
+**flange angle + thread/length + TSC or not**; TSC is one axis of three.
+Merging on "they're all BT30 pull studs" is the false-MATCH direction — a false
+miss costs a glance, a false match puts a stud in the drawer that will not hold
+in the spindle.
+
+- [ ] **Compare a Haas stud against one screwed into a holder on the rack.**
+      Flange angle and thread/length. Five minutes, and it also answers a live
+      question: **the only BT30 spindle in the shop is the 1100MX, and all 20
+      spares came from Haas Tooling** — a discount storefront, but there is no
+      Haas machine here. $156 of studs bought in the last month, fit unverified.
+      The 1100MX reference carries **no pull-stud spec**, so this is measurable,
+      not researchable.
+- [ ] **If they match:** two parts named for what determines fit —
+      `Pull Stud, BT30 45°, M12 — TSC` and `— non-TSC` — with Haas 04-1420 /
+      04-1421, Tormach 37553 and Shars 202-5921 attached as SupplierParts so all
+      four price histories survive. If they do NOT match, the four records stay
+      four and each name gains the axis it is missing.
+- [ ] **#543 carbide face-mill insert** — same unanswered consumable question as
+      the pull studs had. Bought 2024, received 1 on 2026-08-23, no stocktake
+      date. An insert that old may be worn out and gone.
+
 ## Imports and enrichment
 
 - [ ] **Bambu Lab** — 12 orders located, parser proven against all three
