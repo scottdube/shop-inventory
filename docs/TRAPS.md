@@ -2007,3 +2007,65 @@ first three theories here — the empty-marking change made minutes earlier, a
 failed `repaint()`, a stale grid — were all built from the screenshot, and all
 three were wrong. `binscan.err.log` named the function and the variable on the
 first read.
+
+## A deploy the walker cannot see is not deployed
+
+binscan's entire client lives inside the page `GET /` returns, so **a cached
+page is stale code, not a stale view.** Nothing set a cache header, and iOS
+Safari holds a page across ordinary reloads.
+
+2026-08-23: a fix shipped, the md5 on the Mini matched the laptop, the service
+restarted, and the endpoint was confirmed by curl. Scott went on hitting the
+old behaviour on his phone — and both of us were reading server-side evidence
+as proof it was fixed. The md5 check answers "did the file land", which is a
+different question from "is the walker running it".
+
+`GET /` now sends `no-store, no-cache, must-revalidate`. Chosen over a version
+query string because the page is 85 KB on a LAN and changes on every deploy;
+correctness beats the round trip.
+
+**The general form: verify the fix where the SYMPTOM was, not where the change
+was.** Every check that day — parse, unbound-name scan, md5, restart, curl —
+sat on the server side of the gap that was actually failing.
+
+## The matcher searched for the two most useless strings on the label
+
+`catalogue_matches()` shipped, and returned **nothing** for an SMA pigtail
+whose part existed as #732 the whole time.
+
+It built InvenTree `search=` queries from whole label lines, plus the two
+LONGEST tokens in the reading. On that bag the longest tokens were
+`cn1083961339vudae` and `9375669B5015` — the order id and the batch code, the
+two strings guaranteed to match nothing. It never searched for "pigtail" or
+"sma".
+
+**Longest is not the same as most distinctive**, and on consumer packaging it
+is reliably the opposite: the longest strings are barcodes, order ids and
+tracking numbers.
+
+Rewritten to fetch the catalogue once and score locally — 992 parts, the same
+approach `/api/fasteners` already used — with **IDF weighting**, so a token's
+weight comes from how rare it is across the corpus. "cable" appears on dozens
+of parts and says almost nothing; "pigtail" appears on one and says
+everything. That separation falls out of the arithmetic rather than a
+hand-tuned list.
+
+Same photo, before and after:
+
+| | before | after |
+|---|---|---|
+| catalogue matches | **0** | 6 |
+| #732 SMA/U.FL Pigtail 15cm | absent | **first, 11.137** |
+| next candidate | — | 5.761 |
+
+matching on `15cm, pigtail, rpsma, 8pcs, sma, cable`.
+
+**Also: the by-hand picker only ever searched the cabinet's unlocated rows.**
+Its own message admitted the hole — *"the part may still exist and already be
+filed in another drawer"* — while offering no way to reach it, which is what
+Scott hit typing "Sma" and getting nothing. It now searches the catalogue too,
+via `/api/partsearch`, and any hit can be filed straight into the drawer.
+
+And it **rendered nothing at all when a cabinet had no unlocated rows** — so
+in a cabinet whose backlog was already filed there was no search box in the
+UI whatsoever. It always renders now.

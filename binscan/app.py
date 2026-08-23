@@ -14,8 +14,10 @@ Runs from the INTERNAL disk on purpose: anything under /Volumes needs a TCC
 grant to run from launchd, which is what silently broke the backup for weeks.
 """
 
+import collections
 import datetime
 import json
+import math
 import os
 import pathlib
 import re
@@ -862,13 +864,43 @@ _STOP = {"the", "and", "for", "with", "from", "this", "that", "your", "not",
 
 
 def _tokens(text):
-    """Distinctive lowercase tokens: what two descriptions of one object share."""
-    out = set()
-    for t in re.findall(r"[a-z0-9][a-z0-9.\-/]*", (text or "").lower()):
-        t = t.strip(".-/")
-        if len(t) >= 2 and t not in _STOP:
-            out.add(t)
-    return out
+    """Distinctive lowercase tokens: what two descriptions of one object share.
+
+    Alphanumeric runs only. A first version allowed `.` and `/` inside a token
+    so that "u.fl" survived -- and it turned "U.FL/IPEX" into the single token
+    `u.fl/ipex`, which matches nothing a human would type. Splitting hard and
+    letting "fl" and "ipex" stand alone is worth more than keeping "u.fl"
+    whole.
+    """
+    return {t for t in re.findall(r"[a-z0-9]+", (text or "").lower())
+            if len(t) >= 2 and t not in _STOP}
+
+
+def _catalogue_index():
+    """Every part, tokenised, with an IDF weight per token.
+
+    The whole catalogue is under a thousand rows, so scoring locally beats
+    guessing search queries -- which is how the first version failed. It built
+    queries from whole label lines and from the LONGEST tokens on the bag, and
+    on an antenna pigtail those were `cn1083961339vudae` and `9375669B5015`:
+    the order id and the batch code, the two least useful strings present. It
+    never searched for "pigtail" or "sma" at all.
+
+    IDF is what makes the ranking mean anything. "cable" appears on dozens of
+    parts and says almost nothing; "pigtail" appears on one and says
+    everything. Weighting by rarity separates them without a hand-tuned list.
+    """
+    rows = _rows(it_get("part/", limit=2000))
+    docs = []
+    df = collections.Counter()
+    for r in rows:
+        toks = _tokens(f"{r.get('name') or ''} {r.get('description') or ''}")
+        if toks:
+            docs.append((r, toks))
+            df.update(toks)
+    n = len(docs) or 1
+    idf = {t: math.log(n / (1 + c)) + 0.25 for t, c in df.items()}
+    return docs, idf
 
 
 def catalogue_matches(reading, limit=6):
@@ -899,52 +931,44 @@ def catalogue_matches(reading, limit=6):
         " ".join(r.get("markings") or []),
         r.get("descriptors") or "",
     ]))
+    return catalogue_search(text, limit=limit)
+
+
+def catalogue_search(text, limit=6, floor=0.9):
+    """Rank the catalogue against free text -- a label read, or something typed.
+
+    Shared by identify and by the by-hand picker, because they are the same
+    question asked twice: *which part is this?* The picker used to filter only
+    the cabinet's unlocated rows, so typing "sma" while holding an SMA pigtail
+    returned nothing while the part sat in the catalogue at #732.
+
+    `floor` keeps a single common word from proposing half the shop. Below it
+    the honest answer is nothing.
+    """
     want = _tokens(text)
     if not want:
         return []
-
-    # A handful of targeted searches beats one long query: InvenTree's `search`
-    # is a substring match, so a 300-character blob matches nothing at all.
-    queries, seen_q = [], set()
-    for cand in ([r.get("tag") or ""] + (r.get("labels") or [])
-                 + (r.get("markings") or []))[:8]:
-        cand = " ".join(str(cand).split())[:48].strip()
-        if len(cand) >= 3 and cand.lower() not in seen_q:
-            seen_q.add(cand.lower())
-            queries.append(cand)
-    # plus the single most distinctive long token, which is usually the model
-    for t in sorted(want, key=len, reverse=True)[:2]:
-        if len(t) >= 5 and t not in seen_q:
-            seen_q.add(t)
-            queries.append(t)
-
-    found = {}
-    for q in queries[:8]:
-        for row in _rows(it_get("part/", search=q, limit=12)):
-            pk = row.get("pk")
-            if pk and pk not in found:
-                found[pk] = row
+    docs, idf = _catalogue_index()
 
     scored = []
-    for pk, row in found.items():
-        have = _tokens(f"{row.get('name') or ''} {row.get('description') or ''}")
+    for row, have in docs:
         shared = want & have
         if not shared:
             continue
-        # Favour agreement on the part's OWN words: a long catalogue name that
-        # shares three tokens is a weaker claim than a short one that shares
-        # three, because the long one had more chances.
-        score = len(shared) / (len(have) ** 0.5 or 1)
-        scored.append((score, sorted(shared, key=len, reverse=True)[:6], row))
+        # Sum the RARITY of what matched, then damp by how many words the part
+        # had to offer: a long name that shares three tokens had more chances
+        # than a short one that shares three.
+        score = sum(idf.get(t, 0.25) for t in shared) / (len(have) ** 0.5 or 1)
+        if score < floor:
+            continue
+        best = sorted(shared, key=lambda t: -idf.get(t, 0))[:6]
+        scored.append((score, best, row))
 
     scored.sort(key=lambda s: -s[0])
     out = []
     for score, shared, row in scored[:limit]:
         pk = row["pk"]
         rows = _rows(it_get("stock/", part=pk, limit=20))
-        where = [{"stock": s.get("pk"), "quantity": s.get("quantity"),
-                  "location": (s.get("location_detail") or {}).get("name")}
-                 for s in rows]
         out.append({
             "part": pk,
             "name": row.get("name") or "",
@@ -952,7 +976,9 @@ def catalogue_matches(reading, limit=6):
             "score": round(score, 3),
             "shared": shared,
             "stock_rows": len(rows),
-            "where": where,
+            "where": [{"stock": s.get("pk"), "quantity": s.get("quantity"),
+                       "location": (s.get("location_detail") or {}).get("name")}
+                      for s in rows],
             "why": ("matches on " + ", ".join(shared)) if shared else "",
         })
     return out
@@ -1598,6 +1624,25 @@ def api_assign(stock: int = Form(...), location: str = Form(...),
     return {"ok": True, "verified": True, "location": loc["name"],
             "quantity": got_qty, "counted": counted is not None,
             "estimate_flag": flagged, "cleared_empty": cleared, "note": note}
+
+
+@app.get("/api/partsearch")
+def api_partsearch(q: str = "", limit: int = 8):
+    """Search the CATALOGUE by text, for the by-hand picker.
+
+    The picker filtered `UNLOCATED` -- the cabinet's rows waiting to be filed --
+    and nothing else. Its own message admitted the hole: *"the part may still
+    exist and already be filed in another drawer"*, with no way to reach it.
+
+    Scott, 2026-08-23, holding an SMA pigtail and typing "Sma": *"still cant
+    make it work."* Nothing unlocated in A3 matched, which was true and
+    useless; `SMA Female to U.FL/IPEX Pigtail Cable, 1.13, 15cm` was part #732
+    the whole time, with no stock.
+    """
+    q = (q or "").strip()
+    if len(q) < 2:
+        return []
+    return catalogue_search(q, limit=limit)
 
 
 @app.post("/api/filepart")
@@ -3016,12 +3061,19 @@ function wireCreate(drawer){
 }
 
 function manualCard(){
-  if(!UNLOCATED.length) return '';
+  // Renders even with nothing unlocated. It used to return '' in that case,
+  // which removed the only search box in the UI -- so in a cabinet whose
+  // backlog was already filed there was no way to look a part up by hand at
+  // all. The input now searches the CATALOGUE as well, which is the question
+  // being asked whether or not this cabinet has a backlog.
+  const none = !UNLOCATED.length;
   return `<div class=card>
-    <div class=prov>or pick it by hand</div>
-    <input id=manualq placeholder="filter &mdash; name or McMaster number" autocomplete=off>
+    <div class=prov>${none ? 'search the catalogue' : 'or pick it by hand'}</div>
+    <input id=manualq placeholder="${none ? 'what is it? &mdash; name or number'
+                                          : 'filter &mdash; name or McMaster number'}" autocomplete=off>
     <div id=manualcount class=mut style="margin-top:7px"></div>
     <div id=manuallist class=picklist></div>
+    <div id=catfound></div>
     <!-- The count box and the file button stay HIDDEN until a row is chosen.
          Shown up-front they invite a number with nothing to attach it to, above
          a disabled button, and the whole card reads as broken -- which is
@@ -3062,6 +3114,32 @@ function expand(w){
   return [...out];
 }
 
+// Catalogue results underneath the unlocated filter. Debounced and
+// sequence-guarded: typing "pigtail" fires seven requests and they do not
+// come back in order, so a slow early one must not overwrite a fast late one.
+let CATSEQ = 0, CATTIMER = null;
+async function catalogueFallback(t){
+  const box = $('#catfound');
+  if(!box) return;
+  clearTimeout(CATTIMER);
+  if(!t || t.length < 2){ box.innerHTML=''; return; }
+  const seq = ++CATSEQ;
+  CATTIMER = setTimeout(async ()=>{
+    try{
+      const r = await fetch('/api/partsearch?q='+encodeURIComponent(t));
+      const list = await r.json();
+      if(seq !== CATSEQ) return;              // a newer keystroke already won
+      if(!list.length){ box.innerHTML=''; return; }
+      box.innerHTML =
+        `<div class=mut style="margin:14px 0 8px">Not waiting to be filed, but
+           <b>in the catalogue</b> &mdash; ${list.length} match${list.length>1?'es':''}
+           for &ldquo;${t}&rdquo;. Filing one of these creates stock where there
+           was none.</div>` + catalogueCards(list, 'cat');
+      wireFileParts(CUR);
+    }catch(e){ box.innerHTML=`<div class=mut>catalogue search failed: ${e}</div>`; }
+  }, 220);
+}
+
 function renderPicks(q){
   const list=$('#manuallist'), cnt=$('#manualcount'); if(!list) return;
   // Changing the filter unpicks whatever was picked; leaving the action block
@@ -3074,7 +3152,9 @@ function renderPicks(q){
     const hay=((u.sku||'')+' '+u.name).toLowerCase();
     return terms.every(w=>expand(w).some(v=>hay.includes(v)));
   });
-  cnt.innerHTML = !t
+  cnt.innerHTML = !UNLOCATED.length
+    ? (t ? '' : `Nothing is waiting to be filed in ${AREA} &mdash; type to search the whole catalogue`)
+    : !t
     ? `${UNLOCATED.length} rows unlocated in ${AREA} &mdash; type to filter`
     : hit.length
       ? `<b>${hit.length}</b> of ${UNLOCATED.length} match &ldquo;${t}&rdquo;`
@@ -3082,6 +3162,10 @@ function renderPicks(q){
          A definite answer, not a scrolling problem. Note it means no row
          <i>waiting to be filed</i> &mdash; the part may still exist and already be
          filed in another drawer. If it is genuinely new, create it below.`;
+  // The unlocated list answers "what is waiting to be filed in this cabinet".
+  // It cannot answer "does this part exist", which is the question somebody
+  // holding an unfamiliar part is actually asking. Ask the catalogue too.
+  catalogueFallback(t);
   list.innerHTML = hit.slice(0,60).map(u=>
     `<button class=pick${u.at?' split':''} data-stock="${u.stock}" data-split="${u.at?1:0}">
        <span class=top><span class=sku>${u.sku||'—'}</span>
@@ -3232,6 +3316,8 @@ function cabinetOf(drawer){ const m=/^([A-Z]\d+)-/.exec(drawer||''); return m?m[
 // is the whole point.
 function wireFileParts(drawer){
   $('#out').querySelectorAll('button.filepart').forEach(btn=>{
+    if(btn.dataset.bound==='1') return;
+    btn.dataset.bound='1';
     btn.onclick=async()=>{
       const i=btn.dataset.p;
       const msg=$('#out').querySelector(`.msg[data-p="${i}"]`);
@@ -3284,9 +3370,11 @@ function wireFileParts(drawer){
 // These carry a part number rather than a stock number: the whole point is
 // that they may have no stock row yet, which is why filing them needs
 // /api/filepart instead of /api/assign.
-function catalogueCards(list){
+function catalogueCards(list, pfx){
   if(!list || !list.length) return '';
+  pfx = pfx || 'c';
   return list.map((c,i)=>{
+    const key = pfx + i;
     const none = !c.stock_rows;
     const where = none
       ? `<span class=low>no stock anywhere yet</span>`
@@ -3299,15 +3387,15 @@ function catalogueCards(list){
       <div style="margin-top:8px;color:#aaa;font-size:13.5px">${c.why}</div>
       <div class=countbox>
         <label># HOW MANY ARE IN THE DRAWER?</label>
-        <input class=pqty data-p="${i}" type=number inputmode=decimal
+        <input class=pqty data-p="${key}" type=number inputmode=decimal
                placeholder="count them">
         <div class=why>${none
           ? 'Required &mdash; this part has never had stock, so there is no purchased figure to carry over. A blank would be an invented number.'
           : 'Required &mdash; this would be a second lot, and only a count says how many are in THIS drawer.'}</div>
       </div>
-      <button class=filepart data-p="${i}" data-part="${c.part}"
+      <button class=filepart data-p="${key}" data-part="${c.part}"
               style="margin-top:10px">File in ${CUR}</button>
-      <div class=msg data-p="${i}" style="margin-top:8px;font-size:13px"></div>
+      <div class=msg data-p="${key}" style="margin-top:8px;font-size:13px"></div>
     </div>`;
   }).join('');
 }
@@ -3334,7 +3422,7 @@ function renderIdentify(d){
       : `Nothing in the <b>unlocated list for ${AREA}</b> obviously matches that text. This says nothing about what is in the drawer — only that the automatic match could not choose.`;
     // Seed the create card from what was just READ, not from the drawer label.
     SUGGEST = d.suggest || null;
-    const cat = catalogueCards(d.catalogue||[]);
+    const cat = catalogueCards(d.catalogue||[], 'id');
     // With catalogue matches the fastener advisory is misleading -- it says
     // nothing matched, when something did, just not in the fastener list.
     const lead = cat
@@ -3432,7 +3520,21 @@ $('#go').onclick=async()=>{
 
 @app.get("/", response_class=HTMLResponse)
 def index():
-    return PAGE
+    """The whole client is inside this page, so a cached page is stale CODE.
+
+    Nothing set a cache header, and iOS Safari holds a page across reloads. On
+    2026-08-23 a fix was deployed, verified on the server, and Scott went on
+    hitting the old behaviour on his phone -- with both of us reading the
+    server as proof it was fixed. A deploy that the walker cannot see is not
+    deployed.
+
+    no-store rather than a version query string: the page is 85 KB on a LAN,
+    it changes on every deploy, and correctness here is worth more than a
+    round trip.
+    """
+    return HTMLResponse(PAGE, headers={
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+        "Pragma": "no-cache"})
 
 
 @app.get("/healthz")
