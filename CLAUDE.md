@@ -44,6 +44,26 @@ new function.
   entered the same item twice under different names.
 - Prices not verified live get **+40%** and are marked as estimates.
 
+## Buying tool holders
+
+**Every BT30 holder needs one pull stud, and the HOLDER decides which kind.**
+Before a holder goes on any order:
+
+```
+itq run scripts/stud_check.py --shrink N --holders N
+```
+
+Shrink-fit holders MUST take a TSC (drilled) knob. This is **not** about
+coolant — the 1100MX has no through-spindle coolant at all. The hole is the
+passage a welding wire runs up to push out a stuck shank during heat-shrink
+removal, and it vents the blind bore (which is why `shrink-fit` dropped its
+spring hold-down, MR-16). A solid knob undoes both, and you find out with a hot
+holder in your hand. See `docs/TRAPS.md`.
+
+Deliberately not a reorder point: studs are bought in 10-packs and holders two
+or three at a time, so a minimum-stock rule would nag to hold ten in reserve
+forever. The check speaks only when a specific order needs studs added.
+
 ## Capture as you go
 
 Write findings down **in the same turn they are learned**, not at session end —

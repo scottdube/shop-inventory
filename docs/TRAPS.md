@@ -330,6 +330,12 @@ once: it re-creates the vapor-lock problem the induction machine was allowed to
 ignore, and it removes the only push-out path for a stuck tool. **Neither is
 recoverable at the bench** — you find out with a hot holder in your hand.
 
+`scripts/stud_check.py` enforces the pairing at order time, and the rule is on
+the `Tooling/Holders`, `Tooling/Toolholders/BT30` and `.../Pull Studs` category
+descriptions in InvenTree. **`PartCategory.description` caps at 250 characters
+and truncates SILENTLY** — the first attempt lost the command off the end and
+only the verify caught it. Assert the length before writing.
+
 ### Body size is the envelope; PIN COUNT is the footprint
 Two 6x6mm tactile switches were merged on 2026-08-21 because both measured
 6x6mm. Scott turned them over: the SparkFun ones have **four legs**, the ones
