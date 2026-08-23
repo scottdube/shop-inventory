@@ -43,6 +43,23 @@ State after the 2026-08-23 walk, 28 bins:
       pressure at all. It is the opposite half of the scale from the 1/8 NPT
       gauge transducers in B3-R7C2 and is not interchangeable with them.
 
+- [ ] **Settle what the bare round panel (#1073) is, and whether it pairs with
+      the jxl+ board (#1074).** One measurement: **count the contacts on the
+      panel's flex.** ~40 means 480x480 ST7701S with a SPI+RGB interface — SPI
+      for init only, pixels over a parallel bus — which cannot be driven from
+      plain SPI and needs an ESP32-S3's RGB LCD peripheral. 8–12 means a true
+      SPI panel. Then compare against the jxl board's FPC connector; different
+      counts mean they do not go together.
+
+      **If it is the ST7701S type, the likeliest story is that it is a SPARE
+      panel for the ESP32-S3-LCD-2.8C (#1072)**, which is that exact
+      combination, rather than a standalone module.
+
+      **Recorded as a correction:** the drawer and both parts briefly said panel
+      and driver board were a "matched pair". That was inferred from both being
+      round and sitting in one bin — not evidence — and an 8-pin SPI breakout
+      cannot drive a 480x480 RGB panel. All three records now say unconfirmed.
+
 - [ ] **#94 is a likely duplicate of #107** — same MPN, MPXV6115VC6U, zero
       stock and never any. Flagged rather than retired, because nobody has
       confirmed the two records came from the same listing.
