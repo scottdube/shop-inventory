@@ -27,19 +27,25 @@ State after the 2026-08-23 walk, 28 bins:
 | verified empty | 4 (RB-09, 10, 15, 16) |
 | declared | 2 (RB-05 bags, RB-08 prototypes) |
 
-- [ ] **RB-17 is opened but NOT itemised.** Round displays and dev boards.
-      Identified from a photo 2026-08-23: a Waveshare **ESP32-S3-LCD-2.8C**
-      (2.8in round display dev board, boxed — no part record yet, and distinct
-      from #67 which is the 5in touch LCD in RB-07) and a **Waveshare 1.28in
-      round LCD 240x240** (#70, no stock recorded; #470 is an inactive
-      duplicate of it).
+- [x] ~~**RB-17**~~ — **done 2026-08-23.** Four displays moved out to B3-R5C1
+      (ESP32-S3-LCD-2.8C #1072, waveshare 1.28in round #70, bare panel
+      JT280-022-02A0 #1073 measured 72-73 mm, and its jxl+ V1.1 driver board
+      #1074 — the last two are a matched pair and their descriptions say so).
+      RB-17 now holds exactly one thing: the **MPXV6115VC6U vacuum sensor** for
+      the **Vacuum Controller** project, which is the first red bin to end up
+      matching the rack's own rule.
 
-      **Four things in that bin are unidentified** and were deliberately not
-      guessed: a second round module in a clear clamshell, a bare round panel
-      marked `JT280-022-02A0 / BL-HD276001` with a flex tail — possibly the
-      display for the 2.8C, possibly a spare — two small modules in black
-      anti-static boxes, and a small blue breakout with header pins. Each needs
-      a look or a close photo.
+      **Two corrections came out of it.** #107's location was wrong — it said
+      `Unfiled - Machine Shop` and the sensor was in RB-17 all along; a
+      surface-mount part was never plausibly living with the BT30 toolholders.
+      And its name says "Pressure Sensor" because that is the vendor's word,
+      while the part reads **0 to −115 kPa** and cannot measure positive
+      pressure at all. It is the opposite half of the scale from the 1/8 NPT
+      gauge transducers in B3-R7C2 and is not interchangeable with them.
+
+- [ ] **#94 is a likely duplicate of #107** — same MPN, MPXV6115VC6U, zero
+      stock and never any. Flagged rather than retired, because nobody has
+      confirmed the two records came from the same listing.
 
 - [ ] **RB-18 through RB-28 have never been opened.** The largest single block
       of unknown space left in the shop now that the bin wall is at 89%.
