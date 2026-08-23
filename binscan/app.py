@@ -1631,7 +1631,13 @@ body{margin:0 auto;max-width:560px;padding:0 var(--s3) 4px;background:var(--bg);
   padding:10px var(--s3) 9px;background:rgba(11,11,14,.92);
   backdrop-filter:saturate(140%) blur(12px);border-bottom:1px solid var(--line);
   display:flex;align-items:baseline;gap:9px}
-.appbar h1{font-size:16px;font-weight:800;margin:0;letter-spacing:-.01em}
+/* The mark is the drawer grid, with the one you are looking at lit -- the
+   whole tool in nine rectangles. */
+.logo{width:19px;height:19px;flex:0 0 auto;align-self:center}
+.logo rect{fill:var(--dim)}
+.logo rect.lit{fill:var(--acc)}
+.appbar h1{font-size:17px;font-weight:800;margin:0;letter-spacing:-.02em}
+.appbar h1 span{color:var(--acc)}
 .appbar .where{font-size:13px;color:var(--mut);font-variant-numeric:tabular-nums;
   margin-left:auto;white-space:nowrap}
 .appbar .where b{color:var(--fg);font-weight:700}
@@ -1682,16 +1688,27 @@ button.quiet{background:var(--surface-2);color:var(--fg);border:1px solid var(--
 .clear{color:var(--ok)}.partial{color:var(--warn)}.none{color:#ff9f43}
 
 /* ── area chips ─────────────────────────────────────────────────────────── */
-/* One tight row per four. The chips are the least interesting thing on screen
-   and were taking two tall rows above the grid, which is the part you actually
-   read. */
+/* A cabinet is a rectangle on a wall, so its button is a rectangle -- roughly
+   the 4:3 of the real thing. Pills read as tags; these read as objects you
+   could point at. */
 .chips{display:flex;flex-wrap:wrap;gap:5px}
-.chip{width:auto;min-height:0;padding:6px 11px;margin:0;font-size:13px;font-weight:700;
+/* THREE PER ROW, so the picker is laid out like the wall: A1 A2 A3 over
+   B1 B2 B3. Same idea as the drawer grid -- a picker that mirrors the thing it
+   picks from needs no legend, because you already know where to look. */
+.chips{flex-direction:column;gap:5px}
+.wallrow{display:flex;gap:5px}
+.chip{width:auto;min-height:0;margin:0;padding:8px 0 7px;font-weight:800;
+  flex:1 1 0;font-size:16px;letter-spacing:-.01em;
   background:var(--surface);color:var(--fg);border:1px solid var(--line);
-  border-radius:999px;letter-spacing:0}
-.chip .mut{font-size:11px;margin-left:4px}
+  border-radius:var(--r1);display:flex;flex-direction:column;align-items:center;
+  gap:1px;line-height:1.1}
+.chip .mut{font-size:10.5px;margin:0;font-weight:700;font-variant-numeric:tabular-nums}
 .chip.on{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}
-.chip.on .mut{color:rgba(4,18,31,.6)}
+.chip.on .mut{color:rgba(4,18,31,.65)}
+.chip#more{flex:0 0 auto;width:100%;flex-direction:row;gap:6px;font-size:12px;
+  font-weight:700;padding:7px 0;color:var(--mut)}
+#rest{flex-direction:row;flex-wrap:wrap}
+#rest .chip{flex:0 0 auto;padding:6px 11px;font-size:12.5px;font-weight:700}
 
 /* ── the drawer grid ────────────────────────────────────────────────────── */
 .gridbox{margin-top:var(--s2);overflow-x:auto;-webkit-overflow-scrolling:touch}
@@ -1779,6 +1796,26 @@ body.hints-on .hint{display:revert}
   font-weight:800;border-radius:999px;background:var(--surface-2);
   color:var(--mut);border:1px solid var(--line)}
 .hintbtn.on{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}
+/* Help that tells you what to DO. The first version of this was design
+   rationale scattered through the screen -- why the count box is blank, why a
+   photograph is not proof -- which is worth keeping but is not what someone
+   returning after a month needs first. That person needs the five steps and
+   the key to the marks. */
+.helppanel{margin-top:var(--s2);padding:14px;border-radius:var(--r3);
+  background:var(--surface);border:1px solid var(--line);font-size:13px;
+  line-height:1.5}
+.helppanel .hh{font-size:10.5px;font-weight:800;text-transform:uppercase;
+  letter-spacing:.08em;color:var(--acc);margin:var(--s3) 0 var(--s1)}
+.helppanel .hh:first-child{margin-top:0}
+.helppanel ol,.helppanel ul{margin:0;padding-left:19px;color:var(--fg)}
+.helppanel li{margin:5px 0}
+.helppanel b{font-weight:700}
+.key{width:100%;border-collapse:collapse;font-size:12.5px}
+.key td{padding:3px 0;vertical-align:top;color:var(--mut)}
+.key td:nth-child(2){color:var(--fg);font-weight:700;width:78px;padding-left:9px}
+.key td.k{width:20px;font-weight:800;font-size:15px;text-align:center}
+.hp-foot{margin-top:var(--s3);padding-top:var(--s2);border-top:1px solid var(--line);
+  color:var(--dim);font-size:11.5px}
 
 /* ── flash: survives the advance ────────────────────────────────────────── */
 .flash{margin-top:var(--s2);padding:11px 13px;border-radius:var(--r2);
@@ -1803,11 +1840,50 @@ body.hints-on .hint{display:revert}
 img#prev{height:58px;width:auto;max-width:34%;object-fit:cover;
   border-radius:var(--r1);display:none;border:1px solid var(--line)}
 </style></head><body>
-<div class=appbar><h1>binscan</h1>
-  <button class=hintbtn id=hintbtn title="show or hide the explanations">?</button>
+<div class=appbar>
+  <svg class=logo viewBox="0 0 24 24" aria-hidden="true">
+    <rect x="1"  y="1"  width="6.6" height="6.6" rx="1.6"/>
+    <rect x="8.7" y="1"  width="6.6" height="6.6" rx="1.6"/>
+    <rect x="16.4" y="1"  width="6.6" height="6.6" rx="1.6"/>
+    <rect x="1"  y="8.7" width="6.6" height="6.6" rx="1.6"/>
+    <rect class=lit x="8.7" y="8.7" width="6.6" height="6.6" rx="1.6"/>
+    <rect x="16.4" y="8.7" width="6.6" height="6.6" rx="1.6"/>
+    <rect x="1"  y="16.4" width="6.6" height="6.6" rx="1.6"/>
+    <rect x="8.7" y="16.4" width="6.6" height="6.6" rx="1.6"/>
+    <rect x="16.4" y="16.4" width="6.6" height="6.6" rx="1.6"/>
+  </svg>
+  <h1>Bin<span>Scan</span></h1>
+  <button class=hintbtn id=hintbtn title="how this works">?</button>
   <span class=where id=whereat>no drawer</span></div>
-<p class="sub hint">The record first &middot; the camera only when it is silent
-&middot; nothing is written without you.</p>
+<div class="helppanel hint">
+  <div class=hh>How this works</div>
+  <ol>
+    <li>Tap a <b>cabinet</b>, then a <b>drawer</b>.</li>
+    <li>If the record already knows that drawer, it shows you what is in it.</li>
+    <li>If it does not: <b>photograph the label</b>, <b>pick the part by hand</b>,
+        or say the drawer is <b>empty</b>.</li>
+    <li>Put in a <b>count</b> only if you actually counted. Left blank, the
+        quantity stays the figure from the purchase order and is flagged as
+        not counted.</li>
+    <li><b>File it.</b> The grid updates and moves you to the next drawer.</li>
+  </ol>
+  <div class=hh>What the marks mean</div>
+  <table class=key>
+    <tr><td class=k style="color:#4ade80">&#10003;</td><td>counted</td><td>somebody tallied it</td></tr>
+    <tr><td class=k style="color:#38bdf8">~</td><td>uncounted</td><td>filed, but the number came from the purchase order</td></tr>
+    <tr><td class=k style="color:#fde047">?</td><td>unseen</td><td>nobody has opened it yet</td></tr>
+    <tr><td class=k style="color:#d8a0ff">&equiv;</td><td>mixed</td><td>oddments, looked at and deliberately not itemised</td></tr>
+    <tr><td class=k style="color:#5a5a5e">&middot;</td><td>empty</td><td>opened and confirmed empty</td></tr>
+  </table>
+  <div class=hh>Two things worth trusting</div>
+  <ul>
+    <li><b>Nothing is written until you press a File button.</b> Photographing
+        and identifying change nothing.</li>
+    <li><b>A match from a photo is a proposal.</b> The drawer in your hand
+        outranks it.</li>
+  </ul>
+  <div class=hp-foot>Tap <b>?</b> again to hide this.</div>
+</div>
 
 <label>Where</label>
 <div id=areas class=chips></div>
@@ -1845,7 +1921,8 @@ img#prev{height:58px;width:auto;max-width:34%;object-fit:cover;
   </div>
   <button id=go disabled>Estimate</button>
 </div>
-<div class="ro hint"><b>Reading is free; writing needs you.</b> Photographs and matches are never written by themselves &mdash; a row moves only when you press File, and the count is only recorded if you typed one. Every run is logged. <a href="/log" style="color:#8fc7ff">view log</a></div>
+<div class="ro hint">Every photo and every write is logged.
+<a href="/log" style="color:#8fc7ff">view the log</a></div>
 
 <script>
 const $=s=>document.querySelector(s);
@@ -1876,9 +1953,23 @@ let AREA=null, CELLS=[], CUR=null, LABEL='', MORE=false, SUGGEST=null;
 fetch('/api/areas').then(r=>r.json()).then(as=>{
   // The bin wall is where the work is; twenty-odd other places are real but
   // rarely the answer, and showing all of them cost nine rows of chips.
-  const chip=a=>`<button class=chip data-a="${a.name}">${a.name}<span class=mut style="margin-left:6px">${a.drawers}</span></button>`;
+  const chip=a=>`<button class=chip data-a="${a.name}">${a.name}<span class=mut>${a.drawers}</span></button>`;
   const wall=as.filter(a=>a.grid), rest=as.filter(a=>!a.grid);
-  $('#areas').innerHTML = wall.map(chip).join('')
+  // Group by the LETTER, one flex row per wall row, so the picker keeps
+  // mirroring the wall as the wall changes. A0 and B0 arrive next week, making
+  // those rows four wide, and row C is planned below B once the plywood table
+  // goes. A hard-coded three-per-row would have quietly stopped matching the
+  // shop the day the new cabinets went up.
+  const byRow={};
+  wall.forEach(a=>{
+    const m=/^([A-Z]+)(\d+)$/.exec(a.name);
+    const k=m?m[1]:'~';
+    (byRow[k]=byRow[k]||[]).push({...a, n:m?+m[2]:0});
+  });
+  const rows=Object.keys(byRow).sort().map(k=>
+    `<div class=wallrow>` + byRow[k].sort((x,y)=>x.n-y.n).map(chip).join('') + `</div>`
+  ).join('');
+  $('#areas').innerHTML = rows
     + `<button class=chip id=more style="border-style:dashed">elsewhere <span class=mut>${rest.length}</span></button>`
     + `<div id=rest style="display:none;width:100%;margin-top:7px" class=chips>${rest.map(chip).join('')}</div>`;
   const wire=()=>$('#areas').querySelectorAll('.chip[data-a]').forEach(b=>b.onclick=()=>loadArea(b.dataset.a));
@@ -2034,7 +2125,7 @@ async function refreshDrawer(v,keepOut){
       'or say it is empty.</div>'+
       `<button id=emptybtn style="margin-top:12px;background:var(--card);color:var(--fg);border:1px solid var(--line)">&middot; This drawer is empty</button>`+
       `<button id=mixedbtn style="margin-top:8px;background:var(--card);color:var(--fg);border:1px solid var(--line)">&equiv; Oddments &mdash; ones and twos, not worth a row each</button>`+
-      `<div class="mut hint" style="margin-top:7px">Four or more of the same thing? Catalogue it above instead &mdash; the pile only works if the countable stuff keeps leaving it.</div>`+
+      `<div class="mut hint" style="margin-top:7px">Four or more of the same thing? Catalogue it above instead.</div>`+
       '<div id=emptymsg class=mut style="margin-top:8px"></div></div>';
     $('#emptybtn').onclick=()=>markEmpty(v);
     $('#mixedbtn').onclick=()=>markMixed(v);
@@ -2250,9 +2341,8 @@ function createCard(seed){
     </div>
     <button id=npgo style="margin-top:10px">Create and file in ${CUR}</button>
     <div id=npmsg style="margin-top:8px;font-size:13px"></div>
-    <div class="mut hint" style="margin-top:8px">A part created here has no supplier
-      and no purchase record, so it will never appear in the purchased-vs-counted
-      reconciliation. That is honest &mdash; nobody knows where it came from.</div>
+    <div class="mut hint" style="margin-top:8px">No supplier and no purchase
+      record, so this part will never show up in the bought-vs-counted report.</div>
   </details>`;
 }
 
@@ -2549,18 +2639,15 @@ function renderIdentify(d){
         <label># HOW MANY ARE IN THE DRAWER?</label>
         <input class=qty data-i="${i}" type=number inputmode=decimal
                placeholder="tap to count">
-        <div class=why>Blank = not counted.<span class=hint> The record says
-          <b>${(+c.quantity).toLocaleString()}</b>, but that is what was
-          <b>purchased</b>, not what is there.</span></div>
+        <div class=why>Blank = not counted.<span class=hint> The
+          <b>${(+c.quantity).toLocaleString()}</b> on record came from the purchase
+          order, not from anyone looking.</span></div>
       </div>
       <button class=file data-i="${i}" data-stock="${c.stock}"
               style="margin-top:10px">File in ${here}</button>
       <div class=msg data-i="${i}" style="margin-top:8px;font-size:13px"></div>
     </div>`).join('')
-    + `<div class=warn>Confirm against the open drawer before filing.
-       <span class=hint><br>A match made from a photograph is a proposal, not an
-       observation. The count box is blank on purpose — the number already on the
-       row is what was BOUGHT, not what is there.</span></div>`
+    + `<div class=warn>Check it against the open drawer before filing.</div>`
     + manualCard() + createCard(LABEL) + skipCard();
 }
 
