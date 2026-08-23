@@ -1960,3 +1960,50 @@ silently eating counts that somebody physically performed.
 Worth knowing for the cycle-count design too: a scheduled count and a
 background enrichment job will eventually want the same writer slot, and the
 overnight job already writes to this database at 02:05.
+
+## Identify was dead for days, and the error named nothing
+
+Scott, mid-walk 2026-08-23, photographing A3-R6C8:
+
+    SyntaxError: The string did not match the expected pattern.
+
+That is Safari's message for `Response.json()` handed a body that is not JSON.
+It names no endpoint, no field and no variable, and it appears in the UI far
+from anything that suggests a cause. The server log had the real thing:
+
+    File "app.py", line 1522, in api_identify
+        known = drawer_contents(location, site)
+    NameError: name 'site' is not defined
+
+`f25e3f0` added a `site` argument to `drawer_contents()` and updated **three of
+the four call sites**. The fourth is in `api_identify`, which has no `site`
+parameter — so the name was unbound, the endpoint raised, FastAPI returned a
+plain-text 500, and Safari turned that into a syntax error about a string.
+
+**The client had been posting `site` the whole time** (`fd.append('site',SITE)`).
+Only the signature was missing. One line.
+
+Two things made it survive:
+
+- **It is a guard branch.** The short-circuit exists for a case the UI is
+  supposed to prevent, so nothing routine reached it — until Scott
+  photographed a drawer with one selected, which is the ordinary path.
+- **Python only fails at runtime.** The module imports, the app starts, every
+  other endpoint works, and the call is still wrong. A compiler would have
+  refused the file.
+
+`scripts/unbound_names.py` now finds this class by AST: names a function reads
+but never binds, with enclosing scopes and nested-function parameters handled
+properly. Verified both directions — clean on the fixed file, and it flags
+`'site' used in api_identify() but never bound` when the fix is removed.
+
+    python3 scripts/unbound_names.py binscan/app.py
+
+**Worth running before any binscan deploy.** It costs a second and covers the
+gap left by having no tests.
+
+**And the diagnostic that mattered: read the server log, not the phone.** The
+first three theories here — the empty-marking change made minutes earlier, a
+failed `repaint()`, a stale grid — were all built from the screenshot, and all
+three were wrong. `binscan.err.log` named the function and the variable on the
+first read.

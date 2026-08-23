@@ -1506,6 +1506,14 @@ async def api_identify(image: UploadFile = File(...),
                        cabinet: str = Form(""),
                        location: str = Form(""),
                        more: str = Form(""),
+                       # The client has always posted `site`; this endpoint just
+                       # never declared it, so the drawer_contents(location, site)
+                       # call below raised NameError and returned a plain-text
+                       # 500 -- which Safari reports as "SyntaxError: The string
+                       # did not match the expected pattern", naming neither the
+                       # endpoint nor the variable. Identify was dead on its main
+                       # path from f25e3f0 until 2026-08-23.
+                       site: str = Form(""),
                        provider: str = Form("anthropic")):
     """READ-ONLY. Reads the tag, proposes a match, writes nothing.
 
