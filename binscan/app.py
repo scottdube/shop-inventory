@@ -418,6 +418,39 @@ def clear_empty_stamp(loc):
     return {"was": desc, "now": again.get("description")}
 
 
+class Ambiguous(Exception):
+    """More than one location answers to this name."""
+
+
+def resolve_loc(name, site=""):
+    """Exactly one location, or nothing, or a refusal.
+
+    Location names are NOT unique in InvenTree -- `Receiving` already exists at
+    both SLN and LRD -- and every lookup here took the first match. That is a
+    silent write to the wrong site waiting for a duplicate name, and duplicates
+    become likely the moment Florida is laid out: Scott's proposed upper
+    cabinets are Cabinet 1..4, and SLN already has C1..C3 reserved for the row
+    below B.
+
+    A name that matches twice is not a location. Refuse, loudly, rather than
+    pick one and be right half the time.
+    """
+    hits = [l for l in _rows(it_get("stock/location/", name=name, limit=20))
+            if (l.get("name") or "").upper() == (name or "").upper()]
+    if site:
+        scoped = [l for l in hits
+                  if (l.get("pathstring") or "").split("/")[0].upper() == site.upper()]
+        if scoped:
+            hits = scoped
+    if not hits:
+        return None
+    if len(hits) > 1:
+        where = ", ".join(l.get("pathstring") or l["name"] for l in hits[:4])
+        raise Ambiguous(f"{len(hits)} locations are called {name!r} ({where}). "
+                        f"Refusing to guess which one you meant.")
+    return hits[0]
+
+
 def _norm_sku(s):
     return re.sub(r"[^A-Z0-9?]", "", (s or "").upper())
 
@@ -764,7 +797,7 @@ def match_reading(reading, rows):
              for _sc, r in top[:5]], "label-text")
 
 
-def drawer_contents(name):
+def drawer_contents(name, site=""):
     """What the DATABASE already says is in this drawer. Checked before any
     model is called: asking vision what the record already knows introduces
     error where there was none, and costs an API call to do it. Scott,
@@ -774,11 +807,12 @@ def drawer_contents(name):
     Counts stock in the drawer OR ANY DESCENDANT, because an assortment kit is
     a child location -- a drawer holding one reads as empty at drawer level and
     that mistake has already been made once today, against B3."""
-    locs = [l for l in _rows(it_get("stock/location/", name=name, limit=5))
-            if (l.get("name") or "").upper() == (name or "").upper()]
-    if not locs:
+    try:
+        loc = resolve_loc(name, site)
+    except Ambiguous as e:
+        return {"error": str(e)}
+    if loc is None:
         return None
-    loc = locs[0]
     out = {"location": loc.get("pk"), "name": loc.get("name"),
            "description": loc.get("description") or "", "stock": [], "homes": []}
     for r in _rows(it_get("stock/", location=loc["pk"], cascade=True, limit=100)):
@@ -832,12 +866,14 @@ def drawer_contents(name):
 
 
 @app.get("/api/drawer")
-def api_drawer(name: str = ""):
+def api_drawer(name: str = "", site: str = ""):
     """Free, instant, no model. The UI calls this the moment a drawer is picked
     and only offers the camera when this comes back unassigned."""
     if not name:
         return JSONResponse({"error": "name required"}, status_code=400)
-    d = drawer_contents(name)
+    d = drawer_contents(name, site)
+    if isinstance(d, dict) and d.get("error"):
+        return JSONResponse(d, status_code=409)
     if d is None:
         return JSONResponse({"error": f"no location named {name}"}, status_code=404)
     return d
@@ -845,7 +881,7 @@ def api_drawer(name: str = ""):
 
 @app.post("/api/mixed")
 def api_mixed(location: str = Form(...), note: str = Form(""),
-              confirm: str = Form("")):
+              site: str = Form(""), confirm: str = Form("")):
     """Record a drawer as a mixed jumble: LOOKED AT, deliberately not itemised.
 
     Some drawers hold oddments -- a handful of hex bolts in three lengths, a few
@@ -865,13 +901,14 @@ def api_mixed(location: str = Form(...), note: str = Form(""),
     if confirm.lower() not in ("1", "true", "yes"):
         return JSONResponse({"error": "confirm required"}, 400)
 
-    locs = [l for l in _rows(it_get("stock/location/", name=location, limit=5))
-            if (l.get("name") or "").upper() == location.upper()]
-    if not locs:
+    try:
+        loc = resolve_loc(location, site)
+    except Ambiguous as e:
+        return JSONResponse({"error": str(e)}, 409)
+    if loc is None:
         return JSONResponse({"error": f"no location named {location}"}, 404)
-    loc = locs[0]
 
-    known = drawer_contents(location) or {}
+    known = drawer_contents(location, site) or {}
     if known.get("stock"):
         return JSONResponse({"error": "this drawer has stock filed in it; a mixed "
                                       "bucket holds only unitemised oddments"}, 409)
@@ -969,7 +1006,7 @@ def api_fasteners():
 @app.post("/api/newpart")
 def api_newpart(name: str = Form(...), location: str = Form(...),
                 quantity: str = Form(""), notes: str = Form(""),
-                confirm: str = Form("")):
+                site: str = Form(""), confirm: str = Form("")):
     """Create a part that is not in the catalogue, from the drawer, on the walk.
 
     Two drawers in B2 alone held things that had never been entered -- 1/4in
@@ -1006,11 +1043,12 @@ def api_newpart(name: str = Form(...), location: str = Form(...),
             return JSONResponse({"error": f"part #{r.get('pk')} is already called "
                                           f"'{r.get('name')}'"}, 409)
 
-    locs = [l for l in _rows(it_get("stock/location/", name=location, limit=5))
-            if (l.get("name") or "").upper() == location.upper()]
-    if not locs:
+    try:
+        loc = resolve_loc(location, site)
+    except Ambiguous as e:
+        return JSONResponse({"error": str(e)}, 409)
+    if loc is None:
         return JSONResponse({"error": f"no location named {location}"}, 404)
-    loc = locs[0]
 
     counted = None
     if str(quantity).strip():
@@ -1080,7 +1118,8 @@ def api_newpart(name: str = Form(...), location: str = Form(...),
 
 
 @app.post("/api/empty")
-def api_empty(location: str = Form(...), confirm: str = Form("")):
+def api_empty(location: str = Form(...), site: str = Form(""),
+              confirm: str = Form("")):
     """Mark a drawer VERIFIED EMPTY from the phone, during the walk.
 
     Most of a walk is empty drawers, and until now the UI had no way to say so
@@ -1108,13 +1147,14 @@ def api_empty(location: str = Form(...), confirm: str = Form("")):
     if confirm.lower() not in ("1", "true", "yes"):
         return JSONResponse({"error": "confirm required"}, 400)
 
-    locs = [l for l in _rows(it_get("stock/location/", name=location, limit=5))
-            if (l.get("name") or "").upper() == location.upper()]
-    if not locs:
+    try:
+        loc = resolve_loc(location, site)
+    except Ambiguous as e:
+        return JSONResponse({"error": str(e)}, 409)
+    if loc is None:
         return JSONResponse({"error": f"no location named {location}"}, 404)
-    loc = locs[0]
 
-    known = drawer_contents(location) or {}
+    known = drawer_contents(location, site) or {}
     if known.get("stock"):
         what = known["stock"][0]["name"][:44]
         return JSONResponse({"error": f"not empty - it holds {what}"}, 409)
@@ -1157,7 +1197,7 @@ def api_empty(location: str = Form(...), confirm: str = Form("")):
 @app.post("/api/assign")
 def api_assign(stock: int = Form(...), location: str = Form(...),
                quantity: str = Form(""), split: str = Form(""),
-               confirm: str = Form("")):
+               site: str = Form(""), confirm: str = Form("")):
     """File a stock row into a drawer. The FIRST write this app makes.
 
     Two separate facts, kept separate on purpose:
@@ -1178,11 +1218,12 @@ def api_assign(stock: int = Form(...), location: str = Form(...),
     if confirm.lower() not in ("1", "true", "yes"):
         return JSONResponse({"error": "confirm required"}, 400)
 
-    locs = [l for l in _rows(it_get("stock/location/", name=location, limit=5))
-            if (l.get("name") or "").upper() == location.upper()]
-    if not locs:
+    try:
+        loc = resolve_loc(location, site)
+    except Ambiguous as e:
+        return JSONResponse({"error": str(e)}, 409)
+    if loc is None:
         return JSONResponse({"error": f"no location named {location}"}, 404)
-    loc = locs[0]
 
     before = it_get(f"stock/{stock}/")
     if not before:
@@ -1418,7 +1459,7 @@ async def api_identify(image: UploadFile = File(...),
     # than the objection. Scott hit this filing a second part into B1-R1C1: he
     # photographed it and got "already on record" with no way forward.
     if location and more.lower() not in ("1", "true", "yes"):
-        known = drawer_contents(location)
+        known = drawer_contents(location, site)
         if known and known["assigned"]:
             return {"id": None, "kind": "identify", "basis": "already-assigned",
                     "location": location, "known": known, "candidates": [],
@@ -2247,7 +2288,7 @@ async function refreshDrawer(v,keepOut){
   if(!v){MODE='estimate';return;}
   $('#known').innerHTML='<div class=card>checking the record…</div>';
   let d=null;
-  try{ d=await (await fetch('/api/drawer?name='+encodeURIComponent(v))).json(); }
+  try{ d=await (await fetch('/api/drawer?name='+encodeURIComponent(v)+'&site='+encodeURIComponent(SITE))).json(); }
   catch(_){ $('#known').innerHTML='<div class="card err">could not reach the record</div>'; return; }
   if(d.error){ $('#known').innerHTML=`<div class="card err">${d.error}</div>`; return; }
   if(d.assigned){
@@ -2357,7 +2398,7 @@ let UNLOCATED=[];
 async function markEmpty(drawer){
   const btn=$('#emptybtn'), msg=$('#emptymsg');
   btn.disabled=true; msg.textContent='recording…';
-  const fd=new FormData(); fd.append('location',drawer); fd.append('confirm','yes');
+  const fd=new FormData(); fd.append('location',drawer); fd.append('site',SITE); fd.append('confirm','yes');
   try{
     const j=await (await fetch('/api/empty',{method:'POST',body:fd})).json();
     if(j.ok){
@@ -2552,7 +2593,7 @@ function wireCreate(drawer){
   go.onclick=async()=>{
     const msg=$('#npmsg');
     const fd=new FormData();
-    fd.append('name',$('#npname').value); fd.append('location',drawer);
+    fd.append('name',$('#npname').value); fd.append('location',drawer); fd.append('site',SITE);
     fd.append('quantity',$('#npqty').value.trim());
     fd.append('notes',$('#npnotes').value); fd.append('confirm','yes');
     go.disabled=true; msg.style.color='#8a8a8e'; msg.textContent='creating…';
@@ -2682,7 +2723,7 @@ function wireFiling(drawer){
         return; }
       btn.disabled=true; msg.textContent='filing…'; msg.style.color='#8a8a8e';
       const fd=new FormData();
-      fd.append('stock',btn.dataset.stock); fd.append('location',drawer);
+      fd.append('stock',btn.dataset.stock); fd.append('location',drawer); fd.append('site',SITE);
       fd.append('quantity',qty); fd.append('confirm','yes');
       if(btn.dataset.split==='1') fd.append('split','1');
       try{
@@ -2837,7 +2878,7 @@ $('#go').onclick=async()=>{
   $('#go').disabled=true; $('#go').textContent='Looking…'; $('#out').innerHTML='';
   const fd=new FormData();
   fd.append('image',f); fd.append('provider',$('#prov').value);
-  fd.append('location',CUR||'');
+  fd.append('location',CUR||''); fd.append('site',SITE);
   if(identify){ fd.append('cabinet',cabinetOf(CUR)); if(MORE) fd.append('more','1'); }
   else fd.append('part_name',$('#part').value||'unknown part');
   try{
