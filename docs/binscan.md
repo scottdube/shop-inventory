@@ -144,14 +144,25 @@ Three of his corrections shaped what it became:
 **It does not belong in the body.** A segmented control above the grid cost a
 row and read as a decision you make constantly. It is not.
 
-**It is unnecessary most of the time.** *"It's just too big and distracting."*
-So the control lives in **Options**, with the other set-once settings, and the
-header shows a badge **only when you are looking somewhere other than where you
-are standing**. A label that never changes is a label nobody reads.
+**It is unnecessary most of the time — then it was not.** First pass: the
+control moved into Options and the header badge appeared *only* when you were
+away from home, on the grounds that a label which never changes is a label
+nobody reads. Scott reversed it: *"the house is even more important — make sure
+you're in the right place when you're working this."*
 
-**It is a rare act, so it asks.** *"It's one switch six months later, switch it
-back."* Leaving your location asks for confirmation; coming back does not.
-Nagging on the safe direction is how people learn to dismiss dialogs unread.
+He is right, and the reason is that **the drawer is already shown twice** — the
+cabinet tile is highlighted and the drawer cell is outlined — while the site has
+no visual anywhere else on screen. So the header now shows the site **always**
+and shows it **larger than the drawer address**, which is demoted to context.
+
+Emphasis follows what is *not otherwise visible*, not what is most specific. And
+an indicator that vanishes when things are correct cannot reassure you that they
+are correct — which is the entire job when the failure mode is filing Dover
+stock into Florida.
+
+Quiet when you are viewing where you stand, amber when you are not. That
+distinction still earns its keep; it just no longer decides whether the label
+exists at all.
 
 **And "home" means where you physically are.** It was hard-coded to SLN until
 Scott asked *"by home you mean the one you're at geographically?"* — which is
