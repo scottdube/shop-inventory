@@ -403,6 +403,57 @@ def _strip_stamp(desc):
     return d
 
 
+# A description that NAMES CONTENTS is evidence the drawer is not empty. One
+# that CLAIMS EMPTINESS is evidence of the opposite -- and the first version of
+# this guard could not tell them apart, because it asked only whether there was
+# any text at all.
+#
+# That blocked 31 of A3's 64 drawers on the 2026-08-23 walk. They carry bulk
+# reports written 2026-08-21 -- "Reported AVAILABLE ... a cabinet-level
+# statement, not a per-drawer check" and "Reported EMPTY ... a bulk statement
+# covering A3-R4C1..R5C8" -- which are precisely the unverified claims a walk
+# exists to turn into per-drawer facts. The guard refused the upgrade because
+# somebody had written the claim down.
+_EMPTY_CLAIM = re.compile(
+    r"^(REPORTED\s+)?(AVAILABLE|EMPTY|VERIFIED\s+EMPTY|PRE-SORT)\b", re.I)
+
+
+def _names_contents(body):
+    """True when a description names what is IN the drawer.
+
+    False for no description, and false for one that only claims the drawer is
+    empty or available -- a person looking in and finding nothing contradicts
+    nothing.
+    """
+    return bool(body) and not _EMPTY_CLAIM.match(body)
+
+
+def _empty_description(desc, today):
+    """The VERIFIED EMPTY stamp, keeping the bracketed size annotation.
+
+    Two things the naive `stamp + " previously labelled: " + desc` got wrong.
+
+    A superseded claim is not a previous label. "Reported AVAILABLE ... glance
+    in before filling" is an instruction that a verified check has just
+    answered; carrying it forward puts two statements of different strength
+    side by side and tells the next reader to go and look again.
+
+    And it overran. Those descriptions plus their bracketed size run past the
+    250-character column, and the truncation falls on the END of the string --
+    which is exactly where the size annotation lives. Preserving the claim
+    would have silently eaten the dimensions off 31 drawers.
+    """
+    raw = desc or ""
+    size = " ".join(re.findall(r"\[[^\]]*\]", raw))
+    body = re.sub(r"\[[^\]]*\]", "", raw).strip(" ,;-—")
+    out = f"VERIFIED EMPTY {today}"
+    if _names_contents(body):
+        out += f" — previously labelled: {body}"
+    if size:
+        out += f" {size}"
+    return out[:250]
+
+
 def clear_empty_stamp(loc):
     """Filing into a drawer RETIRES any 'verified empty' claim on it.
 
@@ -1179,14 +1230,13 @@ def api_empty(location: str = Form(...), site: str = Form(""),
     if (loc.get("description") or "").upper().startswith("VERIFIED EMPTY"):
         return {"ok": True, "already": True, "description": desc,
                 "note": "already recorded empty; nothing changed"}
-    if body and not body.upper().startswith("PRE-SORT"):
+    if _names_contents(body):
         return JSONResponse({"error": f"the drawer's own description names "
                                       f"something: \u201c{body[:80]}\u201d. Check by "
                                       f"eye - a description is often the only "
                                       f"place the contents were written down."}, 409)
 
-    tag = f"VERIFIED EMPTY {datetime.date.today().isoformat()}"
-    new = (tag + (f" \u2014 previously labelled: {desc}" if desc else ""))[:250]
+    new = _empty_description(desc, datetime.date.today().isoformat())
     _b, err = it_patch(f"stock/location/{loc['pk']}/", {"description": new})
     if err:
         return JSONResponse({"error": f"could not write: {err}"}, 502)
