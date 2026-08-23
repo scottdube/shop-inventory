@@ -961,3 +961,52 @@ finished.
 
 Measured after deploy: **A2 went from `unknown: 4` to `unknown: 0`** (7 filled,
 53 empty, 4 declared), and the Red Bins from 19 unknown to 17.
+
+## Documents where the walker is, not where the document lives
+
+Scott, 2026-08-23, having just watched a datasheet get attached: *"When I look
+at the part, I get the data sheet. When I look at the part in stock as a stock
+item, there's no attachment."* And then the argument that settles it:
+
+> *"You're gonna go in through stock ninety nine percent of the time because
+> you wanna know if you have it. So having to go in through parts doesn't
+> really help you, because you got parts showing up in there that you don't
+> have in stock."*
+
+That is correct and it invalidated the advice originally written here, which
+was *look up the part instead*. Telling somebody to change how they navigate,
+so the tool can keep its filing convention, is not a fix. **Stock answers "do
+I have it", which is the question asked at a bench. Parts answers "does it
+exist", which is not.**
+
+Two surfaces, one rule: the document stays attached to the PART — it belongs
+to the object, not to a quantity in a place — and both stock surfaces gain a
+POINTER.
+
+**On the phone**, each row of the On record card now carries a chip per
+attachment, and `/api/doc/{pk}` streams the file through binscan. InvenTree
+serves `/media/` behind authentication and answers **401** to a phone with no
+session, which is most phones at a drawer; binscan already holds a token, so it
+fetches server-side and hands the file over. Verified: `/api/doc/134` returns
+777,926 bytes of `application/pdf` beginning `%PDF-`, and an unknown pk gives
+404. **By attachment pk, never by path** — a path parameter that reaches the
+filesystem is how a file server becomes an exfiltration tool.
+
+**In InvenTree's own web UI**, `scripts/sync_stock_docs.py` fills
+`StockItem.link`, which renders as an external link on the stock page. 15 rows
+today.
+
+Three deliberate limits on that script:
+
+- **A link, not a copy.** Duplicating a file onto every stock row is four
+  copies to update and three chances to read a stale one.
+- **Documents only.** Several parts carry detail photos, and a field labelled
+  "External Link" that opens a jpg of the thing already in your hand teaches
+  you the link is not worth tapping. 45 image attachments skipped; images stay
+  on the part, where they render as images.
+- **Never overwrites a hand-set link.** Only an empty one, or one this script
+  wrote before — recognised by the `/media/attachments` prefix. A human's link
+  to a vendor page outranks a generated one.
+
+Re-runnable and idempotent: the second pass reported *0 set, 15 already
+correct*.
