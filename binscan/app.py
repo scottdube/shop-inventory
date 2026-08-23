@@ -327,12 +327,18 @@ def api_grid(area: str = ""):
                  else "empty" if desc.upper().startswith("VERIFIED EMPTY")
                  else "mixed" if desc.upper().startswith("PRE-SORT")
                  else "unknown")
-        cells.append({"name": k["name"], "state": state,
+        cells.append({"name": k["name"], "pk": k["pk"], "state": state,
                       "r": int(m.group(2)) if m else None,
                       "c": int(m.group(3)) if m else None,
                       "large": "large" in desc.lower(),
                       "label": re.sub(r"\s*\[[^\]]*\]\s*", "", desc).strip()[:40]})
-    cells.sort(key=lambda x: (x["r"] or 0, x["c"] or 0, x["name"]))
+    # Grid areas sort by row and column. Everything else sorts by CREATION
+    # ORDER, not alphabetically: LRD's bench wall came out LCab1..4 then
+    # UCab1..4, with the uppers listed below the lowers they physically sit
+    # above. Creation order is the order someone laid the place out, which is
+    # closer to how it is walked than the alphabet is.
+    cells.sort(key=lambda x: (x["r"] or 0, x["c"] or 0, x["pk"])
+               if x["r"] else (0, 0, x["pk"]))
     tally = {s: sum(1 for c in cells if c["state"] == s)
              for s in ("filled", "uncounted", "mixed", "empty", "unknown")}
     return {"area": loc["name"], "grid": all(c["r"] for c in cells) and bool(cells),
@@ -1699,6 +1705,11 @@ body{margin:0 auto;max-width:560px;padding:0 var(--s3) 4px;background:var(--bg);
 .logo rect.lit{fill:var(--acc)}
 .appbar h1{font-size:17px;font-weight:800;margin:0;letter-spacing:-.02em}
 .appbar h1 span{color:var(--acc)}
+/* The badge and the drawer address travel together, right-aligned as a group.
+   Putting margin-left:auto on the badge alone meant that hiding the badge --
+   which is the normal case, at home -- left the drawer address stranded beside
+   the ? button instead of at the right edge. */
+.hdrright{margin-left:auto;display:flex;align-items:center;gap:8px}
 .appbar .where{font-size:13px;color:var(--fg);font-weight:700;
   font-variant-numeric:tabular-nums;white-space:nowrap}
 .appbar .where b{color:var(--fg);font-weight:700}
@@ -1706,7 +1717,7 @@ body{margin:0 auto;max-width:560px;padding:0 var(--s3) 4px;background:var(--bg);
 p.sub{color:var(--dim);margin:8px 0 2px;font-size:12.5px;line-height:1.45}
 
 /* ── site switcher: in the header, tap to toggle ────────────────────────── */
-.sitebtn{width:auto;min-height:0;margin:0 0 0 auto;padding:3px 10px;font-size:11px;
+.sitebtn{width:auto;min-height:0;margin:0;padding:3px 10px;font-size:11px;
   font-weight:800;letter-spacing:.07em;background:#3a2f07;color:var(--warn);
   border:1px solid #7a6410;border-radius:999px}
 
@@ -1942,8 +1953,10 @@ img#prev{height:58px;width:auto;max-width:34%;object-fit:cover;
   </svg>
   <h1>Bin<span>Scan</span></h1>
   <button class=hintbtn id=hintbtn title="how this works">?</button>
-  <button class=sitebtn id=sitebtn title="tap to switch site"></button>
-  <span class=where id=whereat></span></div>
+  <span class=hdrright>
+    <button class=sitebtn id=sitebtn title="tap to switch site"></button>
+    <span class=where id=whereat></span>
+  </span></div>
 <div class="helppanel hint">
   <div class=hh>How this works</div>
   <ol>

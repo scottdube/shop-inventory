@@ -227,11 +227,19 @@ Scott photographed the Florida bench wall 2026-08-22: **four upper wall cabinets
 (two doors each) over a base run with a **black worktop** — one tall single-door
 cabinet at the left, then **three drawer banks**. Carpeted floor, finished room.
 
-**Nothing has been built for it, deliberately.** He has not thought about naming
-yet and cannot recall the shelf counts, and the drawer counts must not be read
-off a photograph. Two placeholder containers exist at LRD (`LRD Storage`,
-`LRD Bench`), each marked as a placeholder in its description, purely so the
-site switcher has somewhere to point.
+**Built to CABINET level only, 2026-08-22.** `LRD/Bench Wall` now holds
+`UCab1`–`UCab4` and `LCab1`–`LCab4`. That much is countable in the photograph —
+four uppers, one base door cabinet, three drawer banks — and is structure rather
+than quantity. **What is inside them is not built**, because shelf and drawer
+counts cannot be read off a picture and Scott does not recall them. Each
+cabinet's description says so and names the convention to use on site.
+
+The two arbitrary placeholders (`LRD Storage`, `LRD Bench`) were deleted once a
+real structure existed.
+
+Until the shelves and drawers are enumerated, a part can be filed to the cabinet
+— the same transitional state B1/B2 are in, where the container is known and the
+compartment is not.
 
 **Scott's convention, 2026-08-22 — `Cab` for cabinet, upper and lower:**
 
