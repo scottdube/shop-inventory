@@ -1703,6 +1703,9 @@ button.quiet{background:var(--surface-2);color:var(--fg);border:1px solid var(--
    picks from needs no legend, because you already know where to look. */
 .chips{flex-direction:column;gap:5px}
 .wallrow{display:flex;gap:5px}
+/* Centred under the wall rather than left-aligned: it belongs to all of them,
+   not to the first column. */
+.wallrow.centred{justify-content:center}
 /* One min-height for every tile so "elsewhere", whose label is smaller, still
    lines up with the cabinets rather than sitting 4px short. */
 .chip{width:auto;min-height:51px;margin:0;padding:8px 0 7px;font-weight:800;
@@ -1719,7 +1722,7 @@ button.quiet{background:var(--surface-2);color:var(--fg);border:1px solid var(--
    the whole wall. Dashed, because it is a door to somewhere else rather than a
    thing on this wall. */
 .chip#more{flex:0 0 calc(((100% - (var(--cols,3) - 1) * 5px) / var(--cols,3)) * 2 + 5px);
-  font-size:13px;font-weight:700;color:var(--mut);border-style:dashed;
+  font-size:16px;font-weight:800;color:var(--fg);border-style:dashed;
   letter-spacing:-.01em}
 .chip#more.on{color:var(--acc-ink);border-style:solid}
 #rest{flex-direction:row;flex-wrap:wrap}
@@ -1991,7 +1994,7 @@ fetch('/api/areas').then(r=>r.json()).then(as=>{
   const cols = Math.max(...Object.values(byRow).map(v=>v.length), 1);
   $('#areas').style.setProperty('--cols', cols);
   $('#areas').innerHTML = rows
-    + `<div class=wallrow><button class=chip id=more>elsewhere<span class=mut>${rest.length}</span></button></div>`
+    + `<div class="wallrow centred"><button class=chip id=more>Elsewhere<span class=mut>${rest.length}</span></button></div>`
     + `<div id=rest style="display:none;width:100%;margin-top:7px" class=chips>${rest.map(chip).join('')}</div>`;
   const wire=()=>$('#areas').querySelectorAll('.chip[data-a]').forEach(b=>b.onclick=()=>loadArea(b.dataset.a));
   wire();
