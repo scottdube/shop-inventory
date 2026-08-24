@@ -3076,7 +3076,7 @@ shop-inventory copy, or if there is none, the operator retypes the path and
 moves on. The command working is not evidence the file is in the right repo.
 There is no error at any point.
 
-**Three occurrences now, all the same week:**
+**FOUR occurrences now, all the same week:**
 
 - `project_column.py` (9f1a52d, 2026-08-22) — written after the shell cwd
   silently reset, landed in `~/code/scripts/`, and was then swept into a commit
@@ -3141,3 +3141,31 @@ toward the adapter — with the caveat that the meter itself was never checked
 against a known source, so a wrong range or a probe missing the recessed centre
 pin is not excluded. A regulated switcher does show its rated ~25 V unloaded, so
 a zero is evidence, not an artifact of measuring without load.
+
+
+## The two-`scripts/` trap caught a session that had already read the trap
+
+2026-08-24, hours after the trap above was written: `move_tcrt_r2c7.py` was
+created with `cat > scripts/move_tcrt_r2c7.py` while the shell cwd had silently
+reset to `~/code`. It landed in `~/code/scripts/`, `itq run` executed it
+correctly anyway — because itq resolves against the shop-inventory repo — and
+`git add -A && git commit` then swept it into a `~/code` commit whose message
+described a `docs/OPEN.md` edit that had failed with `FileNotFoundError` in the
+same command.
+
+**Knowing the trap did not prevent the trap**, because the mechanism is a silent
+cwd reset between tool calls and nothing in the failing path announces itself:
+the script runs, the commit succeeds, and the only symptom is a commit message
+that does not match its diff.
+
+**The countermeasure is not vigilance, it is absolute paths.** Write scripts and
+edit docs by full path — `/Users/scottdube/code/shop-inventory/scripts/foo.py` —
+so cwd cannot participate. A relative path is a bet on shell state that this
+session lost four times.
+
+Second-order lesson: **`git add -A` after a failed edit in the same command is
+how a misleading commit gets made.** The python heredoc raised, the `&&` chain
+continued to git because they were separate commands, and the commit went in
+carrying a message about work that had not happened. Recovered by moving the
+file to the right repo and resetting `~/code` (no remote, unpushed) — but the
+message was already wrong before anyone looked.
