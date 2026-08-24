@@ -2180,3 +2180,42 @@ the ssh session unless it is explicitly given the launchd environment.
 
 Same shape as the deploy verified by md5 while Scott kept hitting old code:
 **check the thing where it actually runs.**
+
+## A duplicate made a day apart, and the ordering machinery chose the new one
+
+`Brother DK-2205` label roll, resolved 2026-08-23:
+
+- **2026-08-20** — #922 created as a placeholder: *"Stored in BR-D3.
+  minimum_stock 1 so it shows on Low Stock before the last roll is in the
+  printer. Quantity not counted — set it when the rolls are put away."*
+- **2026-08-21** — #1054 created as *"the first tracked consumable in the shop,
+  with a real reorder point"*, without matching the record made the day before.
+- The supplier part and **PO-0133 then attached themselves to #1054**.
+
+So #922 sat at zero with no purchase history while the roll it described was
+on order against its twin. Scott's question was the right one: *"why is there
+no PO?"* — and the answer was not "the order went untracked" but "the order
+found the other record."
+
+Brother sells the same 62 mm continuous tape as **DK-2205 and DK-22205**
+depending on region, which is what let two records look like two products.
+
+**Moving a SupplierPart's `part` FK carries its PO lines with it**, because a
+line item points at the supplier part rather than at the part. That makes this
+kind of merge one write rather than a hunt through orders.
+
+## Stock that cannot be bought is not stock
+
+#1054's only stock row was the **5 m starter roll that shipped in the printer's
+box** — partially used, mounted in the machine. It had been counted honestly:
+*"Counted 1 because one roll is present, not because a full roll is present."*
+
+It still did damage. **The shop read as having label stock while owning no
+usable roll**, and the minimum-stock rule on the other record was the only
+thing saying otherwise. Scott, deciding it: *"I dont think so, it cant be
+bought."*
+
+That is the test worth keeping. **If it cannot be purchased, it is not a stock
+item** — it is a property of the machine it came with, and it belongs on that
+machine's record. The fact now lives on the printer #1057, where somebody
+wondering what tape is loaded will actually find it.
