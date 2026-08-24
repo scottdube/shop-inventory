@@ -463,6 +463,32 @@ when the whole empty ones run out.
       shared by related small parts"** — so A2 is where this scheme will
       actually earn its keep, and A2 is the cabinet nobody has walked.
 
+## Storage bins — B-01, B-02, … the ID travels with the BIN
+
+Decided 2026-08-24. Ten identical clear Sterilite 6qt bins on one shelf are
+indistinguishable by contents. Scott: *"you could get ten of them on one of
+these shelves — how would you know where to look? It's gonna have to be more
+discriminatory than that, so you can go right to the correct bin rather than
+looking at every bin."*
+
+**Each bin gets a permanent ID — `B-01`, `B-02` — that belongs to the BIN, not
+to the shelf slot.** Location name carries both: `B-01 Sleeving & Loom`. The
+code finds it on the shelf, the words find it in a search.
+
+**Ruled out: shelf-position names like `WS2-S3-B1`.** The reason was already
+written on the Air System bin — *the BIN is the location so it can move or
+upsize freely*. A shelf-coded name means renaming the bin and every
+`default_location` pointing at it the first time it moves shelves.
+
+**A bin in service is a LOCATION, not stock.** #1089 (the 10-pack) drops by one
+each time a bin is put to work. Currently 9 in `SLN/Receiving`.
+
+- [ ] **Label B-01.** The ID has to be the big text; contents underneath; QR at
+      the side. This is the whole point of the scheme and it does not work
+      until the label is physically on. Printer is back up.
+- [ ] **Heat-shrink: in the sleeving bin or not?** Undecided. It lives in the
+      bin wall today.
+
 ## Cabinets never walked
 
 - [ ] **B1** — 31 rows still at cabinet level, flagged `DRAWER UNKNOWN`. All
