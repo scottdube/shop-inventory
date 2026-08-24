@@ -3260,3 +3260,87 @@ Check the jacket first.
 
 Not all cable carries it: the four Amazon cables in the same bin are still
 recorded at their purchased lengths. Worth checking each of them.
+
+## CORRECTED — `VSTR_USR_NM` is persistent storage, so a non-empty key proves nothing
+
+**2026-08-24 16:46, measured.** The McMaster procedure two sections up says the
+key is empty at cold load "whether or not you are signed in", and that a real
+click is what populates it. **On this run the key already read `Scott Dube` at
+cold load, before any click at all.**
+
+The earlier table is not wrong about what it saw; it is wrong about what the
+key *means*. `localStorage` **persists across page loads, tabs and restarts**.
+Once any earlier visit clicked the control, the value stays until something
+clears it. The 21-second table was measured on a profile where nothing had
+clicked yet — a first-visit condition, not the general one.
+
+**So the sanctioned test has a false-pass path.** "Non-empty and matches the
+account name" is satisfied by residue from a visit that may be days old and a
+session that may have expired since. The test that could never say "signed in"
+was replaced by one that can never say "signed *out*".
+
+### The second trap: which coordinate frame
+
+`getBoundingClientRect()` returns **page** coordinates. The `computer` tool
+takes **screenshot** coordinates. On this run those were x=1679 and x=1508 for
+the same control — a 171 px gap, wide enough to land on nothing.
+
+The miss is silent: the click reports success, no error appears, and the test
+then reads the *stale* `VSTR_USR_NM` and calls it a pass. **The two traps
+compound** — a missed click plus persistent storage produces a confident
+"signed in" with no evidence behind it whatsoever.
+
+Take the coordinate from a `screenshot` first, never from the rect.
+
+### What is actually load-bearing
+
+The post-click **UI transition**, which cannot be faked by stale storage:
+
+| signal | signed out | signed in |
+|---|---|---|
+| masthead control | `Log in` | account name + `▾` |
+| dropdown contents | login form | `Settings` / `Log Out` |
+| contact number | `(630) 833-0300` (generic) | `(609) 689-3000` (account rep) |
+
+The rep phone number is the cheapest independent confirmation — it is rendered
+from account data, so a generic number means the session is not live regardless
+of what the storage key says.
+
+**This does not restore any route-based probe.** Everything in "Why every
+guessed endpoint also lied" still holds; the fix is to read the post-click UI,
+not to go looking for an endpoint again.
+
+## AliExpress falls between the two sweep sections and is captured by neither
+
+**2026-08-24 16:46, measured.** Two AliExpress orders confirmed 2026-08-23 —
+`8213410090415753` (HLK-5M05B AC-DC module, 5-pack, $16.96) and
+`8213410090395753` (15 mH 4 A annular common-mode choke ×2, $7.37) — were
+absent from InvenTree and had been missed by the 08:40 and 12:40 runs.
+
+Neither section is at fault on its own; the gap is between them:
+
+- **Section 3** sweeps an *itemised vendor list* — Amazon, Tormach, MSC, Shars,
+  Mouser, Pololu, eBay, Haas, McMaster, DigiKey, Seeed, Walmart. AliExpress is
+  not on it, so the sender-based pass never looks.
+- **Section 4** is the shape-based net meant to catch exactly that. But
+  `vendor_triage.py` buckets `notice.aliexpress.com` as **known → "already
+  swept"** and drops it before it can reach the decision queue.
+
+`po_check` on both order numbers said `absent` at the same moment triage said
+"already swept". **Triage answers "do we recognise this sender", and that was
+read as "has this order been imported".** Those are different questions and the
+words do not distinguish them.
+
+This is the [unknown vendor blind spot] one turn further out: the earlier
+finding was that the sweep only finds senders it knows. The variant here is
+worse, because a *recognised* sender is actively marked handled — a known
+vendor is more invisible than an unknown one, not less.
+
+**Fix is one of two, and it is Scott's call** (on the decision queue as
+`procedure-gap-aliexpress`): add AliExpress to the Section 3 itemised list, or
+make triage's "already swept" test the order number via `po_check` instead of
+the sender domain. The second is the general repair — it would close this hole
+for every future vendor that gets added to the registry but not to Section 3.
+
+**Do not read "already swept" as proof of anything** until that lands. It is a
+statement about the registry, not about the database.
