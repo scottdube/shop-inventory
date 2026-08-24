@@ -2961,3 +2961,33 @@ The throwaway LOCATION matters too: the first attempt aimed at `Receiving` and
 got `409 — 2 locations are called 'Receiving'`, which is the location-ambiguity
 guard working. Any real drawer also risks the empty-stamp side effect rewriting
 a description that took a walk to earn.
+
+## A battery hides a dead mains supply for the whole life of the device
+
+The QL-810W printed 15 jobs on 2026-08-20 and never printed again. The AC
+adapter measures **nothing**, and Scott's reading is that it never worked: the
+printer ran on its internal battery from new, and died when the pack went flat.
+
+**Nothing in that sequence ever presents as an AC fault.** The printer works,
+prints, joins wifi and answers IPP — right up until it doesn't. There is no
+error, no warning, no degraded mode. A battery-capable device on a dead supply
+is indistinguishable from a healthy one until the battery is empty, and by then
+the failure looks like "it died", not "it was never charging".
+
+**So commissioning a battery-capable tool means proving the MAINS path
+specifically.** On arrival, before anything else:
+
+1. **Run it on AC with the battery out**, or not yet installed. If it works, the
+   mains path is proven. If the battery is in, nothing is proven.
+2. Only then fit the battery.
+
+That is the entire lesson, and it costs a minute. Doing it on 08-20 would have
+caught this the same evening instead of four days later.
+
+**Two aggravating factors here, both worth carrying forward.** The unit is
+**Renewed** (refurbished) — a returned item whose adapter is exactly the sort of
+thing that gets swapped, lost or substituted before resale — and the replacement
+Amazon is sending is **also Renewed**, so the same risk applies to it. And the
+four-day gap happened because nobody tried to print; labelling was parked on the
+open list, so the failure had no observer. See the "last read that PROVED
+something" gap recorded above.
