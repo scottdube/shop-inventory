@@ -540,6 +540,31 @@ in the spindle.
 
 ## Watch
 
+- [ ] **InvenTree update available (noticed 2026-08-23). DO IT IN FLORIDA, not
+      from here.** The Mini lives at LRD, so from SLN it is 1,300 miles away and
+      an upgrade that goes sideways leaves a broken server nobody can touch.
+      This instance also carries a custom `shopstatus` plugin and BinScan
+      depends on specific API shapes, so it is not a no-risk upgrade.
+
+      **The window is after the ~2026-10-12 move**, when Scott is beside the
+      machine and a failure costs an hour rather than a season. Same reasoning
+      that makes LRD the cycle-count pilot site — see [[seasonal-residency]].
+
+      Generalises: **any risky change to the Mini wants to happen while
+      co-located with it.** Half the year that is impossible.
+
+- [ ] **INVE-W7: email not configured** — accurate, not spurious. `EMAIL_HOST`
+      is unset while the `inventree-email-notification` plugin is ACTIVE, so the
+      stack claims a capability it does not have. Costs: no password reset by
+      email (irrelevant, there is shell access) and no email notifications. The
+      UI notification plugin works and is what shows the bell.
+
+      Either configure SMTP — worth it only if low-stock alerts should reach
+      Scott outside the app, which they arguably should since he has minimum
+      stock rules — or deactivate the email plugin so the two agree.
+
+
+
 - [ ] **CANCEL the $1 Walmart+ trial before ~2026-09-21.** Taken 2026-08-22
       only to get an $11 bin order delivered same-day. Scheduled reminder set
       for 2026-09-17. Then re-enrol via the Amex Platinum credit — **monthly
