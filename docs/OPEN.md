@@ -1368,16 +1368,32 @@ raster error rather than pointing at it.
       queue now reports "The printer is not responding" instead of the
       "ready and printing" it claimed while the connection hung.
 
-- [ ] **RETURN THE PRINTER — do not buy an adapter.** `PO-0134`, Amazon,
-      issued **2026-08-19**, $129.99. It is FIVE DAYS OLD and inside the
-      30-day window.
+- [x] ~~**RETURN THE PRINTER**~~ — **replacement confirmed 2026-08-24.**
+      Amazon RMA, not a refund, so no re-ordering needed.
 
-      **Return the whole unit, not just the brick.** Scott's hypothesis is that
-      the AC side never worked and it ran on battery from new — which means the
-      printer's own DC jack and internal power stage are *equally unproven*.
-      Sourcing a PA-AD-001A risks discovering the printer is the faulty half,
-      having spent part of the return window to find out. The failure is
-      isolated to "the AC path", and the AC path spans both halves.
+      | | |
+      |---|---|
+      | replacement due | **2026-08-26** |
+      | drop off dead unit by | **2026-11-19**, any Staples, no box needed |
+      | both units | **(Renewed)** — refurbished, not new |
+
+- [ ] **ON ARRIVAL: run it on AC with the battery OUT, and print one label.**
+      This is the whole lesson of the failure — a battery-capable device on a
+      dead supply looks perfectly healthy until the pack empties, so the mains
+      path has to be proven deliberately. The replacement is also a Renewed
+      unit, so its adapter carries the same risk. Do it the day it lands, not
+      the day you next need a label.
+- [ ] **Carry the dead unit to Staples.** No box required, keep it in its
+      original packaging, show the QR return code. Deadline 2026-11-19 — far
+      enough away to be forgotten, which is the actual risk.
+- [ ] **When it goes, stock #570 follows it out**, and the replacement comes in.
+      Quantity stays 1 until then: initiating a return is a decision, not a
+      movement. Only the drop-off is a movement.
+
+      *(superseded reasoning, kept: buying a PA-AD-001A separately was rejected
+      because the printer's own DC jack and internal power stage were equally
+      unproven — the fault was isolated to "the AC path", which spans both
+      halves. A whole-unit replacement settles both at once.)*
 
 - [ ] **Then: stock #570 needs to follow the printer.** The QL-810W is stocked
       1 @ SLN/Electronics Bench. If it goes back, that row and `PO-0134` both
