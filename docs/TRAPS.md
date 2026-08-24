@@ -2800,6 +2800,14 @@ firmware sulk, and no amount of clearing or re-queuing touches it.
 "accepting requests since 13:11". A queue that says *printing* is reporting on
 itself, not on the printer.
 
+**The 90 W adapter is correct — do not "fix" it.** The genuine brick is Brother
+**PA-AD-001A**, P/N **S01776A**, `100-240V 1.5A in / 25.0V 3.6A 90.0W out`,
+shared across the QL-810W, QL-820NWB and the TD-2020/2120/2130 family. Ninety
+watts looks absurd for a desktop label printer and reads like a mismatched
+supply grabbed off the bench — it isn't. **25.0 V is the number to meter at the
+barrel**, not the 12 V or 24 V you'd guess. Checked against the label and
+Brother's own part listing on 2026-08-24 rather than assumed.
+
 **But `lpstat -p <queue>` does tell the truth — read its second line.** It
 prints the misleading header and then the real state:
 
