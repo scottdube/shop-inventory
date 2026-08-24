@@ -2800,14 +2800,49 @@ firmware sulk, and no amount of clearing or re-queuing touches it.
 "accepting requests since 13:11". A queue that says *printing* is reporting on
 itself, not on the printer.
 
-**The four-day silence is the real finding.** Completed jobs run 1–15, all
-between 20:07 and 20:42 on 2026-08-20 — the setup evening. Nothing has completed
-since. Jobs 16–28 exist in neither the completed list nor the queue.
+**But `lpstat -p <queue>` does tell the truth — read its second line.** It
+prints the misleading header and then the real state:
 
-We cannot say from this when it died: nobody may have tried to print between the
-21st and today, since labelling has been parked on the open list the whole time.
-**Measuring an outcome is not measuring a cause** — what is established is "no
-successful print since 2026-08-20 20:42", and the failure date is unknown.
+```
+printer QL810W now printing QL810W-29.  enabled since Mon Aug 24 13:11:51 2026
+        The printer is not responding.          <- this line is the answer
+```
+
+So the rule is not "CUPS lies", it is **`-a` and the header line describe the
+queue; the indented status line and `error_log` describe the printer.** Job 29
+retries every ~37 s forever, which is why the error count climbs on its own.
+
+**CORRECTED, same day — there was no four-day silence, and the earlier reading
+of the job history was wrong.** The first pass concluded "completed jobs run
+1–15, all on the setup evening; jobs 16–28 exist in neither the completed list
+nor the queue." `lpstat -W completed -o` shows all 28:
+
+```
+QL810W-28   Sat Aug 22 12:39:42     <- last job the printer ever ACKed
+QL810W-18..27                        Fri Aug 21, 09:56 -> 12:45
+QL810W-16..17                        Thu Aug 20, 20:54 and 21:02
+QL810W-1..15                         Thu Aug 20, 20:07 -> 20:42 (setup)
+```
+
+**Whatever produced the 1–15 list truncated it.** Trust `lpstat -W completed -o`
+and read the whole thing; a job list that stops exactly at a round number and
+exactly at the end of a session is a tell that you are looking at a page, not a
+history.
+
+**The error log dates the failure far more tightly than the job list does.**
+`/var/log/cups/error_log` contains 26 error lines in its entire life and every
+one of them is Job 29, starting `24/Aug/2026:13:12:13`. Nothing failed before
+today. So:
+
+- the printer served **28 jobs over two days** and was answering at Aug 22 12:39
+- the death window is **Sat Aug 22 12:39 → Mon Aug 24 13:12**, ~48 h, a weekend
+- it is **not** DOA, not a raster sulk, not the network — it worked, then stopped
+
+A CUPS job going `completed` on a driverless IPP queue means the printer
+accepted and acknowledged it, so it *is* a liveness signal about the printer —
+unlike "the queue is accepting", which is not. It still is not proof a label came
+out; **measuring an outcome is not measuring a cause**, and the monitoring gap
+below stands regardless of the corrected dates.
 
 What that *does* establish is a monitoring gap, and it is the same one the 02:09
 API error exposed: **the dashboard's "last read that PROVED something" tile
