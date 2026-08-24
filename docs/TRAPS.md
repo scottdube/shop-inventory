@@ -3230,3 +3230,33 @@ renamed, depending on which field you read.
 **After renaming or re-parenting a location, call `save()` on the instance and
 re-read `pathstring`.** Verifying the rename by checking `name` is checking the
 field that was never in doubt.
+
+
+## Cable jackets carry sequential footage marks — read them before weighing anything
+
+2026-08-24, on an Allied 8126 22/4: the jacket prints `#4626 FT.` as part of a
+sequence the manufacturer lays down at one-foot intervals. **Subtract the mark
+at one end from the mark at the other and you have the length**, exactly, for
+nothing.
+
+That beats every other method considered for the wire in B-01:
+
+| method | cost | needs |
+|---|---|---|
+| **footage marks** | free | the marks to exist, and both ends |
+| unwind and measure | slow | floor space |
+| weigh | one minute | g/ft, from a coil of known length |
+| eyeball | free | nothing, and it shows |
+
+It also outranks them on evidence: the number is printed by the maker and does
+not depend on anyone's judgement, so it is a **tally**, not an estimate — it
+gets a `stocktake_date` and no `[ESTIMATE]` marker.
+
+**The trap is that it is invisible unless you know to look.** The print is small,
+low-contrast, and reads as boilerplate alongside the AWG and UL markings. Every
+route we discussed — weighing, tare, cutting a sample to find g/ft — was
+unnecessary for this coil and nobody would have found that out by reasoning.
+Check the jacket first.
+
+Not all cable carries it: the four Amazon cables in the same bin are still
+recorded at their purchased lengths. Worth checking each of them.
