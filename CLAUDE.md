@@ -64,6 +64,14 @@ Deliberately not a reorder point: studs are bought in 10-packs and holders two
 or three at a time, so a minimum-stock rule would nag to hold ten in reserve
 forever. The check speaks only when a specific order needs studs added.
 
+## Keep replies short
+
+Scott is usually at the bench while reading. **Lead with the result in a line or
+two, then stop.** Reasoning, ruled-out options and trap write-ups go in `docs/`
+and the commit message — searchable later, out of the way now. Surface detail
+unprompted only when it changes what he should physically do next, or when it
+costs money.
+
 ## Capture as you go
 
 Write findings down **in the same turn they are learned**, not at session end —
