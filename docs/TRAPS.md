@@ -2531,3 +2531,56 @@ deferred run has a first timestamp that is not the scheduled time.
 whole night and went unremarked for six hours. The dashboard brief's
 "last SUCCESSFUL read, not last run" tile is exactly this, one level up: the
 scheduler said the task ran, and it did — it just accomplished nothing.
+
+## The unit string is validated, but `M` is molar and passes
+
+Asked whether a 15 m roll could be stocked by the foot, the install said yes —
+`convert_physical_value` is live on InvenTree 1.5.0 and measured correct:
+
+```
+8 in   -> 0.2032 m        2 ft -> 0.6096 m
+15 m   -> 49.2126 ft      600 mm -> 0.6 m
+StockItem.quantity  max_digits=15  decimal_places=5   (0.01 mm; inches exact)
+```
+
+**Case is not cosmetic and the validator will not catch it.** `Part.units`
+carries a real `validate_physical_units` validator — `'roll'` and `'banana'` are
+rejected — but pint is case-sensitive in the worst possible way:
+
+| string | what pint reads | passes validation |
+|---|---|---|
+| `m` | meter | yes |
+| `M` | **molar** | **yes** |
+| `mm` | millimeter | yes |
+| `MM` | **megamolar** | **yes** |
+| `IN`, `FT` | undefined | no |
+
+So `units='M'` saves cleanly and then every conversion afterwards dies with
+`Could not convert 8 in to M` — a length typed into a concentration. The
+failure surfaces at the bench, weeks later, on the first cut. **Lowercase, and
+verify a conversion right after setting the field**, not just that it saved.
+
+**Correction on how this was found.** The first probe called `Model.clean()`
+and reported `'banana'` accepted — which would have meant the field was
+unvalidated, and would have gone into this file as fact. `Model.clean()` does
+not run field validators; `full_clean()` does. Same shape as the `[ESTIMATE]`
+miscounts: **an integrity claim tested with the wrong instrument returns a
+confident wrong answer.** Before writing down "X is not validated", check that
+the thing you called is the thing that validates.
+
+## BinScan takes fractions but not units
+
+`float(quantity)` throughout `binscan/app.py` — never `int()` — so a fractional
+quantity records fine. But it is `float()` and nothing else, so `"8 in"` comes
+back as `quantity '8 in' is not a number`.
+
+The consequence is entirely about the person at the bench: with `units='m'`, a
+BinScan user holding a tape measure has to type `0.2032` for eight inches. The
+InvenTree web UI converts and BinScan does not, so **the same shop has two
+entry paths that disagree about what a quantity is** — which is how a cut goes
+unrecorded, and an unrecorded cut is the whole failure mode of bulk stock.
+
+Not yet fixed. The fix is small — route the string through
+`convert_physical_value` when the part carries units — and it is worth doing
+once, because it is the same fix for wire, solder, heat-shrink, tubing and
+filament.
