@@ -295,6 +295,53 @@ them.
       burying is a small-parts problem and a coiled cable is big enough to see.
       Same footprint so they interchange on a shelf.
 
+## Cut stock — decided 2026-08-24, on the fiberglass sleeve
+
+The 15 m sleeve roll (PO-0020, part #790) forced the question, and the answer
+sets the precedent for wire, solder, heat-shrink, tubing and filament. **Today
+0 of 1071 parts carry a unit and no stock row anywhere is fractional**, so this
+is the first one.
+
+**Decision: track length, in metres, seeded from the pack claim as an
+`[ESTIMATE]`.**
+
+- `units='m'` — lowercase, see `TRAPS.md`. Metres because that is what is
+  printed on the bag, so the seed figure is transcribed rather than converted;
+  there is no rounding to explain later.
+- Entry still happens in whatever you are holding a ruler in. The web UI takes
+  `8 in` and stores `0.2032`. Resolution is 5 dp — 0.01 mm — so inches are exact.
+- The roll seeds at 15 m **with no `stocktake_date`**, because nobody has
+  measured it. That is the pack claim.
+
+**Why the estimate is acceptable here when a divided kit count is not.** It is
+falsifiable and it *sharpens* with use: every recorded cut is a real
+measurement subtracted from a claimed start, and the day the roll runs out you
+learn exactly what the claim was worth. If it empties at 12 m of recorded cuts,
+the listing was fat and every uxcell length figure is suspect. A divided kit
+count can never be checked against anything.
+
+**Ruled out: stock it as `qty 1 roll`.** Honest, and useless the moment you cut
+into it — "1 roll" cannot answer *do I have enough for this harness*, which is
+the only question anyone ever asks of a consumable. The row stays green while
+the fact rots, which is data atrophy in one row. (`units='roll'` is also
+rejected outright by the validator — pint has no such unit.)
+
+**The failure mode to design against is remainder drift**: somebody cuts and
+does not record, the number stays high, and a job gets planned around sleeve
+that is not there. Two defences, and the first is not yet built:
+
+- [ ] **Teach BinScan to convert units.** It accepts fractions but not `"8 in"`
+      — so at the bench, with `units='m'`, a person must type `0.2032`. Two
+      entry paths that disagree about what a quantity is. See `TRAPS.md`.
+      Until it lands, record cuts in the web UI.
+- [ ] **When it looks low, measure the remainder and stocktake it.** That is
+      the move that converts the estimate into a count, and it is cheap exactly
+      when it matters — a nearly-empty roll is short enough to measure.
+
+- [ ] **Offcuts long enough to reuse** — undecided. The WS1 wire-offcut
+      precedent suggests a separate stock row at the rack rather than pretending
+      the roll is still whole. Nobody has cut any yet, so this is not urgent.
+
 ## Cabinets never walked
 
 - [ ] **B1** — 31 rows still at cabinet level, flagged `DRAWER UNKNOWN`. All
