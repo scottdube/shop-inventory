@@ -2249,3 +2249,39 @@ Image coverage read 563/1071 = 52% and looked like two years of work. Roughly
 Both numbers are true. Only the second one supports a decision. Any completeness
 figure on a dashboard shows reachable, and shows the ruled-out count next to it
 so the exclusion can be audited.
+
+## The `[ESTIMATE]` count is 148, not 42 — and 3 of them contradict themselves
+
+Measured 2026-08-24, confirming and extending the note above. The correction
+about the field is right: `[ESTIMATE]` lives in **`StockItem.notes`**, and my
+health-stats query hit `Part.description`, which reads 0. That query is fixed
+in `scripts/health_stats.py`, and it now **prints the field it queried** so a
+zero can be told apart from a miss.
+
+Two things the earlier note understates:
+
+**The real count is 148 stock rows**, not the 42 seeded by the three
+electrolytic scripts. The convention is applied far more widely than a scan of
+those seed scripts suggests — it reaches the resistor kits and much else. Do
+not size this from the scripts you happen to know about; query it.
+
+**3 of the 148 carry BOTH `[ESTIMATE]` and a `stocktake_date`**, which the
+convention says is impossible: a counted figure carries the stamp, a reasoned
+guess does not. Either the count happened and the marker was left behind, or
+the stamp was applied to a guess.
+
+```
+stock #482  92015A122 18-8 Stainless Cup-Point Set Screw   qty 3   stamped 2026-08-22
+stock #504  93412A423 Viton Fluoroelastomer Seal           qty 10  stamped 2026-08-21
+stock #556  Terminal Removal Tool Set, 41pc                qty 41  stamped 2026-08-22
+```
+
+All three were stamped during the 08-21/08-22 drawer sessions, so the likely
+story is that they *were* counted and the marker was never cleared — which
+means three real counts are being reported as guesses. Worth resolving by hand:
+if counted, drop the marker; if not, drop the stamp.
+
+**The generalisable rule** — and it is the same shape as the failure the
+*Inventory Health Signals* brief is about, one level up: an assertion that
+returns zero must name the field it queried. A wrong field returns a confident,
+plausible, wrong number, and zero is the most convincing wrong number there is.
