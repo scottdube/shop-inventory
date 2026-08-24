@@ -499,6 +499,28 @@ in the spindle.
 
 ## Labelling
 
+- [ ] **Print a test address label on the 62mm continuous roll, then decide
+      whether DK-11201 is needed at all.** It is currently the only real
+      low-stock signal in the shop (#923, min 1, have 0) and it may be
+      aspirational rather than operational: **every template in use is authored
+      at 62mm continuous**, and the standing rule is *"author at 62 mm, never
+      narrower, or CUPS will scale it."*
+
+      Telling detail: **the driver's default `PageSize` is `29x90mm`** — exactly
+      the DK-11201 die-cut size, and exactly the setting `LABELLING.md` flags as
+      wrong. That is plausibly how a die-cut roll acquired a minimum in the
+      first place; the whole 62mm decision was made to get away from that
+      default.
+
+      Continuous tape cuts to whatever length the template asks for, so an
+      address label needs a 62mm-wide template, not new media. The die-cut roll
+      buys only a narrower 29mm label and pre-cut registration.
+
+      **If the test prints acceptably, drop the minimum on #923** rather than
+      reordering — otherwise it generates a false low-stock signal forever for
+      something never used.
+
+
 - [x] ~~poppler is not installed on the Mini~~ — **WRONG, corrected same day.**
       It was installed all along; `itq` reports the ssh PATH, not the launchd
       PATH the service runs with. Label PNG rendering works — tested under
