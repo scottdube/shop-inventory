@@ -108,18 +108,62 @@ That needle is the cycle-count system's output (`cycle-counting-research.md`),
 and the two are not yet connected. The right readout is a **freshness
 statistic** — "oldest count: 6 months" — not a completion bar.
 
-## Open, and deliberately unanswered
+## Answered — reply brief, 2026-08-24
 
-- **Push or pull?** A panel is a pull instrument. The scheduler has now missed
-  two nights running and a human noticed both times, not the system. A dashboard
-  nobody opens has the same failure mode as the background Chrome nobody looks
-  at. At minimum the source tiles need a path off the page.
+The overnight-import project closed its brief with three questions "for the
+dashboard team". Answers below; full argument in the reply brief at
+<https://claude.ai/code/artifact/286a37fc-6090-4c8f-9c2d-2880ed80ceb2>.
+
+**Push or pull? Both — split on failure mode, not on urgency.** Drift cannot be
+pushed: there is no moment at which a catalogue becomes stale, so there is
+nothing to fire on. That is the entire argument for an always-on instrument.
+Silent failures are the opposite shape — their failure mode *is* that nobody
+looks — so the push set is anything that can render **OFF**, plus vendor-session
+staleness. Everything else stays pull.
+
+And: **push on transitions, not on state.** A session dead three days notifies
+once. This is the same rule the lamps follow — otherwise the notification
+channel trains exactly the blindness the background Chrome already has, and the
+problem has moved rather than been solved.
+
+**Live from the API — except the one thing that cannot be.** A snapshot going
+stale invisibly is the bug the brief is about; a dashboard built on one inherits
+it. But the reachable/ruled-out split is accumulated sweep evidence, not a
+query, so it is a snapshot by nature. Timestamp it and **let it go OFF when it
+ages out** rather than quietly continuing to report 483 ruled out. A stale
+exclusion set is worse than none, because it is what makes 96% look true.
+
+**Loud when the failure disables another check. Advisory otherwise.** `PO-0020`
+supplies a better test than severity: a null issue date did not produce a wrong
+aging number, it removed the row from aging entirely. The alarm did not misfire
+— it stopped existing. So: *does this failure make another check lie?* Nulls in
+fields an alarm depends on, tombstones reaching a worklist, probes that cannot
+distinguish their two outcomes — loud. Ordinary threshold breaches — advisory.
+Deliberately a small set; loud has to stay rare or it stops being loud.
+
+## Asked of them, outstanding
+
+**The reachable/ruled-out split, as data** — with a timestamp and a reason
+breakdown (delisted / login-gated / synthetic SKU). The panel cannot compute it;
+it is their sweep's accumulated evidence. Without the breakdown the exclusion is
+a hidden rule, which their own tombstone tile argues against better than we can.
+
+## Still open
+
 - **What earns a lamp, and which lamps earn a flash?** A lamp that re-flashes
   every morning because the overnight job is flaky teaches you to press it
   without reading. That is how five settled drawers came to read as "nobody has
   looked" until amber stopped meaning anything.
-- **Where does the health data come from** — the API live, or a nightly
-  snapshot? A snapshot can go stale invisibly, which is the bug the brief is
-  about.
 - **Do target changes get dated?** "When did we decide 80 was good enough" is
   the kind of question this project has wanted before.
+
+## A note on the corrections rate
+
+Their P2 "corrections rate" tile is the one worth building first, and this
+week supplied its definition as well as its first data points. Four wrong
+numbers about the `[ESTIMATE]` field in 48 hours — their 0, our 42, the panel's
+lamp reading 1, the audit's 3 — plus **a wrong direction**, which was the one
+that would have destroyed data and which is not a number at all.
+
+So the tile cannot just count numeric retractions. And the root of all five was
+the same: **a check that did not name what it queried.** See `TRAPS.md`.
