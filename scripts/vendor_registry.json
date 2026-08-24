@@ -1,0 +1,60 @@
+{
+  "_comment": "Three-list registry for the unknown-vendor sweep. The nightly job can only search for senders it knows, so a vendor that is not on a list is INVISIBLE, not merely unhandled. Gmail's own category:purchases classifier does the vendor-agnostic work; this file decides what to do with each hit. Domains match on suffix, so 'ups.com' catches 'mcinfo@ups.com'.",
+
+  "known": {
+    "_comment": "Already swept by the itemised-vendor pass. Skip silently — surfacing them here would double-report.",
+    "domains": ["amazon.com", "tormach.com", "mscdirect.com", "shars.com",
+                "mouser.com", "pololu.com", "ebay.com", "haascnc.com",
+                "mcmaster.com", "digikey.com", "seeed.cc", "aliexpress.com",
+                "jlcpcb.com", "lcsc.com", "precisebits.com"]
+  },
+
+  "suppress": {
+    "_comment": "Never surface. Each entry names WHY, because a suppression nobody can audit is how a real order gets silently binned — see the label-stock decline that had to be reversed on 08-21.",
+    "carrier": {
+      "why": "Carriers report on someone else's order. The order itself is found from the vendor, and a tracking email would double-count it.",
+      "domains": ["ups.com", "usps.com", "fedex.com", "dhl.com", "uniuni.com",
+                  "informeddelivery.usps.com", "shipmenttracking.com"]
+    },
+    "subscription": {
+      "why": "Recurring software/services. Rule 7: memberships and subscriptions are not parts.",
+      "domains": ["anthropic.com", "apple.com", "parallelsnetwork.com",
+                  "adobe.com", "github.com", "google.com", "microsoft.com",
+                  "openai.com", "dropbox.com"]
+    },
+    "food": {
+      "why": "Consumer/household. Rule 2: clearly consumer goes OUT silently.",
+      "domains": ["doordash.com", "ubereats.com", "grubhub.com", "instacart.com"]
+    },
+    "medical": {
+      "why": "Rule 3: medical/pharmacy/personal-care are OUT and MUST NOT BE TRANSCRIBED. Log the order id only, never the detail. Note wexhealth mail is benefits-card traffic and is not always even Scott's.",
+      "redact": true,
+      "domains": ["wexhealth.com", "mailer.wexhealth.com", "amznpharma.com",
+                  "cvs.com", "walgreens.com", "goodrx.com"]
+    },
+    "payment_rail": {
+      "why": "PayPal/Stripe receipts prove a purchase happened but carry no vendor or line items, so they cannot become a PO. Kept here rather than in triage because the underlying vendor mail is the better source and usually arrives too.",
+      "domains": ["paypal.com", "stripe.com", "venmo.com"]
+    }
+  },
+
+  "platform": {
+    "_comment": "Storefront platforms. The SENDER DOMAIN IS NOT THE VENDOR — 'store+70819512477@t.shopifyemail.com' is MFC Machining & Design Services, and the merchant name only appears in the body. Any classifier keying on domain alone will file every Shopify merchant under one vendor.",
+    "domains": ["t.shopifyemail.com", "shopifyemail.com", "squarespace.com",
+                "bigcartel.com", "etsy.com", "shopify.com"]
+  },
+
+  "mixed_use": {
+    "_comment": "Sells both shop goods and household goods, like Amazon and eBay already do. Never auto-in; classify per order from the item titles.",
+    "domains": ["walmart.com", "target.com", "homedepot.com", "lowes.com",
+                "harborfreight.com", "grainger.com", "zoro.com", "kiwico.com"]
+  },
+
+  "lifecycle": {
+    "_comment": "Subject prefixes that mark a NON-order stage. 'Shipped'/'Delivered' is not a purchase event; the order confirmation is. Dedupe by order number across the lifecycle so one purchase yields one triage line, not four.",
+    "not_an_order": ["shipped:", "delivered:", "out for delivery",
+                     "your package", "is on the way", "has been delivered",
+                     "arriving", "your order is delayed", "welcome to",
+                     "trial", "final reminder", "renew"]
+  }
+}
