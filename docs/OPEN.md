@@ -302,23 +302,31 @@ sets the precedent for wire, solder, heat-shrink, tubing and filament. **Today
 0 of 1071 parts carry a unit and no stock row anywhere is fractional**, so this
 is the first one.
 
-**Decision: track length, in metres, seeded from the pack claim as an
-`[ESTIMATE]`.**
+**Decision: track length, in metres, seeded from the pack claim and accepted
+as correct.** Done 2026-08-24 — stock #657, 15 m at WS2-S3.
 
 - `units='m'` — lowercase, see `TRAPS.md`. Metres because that is what is
   printed on the bag, so the seed figure is transcribed rather than converted;
   there is no rounding to explain later.
 - Entry still happens in whatever you are holding a ruler in. The web UI takes
   `8 in` and stores `0.2032`. Resolution is 5 dp — 0.01 mm — so inches are exact.
-- The roll seeds at 15 m **with no `stocktake_date`**, because nobody has
-  measured it. That is the pack claim.
+- The roll carries 15 m **with no `stocktake_date`**. Scott's ruling, and it is
+  a cleaner rule than the one first written here: *"we'll assume it's correct
+  because we're never gonna measure it... we're not gonna measure it down to
+  the one thousandth of an inch."* So no `[ESTIMATE]` marker — the figure is
+  accepted, and the note says in plain words that it came off the bag.
 
-**Why the estimate is acceptable here when a divided kit count is not.** It is
-falsifiable and it *sharpens* with use: every recorded cut is a real
-measurement subtracted from a claimed start, and the day the roll runs out you
-learn exactly what the claim was worth. If it empties at 12 m of recorded cuts,
-the listing was fat and every uxcell length figure is suspect. A divided kit
-count can never be checked against anything.
+**The `stocktake_date` stays null anyway, and that is not hedging the 15.** The
+field means *somebody counted this*, and nobody did. Stamping it would put the
+roll into the never-counted report as verified. Accepting a number and claiming
+it was measured are different acts, and only the second one is a lie.
+
+**Why no `[ESTIMATE]` marker, when 147 other rows carry one.** The marker earns
+its place where the figure could be checked and has not been — a sealed kit, a
+listing count. Here the quantity is *derived by construction* the moment you cut
+once: it is 15 minus what was recorded, and everyone reading it knows that. A
+marker that never comes off is decoration, and decoration on a data-health panel
+is how people learn to ignore it.
 
 **Ruled out: stock it as `qty 1 roll`.** Honest, and useless the moment you cut
 into it — "1 roll" cannot answer *do I have enough for this harness*, which is
@@ -1272,9 +1280,12 @@ widgets, and the two rendering bugs below are live.
 - [x] Their `[ESTIMATE]` assertion queried the wrong field and read zero. Sent,
       corrected and republished by that project 2026-08-24. Measured figure is
       **148**, not the 42 you get by reading the seed scripts.
-- [ ] `PO-0020` is PLACED with a null issue date — it cannot age, so every
-      aging rule skips it silently. Backfill, then assert no open PO may have a
-      null issue date.
+- [x] ~~`PO-0020` is PLACED with a null issue date~~ — **done 2026-08-24**,
+      backfilled to 2026-08-14 from the PO's own note when the sleeve was
+      received, and the order is now Complete. Zero open POs carry a null issue
+      date today.
+- [ ] **Assert it stays that way.** No open PO may have a null issue date. Not
+      built — the backfill fixed the instance, not the class.
 - [ ] 425 active parts hold no stock and sit on no open PO. Sample ten before
       it becomes a number everyone scrolls past.
 
