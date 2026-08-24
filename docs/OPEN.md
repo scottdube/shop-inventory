@@ -1349,6 +1349,26 @@ neither measures *decay* — which is the thing "data atrophy" actually names.
 That needle is the cycle-count system's output and the two are not yet wired
 together.
 
+## Label printer is DOWN — power fault, 2026-08-24
+
+**No light on the front, will not power up** (Scott). All four ports dark and
+the gateway cannot ARP it; see `TRAPS.md` for why that rules out the latched
+raster error rather than pointing at it.
+
+- [ ] **Triage power at the printer.** Outlet live, DC barrel fully seated at
+      both ends, adapter brick warm / LED lit. If a battery base is fitted,
+      pull it and run on AC alone — a flat pack can hold the unit down.
+      A known-good adapter of the same spec is the fastest discriminator, since
+      the adapter fails far more often than the printer.
+- [ ] **Cancel stuck job 29** (`output.pdf`, queued 13:11 2026-08-24). It is
+      `active` and will fire the moment power returns. `cancel QL810W-29`.
+- [ ] **Nothing has printed since 2026-08-20 20:42** and nobody noticed for four
+      days. The failure date is unknown — do not write one down.
+- [ ] **A liveness lamp for the printer**, on the dashboard: last label that
+      actually came out, not "queue accepting". Same distinction as the
+      overnight job's "last SUCCESSFUL read, not last run".
+- [ ] All labelling work is blocked until this is settled. See `LABELLING.md`.
+
 ## Bench work still parked
 
 - [ ] File the two bus caps — B3-R5C4 recommended (761 µF and 737 µF, both
