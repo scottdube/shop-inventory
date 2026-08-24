@@ -1354,16 +1354,22 @@ neither measures *decay* — which is the thing "data atrophy" actually names.
 That needle is the cycle-count system's output and the two are not yet wired
 together.
 
-## Label printer is DOWN — power fault, 2026-08-24
+## Label printer — PRINTING AGAIN on a bypass feed, 2026-08-24
 
 **No light on the front, will not power up** (Scott). All four ports dark and
 the gateway cannot ARP it; see `TRAPS.md` for why that rules out the latched
 raster error rather than pointing at it.
 
-- [x] ~~Triage power~~ — **done 2026-08-24. The PSU is dead.** Known-good
-      outlet, plugs reseated, and the meter reads **nothing** at the barrel
-      jack. A regulated switcher shows its rated ~25 V open-circuit, so zero is
-      a result and not an artifact. No LED anywhere on the unit.
+- [x] ~~Triage power~~ — **done 2026-08-24.** Meter reads **nothing** at the
+      PA-AD-001A barrel jack on a known-good outlet with the plugs reseated.
+      The fault is at or upstream of the jack's centre contact; adapter vs jack
+      contact spring is still not separated, though the zero reading leans
+      adapter. **The printer itself is fine** — mainboard, head, WiFi and the
+      CUPS path all run on the injected feed.
+- [x] ~~It is dead until the replacement arrives~~ — **no. It PRINTS.** Another
+      session brought it back the same afternoon by injecting 25 V onto the rear
+      lug of barrel jack J1 through a soldered pigtail. See `TRAPS.md`, both the
+      bypass write-up and the correction that follows it.
 - [x] ~~Cancel stuck job 29~~ — already gone; it timed out on its own. The
       queue now reports "The printer is not responding" instead of the
       "ready and printing" it claimed while the connection hung.
@@ -1383,6 +1389,20 @@ raster error rather than pointing at it.
       path has to be proven deliberately. The replacement is also a Renewed
       unit, so its adapter carries the same risk. Do it the day it lands, not
       the day you next need a label.
+- [ ] **REVERSE THE MODIFICATION BEFORE IT GOES BACK.** The case is open, two
+      wires are soldered to the board and a lead exits the case. A printer that
+      arrives at Amazon visibly hacked is a return they can refuse, and that is
+      **$129.99**. This is the single most expensive thing on this list and it
+      is easy to forget, because by then the unit will have been working for
+      weeks. Desolder, close it up, then drop it off.
+
+- [ ] **The bench supply is consumed** until the replacement lands 2026-08-26.
+      If it is needed for something else first, the escape is to cut the barrel
+      plug off the PA-AD-001A and wire the brick straight to the pigtail — the
+      replacement arrives with its own adapter, so the cut one just goes back in
+      the box. (Only worth doing if the brick actually reads ~25 V, which on
+      current evidence it does not.)
+
 - [ ] **Carry the dead unit to Staples.** No box required, keep it in its
       original packaging, show the QR return code. Deadline 2026-11-19 — far
       enough away to be forgotten, which is the actual risk.
@@ -1392,8 +1412,10 @@ raster error rather than pointing at it.
 
       *(superseded reasoning, kept: buying a PA-AD-001A separately was rejected
       because the printer's own DC jack and internal power stage were equally
-      unproven — the fault was isolated to "the AC path", which spans both
-      halves. A whole-unit replacement settles both at once.)*
+      unproven. The bypass feed has since proven the board good, so that
+      reasoning no longer holds — but the replacement is already shipped, and an
+      intermittent-or-unknown power fault on a five-day-old refurb is not worth
+      keeping. Return still stands.)*
 
 - [ ] **Then: stock #570 needs to follow the printer.** The QL-810W is stocked
       1 @ SLN/Electronics Bench. If it goes back, that row and `PO-0134` both

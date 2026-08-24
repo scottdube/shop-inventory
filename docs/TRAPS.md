@@ -3027,6 +3027,14 @@ a description that took a walk to earn.
 
 ## A battery hides a dead mains supply for the whole life of the device
 
+> **Status 2026-08-24: the general lesson stands, the specific story does not.**
+> This was written from the hypothesis that the AC side never worked and the
+> printer ran on battery from new. The corrected timeline — 28 jobs over two
+> days, answering until Aug 22 12:39 — does not establish that, and the fault is
+> now localised to at-or-upstream-of the barrel jack's centre contact. Treat the
+> commissioning practice below as the takeaway; treat "that is what happened
+> here" as unconfirmed.
+
 The QL-810W printed 15 jobs on 2026-08-20 and never printed again. The AC
 adapter measures **nothing**, and Scott's reading is that it never worked: the
 printer ran on its internal battery from new, and died when the pack went flat.
@@ -3099,49 +3107,37 @@ fixed but **not recorded** — not here, not in `~/code/CLAUDE.md`, not in the
 nothing about the second directory). Two days later it happened twice more.
 A trap that is fixed but not written down is a trap that is scheduled to recur.
 
-## The printer came back, and the CAUSE is not recorded
+## CORRECTED — "the printer came back and the cause is unknown" was wrong
 
-2026-08-24, hours after the meter read nothing at the barrel jack and the docs
-recorded "the PSU is dead": Scott, *"Printer's back up."*
+Written 2026-08-24 by a session that measured the printer alive again (ping 3/3,
+631/9100/80 open, `printer-state: idle`, the 62 mm roll ready) and concluded the
+mechanism was unrecorded. **It was recorded** — earlier the same afternoon, in
+this same file, by the session that actually did it: *"The QL-810W runs on a
+bypass feed"* above. 25 V injected onto the rear lug of barrel jack J1 through a
+soldered pigtail, fed from the bench supply.
 
-Measured from the Mini immediately, so the observation is not in dispute:
+**The failure was appending to TRAPS.md without re-reading its end.** Two
+sessions worked the same fault in the same afternoon and the later one wrote a
+confident "cause unknown" section directly beneath the answer — the accretion
+failure this file exists to catch, committed inside this file.
 
-```
-ping 192.168.30.252         3/3, ~161 ms
-631 IPP / 9100 / 80         all open   (161 SNMP shut, as always)
-printer-state               idle
-printer-state-reasons       none
-media-ready                 roll_current_62x0mm
-printer-state-change        2026-08-24T18:27:17Z
-```
+Practical rule: **before writing a finding here, grep this file for the
+subject.** `grep -in "printer\|QL-810" docs/TRAPS.md | tail` costs a second.
 
-**What is NOT established is why**, and this file is not going to guess. The
-same session already recorded a zero-volt reading on the adapter, which was also
-a measurement. Both are true; the mechanism joining them is unknown. Candidates,
-none confirmed:
+Two claims from the withdrawn section:
 
-- a different adapter was substituted
-- the original adapter is intermittent — a bad joint or a thermal fault
-- the barrel connector was not seated, and reseating restored contact
-- the meter was on the wrong range or missed the recessed centre pin
-- **it is running on the battery again**, and the AC path is still dead
+- *"nothing has printed since 2026-08-20 20:42"* — **wrong.** The bypass
+  write-up establishes 28 jobs over two days and the printer answering at Aug 22
+  12:39, so the death window is Sat Aug 22 12:39 → Mon Aug 24 13:12. The 08-20
+  figure came from `lpstat -W completed` alone, which listed only jobs 1-15.
+- *"it may be running on the battery again"* — **ruled out.** Bench supply,
+  through the pigtail.
 
-**That last one is not a footnote — it is the failure repeating.** If the pack
-merely came back and the mains path is still gone, the printer will work for
-days and then die silently, exactly as it did between 08-20 and 08-24. Nothing
-about "it prints" distinguishes those two worlds.
-
-**The discriminating test is thirty seconds: pull the battery while it runs.**
-Stays up → AC works. Drops dead → it is on battery and nothing is fixed.
-
-Recorded per the standing rule: *measuring an outcome is not measuring a cause,
-and an inferred cause presented as fact is worse than a stale note, because it
-is fresh, cited and confident.* The "PSU is dead" conclusion earlier in this
-file is now **in question, not retracted** — it rested on a real reading, and
-retracting it on the strength of a different real reading would repeat the same
-error in the opposite direction.
-
-**The return plan does not change, and the reason is worth stating.** An
-intermittent power fault is *worse* to own than a dead one: it passes every
-casual check and fails when you are depending on it. A five-day-old refurb that
-has already gone dark once has not earned trust by coming back.
+**One new measurement to fold IN**, which the bypass write-up correctly flagged
+as missing. It notes the adapter *"was never metered open-circuit"*. It has been
+since: Scott metered the PA-AD-001A on a known-good outlet with the plugs
+reseated and read **nothing**. That shifts "jack contact spring vs adapter"
+toward the adapter — with the caveat that the meter itself was never checked
+against a known source, so a wrong range or a probe missing the recessed centre
+pin is not excluded. A regulated switcher does show its rated ~25 V unloaded, so
+a zero is evidence, not an artifact of measuring without load.
