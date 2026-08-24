@@ -2419,3 +2419,40 @@ quite right. `file_stock.py` *replaces* notes wholesale on a real count
 can stamp a row while leaving an estimate marker standing. Zero rows currently
 carry a binscan `COUNTED at` marker alongside `[ESTIMATE]`, so this has not
 fired yet at scale; it is a live hazard, not a live outage.
+
+## The Mini is no longer bot-challenged — the laptop-fetch-then-scp dance is obsolete
+
+**Contradicts the "Amazon image trap (verified)" section of the overnight task
+file**, which states that Amazon challenges the LRD network but not the laptop,
+and that image bytes must therefore be fetched on the laptop and `scp`'d over.
+That was true when measured. It is not true now.
+
+Measured from the Mini, 2026-08-24, plain `curl`, no browser:
+
+```
+amazon.com/dp/B09YHWKKTR   870,256 bytes, gzip
+title                      "PATIKIL FR4 Single Side Copper Clad Laminate PCB..."
+challenge wording          none
+"hiRes" image URL          present
+m.media-amazon.com fetch   200, 56,467 bytes, real JPEG
+mcmaster.com               200, 78,418 bytes
+```
+
+**Test the content, never the status code.** The first probe returned
+`200 text/html` and looked conclusive — but that is exactly what Mouser's
+*defended* image host returns. What settles it is the product title and the
+`hiRes` key being present, plus `file(1)` on the downloaded bytes.
+
+**One gotcha:** Amazon serves gzip whether or not you ask. Without
+`curl --compressed`, Python's `text=True` dies on `UnicodeDecodeError: 0x8b`.
+That is the gzip magic byte, not a challenge.
+
+**Consequence.** Unauthenticated image and page fetching can run *on the Mini*,
+where the data already lives — no laptop round-trip, no tarball, no `scp`. The
+laptop is still required for anything needing a **logged-in session** (Amazon
+order pages, McMaster order history, Shop), because the session cookies live in
+the browser there.
+
+**Do not read this as "the IP is permanently fine."** Reputation is not a
+setting; it drifts. The rule that survives is the one that caught it both ways:
+check the content, and check what instrument you used.
