@@ -2771,3 +2771,46 @@ pass merged some of them, and nothing recorded which ones it had done. Any
 other survivor from that batch is still sitting there with a live duplicate.
 Cheap detector, not yet built: active parts sharing a normalised name or a
 near-identical description prefix, where one has an IPN and the other does not.
+
+## The QL-810W stopped powering up — and nothing noticed for four days
+
+Scott, 2026-08-24: *"the label printer appears to be dead... There's no light on
+the front of it. I can't get it to power up."*
+
+Measured from the Mini before that message arrived, which is worth keeping
+because it shows what the instruments say for a printer that is simply OFF:
+
+```
+ping 192.168.30.252   Destination Host Unreachable (from gateway 192.168.5.1)
+631  IPP              shut
+9100 raster           shut
+80   web UI           shut
+161  SNMP             shut
+lpstat                "QL810W is ready and printing"      <- CUPS lying
+```
+
+**This is the one case the latched-error rule does NOT cover.** The recorded
+trap says a red-LED latch still answers IPP with `idle` — that is how you tell a
+sulking printer from a dead one. Here *nothing* answers, and all four ports are
+dark together. Four dark ports plus no power LED is a power fault, not a
+firmware sulk, and no amount of clearing or re-queuing touches it.
+
+**CUPS reports the queue as printing while the printer is absent.** Job 29 sat
+`active` because the connection was hanging, and `lpstat -a` cheerfully said
+"accepting requests since 13:11". A queue that says *printing* is reporting on
+itself, not on the printer.
+
+**The four-day silence is the real finding.** Completed jobs run 1–15, all
+between 20:07 and 20:42 on 2026-08-20 — the setup evening. Nothing has completed
+since. Jobs 16–28 exist in neither the completed list nor the queue.
+
+We cannot say from this when it died: nobody may have tried to print between the
+21st and today, since labelling has been parked on the open list the whole time.
+**Measuring an outcome is not measuring a cause** — what is established is "no
+successful print since 2026-08-20 20:42", and the failure date is unknown.
+
+What that *does* establish is a monitoring gap, and it is the same one the 02:09
+API error exposed: **the dashboard's "last read that PROVED something" tile
+belongs on the printer too.** "The queue is accepting" is a liveness claim about
+CUPS. "A label came out" is a claim about the printer, and only the second one
+is worth a lamp.
