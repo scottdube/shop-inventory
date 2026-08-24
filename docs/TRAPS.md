@@ -2875,6 +2875,69 @@ belongs on the printer too.** "The queue is accepting" is a liveness claim about
 CUPS. "A label came out" is a claim about the printer, and only the second one
 is worth a lamp.
 
+## The QL-810W runs on a bypass feed — what that rig is and what it is not
+
+2026-08-24. The dead printer below was brought back the same afternoon by
+**injecting 25 V onto the rear lug of the barrel jack J1**, with a soldered
+pigtail and ground to a board ground point, fed from the bench supply. Back on
+the network within the hour: 631, 9100 and 80 open, jobs 30-33 completed, the
+`lpstat -p` "not responding" line gone.
+
+**What this proves and what it does not.** The mainboard, printhead, WiFi stack
+and CUPS path are all good — every one of them ran on the injected feed. The
+break is **at or upstream of the jack's centre contact**. It was never
+established whether the fault is the jack's contact spring or the adapter
+itself, because the brick was never metered open-circuit. That distinction stopped
+mattering once the replacement was ordered, but the record should not claim more
+than was measured.
+
+**The unit is modified, not repaired.** Case opened, two wires soldered to the
+board, lead exiting the case. That has to be reversed before it goes back to
+Amazon — the return runs to 2026-11-19, so there is time, but a printer that
+arrives visibly hacked is a return they can refuse, and that is $129.99.
+
+**The bench supply is now consumed** until the replacement lands 2026-08-26. If
+it is needed for something else, the escape is to meter the Brother PA-AD-001A
+open-circuit: at ~25 V, cut the barrel plug off and wire the brick straight to
+the pigtail. The replacement arrives with its own adapter, so the cut one just
+goes back in the box.
+
+## Red output on DK black/red tape is an ammeter, not a colour bug
+
+2026-08-24, same session as the dead QL-810W below. Running the printer on a
+bench supply through a bypass pigtail, the first label came out with the text and
+the QR **mottled between black and red** — some QR modules black, some red, no
+pattern to it. Scott: *"I had the power supply amperage limit turned way down to,
+like, half an amp. As soon as I saw it print, I knew what the problem was."*
+
+**Brother's two-colour DK tape selects colour by energy, not by ink.** Lower
+energy develops the red layer, higher energy develops black. So a head that
+cannot draw enough current does not print faint black — **it prints red**, and it
+prints a *mix* when the burn is sitting right on the threshold and falling across
+it dot by dot. Dense regions pull hardest and go red first.
+
+**The trap is that it does not look like a power fault.** A starved head still
+marks the tape and still feeds, so the failure presents as a colour or template
+or driver-colour-separation problem, and that is where the hours go. Nothing in
+the CUPS output complains; the job completes normally.
+
+The rule: **on black/red tape, unexpected red is a current measurement.** Check
+the supply before touching the template. Limit was 0.5 A against a head that
+peaks toward 3.6 A; raising it fixed it outright.
+
+Two corollaries worth keeping:
+
+- **Voltage is not the thing to check first — current limit is.** The supply read
+  its full 25 V the whole time. A bench supply in constant-current mode is
+  perfectly happy and says nothing.
+- **On a bypass or extension feed, measure at the board *while printing*.** Thin
+  leads at 3.5 A of burst drop real volts, and the head sees what arrives.
+
+A red QR is also a scanning problem in its own right: laser and CCD readers
+illuminate near 660 nm and read red-on-white as blank paper. Phone cameras cope.
+So a red label can pass a phone check and still be invisible to a hand scanner —
+which makes "it scanned on my phone" a weaker test than it feels.
+
 ## A put-away done by a person IS a count — a PO receipt never is
 
 Scott, 2026-08-24, on the 0.8mm nozzle: *"It's now a count. I physically counted
