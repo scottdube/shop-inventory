@@ -2991,3 +2991,47 @@ Amazon is sending is **also Renewed**, so the same risk applies to it. And the
 four-day gap happened because nobody tried to print; labelling was parked on the
 open list, so the failure had no observer. See the "last read that PROVED
 something" gap recorded above.
+
+## Two directories named `scripts/`, and the one itq resolves against is not the one you are in
+
+`itq run scripts/foo.py` resolves a bare relative path against
+**`~/code/shop-inventory`**, always, regardless of the shell's cwd. That is the
+whole point of the command shape and it is not the trap.
+
+The trap is that **`~/code/scripts/` also exists**, holds `itq` itself, and is
+tracked. So a script written to `~/code/scripts/foo.py` and invoked as
+`itq run scripts/foo.py` **runs correctly** — itq goes and finds the
+shop-inventory copy, or if there is none, the operator retypes the path and
+moves on. The command working is not evidence the file is in the right repo.
+There is no error at any point.
+
+**Three occurrences now, all the same week:**
+
+- `project_column.py` (9f1a52d, 2026-08-22) — written after the shell cwd
+  silently reset, landed in `~/code/scripts/`, and was then swept into a commit
+  in that repo. The documentation commit over in shop-inventory referenced the
+  script while the script lived in a different repository, so the docs pointed
+  at a file that was not there.
+- `close_po0020.py` and `receive_sleeve.py` (2026-08-24) — same landing, caught
+  as untracked before being committed, moved here.
+
+**The `!scripts/**` allowance in `~/code/.gitignore` is not a safety net and was
+never a fix.** It exists so `itq` is tracked at `~/code` level, and it is
+byte-identical to when it was written in 892f4a2 — before any of these. It has
+the side effect of making a misfiled script show as untracked rather than
+ignored, which is what caught the second and third. It did not catch the first,
+because untracked is one `git add -A` away from committed. Nothing in the
+tooling distinguishes "misfiled script" from "file that belongs at ~/code
+level", so do not expect the marker to hold.
+
+**What actually catches it: read the imports.** A file that does
+`django.setup()` under `InvenTree.settings` and imports from `order.models` /
+`part.models` / `stock.models` belongs in `shop-inventory/scripts/`, full stop.
+That test is mechanical and does not depend on remembering which cwd you were
+in when you wrote it.
+
+Worth noting how long this went unwritten: after the first occurrence it was
+fixed but **not recorded** — not here, not in `~/code/CLAUDE.md`, not in the
+`itq` header (whose comment block covers the permissions rationale and says
+nothing about the second directory). Two days later it happened twice more.
+A trap that is fixed but not written down is a trap that is scheduled to recur.
