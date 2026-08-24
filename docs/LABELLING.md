@@ -18,6 +18,47 @@ RTT. That is fine; latency was investigated and is not a problem.
 Media is **62 mm × 5 m continuous DK tape**. The printer reports it as
 `62mm / 2.4"` and IPP reports `roll_current_62x0mm`.
 
+### Power — and the 2026-08-24 dead-printer diagnosis
+
+From Brother's own spec page, recorded because this doc had no electrical
+detail at all until the unit would not switch on:
+
+| | |
+|---|---|
+| AC adapter | **PA-AD-001A** — `INPUT AC 100-240 V 50/60 Hz`, `OUTPUT DC 25 V - 3.6 A` |
+| Optional battery | **PA-BU-001** Li-ion, `14.4 V` |
+
+**Measuring the adapter is valid — a regulated switching supply shows its rated
+voltage unloaded.** Needing a minimum load to start is a property of
+unregulated or current-limited supplies, not a standard barrel-jack wall wart,
+so a reading of zero here is evidence and not an artifact. Two things that fake
+a zero and should be ruled out first: the meter left on the **AC** range, and
+the probe bottoming out on plastic without reaching the recessed **centre pin**.
+
+Expect ~24-26 V DC, centre positive.
+
+**Scott's hypothesis, 2026-08-24: the AC side never worked and the printer ran
+on battery until it went flat.** It fits the record — 15 jobs on the setup
+evening of 08-20, nothing completed since, and the unit was only a few days old.
+
+What makes it decisive rather than merely plausible:
+
+- **A working adapter charges the battery**, so a flat pack should be impossible
+  after days on mains. A flat pack is therefore evidence *about the adapter*.
+- **Good AC takes over from a flat battery.** If the adapter were healthy, a
+  dead pack would not stop the printer.
+- **But a failed Li-ion pack CAN pull the rail down even on good AC**, which is
+  why removing it is a real test and not just elimination. If the pack is
+  swollen, warm, or deformed, take it out regardless and do not recharge it.
+
+Order of work, cheapest discriminator first:
+
+1. Meter on **DC volts** across the barrel jack, centre pin. ~25 V means the
+   adapter is fine and the fault is downstream; 0 V means the adapter is dead
+   and nothing else needs testing.
+2. Pull the **PA-BU-001** and try on AC alone.
+3. Only then suspect the printer itself.
+
 ### brother_ql does not work on this unit — do not try again
 
 The obvious path — `brother_ql` raster over port 9100, which is what the
