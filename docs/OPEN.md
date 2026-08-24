@@ -86,7 +86,7 @@ State after the 2026-08-23 walk, 28 bins:
       | 1077 | Heatsink, extruded finned | measure TO-220 hole spacing |
       | 1078 | Fan X6015D12MB 60x15 12V | **done — filed B3-R5C3** |
       | ~~1075~~ | ~~Relay Churod A1-S-112VA~~ | **broke on removal — scrap** |
-      | 1076 | Cap 820uF 400V RUC CD293 x2 | **discharge first**, then C + ESR |
+      | 1076 | Cap 820uF 400V RUC CD293 x2 | **TESTED GOOD** — needs a home |
       | 1079 | Terminal block 7.62mm 4-pos | **filed A3-R7C4** |
       | 1081 | Terminal block 7.62mm 5-pos | **filed A3-R7C4** |
       | ~~1080~~ | ~~IGBT DXG20N65FS x6~~ | **ALL SIX DEAD — scrap** |
@@ -112,6 +112,30 @@ State after the 2026-08-23 walk, 28 bins:
       Also grab: the **thermistor** bolted to the heatsink end (over-temp
       sensor) and the **long black bar** across the board — probably a bleed or
       inrush resistor, unread.
+
+      **TOMORROW: file the two bus caps, and pick their drawer.** Both tested
+      good on 2026-08-23 — 761 and 737 uF against 820 nominal, ESR 0.21 ohm
+      (including clip leads, so lower in reality), Vloss 0.8%, and matching each
+      other within 3%. The match is what settles it: two caps with identical
+      history should age together, and one lagging its twin would have been the
+      fingerprint of surge damage. Neither lagged, so the event that destroyed
+      six gate oxides never reached the bus.
+
+      The choice is a size question. The cans are roughly 35mm dia x 50mm tall:
+
+      | drawer | size | fit |
+      |---|---|---|
+      | **B3-R5C4** | 116 x 152 x 56 mm | stand upright with room — **recommended** |
+      | A3-R7C5 | 56 x 152 x 40 mm | must lie on their sides, end to end, and fill it |
+
+      B3-R5C4 is the better home: standing is easier on the leads and the
+      markings are readable when the drawer opens. A3-R7C5 would keep them in
+      the power row beside the mains-protection set and the terminal blocks,
+      which is the only argument for it — and laying two big cans down to fit a
+      drawer they do not suit is the wrong reason to choose one.
+
+      **Also still open:** measure the heatsink's TO-220 hole spacing, then it
+      joins the fan in B3-R5C3.
 
       **Before scrapping the board:** discharge the bus caps, and photograph the
       SOLDER side. The component side is already photographed; the solder side
