@@ -1389,12 +1389,8 @@ raster error rather than pointing at it.
       path has to be proven deliberately. The replacement is also a Renewed
       unit, so its adapter carries the same risk. Do it the day it lands, not
       the day you next need a label.
-- [ ] **REVERSE THE MODIFICATION BEFORE IT GOES BACK.** The case is open, two
-      wires are soldered to the board and a lead exits the case. A printer that
-      arrives at Amazon visibly hacked is a return they can refuse, and that is
-      **$129.99**. This is the single most expensive thing on this list and it
-      is easy to forget, because by then the unit will have been working for
-      weeks. Desolder, close it up, then drop it off.
+- [x] ~~Reverse the bypass before the return~~ — **settled 2026-08-24, Scott's
+      call: the bypass stays.** Raised once, decided, closed. Do not re-open it.
 
 - [ ] **The bench supply is consumed** until the replacement lands 2026-08-26.
       If it is needed for something else first, the escape is to cut the barrel
