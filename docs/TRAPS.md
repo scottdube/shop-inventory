@@ -2456,3 +2456,37 @@ the browser there.
 **Do not read this as "the IP is permanently fine."** Reputation is not a
 setting; it drifts. The rule that survives is the one that caught it both ways:
 check the content, and check what instrument you used.
+
+## Why the Mini stopped being blocked — three candidates, and we recorded nothing
+
+Scott's hypothesis, 2026-08-24: during the months nobody is in Florida, the only
+traffic leaving that IP is this job's automated traffic. With no organic human
+browsing mixed in, the shape looks purely scripted, and Amazon shut it down.
+
+**Plausible, and a real feature of these systems** — residential IPs earn their
+good reputation partly by carrying mixed human traffic, and an address whose
+entire footprint is automated loses that benefit.
+
+**But it does not explain the recovery.** Nobody is in Orlando today either. If
+"no organic traffic" were the cause, it would still be the cause. The hypothesis
+accounts for the block and not the unblock.
+
+Two competing explanations that do account for both:
+
+- **Reputation decay after we stopped.** Queue A was written off as dead for
+  several days, so the hammering stopped — which is the task file's own rule
+  ("repeated retries make the reputation worse, not better") read forwards.
+  Defenders age out negative signals.
+- **The IP simply changed.** Comcast residential DHCP. The Mini's 119-day uptime
+  is irrelevant; the WAN address lives on the router.
+
+**We cannot distinguish them, because nothing ever recorded the address.**
+`scripts/wan_ip.py` now does, to `wan_ip_history.json`. First record:
+`174.58.246.115`, AS7922 Comcast, Orlando FL, 2026-08-24.
+
+**The policy is the same under all three**, so this does not need resolving to
+act on: keep Mini-originated automated traffic low, paced, and monitored. But
+the hypotheses diverge under load — organic-mix predicts degradation whatever
+the pacing, abuse-decay predicts low paced volume stays clean. The daytime sweep
+generates exactly that data, so the next block (or its absence) is evidence
+rather than another guess.
