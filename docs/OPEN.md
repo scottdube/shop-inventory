@@ -1222,13 +1222,29 @@ widgets, and the two rendering bugs below are live.
 
 **Feeding back to the overnight-import project:**
 
-- [ ] Their `[ESTIMATE]` assertion queries the wrong field and reads zero. The
-      marker lives in `StockItem.notes`. See `TRAPS.md`.
+- [x] Their `[ESTIMATE]` assertion queried the wrong field and read zero. Sent,
+      corrected and republished by that project 2026-08-24. Measured figure is
+      **148**, not the 42 you get by reading the seed scripts.
 - [ ] `PO-0020` is PLACED with a null issue date — it cannot age, so every
       aging rule skips it silently. Backfill, then assert no open PO may have a
       null issue date.
 - [ ] 425 active parts hold no stock and sit on no open PO. Sample ten before
       it becomes a number everyone scrolls past.
+
+**Strip `[ESTIMATE]` when a row is counted — a missing step, not 3 bad rows.**
+`scripts/estimate_audit.py` (2026-08-24): 148 rows carry the marker, **3 of them
+also carry a `stocktake_date`** — #482, #504, #556, all stamped in the 08-21/22
+drawer sessions. Nothing in the count path removes the marker, so **each of the
+145 correctly-marked rows joins them the moment its drawer is walked.**
+
+- [ ] Decide the direction for the 3: real counts wearing a stale label (likely
+      — the quantities look tallied, and #556's 41 matches a 41-piece set), or
+      dates stamped without a count (worse). **Scott's call**, and the answer
+      changes the fix.
+- [ ] Then put the strip in the count path so the number stops growing. The
+      evidence tier is part of the value, not metadata about it — a row that
+      says both is unreadable, and the never-counted report is currently
+      under-reporting real progress.
 
 **The unresolved one:** both the panel and the import brief measure *coverage*,
 neither measures *decay* — which is the thing "data atrophy" actually names.

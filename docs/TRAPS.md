@@ -2226,10 +2226,14 @@ The *Inventory Health Signals* brief (overnight-import project, 2026-08-24)
 reports **zero records carrying `[ESTIMATE]`** and asks whether the +40%
 convention is being applied at all.
 
-It is. The marker is written to **`StockItem.notes`**, not `Part.description` —
-see `scripts/seed_xuansn.py`, `seed_elec_4x7.py`, `seed_15value.py`, which
-seeded 42 rows across three electrolytic kits on 2026-08-23, every one of them
-`[ESTIMATE]` with a deliberately absent `stocktake_date`.
+It is. The marker is written to **`StockItem.notes`**, not `Part.description`.
+Measured 2026-08-24 with `scripts/estimate_audit.py`: **148 rows carry it, 0 in
+the field the brief queried.**
+
+Note the figure. Reading the seed scripts (`seed_xuansn.py`, `seed_elec_4x7.py`,
+`seed_15value.py`) gives **42** — those three kits only. The population is 148.
+Inference from source would have been wrong in the same direction as the
+original query, just less so; only the query got it right.
 
 So the assertion reads zero and the reader concludes "the convention is dead",
 when the convention is alive and the *check* is broken. This is the same shape
@@ -2238,6 +2242,28 @@ wrong field returns a confident, plausible, wrong number.**
 
 Rule: an assertion that returns zero must name the field it queried, so a zero
 can be told apart from a miss. `[ESTIMATE]` lives in stock notes.
+
+### And the correction found something worse than the error
+
+Querying the right field surfaced **3 rows carrying both `[ESTIMATE]` and a
+`stocktake_date`** — a combination the convention says cannot exist, because the
+absent date is what keeps a guess on the never-counted report:
+
+    #482  2026-08-22  B1        qty  3   Cup-point set screw
+    #504  2026-08-21  A2-R4C2   qty 10   Viton sealing washer
+    #556  2026-08-22  BL-D2     qty 41   Terminal removal tool set, 41pc
+
+All three were stamped during the 08-21/08-22 drawer sessions, so these are
+almost certainly **real counts still wearing an estimate label** — three tallies
+being reported as guesses. Direction is Scott's call and is on the decision
+queue; it could also be a date stamped without a count, which is the worse way
+round.
+
+**But it is not a three-row cleanup.** Nothing in the count path strips the
+marker when a row is counted. **145 rows still carry `[ESTIMATE]` with no date**
+— every one of them lands in this same contradiction the moment its drawer is
+walked. The number grows with the walk. The fix is a step in the count path, not
+an edit to three rows.
 
 ## Coverage percentages need the reachable denominator
 
