@@ -2219,3 +2219,33 @@ That is the test worth keeping. **If it cannot be purchased, it is not a stock
 item** — it is a property of the machine it came with, and it belongs on that
 machine's record. The fact now lives on the printer #1057, where somebody
 wondering what tape is loaded will actually find it.
+
+## An integrity assertion can be pointed at the wrong field
+
+The *Inventory Health Signals* brief (overnight-import project, 2026-08-24)
+reports **zero records carrying `[ESTIMATE]`** and asks whether the +40%
+convention is being applied at all.
+
+It is. The marker is written to **`StockItem.notes`**, not `Part.description` —
+see `scripts/seed_xuansn.py`, `seed_elec_4x7.py`, `seed_15value.py`, which
+seeded 42 rows across three electrolytic kits on 2026-08-23, every one of them
+`[ESTIMATE]` with a deliberately absent `stocktake_date`.
+
+So the assertion reads zero and the reader concludes "the convention is dead",
+when the convention is alive and the *check* is broken. This is the same shape
+as the failure that brief exists to catch, one level up: **a query against the
+wrong field returns a confident, plausible, wrong number.**
+
+Rule: an assertion that returns zero must name the field it queried, so a zero
+can be told apart from a miss. `[ESTIMATE]` lives in stock notes.
+
+## Coverage percentages need the reachable denominator
+
+Image coverage read 563/1071 = 52% and looked like two years of work. Roughly
+483 of the missing are delisted, login-gated, or carry synthetic SKUs; only
+~25 are actually obtainable. Against the moveable denominator the same shelf is
+563/588 = **96%**, and the remaining work is about a week.
+
+Both numbers are true. Only the second one supports a decision. Any completeness
+figure on a dashboard shows reachable, and shows the ruled-out count next to it
+so the exclusion can be audited.

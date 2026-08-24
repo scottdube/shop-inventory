@@ -1194,3 +1194,52 @@ already silently taken the informed-count position by showing quantities.
 The pieces already exist: `stocktake_date` distinguishes counted from carried,
 `scripts/sync_stocktake.py` keeps it honest, and the grid already shows counted
 and uncounted as different states.
+
+---
+
+## Dashboard redesign — 2026-08-24
+
+Design is settled and written up in **`docs/DASHBOARD.md`**; the mock is at
+<https://claude.ai/code/artifact/c35bb33b-0d4d-4308-af59-cbd7ce640b37>.
+**Nothing is built yet** — `plugins/shop_status/` still renders the old four
+widgets, and the two rendering bugs below are live.
+
+**Ready to build, in order:**
+
+- [ ] **Make the tiles link.** `static/shop_status.js` hides the anchors it has
+      (`.ss .rows > a{...color:inherit;text-decoration:none}`) and the top strip
+      renders `<div class="stat">` with no anchor at all. Cheapest real
+      improvement on the page.
+- [ ] **Reachable denominators** on every coverage figure, ruled-out count
+      beside it. See `TRAPS.md`.
+- [ ] **Four states with an OFF flag** — a missing reading must never render as
+      zero, green, or blank.
+- [ ] **Three gauges with draggable target bugs**, targets stored as plugin
+      settings (`SettingsMixin`), so a goal moves without a deploy.
+- [ ] **Korry lamps** — flash until pressed, per-lamp acknowledgement stored
+      with a timestamp.
+- [ ] **Source tiles** — last read that *proved* something, per vendor.
+
+**Feeding back to the overnight-import project:**
+
+- [ ] Their `[ESTIMATE]` assertion queries the wrong field and reads zero. The
+      marker lives in `StockItem.notes`. See `TRAPS.md`.
+- [ ] `PO-0020` is PLACED with a null issue date — it cannot age, so every
+      aging rule skips it silently. Backfill, then assert no open PO may have a
+      null issue date.
+- [ ] 425 active parts hold no stock and sit on no open PO. Sample ten before
+      it becomes a number everyone scrolls past.
+
+**The unresolved one:** both the panel and the import brief measure *coverage*,
+neither measures *decay* — which is the thing "data atrophy" actually names.
+That needle is the cycle-count system's output and the two are not yet wired
+together.
+
+## Bench work still parked
+
+- [ ] File the two bus caps — B3-R5C4 recommended (761 µF and 737 µF, both
+      ~0.8% loss, 0.21 Ω ESR; tested 2026-08-23).
+- [ ] Measure the heatsink TO-220 hole spacing, then file to B3-R5C3.
+- [ ] RB-18 through RB-28 — never opened.
+- [ ] Print a test address label → decide whether DK-11201's minimum comes off.
+- [ ] InvenTree upgrade — **in Florida, co-located with the Mini**.
