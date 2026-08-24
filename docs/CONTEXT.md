@@ -247,3 +247,45 @@ Practical form: every tool gets a sentence saying *when you would reach for it*
 and, where it matters, *what goes wrong without it*. The second half is what
 makes a suggestion persuasive rather than trivia — "you have a tool for that"
 lands when it is followed by "and doing it the other way wrecks the connector".
+
+## Data atrophy is the failure mode
+
+Scott, 2026-08-24, on why the dashboard should carry a data-health panel:
+
+> **"Data atrophy will be the death of it."**
+
+That is the project's thesis and the reason most of the discipline in these
+docs exists. A catalogue does not fail by being deleted; it fails by drifting
+until nobody trusts it, at which point people stop looking things up and it is
+dead whether or not the rows are still there.
+
+**Atrophy comes in two forms and they need different instruments.**
+
+**Decay** — data that WAS true and quietly stopped being true. Counts drift as
+parts get used; a location changes when somebody moves a bag. Slow, measured in
+months. **Cycle counting is the answer to this**, and its design is in
+`OPEN.md`.
+
+**Accretion** — untruth added faster than it is corrected. Fast, measured in
+days. Every one of these is real and from a single session on 2026-08-23:
+
+| what was added | how it lied |
+|---|---|
+| a duplicate part created 08-21 | the PO attached to the twin, so the original read as never ordered |
+| a PO received on paper | two sensors recorded into a drawer nobody had carried them to |
+| a starter roll counted as stock | the shop read as having label stock while owning no usable roll |
+| a part filed away from its home | a sensor recorded in the Machine Shop, actually in a red bin |
+| a count date on a row whose notes say never counted | two rows claiming both states at once |
+
+**Every one of those was found by accident**, because somebody happened to
+query for something else. Nothing watches for them.
+
+So: cycle counting handles decay, and a **data-health panel** handles accretion.
+Together they are an immune system. With only the first, the catalogue stays
+freshly counted and slowly fills with things that were never true.
+
+**The design consequence:** a health check must surface things somebody would
+ACT on. A check that reports something you would shrug at teaches you to ignore
+the panel — which is exactly how the amber-drawer problem started, where five
+settled places read as "nobody has looked" until the walk stopped meaning
+anything.
