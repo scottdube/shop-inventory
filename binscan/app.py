@@ -32,6 +32,120 @@ import providers
 INVENTREE = os.environ.get("INVENTREE_URL", "http://127.0.0.1:8001")
 IT_TOKEN = os.environ.get("INVENTREE_TOKEN", "")
 WRITES_ON = os.environ.get("BINSCAN_WRITES", "") == "1"
+
+
+# --------------------------------------------------------------------------
+# UNIT OF MEASURE
+#
+# Scott, 2026-08-24: "should be a select dropdown then, not freehand, so we can
+# select units and unit of measure."
+#
+# The problem it solves: this app parsed every quantity with a bare float(), so
+# "8 in" came back as `quantity '8 in' is not a number`. With a part stored in
+# metres, a person at the bench holding a tape measure had to type 0.2032. The
+# InvenTree web UI converts and this did not, which meant two entry paths that
+# disagreed about what a quantity IS -- and an awkward entry path is how a cut
+# goes unrecorded, which is the whole failure mode of bulk stock.
+#
+# WHY A TABLE AND NOT pint. binscan runs in its own venv and talks to InvenTree
+# only over HTTP; pint is not installed here. Rather than add a runtime
+# dependency to a phone-facing service, these factors were read OUT of
+# InvenTree's own pint on 2026-08-24 and pinned:
+#
+#     convert_physical_value("1 in", "m") -> 0.0254        exact
+#     convert_physical_value("1 ft", "m") -> 0.3048        exact
+#     convert_physical_value("1 lb", "g") -> 453.59237     exact
+#
+# Every one is an exact rational by definition, not a rounded measurement, so a
+# table cannot drift from pint the way a copied vendor figure drifts. The test
+# that keeps it honest is scripts/unit_factors_check.py, which re-reads them
+# from InvenTree and fails if they ever disagree.
+#
+# The dropdown appears ONLY for a part that carries a unit. 1070 of 1071 parts
+# are plain counts, and putting a unit picker on every one of them would make
+# the common case worse to serve the rare one.
+UNIT_FACTORS = {
+    # length -> metre
+    "mm": 0.001, "cm": 0.01, "m": 1.0, "in": 0.0254, "ft": 0.3048, "yd": 0.9144,
+    # mass -> gram
+    "mg": 0.001, "g": 1.0, "kg": 1000.0, "oz": 28.349523125, "lb": 453.59237,
+}
+UNIT_DIM = {
+    "mm": "length", "cm": "length", "m": "length",
+    "in": "length", "ft": "length", "yd": "length",
+    "mg": "mass", "g": "mass", "kg": "mass", "oz": "mass", "lb": "mass",
+}
+# Order matters: this is what the dropdown shows, and the order it shows it in.
+UNIT_MENU = {
+    "length": ["mm", "cm", "m", "in", "ft"],
+    "mass": ["g", "kg", "oz", "lb"],
+}
+
+
+def unit_options(part_units):
+    """Units offerable for a part, or [] if it is a plain count.
+
+    Driven by the part's own DIMENSION, so a part stored in metres offers
+    inches and never offers grams. Getting this from a global list is how a
+    mass part ends up offering feet.
+    """
+    u = (part_units or "").strip()
+    dim = UNIT_DIM.get(u)
+    if not dim:
+        return []
+    return UNIT_MENU[dim]
+
+
+def parse_quantity(raw, unit, part_units):
+    """What a person typed at the bench -> a number in the PART's own unit.
+
+    Returns (value, error). Exactly one is None.
+
+    A dimensionality mismatch is an ERROR and never a silent zero: sending
+    grams for a part stored in metres has to say so, because a quantity that
+    quietly becomes a wrong number is worse than one that refuses.
+    """
+    raw = str(raw or "").strip()
+    if not raw:
+        return None, None
+    try:
+        n = float(raw)
+    except ValueError:
+        return None, f"quantity {raw!r} is not a number"
+
+    unit = (unit or "").strip()
+    pu = (part_units or "").strip()
+
+    if not pu:
+        # Plain count. A unit sent for a unitless part is a client bug, and
+        # silently dropping it would store a number that means something else.
+        if unit:
+            return None, (f"this part is counted in whole items, so {unit!r} "
+                          f"does not apply to it")
+        return n, None
+
+    if not unit:
+        # No unit chosen: the number is already in the part's own unit. That is
+        # what the dropdown defaults to, so this is the ordinary path.
+        return n, None
+
+    if unit not in UNIT_FACTORS:
+        return None, f"unknown unit {unit!r}"
+    if UNIT_DIM.get(unit) != UNIT_DIM.get(pu):
+        return None, (f"cannot enter {unit!r} for a part stored in {pu!r} — "
+                      f"those measure different things")
+    # Convert through the base unit of the dimension, then into the part's unit.
+    return n * UNIT_FACTORS[unit] / UNIT_FACTORS[pu], None
+
+
+def part_units_for(part_pk):
+    """The part's stock unit, or "" for a plain count. Cheap and uncached:
+    one extra GET on a write path a human is driving by hand."""
+    if not part_pk:
+        return ""
+    d = it_get(f"part/{part_pk}/") or {}
+    return (d.get("units") or "").strip()
+
 # Confidence levels that may write WITHOUT a human confirming. Empty, and it
 # has to stay empty until the log says otherwise.
 #
@@ -610,6 +724,10 @@ def cabinet_unlocated(cab):
                     "name": ("(NOT LOCATED ANYWHERE) " + nm) if homeless else nm,
                     "quantity": r.get("quantity"),
                     "homeless": homeless,
+                    # The part's stock unit, so the client knows whether to
+                    # offer a unit picker at all. Free: part_detail already
+                    # carries it, so this costs no extra request.
+                    "units": (r.get("part_detail") or {}).get("units") or "",
                     "sku": skus.get(pk, "")})
     for r in elsewhere:
         pk = r.get("part")
@@ -618,6 +736,7 @@ def cabinet_unlocated(cab):
                              or f"part {pk}"),
                     "quantity": r.get("quantity"),
                     "at": r.get("_at") or "",
+                    "units": (r.get("part_detail") or {}).get("units") or "",
                     "sku": skus.get(pk, "")})
     return out
 
@@ -993,6 +1112,7 @@ def catalogue_search(text, limit=6, floor=0.9):
             "description": (row.get("description") or "")[:160],
             "score": round(score, 3),
             "shared": shared,
+            "units": (row.get("units") or "").strip(),
             "stock_rows": len(rows),
             "where": [{"stock": s.get("pk"), "quantity": s.get("quantity"),
                        "location": (s.get("location_detail") or {}).get("name")}
@@ -1092,6 +1212,7 @@ def drawer_contents(name, site=""):
             "part": r.get("part"),
             "name": (r.get("part_detail") or {}).get("name") or f"part {r.get('part')}",
             "quantity": r.get("quantity"),
+            "units": (r.get("part_detail") or {}).get("units") or "",
             "counted": bool(st),
             "docs": part_docs(r.get("part")),
             "stocktake_date": st,
@@ -1118,7 +1239,8 @@ def drawer_contents(name, site=""):
         # a person standing at an open drawer, who could see exactly what was in
         # it, had to photograph it first to unlock a filter box.
         out["unlocated"] = [{"stock": r["stock"], "sku": r["sku"],
-                             "name": r["name"], "quantity": r["quantity"]}
+                             "name": r["name"], "quantity": r["quantity"],
+                             "units": r.get("units", "")}
                             for r in rows]
         body = re.sub(r"\[[^\]]*\]", "", out["description"]).strip(" ,;-\u2014")
         if body and not body.upper().startswith(("VERIFIED EMPTY", "PRE-SORT")):
@@ -1129,6 +1251,7 @@ def drawer_contents(name, site=""):
             out["label_candidates"] = [
                 {"sku": c["row"]["sku"], "name": c["row"]["name"],
                  "stock": c["row"]["stock"], "quantity": c["row"].get("quantity"),
+                 "units": c["row"].get("units", ""),
                  "why": c["why"], "strength": c["strength"]} for c in ranked]
     return out
 
@@ -1318,6 +1441,9 @@ def api_newpart(name: str = Form(...), location: str = Form(...),
     if loc is None:
         return JSONResponse({"error": f"no location named {location}"}, 404)
 
+    # Plain float on purpose: a part being CREATED here has no stock unit yet,
+    # so there is nothing to convert into. The unit picker belongs on parts that
+    # already carry a unit, not on the create path.
     counted = None
     if str(quantity).strip():
         try:
@@ -1464,6 +1590,7 @@ def api_empty(location: str = Form(...), site: str = Form(""),
 @app.post("/api/assign")
 def api_assign(stock: int = Form(...), location: str = Form(...),
                quantity: str = Form(""), split: str = Form(""),
+               unit: str = Form(""),
                site: str = Form(""), confirm: str = Form("")):
     """File a stock row into a drawer. The FIRST write this app makes.
 
@@ -1496,6 +1623,13 @@ def api_assign(stock: int = Form(...), location: str = Form(...),
     if not before:
         return JSONResponse({"error": f"no stock item {stock}"}, 404)
 
+    # What unit is this part STORED in? Everything typed at the bench is
+    # converted into it before anything is written, so the number that lands in
+    # InvenTree is always in the part's own unit and never in whatever the
+    # person happened to be holding a ruler in.
+    punits = part_units_for(before.get("part"))
+    typed = f"{str(quantity).strip()} {unit.strip()}".strip() if unit.strip() else ""
+
     # SPLIT: the part is already filed in another drawer and some of it is here
     # too. Create a SECOND row rather than moving the first, because moving it
     # would empty a drawer that is not empty.
@@ -1504,17 +1638,18 @@ def api_assign(stock: int = Form(...), location: str = Form(...),
             return JSONResponse({"error": "a second lot needs a count - without "
                                           "one there is no way to say how much "
                                           "is in THIS drawer"}, 400)
-        try:
-            n = float(quantity)
-        except ValueError:
-            return JSONResponse({"error": f"quantity {quantity!r} is not a number"}, 400)
-        if n <= 0:
+        n, qerr = parse_quantity(quantity, unit, punits)
+        if qerr:
+            return JSONResponse({"error": qerr}, 400)
+        if n is None or n <= 0:
             return JSONResponse({"error": "a second lot must be more than zero"}, 400)
         stamp2 = datetime.date.today().isoformat()
         body, err = it_post("stock/", {
             "part": before.get("part"), "location": loc["pk"], "quantity": n,
             "notes": (f"binscan {stamp2}: filed into {loc['name']} and COUNTED at "
-                      f"{n:g} by hand. SECOND LOT — the same part is also filed "
+                      f"{n:g} by hand."
+                      + (f" Entered as {typed}, converted to {punits}." if typed else "")
+                      + f" SECOND LOT — the same part is also filed "
                       f"in another drawer; this row is what is HERE, not the "
                       f"total. Sum the rows for the shop total.")})
         body = _one(body)
@@ -1533,20 +1668,23 @@ def api_assign(stock: int = Form(...), location: str = Form(...),
                 "location": loc["name"], "quantity": n, "counted": True,
                 "note": "second lot created; the other drawer is untouched"}
 
-    counted = None
-    if str(quantity).strip():
-        try:
-            counted = float(quantity)
-        except ValueError:
-            return JSONResponse({"error": f"quantity {quantity!r} is not a number"}, 400)
-        if counted < 0:
-            return JSONResponse({"error": "quantity cannot be negative"}, 400)
+    counted, qerr = parse_quantity(quantity, unit, punits)
+    if qerr:
+        return JSONResponse({"error": qerr}, 400)
+    if counted is not None and counted < 0:
+        return JSONResponse({"error": "quantity cannot be negative"}, 400)
 
     carried = float(before.get("quantity", 0))
     stamp = datetime.date.today().isoformat()
     if counted is not None:
         note = (f"binscan {stamp}: filed into {loc['name']} and COUNTED at "
                 f"{counted:g} by hand.")
+        # Keep WHAT WAS TYPED, not just the converted result. "0.2032" is
+        # unreadable six months later; "entered as 8 in" says a person put a
+        # ruler on it. The converted figure stays first because
+        # scripts/sync_stocktake.py matches on the number before "by hand".
+        if typed:
+            note += f" Entered as {typed}, converted to {punits}."
         # The delta against what the row previously claimed is the whole reason
         # counting is worth doing; state it here rather than leaving someone to
         # diff two paragraphs.
@@ -1724,6 +1862,7 @@ def api_partsearch(q: str = "", limit: int = 8):
 
 @app.post("/api/filepart")
 def api_filepart(part: int = Form(...), location: str = Form(...),
+                 unit: str = Form(""),
                  quantity: str = Form(""), site: str = Form(""),
                  confirm: str = Form("")):
     """Create a part's FIRST stock row, from the drawer, on the walk.
@@ -1770,11 +1909,11 @@ def api_filepart(part: int = Form(...), location: str = Form(...),
                                       "there is no purchased figure to carry "
                                       "over, so a blank would be an invented "
                                       "number"}, 400)
-    try:
-        n = float(quantity)
-    except ValueError:
-        return JSONResponse({"error": f"quantity {quantity!r} is not a number"}, 400)
-    if n < 0:
+    # `p` is already the part record, so its unit costs nothing extra here.
+    n, qerr = parse_quantity(quantity, unit, (p.get("units") or "").strip())
+    if qerr:
+        return JSONResponse({"error": qerr}, 400)
+    if n is None or n < 0:
         return JSONResponse({"error": "quantity cannot be negative"}, 400)
 
     existing = _rows(it_get("stock/", part=part, limit=50))
@@ -2704,6 +2843,43 @@ let HOME = localStorage.getItem('binscan.home') || 'SLN';
 // FastAPI returns validation failures under `detail`, not `error`, so a 422
 // surfaced as a bare "failed" with the actual reason thrown away -- which cost
 // a round trip to diagnose something the response had already explained.
+// ---------------------------------------------------------------- UNITS ---
+// A number box plus a unit picker, shown ONLY for a part that carries a unit.
+// Typing "0.2032" for eight inches on a phone keyboard is how a cut goes
+// unrecorded, and an unrecorded cut is the whole failure mode of bulk stock.
+//
+// The picker is deliberately absent for the other 1070 parts in the catalogue.
+// They are plain counts, and a unit dropdown on every drawer row would make the
+// common case worse in order to serve the rare one.
+//
+// The client does NO arithmetic. It sends the number and the unit string, and
+// the server converts using factors pinned against InvenTree's own pint. One
+// place converts, so the two can never disagree about what "8 in" means.
+const UNIT_MENU_JS = {
+  length: ['mm','cm','m','in','ft'],
+  mass:   ['g','kg','oz','lb'],
+};
+const UNIT_DIM_JS = {mm:'length',cm:'length',m:'length',in:'length',ft:'length',yd:'length',
+                     mg:'mass',g:'mass',kg:'mass',oz:'mass',lb:'mass'};
+
+function unitSel(i, units){
+  const u = (units||'').trim();
+  const dim = UNIT_DIM_JS[u];
+  if(!dim) return '';                       // plain count: no picker at all
+  const opts = UNIT_MENU_JS[dim].map(o =>
+    `<option value="${o}"${o===u?' selected':''}>${o}</option>`).join('');
+  // Defaults to the part's OWN unit, so doing nothing is always correct and
+  // the picker only has to be touched when the ruler disagrees with the shelf.
+  return `<select class=qunit data-i="${i}" aria-label="unit">${opts}</select>`;
+}
+
+function readQty(i){
+  const scope = $('#out');
+  const q = scope.querySelector(`.qty[data-i="${i}"]`);
+  const u = scope.querySelector(`.qunit[data-i="${i}"]`);
+  return {qty: q ? q.value.trim() : '', unit: u ? u.value : ''};
+}
+
 function errText(j){
   if(j && j.error) return j.error;
   if(j && Array.isArray(j.detail))
@@ -2711,6 +2887,19 @@ function errText(j){
   if(j && j.detail) return String(j.detail);
   return 'failed — no reason given';
 }
+
+(function(){
+  // Injected rather than added to the stylesheet block so the whole unit
+  // feature is one contiguous, reversible edit.
+  const st=document.createElement('style');
+  st.textContent=`.qtyrow{display:flex;gap:8px;align-items:stretch}
+    .qtyrow .qty{flex:1 1 auto;min-width:0}
+    .qtyrow #manualunit{display:contents}
+    .qtyrow select.qunit{flex:0 0 auto;width:5.5em;font-size:17px;
+      background:#1c1c1e;color:#fff;border:1px solid #3a3a3c;border-radius:8px;
+      padding:0 8px}`;
+  document.head.appendChild(st);
+})();
 
 function countingMode(on){ document.body.classList.toggle('counting', !!on); }
 
@@ -2874,7 +3063,7 @@ async function refreshDrawer(v,keepOut){
              <div class=row><span>basis</span><span class="${c.strength==='definite'?'high':c.strength==='probable'?'medium':'low'}">${c.strength}</span></div>
              <div style="margin-top:8px;color:#aaa;font-size:13.5px">${c.why}</div>
              <label style="margin-top:12px">Count (leave blank if you did not count)</label>
-             <input class=qty data-i="${i}" type=number inputmode=decimal placeholder="purchased ${(+c.quantity).toLocaleString()} — not a count">
+             <div class=qtyrow><input class=qty data-i="${i}" type=number inputmode=decimal placeholder="purchased ${(+c.quantity).toLocaleString()} — not a count">${unitSel(i, c.units)}</div>
              <button class=file data-i="${i}" data-stock="${c.stock}" style="margin-top:10px">File in ${v}</button>
              <div class=msg data-i="${i}" style="margin-top:8px;font-size:13px"></div>
            </div>`).join('')
@@ -3178,7 +3367,7 @@ function manualCard(){
       <div id=manualpicked class=mut style="margin-top:10px"></div>
       <div class=countbox>
         <label># HOW MANY ARE IN THE DRAWER?</label>
-        <input class=qty data-i="m" type=number inputmode=decimal placeholder="tap to count">
+        <div class=qtyrow><input class=qty data-i="m" type=number inputmode=decimal placeholder="tap to count"><span id=manualunit></span></div>
         <div class=why>Blank = not counted.</div>
       </div>
       <button class=file data-i="m" data-stock="" id=manualfile>File it</button>
@@ -3263,7 +3452,7 @@ function renderPicks(q){
   // holding an unfamiliar part is actually asking. Ask the catalogue too.
   catalogueFallback(t);
   list.innerHTML = hit.slice(0,60).map(u=>
-    `<button class=pick${u.at?' split':''} data-stock="${u.stock}" data-split="${u.at?1:0}">
+    `<button class=pick${u.at?' split':''} data-stock="${u.stock}" data-split="${u.at?1:0}" data-units="${u.units||''}">
        <span class=top><span class=sku>${u.sku||'—'}</span>
          <span class=qt>${(+u.quantity).toLocaleString()} ${u.at?`in ${u.at}`:'on record'}</span></span>
        <span class=nm>${u.name}</span>
@@ -3280,6 +3469,11 @@ function renderPicks(q){
     mf.textContent = b.dataset.split==='1'
       ? `Add a second lot in ${CUR}` : `File in ${CUR}`;
     $('#manualact').style.display='';
+    // The manual card is reused for whatever part gets picked, so its unit
+    // picker has to be built at pick time rather than at render time -- and
+    // rebuilt on every pick, or it keeps the previous part's units.
+    const mu=$('#manualunit');
+    if(mu) mu.innerHTML = unitSel('m', b.dataset.units);
     $('#manualpicked').innerHTML =
       `Chosen: <b style="color:var(--fg)">${b.querySelector('.nm').textContent}</b>`;
     $('#manualact').scrollIntoView({behavior:'smooth',block:'nearest'});
@@ -3297,7 +3491,7 @@ function wireFiling(drawer){
     btn.onclick=async()=>{
       const i=btn.dataset.i;
       const msg=$('#out').querySelector(`.msg[data-i="${i}"]`);
-      const qty=$('#out').querySelector(`.qty[data-i="${i}"]`).value.trim();
+      const {qty, unit}=readQty(i);
       if(!btn.dataset.stock){ msg.style.color='#ff8f8f'; msg.textContent='choose a part first'; return; }
       if(btn.dataset.split==='1' && !qty){
         msg.style.color='#ff8f8f';
@@ -3307,6 +3501,7 @@ function wireFiling(drawer){
       const fd=new FormData();
       fd.append('stock',btn.dataset.stock); fd.append('location',drawer); fd.append('site',SITE);
       fd.append('quantity',qty); fd.append('confirm','yes');
+      if(unit) fd.append('unit',unit);
       if(btn.dataset.split==='1') fd.append('split','1');
       try{
         const r=await fetch('/api/assign',{method:'POST',body:fd});
@@ -3418,6 +3613,8 @@ function wireFileParts(drawer){
       const i=btn.dataset.p;
       const msg=$('#out').querySelector(`.msg[data-p="${i}"]`);
       const qty=$('#out').querySelector(`.pqty[data-p="${i}"]`).value.trim();
+      const punitEl=$('#out').querySelector(`.qunit[data-i="p${i}"]`);
+      const punit=punitEl?punitEl.value:'';
       if(!qty){
         msg.style.color='#ff8f8f';
         msg.textContent='a count is required — creating stock means saying how many are in the drawer';
@@ -3426,6 +3623,7 @@ function wireFileParts(drawer){
       const fd=new FormData();
       fd.append('part',btn.dataset.part); fd.append('location',drawer);
       fd.append('site',SITE); fd.append('quantity',qty); fd.append('confirm','yes');
+      if(punit) fd.append('unit',punit);
       try{
         const r=await fetch('/api/filepart',{method:'POST',body:fd});
         const j=await r.json();
@@ -3483,8 +3681,8 @@ function catalogueCards(list, pfx){
       <div style="margin-top:8px;color:#aaa;font-size:13.5px">${c.why}</div>
       <div class=countbox>
         <label># HOW MANY ARE IN THE DRAWER?</label>
-        <input class=pqty data-p="${key}" type=number inputmode=decimal
-               placeholder="count them">
+        <div class=qtyrow><input class=pqty data-p="${key}" type=number inputmode=decimal
+               placeholder="count them">${unitSel('p'+key, c.units)}</div>
         <div class=why>${none
           ? 'Required &mdash; this part has never had stock, so there is no purchased figure to carry over. A blank would be an invented number.'
           : 'Required &mdash; this would be a second lot, and only a count says how many are in THIS drawer.'}</div>
@@ -3536,8 +3734,8 @@ function renderIdentify(d){
       <div style="margin-top:8px;color:#aaa;font-size:13.5px">${c.why}</div>
       <div class=countbox>
         <label># HOW MANY ARE IN THE DRAWER?</label>
-        <input class=qty data-i="${i}" type=number inputmode=decimal
-               placeholder="tap to count">
+        <div class=qtyrow><input class=qty data-i="${i}" type=number inputmode=decimal
+               placeholder="tap to count">${unitSel(i, c.units)}</div>
         <div class=why>Blank = not counted.<span class=hint> The
           <b>${(+c.quantity).toLocaleString()}</b> on record came from the purchase
           order, not from anyone looking.</span></div>

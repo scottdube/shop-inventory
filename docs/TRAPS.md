@@ -2884,3 +2884,63 @@ This also means the earlier caution on stock #659 was wrong in the safe
 direction but still wrong: it recorded "quantity 1 from the purchase record" for
 a nozzle Scott had physically in his hand. Corrected — the note now says
 hand-counted, and says why a put-away qualifies.
+
+## Two functions, one identical block — and `replace(…, 1)` patched the wrong one
+
+Adding unit conversion to binscan, the quantity-parsing block
+
+```python
+    counted = None
+    if str(quantity).strip():
+        try:
+            counted = float(quantity)
+```
+
+appears **verbatim in both `api_newpart` and `api_assign`**. A patch script using
+`s.replace(old, new, 1)` asserted `old in s` — true — and silently rewrote the
+first match, which was the wrong function.
+
+**The half-applied result was far worse than a total miss.** The *note* edit
+landed in `api_assign` correctly, while the *conversion* edit went to
+`api_newpart`. So `/api/assign` wrote:
+
+```
+COUNTED at 8 by hand. Entered as 8 g, converted to m.
+```
+
+for a raw, unconverted `8`. A record that says a conversion happened when it did
+not is not a bug that shows up as an error — it is a **lie with a paper trail**,
+and it would have read as authoritative six months later.
+
+It also left `api_newpart` referencing `unit` and `punits`, neither of which
+exists in its scope: a live `NameError` on the create-a-part-at-the-drawer path.
+
+**Rule: assert the occurrence COUNT, not just presence.** `assert s.count(old)
+== 1` would have failed loudly and immediately. Where a block genuinely appears
+twice, anchor on surrounding lines that differ.
+
+## A probe that "returns before any write" is a claim, not a fact
+
+Verifying the above, three requests were fired at the RUNNING service against
+**real stock rows**, on my stated reasoning that a validation failure returns
+before anything is written. It does not. All three returned `200` and wrote:
+
+```
+stock #657  sleeve      15 m -> 8      stamped COUNTED, note "Entered as 8 furlong"
+stock #659  0.8mm nozzle   1 -> 2      stamped COUNTED, note "Entered as 2 in"
+```
+
+Three invented hand-counts, on rows whose whole point was that they carried
+honest provenance. Restored from the notes, which is only possible because the
+notes said where every number came from — the discipline paid for itself inside
+an hour.
+
+**A write path is tested against something disposable, or it is tested in
+production.** `scripts/binscan_unit_test.py` now creates a throwaway part,
+stock row *and location*, drives the real endpoint, asserts, and deletes. It
+also asserts the negative case actually wrote nothing, rather than assuming it.
+
+The throwaway LOCATION matters too: the first attempt aimed at `Receiving` and
+got `409 — 2 locations are called 'Receiving'`, which is the location-ambiguity
+guard working. Any real drawer also risks the empty-stamp side effect rewriting
+a description that took a walk to earn.

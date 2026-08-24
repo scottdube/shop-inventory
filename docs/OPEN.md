@@ -338,10 +338,15 @@ rejected outright by the validator — pint has no such unit.)
 does not record, the number stays high, and a job gets planned around sleeve
 that is not there. Two defences, and the first is not yet built:
 
-- [ ] **Teach BinScan to convert units.** It accepts fractions but not `"8 in"`
-      — so at the bench, with `units='m'`, a person must type `0.2032`. Two
-      entry paths that disagree about what a quantity is. See `TRAPS.md`.
-      Until it lands, record cuts in the web UI.
+- [x] ~~**Teach BinScan to convert units.**~~ **Built 2026-08-24.** A number
+      box plus a unit picker, shown only for a part that carries a unit — the
+      other 1070 parts stay plain counts. The client does no arithmetic: it
+      sends the number and the unit, and the server converts with factors
+      pinned against InvenTree's own pint (`scripts/unit_factors_check.py`
+      fails if they ever drift). Covers `/api/assign` and `/api/filepart`;
+      `/api/newpart` deliberately stays a plain count, since a part being
+      created has no stock unit yet. Verified end to end by
+      `scripts/binscan_unit_test.py`.
 - [ ] **When it looks low, measure the remainder and stocktake it.** That is
       the move that converts the estimate into a count, and it is cheap exactly
       when it matters — a nearly-empty roll is short enough to measure.
