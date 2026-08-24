@@ -32,8 +32,23 @@ print(f"no category   : {Part.objects.filter(category__isnull=True).count()}")
 print(f"no supplier   : {Part.objects.filter(supplier_parts__isnull=True).count()}")
 
 print("\n== EXCLUSION / TOMBSTONE MARKERS (should not be re-discovered) ==")
-for tag in ("NOT INVENTORY", "MERGED into", "REFUNDED", "POSSIBLE RETURN", "[ESTIMATE]"):
+for tag in ("NOT INVENTORY", "MERGED into", "REFUNDED", "POSSIBLE RETURN"):
     print(f"{tag:18}: {Part.objects.filter(description__icontains=tag).count()}")
+
+# [ESTIMATE] lives on StockItem.notes, NOT Part.description. Querying the
+# description returned 0 and read as "the +40% convention is dead"; it is very
+# much alive. An assertion pointed at the wrong field returns a confident,
+# plausible, wrong number - which is the exact failure the health brief exists
+# to catch, one level up. Name the field so a zero can be told from a miss.
+est = StockItem.objects.filter(notes__icontains="[ESTIMATE]")
+print(f"{'[ESTIMATE]':18}: {est.count()}  (StockItem.notes — NOT Part.description, which reads 0)")
+
+# An estimate is BY DEFINITION unstamped: a counted figure carries
+# stocktake_date, a reasoned guess does not. Both together is a contradiction.
+bad = est.filter(stocktake_date__isnull=False)
+print(f"{'  ^ contradictions':18}: {bad.count()}  (marked [ESTIMATE] *and* stocktake-stamped — should be 0)")
+for s_ in bad[:10]:
+    print(f"      stock #{s_.pk} {str(s_.part)[:44]} qty={s_.quantity} stamped={s_.stocktake_date}")
 
 print("\n== PURCHASE ORDERS ==")
 for po in PurchaseOrder.objects.all():
