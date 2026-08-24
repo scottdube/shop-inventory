@@ -391,6 +391,78 @@ would find any other unmerged twin from that import.
 fitted to a tool — laser nozzles, collets, filters, mill tooling — wants
 `belongs_to` rather than a drawer row, or its minimum-stock rule is decorative.
 
+## Divided drawers — an F/B suffix, and why it is not free
+
+Scott, 2026-08-24, filing nine TCRT5000s into A3-R2C7: *"they will fit in that
+tray divided, so half of that tray is still available"* … *"it makes me wonder
+if there should be an F/B modifier on these trays?"*
+
+**F/B is the right scheme.** These drawers are 6 in deep and a divider makes a
+FRONT and a BACK half. Front/back is fixed by the drawer's own motion — unlike
+left/right, which depends on where you are standing, and unlike A/B, which is
+arbitrary and has to be looked up. You see the front half first when you pull it.
+
+**Two halves of the problem, and only one is durable.**
+
+- **The divider is durable.** A tray either has one or it does not. Written
+  once, stays true. It is on A3-R2C7's description now.
+- **Free space decays faster than anything else here.** Every put-away changes
+  it, and a rotted space note is worse than none — it sends somebody walking to
+  a drawer that is full.
+
+So the rule: **record the divider, never maintain a free-space note, and derive
+occupancy from sub-locations when it is actually needed.** Filing something into
+the empty half then updates the answer as a side effect, with nobody having to
+remember.
+
+**Do NOT rename drawers.** `A3-R2C7` keeps its plain address while one thing
+owns it, and gains `-F` / `-B` children only when a second, unrelated thing
+shares it. Renaming up front would break every existing address and mint 128
+locations for a case that mostly does not exist.
+
+### It needs a BinScan change FIRST — measured, not assumed
+
+Three anchored regexes reject a suffix:
+
+```
+app.py:345   DRAWER_RE = ^([A-Z]+\d+)-R(\d+)C(\d+)$        (python)
+app.py:3107  /^([A-Z]\d+)-R(\d+)C(\d+)$/                    (grid nav)
+app.py:3110  /-R(\d+)C(\d+)$/                                (next/prev drawer)
+```
+
+A location named `A3-R2C7-F` fails all three, so `r` and `c` come back `None`
+and the drawer **silently drops out of the grid and out of walk navigation**.
+No error — it just is not there, which is the worst possible failure to find
+mid-walk.
+
+- [ ] **Make the suffix optional in all three regexes** before the first `-F`
+      location is created: `(?:-([FB]))?$`. Then decide how the grid renders a
+      subdivided cell — probably the parent cell, marked as split, since the
+      grid is a picture of the cabinet and the cabinet still has one drawer
+      there.
+- [ ] **Which half are the TCRTs in?** Not recorded. It is the fact that makes
+      the eventual `-F`/`-B` assignment real rather than a coin toss.
+
+**Ruled out, with what eliminated them:**
+
+- **A free-text note** (`PLENTY OF ROOM`, `ROOM REMAINS`) — already the de-facto
+  convention on A3-R2C1, R2C4 and R3C1. Maintained rather than derived, and
+  nothing forces an update when the space is taken. Treat those existing notes
+  as **undated hints, not facts**.
+- **Pre-creating halves for all 64 drawers** — cost and noise, for a case most
+  drawers will never have.
+- **Counting distinct parts as a proxy for compartments used** — two parts can
+  share a half and one part can sprawl across both. The proxy is not the thing.
+
+**Proportionality says build it later.** A3 still has dozens of drawers marked
+VERIFIED EMPTY, so "where is there room" is answered today by a query that
+already works — locations holding no stock. Half-drawers only start to matter
+when the whole empty ones run out.
+
+- [ ] **A2's cabinet description already says its drawers are "DIVIDED and
+      shared by related small parts"** — so A2 is where this scheme will
+      actually earn its keep, and A2 is the cabinet nobody has walked.
+
 ## Cabinets never walked
 
 - [ ] **B1** — 31 rows still at cabinet level, flagged `DRAWER UNKNOWN`. All
