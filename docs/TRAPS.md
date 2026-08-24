@@ -2902,6 +2902,25 @@ open-circuit: at ~25 V, cut the barrel plug off and wire the brick straight to
 the pigtail. The replacement arrives with its own adapter, so the cut one just
 goes back in the box.
 
+## Depleting a stock item to zero DELETES it — notes and tracking go too
+
+2026-08-24. Asked to deplete the QL-810W's stock item ahead of the warranty
+return, `take_stock(qty, user, notes=...)` took it to zero and InvenTree removed
+the row outright. Not a zero-quantity record — **gone**, and the item's
+`StockItemTracking` history went with it. The `notes=` argument passed to
+`take_stock` describes an entry on a record that no longer exists.
+
+The failure history survived only because it had *also* been written onto the
+part earlier in the session. That was luck, not design.
+
+**Rule: anything you want to keep about a stock item must live on the PART before
+you deplete it.** Serial numbers, failure history, why it left — a stock item is
+a container for a quantity, and it evaporates when the quantity does.
+
+Also: don't trust a post-deplete re-read to confirm the write. The verification
+pattern for a silent save is `objects.get(pk=...)`, and here that raises
+`DoesNotExist` — which looks like a failure and is actually the success case.
+
 ## Red output on DK black/red tape is an ammeter, not a colour bug
 
 2026-08-24, same session as the dead QL-810W below. Running the printer on a
