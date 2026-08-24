@@ -2814,3 +2814,30 @@ API error exposed: **the dashboard's "last read that PROVED something" tile
 belongs on the printer too.** "The queue is accepting" is a liveness claim about
 CUPS. "A label came out" is a claim about the printer, and only the second one
 is worth a lamp.
+
+## A put-away done by a person IS a count — a PO receipt never is
+
+Scott, 2026-08-24, on the 0.8mm nozzle: *"It's now a count. I physically counted
+it. Seems like that's implied when you received something and say they're all
+there and you're putting them away."*
+
+Right, and this **sharpens the SHT31 rule rather than retracting it**. The two
+events look identical in the database and are completely different acts:
+
+| | who does it | what it proves |
+|---|---|---|
+| **Receiving a PO** | whoever closes the order, often off an email | an order arrived. Not a count. Not a location. |
+| **A person putting it away** | somebody holding the thing | how many there are, and which drawer. Both observations. |
+
+The SHT31 failure was the first *impersonating* the second — two sensors
+recorded into a drawer nobody had carried them to. The fix was never "distrust
+put-aways", it was "do not let a receipt pose as one".
+
+**So: a put-away performed by a person who confirms the contents carries a
+`stocktake_date`.** Requiring a separate counting ceremony afterwards is how a
+system trains people to skip the ceremony, and then nothing is ever stamped.
+
+This also means the earlier caution on stock #659 was wrong in the safe
+direction but still wrong: it recorded "quantity 1 from the purchase record" for
+a nozzle Scott had physically in his hand. Corrected — the note now says
+hand-counted, and says why a put-away qualifies.
