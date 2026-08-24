@@ -2584,3 +2584,38 @@ Not yet fixed. The fix is small — route the string through
 `convert_physical_value` when the part carries units — and it is worth doing
 once, because it is the same fix for wire, solder, heat-shrink, tubing and
 filament.
+
+## A location description written as INTENT reads as fact
+
+The two storage racks describe themselves:
+
+```
+WS1   Wire rack 1 - cable, wire, adhesives, consumables
+WS2   Wire rack 2 - tubing, ducting, tape, spray bottles, bulk
+```
+
+Asked where a coil of wire sleeving should go, both were plausible — WS1 by
+function, WS2 by form — so the question went to Scott. **"Most of the wire
+currently resides on WS2 S3."**
+
+So WS1's description is a *plan*. It was written when the racks were addressed
+and nobody has moved the wire to match it. Anyone reading the catalogue — or
+any future me picking a home for a spool — would have filed to WS1 and been
+wrong, and the record would then have said the spool was somewhere it was not.
+
+**This is the SHT31 failure one level up.** There it was a receive location: a
+destination written at receipt is indistinguishable, in the database, from a
+person carrying parts to a drawer. Here it is a location's own self-description:
+*what this shelf is for* and *what is actually on it* look identical once
+written, and only one of them can be walked up to and checked.
+
+Recorded as an observation appended to WS2-S3 rather than by rewriting WS1,
+because the split may still be what Scott wants eventually and deleting the
+intent would lose that. But the general form is worth a sweep: **a location
+description should say what is ON the shelf, and mark separately anything that
+is merely intended for it.** The catalogue currently has no way to tell those
+apart, which means every rack description is an unverified claim.
+
+Cheap detector, not yet built: a shelf whose description names a category, with
+zero stock rows of that category anywhere under it. WS1 named "wire" and holds
+no wire — that would have lit up.
