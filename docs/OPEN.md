@@ -1389,8 +1389,13 @@ raster error rather than pointing at it.
       path has to be proven deliberately. The replacement is also a Renewed
       unit, so its adapter carries the same risk. Do it the day it lands, not
       the day you next need a label.
-- [x] ~~Reverse the bypass before the return~~ — **settled 2026-08-24, Scott's
-      call: the bypass stays.** Raised once, decided, closed. Do not re-open it.
+- [ ] **Tidy up the bypass once the replacement is working.** Scott, 2026-08-24:
+      *"when I get the new one, I will clean this up."* One solder joint on the
+      board side of the barrel jack, plus the lead out of the case. Tied to the
+      replacement landing 2026-08-26 — the bypass has to stay until then,
+      because it is the only thing feeding the printer.
+      The risk question around the return was raised on 2026-08-24 and decided.
+      Closed. Do not re-open it.
 
 - [ ] **The bench supply is consumed** until the replacement lands 2026-08-26.
       If it is needed for something else first, the escape is to cut the barrel
