@@ -1355,13 +1355,33 @@ together.
 the gateway cannot ARP it; see `TRAPS.md` for why that rules out the latched
 raster error rather than pointing at it.
 
-- [ ] **Triage power at the printer.** Outlet live, DC barrel fully seated at
-      both ends, adapter brick warm / LED lit. If a battery base is fitted,
-      pull it and run on AC alone — a flat pack can hold the unit down.
-      A known-good adapter of the same spec is the fastest discriminator, since
-      the adapter fails far more often than the printer.
-- [ ] **Cancel stuck job 29** (`output.pdf`, queued 13:11 2026-08-24). It is
-      `active` and will fire the moment power returns. `cancel QL810W-29`.
+- [x] ~~Triage power~~ — **done 2026-08-24. The PSU is dead.** Known-good
+      outlet, plugs reseated, and the meter reads **nothing** at the barrel
+      jack. A regulated switcher shows its rated ~25 V open-circuit, so zero is
+      a result and not an artifact. No LED anywhere on the unit.
+- [x] ~~Cancel stuck job 29~~ — already gone; it timed out on its own. The
+      queue now reports "The printer is not responding" instead of the
+      "ready and printing" it claimed while the connection hung.
+
+- [ ] **RETURN THE PRINTER — do not buy an adapter.** `PO-0134`, Amazon,
+      issued **2026-08-19**, $129.99. It is FIVE DAYS OLD and inside the
+      30-day window.
+
+      **Return the whole unit, not just the brick.** Scott's hypothesis is that
+      the AC side never worked and it ran on battery from new — which means the
+      printer's own DC jack and internal power stage are *equally unproven*.
+      Sourcing a PA-AD-001A risks discovering the printer is the faulty half,
+      having spent part of the return window to find out. The failure is
+      isolated to "the AC path", and the AC path spans both halves.
+
+- [ ] **Then: stock #570 needs to follow the printer.** The QL-810W is stocked
+      1 @ SLN/Electronics Bench. If it goes back, that row and `PO-0134` both
+      need to reflect it — a returned item left in stock is the same class of
+      lie as a receipt that was never a put-away. Not done yet, because it has
+      not gone back yet.
+
+- [ ] **The DK-22205 roll (#922, stock #656 in BR-D3) stays.** Separate
+      purchase, `PO-0133`, nothing wrong with it.
 - [ ] **Nothing has printed since 2026-08-20 20:42** and nobody noticed for four
       days. The failure date is unknown — do not write one down.
 - [ ] **A liveness lamp for the printer**, on the dashboard: last label that
