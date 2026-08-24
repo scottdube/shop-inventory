@@ -1231,20 +1231,24 @@ widgets, and the two rendering bugs below are live.
 - [ ] 425 active parts hold no stock and sit on no open PO. Sample ten before
       it becomes a number everyone scrolls past.
 
-**Strip `[ESTIMATE]` when a row is counted — a missing step, not 3 bad rows.**
-`scripts/estimate_audit.py` (2026-08-24): 148 rows carry the marker, **3 of them
-also carry a `stocktake_date`** — #482, #504, #556, all stamped in the 08-21/22
-drawer sessions. Nothing in the count path removes the marker, so **each of the
-145 correctly-marked rows joins them the moment its drawer is walked.**
+**Make the stocktake mirror bidirectional — the real fix, not 2 row edits.**
+`scripts/estimate_audit.py` (corrected 2026-08-24, now uses `startswith`): 147
+rows carry the marker, **2 also carry a `stocktake_date`** — #482 and #556. Both
+notes say in their own words they were never counted, so they are **stamped
+without a count** and the never-counted report is *over*-stating progress.
 
-- [ ] Decide the direction for the 3: real counts wearing a stale label (likely
-      — the quantities look tallied, and #556's 41 matches a 41-piece set), or
-      dates stamped without a count (worse). **Scott's call**, and the answer
-      changes the fix.
-- [ ] Then put the strip in the count path so the number stops growing. The
-      evidence tier is part of the value, not metadata about it — a row that
-      says both is unreadable, and the never-counted report is currently
-      under-reporting real progress.
+`scripts/sync_stocktake.py` only ever *sets* the date; nothing clears one. A row
+counted once, then re-filed without a count, keeps the stale date while binscan
+prepends a fresh `[ESTIMATE]`. That sequence will keep producing these.
+
+- [ ] **Clear the date on #482 and #556.** Not the marker — both are genuinely
+      uncounted, and stripping the marker would turn a detectable contradiction
+      into a silent lie.
+- [ ] **Teach `sync_stocktake.py` to clear.** Set the date when the note claims
+      a count; clear it when the leading claim is `[ESTIMATE]`. The note marker
+      is already authoritative — the date should follow it down as well as up.
+- [ ] **Assert it stays zero.** A row claiming both is the integrity check; it
+      belongs on the panel as a lamp that should never light.
 
 **The unresolved one:** both the panel and the import brief measure *coverage*,
 neither measures *decay* — which is the thing "data atrophy" actually names.

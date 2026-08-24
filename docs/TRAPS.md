@@ -2227,8 +2227,9 @@ reports **zero records carrying `[ESTIMATE]`** and asks whether the +40%
 convention is being applied at all.
 
 It is. The marker is written to **`StockItem.notes`**, not `Part.description`.
-Measured 2026-08-24 with `scripts/estimate_audit.py`: **148 rows carry it, 0 in
-the field the brief queried.**
+Measured 2026-08-24 with `scripts/estimate_audit.py`: **147 rows carry it, 0 in
+the field the brief queried.** (148 by substring — see below; one row mentions
+the marker without carrying it.)
 
 Note the figure. Reading the seed scripts (`seed_xuansn.py`, `seed_elec_4x7.py`,
 `seed_15value.py`) gives **42** — those three kits only. The population is 148.
@@ -2243,27 +2244,54 @@ wrong field returns a confident, plausible, wrong number.**
 Rule: an assertion that returns zero must name the field it queried, so a zero
 can be told apart from a miss. `[ESTIMATE]` lives in stock notes.
 
-### And the correction found something worse than the error
+### And the correction found something worse than the error — twice
 
-Querying the right field surfaced **3 rows carrying both `[ESTIMATE]` and a
-`stocktake_date`** — a combination the convention says cannot exist, because the
-absent date is what keeps a guess on the never-counted report:
+Querying the right *field* surfaced rows carrying both `[ESTIMATE]` and a
+`stocktake_date`. The audit script that found them then used **`icontains`**,
+which is not a marker test, and reported **3**. It is **2**.
 
-    #482  2026-08-22  B1        qty  3   Cup-point set screw
-    #504  2026-08-21  A2-R4C2   qty 10   Viton sealing washer
-    #556  2026-08-22  BL-D2     qty 41   Terminal removal tool set, 41pc
+    notes STARTS WITH [ESTIMATE]: 147      <- the marker test
+    notes CONTAINS   [ESTIMATE]: 148       <- not a marker test
 
-All three were stamped during the 08-21/08-22 drawer sessions, so these are
-almost certainly **real counts still wearing an estimate label** — three tallies
-being reported as guesses. Direction is Scott's call and is on the decision
-queue; it could also be a date stamped without a count, which is the worse way
-round.
+`#504` merely *mentions* the marker in a note recording that it was physically
+counted. **This trap was already in this file** (see "the substring test found
+the word in the prose describing its absence", above) and
+`binscan_reset.py`/`mcmaster_import.py` already used `startswith`. The audit
+was written anyway with `icontains`. Recording a trap does not prevent it; the
+query has to be read.
 
-**But it is not a three-row cleanup.** Nothing in the count path strips the
-marker when a row is counted. **145 rows still carry `[ESTIMATE]` with no date**
-— every one of them lands in this same contradiction the moment its drawer is
-walked. The number grows with the walk. The fix is a step in the count path, not
-an edit to three rows.
+**The two real rows point the OPPOSITE way from the guess.** The dashboard reply
+read them as real counts wearing a stale label — understating progress. Their
+own notes say the reverse:
+
+    #482  "Quantity 3 is the PURCHASED figure carried in with the row -
+           NOT COUNTED, nobody has looked in the drawer and tallied it."
+    #556  "41 is the LISTING count, not a count of what is in hand."
+
+They are **stamped without a count**, so the never-counted report is *over*-
+stating progress and the fix is to **clear the date, not the marker**. Getting
+the direction wrong would have deleted the marker on two rows nobody has ever
+counted — turning a detectable contradiction into a silent lie.
+
+### The mechanism: the stocktake mirror is one-directional
+
+Not two bad rows. `scripts/sync_stocktake.py` mirrors binscan's COUNTED marker
+into `stocktake_date` and **only ever sets it — nothing clears one.** Its regex
+matches `filed into X and COUNTED at N`, so a file-*without*-count is invisible
+to it.
+
+So: a row is counted (date stamped), then later re-filed without being counted.
+`binscan/app.py` prepends a fresh `[ESTIMATE]` note — it rewrites the marker on
+the *prior* note only when a count is supplied — and the stale date survives.
+Both #482 and #556 carry a `PURCHASE HISTORY (superseded by the count above)`
+fragment underneath, which is the fingerprint of exactly that sequence.
+
+The fix is to make the mirror **reconcile in both directions**: set the date
+when the note claims a count, clear it when the leading claim is `[ESTIMATE]`.
+The note marker is already the authoritative record — `sync_stocktake.py` says
+so in its own docstring — so the date should follow it down as well as up.
+The script already refuses to stamp a date onto a quantity nobody counted; this
+is the same conservatism pointed the other way.
 
 ## Coverage percentages need the reachable denominator
 
