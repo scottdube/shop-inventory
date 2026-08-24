@@ -350,6 +350,42 @@ that is not there. Two defences, and the first is not yet built:
       precedent suggests a separate stock row at the rack rather than pretending
       the roll is still whole. Nobody has cut any yet, so this is not urgent.
 
+## FR-301 bench consumables — A3-R1C2, established 2026-08-24
+
+Cleared off Scott's bench in one pass. The drawer is `SLN/Bin Wall/A3/A3-R1C2`
+(A3 had a block VERIFIED EMPTY 2026-08-23; B3 is fully allocated), and it is
+`default_location` for all three records below.
+
+| | |
+|---|---|
+| `#213` 1.3mm N61-06 | **in service** — installed on the gun, stock 0, min 1 → *no spare* |
+| `#87` 0.8mm N61-07 | stock 1 @ A3-R1C2, min 1 |
+| `#1084` filter set | stock 1 sealed set @ A3-R1C2, min 1 |
+| `#474` FR-301 gun | stock 1 @ SLN/Electronics Bench — **it had no stock row at all before this** |
+
+`#86` retired into `#213` — a duplicate the 0.8mm merge pass missed. See
+`TRAPS.md` for why the surviving pk went the other way, and for the sweep that
+would find any other unmerged twin from that import.
+
+**Still soft, and each is one look away from being hard:**
+
+- [ ] **The 0.8mm quantity is not a count.** 1 comes from the purchase record
+      (1 purchase, 1 unit lifetime) plus Scott saying he is filing it. No
+      `stocktake_date`. Open the drawer, count it, promote it.
+- [ ] **The filter set's contents were read off a photograph** — 2 pads and a
+      metal holder — so the row counts 1 SEALED SET and nothing finer. Opening
+      the bag settles it.
+- [ ] **Hakko's part number for the filter is not recorded**, deliberately.
+      Nobody verified it and a confident wrong MPN gets reordered. It is in the
+      gun's manual.
+- [ ] **The gun's location is an inference from use**, not a put-away: Scott was
+      fitting a nozzle to it at the electronics bench. Fine, and worth knowing
+      it was never carried anywhere on purpose.
+
+**The pattern is reusable and probably under-used.** Any consumable that lives
+fitted to a tool — laser nozzles, collets, filters, mill tooling — wants
+`belongs_to` rather than a drawer row, or its minimum-stock rule is decorative.
+
 ## Cabinets never walked
 
 - [ ] **B1** — 31 rows still at cabinet level, flagged `DRAWER UNKNOWN`. All
