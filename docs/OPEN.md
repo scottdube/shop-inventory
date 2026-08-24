@@ -483,9 +483,26 @@ upsize freely*. A shelf-coded name means renaming the bin and every
 **A bin in service is a LOCATION, not stock.** #1089 (the 10-pack) drops by one
 each time a bin is put to work. Currently 9 in `SLN/Receiving`.
 
-- [ ] **Label B-01.** The ID has to be the big text; contents underneath; QR at
-      the side. This is the whole point of the scheme and it does not work
-      until the label is physically on. Printer is back up.
+- [x] ~~Label B-01~~ — **printed 2026-08-24 (job QL810W-34).**
+
+      **The label carries the ID and the QR, and NOT the contents.** Scott:
+      *"as soon as you do, it'll be out of date... what do we do when we figure
+      out what else to put in there, print a whole new label? That doesn't seem
+      very productive."* Right — contents change, the container does not. The
+      contents live in the description, which is free to edit and is what the
+      QR resolves to. Same reason the drawer labels work.
+
+      These bins are also CLEAR, so eyes answer "what is in it" at a glance and
+      the label only has to answer "which bin is this".
+
+      **A rendering failure settled it independently.** With the location named
+      `B-01 Sleeving & Loom`, the 62x25mm template wrapped to three lines and
+      overprinted the WS2-S3 breadcrumb — the WeasyPrint no-overflow trap. The
+      location is now named `B-01`, with `SLEEVING & LOOM.` opening the
+      description, so location search still finds it by contents.
+
+      Only stale-able element left is the `WS2-S3` breadcrumb, if the bin moves
+      shelves. The QR stays authoritative, so it is a hint, not a claim.
 - [ ] **Heat-shrink: in the sleeving bin or not?** Undecided. It lives in the
       bin wall today.
 
