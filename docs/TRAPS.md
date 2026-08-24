@@ -3169,3 +3169,41 @@ continued to git because they were separate commands, and the commit went in
 carrying a message about work that had not happened. Recovered by moving the
 file to the right repo and resetting `~/code` (no remote, unpushed) — but the
 message was already wrong before anyone looked.
+
+
+## A counter purchase has no digital trace at all — mark it or it reads as an orphan
+
+2026-08-24. A Walmart delivery of storage bins ran late, so Scott bought a
+second set in the store and then kept the delivery too. Twenty bins, from two
+purchases, and **only one of them exists anywhere outside the shop**: no email,
+no portal entry, no order-details page. The vendor sweep will never see it.
+
+This is the unknown-vendor blind spot in its hardest form. That one is *"the
+sweep only finds senders it knows"* — solvable by searching for shape and
+subtracting. A counter purchase has **no sender at all**, so no amount of
+searching will ever surface it.
+
+**Do not invent a purchase order for it.** A PO asserts that an order existed,
+and this catalogue has already been damaged twice by POs that were really
+inferences — the 23 stubs, and the SHT31 rows minted by receiving one. The
+money is recordable without one: `StockItem.purchase_price` stands on its own.
+
+**Mark it instead.** `[COUNTER PURCHASE]` opens the note, so one query finds
+every such row — the same mechanism as `[ESTIMATE]`. Without the marker these
+rows look like unexplained stock to any future reconciliation, and somebody
+eventually "fixes" them.
+
+Two details worth carrying:
+
+- **Keep the lots as separate stock rows.** One is evidenced by an order page,
+  the other by somebody's memory. Merging them into a single quantity destroys
+  the only thing that tells them apart.
+- **The +40% estimate rule does NOT apply to a price already paid.** That rule
+  exists to stop under-budgeting a future purchase. Inflating money already
+  spent is a different lie. The unverified figure is recorded as-is and
+  labelled unverified.
+
+Side effect worth noting: the delivery had been sitting on the shelf while
+PO-0141 stayed `Placed`, because the stock row's note never named the PO. Goods
+on a shelf and an order still open is the reverse of the SHT31 failure — there
+the record ran ahead of the parts, here the parts ran ahead of the record.
