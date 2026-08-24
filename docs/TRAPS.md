@@ -2800,6 +2800,23 @@ firmware sulk, and no amount of clearing or re-queuing touches it.
 "accepting requests since 13:11". A queue that says *printing* is reporting on
 itself, not on the printer.
 
+**It was never a new printer — it is an Amazon *Renewed* unit, and that reframes
+the whole failure.** The listing reads "Brother RQL-810W- (QL-810W) Ultra-Fast
+Label Printer with Wireless Networking White **(Renewed)**". A five-day death
+looks like terrible luck on a new machine and looks entirely ordinary on a
+refurb, and the difference changes what you do next: you stop hunting for a
+shop-side cause and you claim the guarantee.
+
+**PO-0134 recorded the price and not the condition.** $129.99 from Amazon reads
+as a new-unit price right up until you notice the word Renewed, and nothing in
+the part record, the stock item, or the PO said otherwise until 2026-08-24.
+**Condition is part of what a purchase record is for** — a refurb and a new unit
+are different things at the same price and they fail at different rates.
+
+The replacement, initiated 2026-08-24 and due 2026-08-26, is **also Renewed**.
+Same risk, so keep the guarantee window in view rather than assuming the problem
+is now behind us.
+
 **The 90 W adapter is correct — do not "fix" it.** The genuine brick is Brother
 **PA-AD-001A**, P/N **S01776A**, `100-240V 1.5A in / 25.0V 3.6A 90.0W out`,
 shared across the QL-810W, QL-820NWB and the TD-2020/2120/2130 family. Ninety
