@@ -2355,3 +2355,39 @@ vendor at once.
 
 **Rule 3 still applies.** The order list contains medical items. Any harvester
 must redact them by seller before anything is written or logged.
+
+## It is 2 contradictions, not 3 — and they point the OTHER way
+
+Fourth wrong number about this one field in 48 hours, and the same root each
+time: **a check that did not name what it queried.**
+
+`notes__icontains("[ESTIMATE]")` returns 148. `notes__startswith("[ESTIMATE]")`
+returns 147. The extra row is **#504**, whose notes read *"Counted 10 on
+2026-08-21 — a physical tally, not the pack claim"* and merely **mention** the
+word later in the sentence. A substring match on a marker is not a marker test.
+`binscan_reset.py` and `mcmaster_import.py` already use `startswith`; the audit
+and the health brief both used `icontains`. Use `startswith`.
+
+**The two real ones point the opposite way from the guess.** The dashboard reply
+read them as "probably real counts still wearing an estimate label", which would
+mean the never-counted report *under*-states progress. Their own notes say
+otherwise:
+
+```
+#482  stamped 2026-08-22  "[ESTIMATE] binscan ... Quantity 3 is the PURCHASED
+                           figure carried in with the row - NOT COUNTED"
+#556  stamped 2026-08-22  "[ESTIMATE] 41 is the LISTING count, not a count of
+                           what is in hand. Never used and never opened out"
+```
+
+Both are **stamped without a count** — the worse direction. The never-counted
+report is **over**-stating progress by two rows, and the fix is to clear the
+`stocktake_date`, not the marker.
+
+**Mechanism, precisely.** "Nothing in the count path strips the marker" is not
+quite right. `file_stock.py` *replaces* notes wholesale on a real count
+(`"Hand-counted <date>."`), so that path is clean. `sync_stocktake.py:82` does
+`update(stocktake_date=...)` and **never touches notes** — that is the path that
+can stamp a row while leaving an estimate marker standing. Zero rows currently
+carry a binscan `COUNTED at` marker alongside `[ESTIMATE]`, so this has not
+fired yet at scale; it is a live hazard, not a live outage.
