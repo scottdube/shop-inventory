@@ -501,8 +501,12 @@ each time a bin is put to work. Currently 9 in `SLN/Receiving`.
       location is now named `B-01`, with `SLEEVING & LOOM.` opening the
       description, so location search still finds it by contents.
 
-      Only stale-able element left is the `WS2-S3` breadcrumb, if the bin moves
-      shelves. The QR stays authoritative, so it is a hint, not a claim.
+      **The shelf breadcrumb `WS2-S3` stays on, deliberately.** Scott: *"we can
+      just relabel it if we rehomed it."* Yes — and the rule that separates it
+      from the contents is worth keeping: **put on a label anything that changes
+      less often than reprinting costs.** Contents change every time something
+      is added, so they lose. A bin is rehomed rarely, so it wins, and a reprint
+      then is fair.
 - [ ] **Heat-shrink: in the sleeving bin or not?** Undecided. It lives in the
       bin wall today.
 
