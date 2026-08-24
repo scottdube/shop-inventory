@@ -2490,3 +2490,44 @@ the hypotheses diverge under load — organic-mix predicts degradation whatever
 the pacing, abuse-decay predicts low paced volume stays clean. The daytime sweep
 generates exactly that data, so the next block (or its absence) is evidence
 rather than another guess.
+
+## "Nothing happened overnight" has at least three causes that look identical
+
+Scott's reading of the 2026-08-24 miss was a permission stall. Reasonable — the
+2026-08-22 miss WAS exactly that, seven hours parked on a prompt. But the
+transcript for 08-24 says otherwise:
+
+```
+02:05:34  scheduled task fired
+02:09:01  API Error: 529 Overloaded        <- died here
+08:12     Scott typed "Try again"
+tool_use records before the error : 0      <- nothing to approve
+records in the 6-hour gap         : 0
+```
+
+Zero tool calls means no prompt was ever raised. The run died on its first model
+call.
+
+**Three causes, one symptom.** A morning with no journal entry can mean:
+
+1. **Permission stall** — a tool call parked awaiting approval (08-22).
+2. **Transient API failure** — 529/500 on the first call, no retry (08-24).
+3. **Never fired** — app closed or Mac asleep, so the task deferred to next
+   launch.
+
+They are indistinguishable from the outside, and each needs a different fix
+(approvable command shapes / retry / keepalive). Ruled out for 08-24 by
+measurement, so nobody re-litigates: uptime 21 days, zero sleep events since
+08-20 in a log that covers today, and the app running continuously since 08-21
+18:05. So (3) is out, and (1) is out on the tool_use count.
+
+**How to tell them apart:** read the run's own transcript at
+`~/.claude/projects/-Users-scottdube-code/<session>.jsonl`. The first ten
+records distinguish all three in seconds — a stall shows a `tool_use` with no
+result, an API failure shows an `assistant` record containing the error, and a
+deferred run has a first timestamp that is not the scheduled time.
+
+**The real gap this exposes is that nothing notices.** A 529 at 02:09 cost the
+whole night and went unremarked for six hours. The dashboard brief's
+"last SUCCESSFUL read, not last run" tile is exactly this, one level up: the
+scheduler said the task ran, and it did — it just accomplished nothing.
