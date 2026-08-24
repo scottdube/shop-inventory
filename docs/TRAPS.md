@@ -2619,3 +2619,155 @@ apart, which means every rack description is an unverified claim.
 Cheap detector, not yet built: a shelf whose description names a category, with
 zero stock rows of that category anywhere under it. WS1 named "wire" and holds
 no wire — that would have lit up.
+
+## McMaster login detection: the test could never have said "signed in"
+
+**2026-08-24, measured.** Every previous "McMaster is signed out" reading was
+wrong, including the one this run sent a notification about. Scott has said so
+repeatedly; this is the mechanism.
+
+McMaster's masthead ships a **static, cached shell**. On a cold page load the
+account control renders the literal text `Log in` and
+`localStorage.VSTR_USR_NM` is **empty — whether or not you are signed in.**
+Account state is not fetched at load time at all. Measured on a genuinely
+signed-in session:
+
+| after cold load | header text | `VSTR_USR_NM` |
+|---|---|---|
+| 0 s | `Log in` | empty |
+| 3, 6, 9, 12, 15, 18, 21 s | `Log in` | empty |
+
+Twenty-one seconds of idle, no change. **So the sanctioned test — load the home
+page and look for the account name — is not flaky. It is structurally incapable
+of ever returning "signed in."** Waiting longer cannot fix it. Neither can
+warming the page, which is what the previous correction ("only a positive
+account-name check on a warmed page has held") assumed, and that correction is
+now itself superseded.
+
+### What actually reveals it
+
+A **trusted** click on the masthead account control:
+
+```
+#LoginUsrCtrlWebPart_LoginLnk        (inside #ShellLayout_MastheadLogin_Cntnr)
+```
+
+That fires `UserDataLoader`, which populates `localStorage.VSTR_USR_NM` with
+the account name. Then, and only then, is the answer readable.
+
+**A synthetic `el.click()` does NOT work** — measured, no effect after 9 s. The
+handler requires a real pointer event, so this must go through the `computer`
+tool, not `javascript_tool`.
+
+**Read the answer from `VSTR_USR_NM`, not from the screen.** After the real
+click the key was populated (10 chars, matches `/scott/i`) while the visible
+header *still read* `Log in`. The repaint is unreliable; the storage key is not.
+
+### The corrected procedure
+
+1. Load `mcmaster.com`.
+2. Real click via `computer` on `#LoginUsrCtrlWebPart_LoginLnk`.
+3. Signed in ⇔ `localStorage.VSTR_USR_NM` is non-empty **and** matches the
+   expected account name.
+
+### Why every guessed endpoint also lied
+
+`/api/user`, `/Account/GetUserInfo`, `/order-history/api/orders` and
+`/WebPartsRoot/Login/GetUserInfo` **all return HTTP 200 with the SPA shell.**
+This site returns 200 + shell for *any* unknown route. That generalises the
+already-documented `/order-history/` pre-auth-shell trap: on mcmaster.com,
+**neither status code nor route content can ever indicate auth state.** Do not
+add another route-based probe — the failure is the site's routing, not the
+route chosen.
+
+### Not verified
+
+Whether `VSTR_USR_NM` stays empty when genuinely signed **out** — confirming
+that needs a logout, which is Scott's to perform, not the job's. So the check
+requires a *name match*, not merely a non-empty key: a stale or foreign value
+should read as "unknown", never as "signed in".
+
+## minimum_stock counts TOTAL stock, not spares — unless you use `belongs_to`
+
+Scott, 2026-08-24: *"Do we wanna set minimum stocking quantity on those to
+one?"* Yes — but the obvious implementation silently never fires.
+
+`Part.is_part_low_on_stock()` compares `get_stock_count()` to `minimum_stock`,
+and that count runs through `StockItem.IN_STOCK_FILTER`, measured on this
+install:
+
+```
+belongs_to=None AND consumed_by=None AND customer=None
+AND is_building=False AND quantity>0 AND sales_order=None
+AND status__in=[10, 50, 55, 85]
+```
+
+**`belongs_to=None` is the load-bearing clause.** A stock item INSTALLED into
+another stock item stops counting as stock, while still existing and still
+showing what it is inside.
+
+So for a consumable that lives fitted to a tool — desoldering nozzle, laser
+nozzle, mill collet, filter — there are two models with the same number in the
+same field and opposite behaviour:
+
+| model | stock count | `minimum_stock=1` |
+|---|---|---|
+| nozzle row sits in its drawer while physically on the gun | 1 forever | **never fires** — and the record is a lie about location |
+| nozzle row `belongs_to` the gun's stock item | 0 | fires correctly: *no spare* |
+
+The second is also the honest one. "I own a 1.3mm nozzle" and "I have a spare
+1.3mm nozzle" are different claims, and only `belongs_to` distinguishes them.
+`default_location` still points at the drawer — that is where the NEXT one goes
+home, and this unit simply is not a spare.
+
+Worked example: `scripts/install_nozzle.py`. It also closed a gap nobody had
+noticed — the shop's own FR-301 was a catalogue entry with **no stock row at
+all**, so the gun did not physically exist as far as the data was concerned.
+Installing something into a tool forces the tool to be stocked first, which is
+a useful side effect.
+
+## Part.description is 250 chars; the trigger has to fit in it
+
+`Part.objects.create()` threw `ValidationError: Ensure this value has at most
+250 characters (it has 476)` — caught, and nothing partial was written, but only
+because the description was the first write in the script.
+
+This collides with the "**write the symptom, not the specification**" rule for
+tool records. That rule wants a sentence saying when you would reach for the
+thing and what goes wrong without it, and there is not room for both that and
+the identity in 250 characters.
+
+`Part.notes` is an `InvenTreeNotesField` with `max_length=50000` and takes
+markdown. So the split is:
+
+- **description** — identity plus the ONE trigger phrase. This is the field that
+  shows in search results, so the trigger has to be here or it never surfaces.
+- **notes** — provenance, the failure mode, what is deliberately not known.
+
+`#1084` (the FR-301 filter set) is the worked example.
+
+## A merge pass cleaned one of a matched pair and left the twin
+
+The 1.3mm desoldering nozzle existed **twice**, both active, both zero stock:
+
+```
+#86    good name, good keywords, and nothing else
+#213   IPN B07DMWBRB9, a SupplierPart, an image, purchase history — raw name
+```
+
+The **0.8mm sibling had the identical pair** and was merged on import day:
+`#214` retired into `#87`. Same product family, same Amazon order, same day —
+and the 1.3mm twin was missed in that same pass.
+
+**Which record survives is decided by evidence, not by pk order or by the nicer
+name**, and here that inverts the direction of the earlier merge: `#213`
+survived and took `#86`'s name. A name is one string to retype; an image, a
+supplier link and a purchase history are attachments and relations, and moving
+those is where a merge goes wrong. Expect a future reader to notice the
+asymmetry — it is deliberate.
+
+**The general worry is bigger than this pair.** One import produced twins, one
+pass merged some of them, and nothing recorded which ones it had done. Any
+other survivor from that batch is still sitting there with a live duplicate.
+Cheap detector, not yet built: active parts sharing a normalised name or a
+near-identical description prefix, where one has an IPN and the other does not.
