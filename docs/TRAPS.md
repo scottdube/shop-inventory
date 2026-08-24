@@ -2311,3 +2311,47 @@ if counted, drop the marker; if not, drop the stamp.
 *Inventory Health Signals* brief is about, one level up: an assertion that
 returns zero must name the field it queried. A wrong field returns a confident,
 plausible, wrong number, and zero is the most convincing wrong number there is.
+
+## Shop (shop.app) is the missing itemised source — verified endpoint, unfinished parser
+
+Measured 2026-08-24. Scott asked whether the Shop app has an API worth using.
+It effectively does, and it is a better source than vendor email.
+
+**Verified, end to end:**
+
+- The automation Chrome is **already signed in** as Scott Dube — no login step.
+- `shop.app/account/order-history` is the route (`/orders` is a 404).
+- **`shop.app/account/order-history.data`** is a session-authenticated
+  structured endpoint — Remix single-fetch, `turbo-stream` encoded, ~10 KB.
+- Its keys include exactly what a PO line needs: **`lineItems`,
+  `productTitle`, `sellerName`, `effectiveTotalPrice`, `totalItemCount`,
+  `currency`, `status`, `date`**.
+- It **aggregates every vendor, not just Shopify merchants** — Amazon,
+  AliExpress and carrier-tracked shipments all appear in one list.
+- Confirmed real content pulled from it: a `productTitle` of
+  *"Hi-Link 5W 5V 1A Low Cost Sol…"* — an AC-DC power module, i.e. exactly the
+  kind of part the email sweep cannot itemise.
+- MFC Machining & Design Services appears under **Installments** ($94.98, 3
+  payments remaining), which is why it was not in the order-history list view.
+
+**Two constraints on how to use it:**
+
+1. **Parse in the page and return only extracted fields.** A bulk fetch of the
+   raw payload is refused by the browser tool as cookie/query-string data — and
+   that is the right shape anyway: never move session material to the Mini.
+2. **The turbo-stream decode is NOT finished.** The format is a flat array
+   where `{"_1":2}` means *key = flat[1], value = flat[2]*, and deferred data
+   arrives on a later line prefixed `P<n>:`. That much is confirmed. A naive
+   resolver still mis-pairs keys to values (it produced
+   `formattedEtaDateAndTime: "Hi-Link 5W…"`), so **do not trust a regex or a
+   half-working resolver against this** — a mis-paired field would write a
+   delivery date into a product title and look plausible. Use a real
+   turbo-stream decoder.
+
+**Why this matters.** `vendor_triage.py` solves *discovery* — it finds that a
+purchase happened and who from. It does not solve *itemisation*, so an unknown
+vendor still yields a stub PO. This endpoint is the itemisation half, for every
+vendor at once.
+
+**Rule 3 still applies.** The order list contains medical items. Any harvester
+must redact them by seller before anything is written or logged.
