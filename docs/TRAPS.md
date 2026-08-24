@@ -3207,3 +3207,26 @@ Side effect worth noting: the delivery had been sitting on the shelf while
 PO-0141 stayed `Placed`, because the stock row's note never named the PO. Goods
 on a shelf and an order still open is the reverse of the SHT31 failure — there
 the record ran ahead of the parts, here the parts ran ahead of the record.
+
+## Renaming a location with `.update()` leaves a stale `pathstring`
+
+`StockLocation.pathstring` is a CACHED field, rebuilt in `save()`. Renaming
+through the queryset — which is the house habit, because `.save()` on this
+install has silently written nothing — updates `name` and leaves `pathstring`
+holding the old value.
+
+Measured 2026-08-24 after renaming `B-01 Sleeving & Loom` to `B-01`:
+
+```
+before: SLN/Storage/WS2/WS2-S3/B-01 Sleeving & Loom     <- pathstring
+after : SLN/Storage/WS2/WS2-S3/B-01                     <- after l.save()
+```
+
+The name was correct the whole time. Every *display* of the location was wrong,
+including the label-render breadcrumb and anything reading `pathstring` to
+report where a part lives — so a location can be simultaneously renamed and not
+renamed, depending on which field you read.
+
+**After renaming or re-parenting a location, call `save()` on the instance and
+re-read `pathstring`.** Verifying the rename by checking `name` is checking the
+field that was never in doubt.
