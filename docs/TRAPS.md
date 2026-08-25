@@ -4144,3 +4144,38 @@ Sibling of the DECLARED trap two entries up. There, boilerplate made unopened
 bins look finished. Here, a genuine count makes an under-recorded bin look
 finished. Both are the same mistake: **a report showing the strongest thing it
 knows, with no way to say what it does not know.**
+
+## CORRECTED — the eBay gap is the LOOKBACK WINDOW, not the vendor list
+
+Written earlier the same day, and wrong: RB-20's practice kits were recorded as
+*"the unknown-vendor blind spot arriving as a missing PART rather than a
+missing order."* They are not. **ebay.com is on the registry's `known` list**
+and is swept per-order; the sweep was never blind to the vendor.
+
+Scott supplied the listing, and the mail settles it: the order was confirmed
+**2026-06-16** and delivered **2026-06-27** — about **70 days** before the
+walk, against a sweep measured over a **45-day** window. The order was in
+range of every query the job knows how to ask, and out of range of the only
+window it asks them over.
+
+The scale of what that hides, measured 2026-08-25:
+
+| | |
+|---|---|
+| eBay order confirmations in the mailbox | **~201**, back to 2022 |
+| eBay purchase orders in InvenTree | **1** |
+
+**Two different failures wear the same symptom — "we own it and the catalogue
+has never heard of it" — and they have opposite fixes.** An unknown vendor
+needs a registry entry; a known vendor outside the window needs a *backfill*,
+and adding it to the registry again does nothing. Diagnose by asking whether
+the sender is on a list **before** reaching for the blind-spot explanation,
+because the blind-spot story is the more interesting one and will be reached
+for first.
+
+eBay is a better backfill target than Amazon, and for a reason already
+recorded here: **Amazon truncates the product title in the email body**, so
+mail can only ever yield a prefix. eBay's order mail carries the item title in
+full — *"Order confirmed: Starrett Radius Gage Set S167C"* — which is enough to
+identify an unknown item, not merely match a known one.
+

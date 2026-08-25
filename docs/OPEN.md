@@ -105,14 +105,25 @@ own bin.
       counted. It says nothing about whether the bin's contents are all on the
       books, and the walk board renders the two identically.
 
-- [ ] **READ THE MEANLIN GAUGE'S DIAL (#1097, RB-17).** The box carries
-      accuracy (±3-2-3%), lower mount, media and service temperature — and **no
-      pressure range**, which is the only spec that decides whether it can do
-      the job. A general-service 0-to-N psi dial cannot show vacuum at all.
-      Being found in the vacuum project's bin is not evidence of which half of
-      the scale it reads — the same split already recorded between #107
-      (0 to −115 kPa) and the positive-only transducers in B3-R7C2. The NPT
-      thread size is unread too. Both are one glance at the gauge in hand.
+- [x] ~~**READ THE MEANLIN GAUGE'S DIAL**~~ — **done 2026-08-25, by looking.**
+      #1097 is a **vacuum gauge: 0 to −30 inHg / 0 to −1 bar, negative only**,
+      dual scale. Renamed from "Pressure Gauge", which is the word that would
+      have sent the next reader hunting for a positive range it does not have.
+      It is the correct half of the scale for the Vacuum Controller and pairs
+      with #107. −30 inHg is −101.6 kPa — the full physical vacuum range — so
+      the sensor's −115 kPa spec runs past anything a vacuum can reach and the
+      gauge is not the narrower instrument in practice.
+
+      Still unread: **the thread size.** A brass compression fitting is already
+      made up on the stem.
+
+- [ ] **BACKFILL THE eBay ORDER HISTORY — ~201 orders, 1 PO on file.** The
+      RB-20 kits were bought 2026-06-16, ~70 days before the walk, against a
+      sweep that runs over ~45 days. eBay is on the registry's `known` list, so
+      this is **not** the unknown-vendor blind spot and adding it to a list
+      fixes nothing — it needs a backfill. eBay mail carries the **full** item
+      title, unlike Amazon's truncated bodies, so it can identify unknown items
+      rather than only matching known ones. See `docs/TRAPS.md`.
 
 - [x] ~~**RB-21**~~ — **emptied 2026-08-25.** Held the MEANLIN gauge; it moved
       to RB-17 to join the MPXV6115VC6U, on Scott's call. One project, one bin
