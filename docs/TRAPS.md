@@ -4272,3 +4272,36 @@ success and written nothing.
 satisfy `reference == f"BO-{reference_int:04d}"`. A mismatch is silent, costs
 nothing until the next record is created, and then shows up as a number that
 merely looks odd.
+
+## An elided vendor title read as a spec — "-3" was the range, not the dial size
+
+#1097 was recorded on 2026-08-25 as a **3-inch dial**. Nobody measured it. The
+figure came from the shipping label on the box:
+
+> MEANLIN MEASURE -3… Gauge , Lower Mount
+
+Amazon elides the title on those labels, and the surviving `-3` is the head of
+**`-30inHG`**. It is the **range**. The same write-up that invented the face
+size went on to say — in bold, twice, as the thing that mattered — that *the box
+does not give the pressure range*. **The invented spec was manufactured out of
+the exact characters carrying the fact it claimed was missing.**
+
+Nothing about the truncation was hidden. The `…` was right there, and the
+Amazon-truncation trap is already in this file. What made it invisible is that
+`-3` **parses cleanly as a plausible value** for a real property of the object.
+A truncated string does not announce itself when its prefix is well-formed.
+
+**The rule this earns: a spec is measured or quoted from a full source. A
+fragment is not a source.** When a vendor string ends in an ellipsis, treat
+every field it seems to give as absent, not partial — including the ones that
+look complete.
+
+The listing could not settle it either, which is the second half of why the
+guess survived a whole session. MEANLIN sells the same −30inHG~0Psi gauge in
+**2in, 2.5in and 3in faces and in both 1/8in and 1/4in NPT**; ASIN
+`X002SLRYVX` returns no results on Amazon today; and Amazon's order mail
+truncates the title as well, so the July 2025 order does not carry it. Every
+digital route is closed, and both numbers are **one caliper away** — face
+across the bezel, thread OD (1/8 NPT ≈ 10.3 mm, 1/4 NPT ≈ 13.7 mm, not
+confusable). Measure the gauge's own thread: a brass compression fitting is
+made up on the stem.

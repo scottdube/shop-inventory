@@ -119,8 +119,17 @@ own bin.
       the sensor's −115 kPa spec runs past anything a vacuum can reach and the
       gauge is not the narrower instrument in practice.
 
-      Still unread: **the thread size.** A brass compression fitting is already
-      made up on the stem.
+- [ ] **MEASURE THE GAUGE: face diameter and thread OD (#1097, RB-17).**
+      Neither is known and **no digital route can supply them** — checked
+      2026-08-25. MEANLIN sells this same −30inHG~0Psi gauge in 2in, 2.5in and
+      3in faces and in both 1/8in and 1/4in NPT; ASIN `X002SLRYVX` returns no
+      results on Amazon; and the July 2025 order mail truncates the title.
+      1/8 NPT is ≈10.3 mm OD and 1/4 NPT ≈13.7 mm — not confusable. Measure the
+      **gauge's** thread: a brass compression fitting is made up on the stem.
+
+      **The "3in dial" recorded earlier today was wrong and is retracted.** It
+      was read off the box's elided Amazon label, `MEANLIN MEASURE -3… Gauge`,
+      where the `-3` is the head of `-30inHG` — the range. See `docs/TRAPS.md`.
 
 - [x] ~~**FLEX A NEWISHTOOL SQUEEGEE (#791, RB-22)**~~ — **done 2026-08-25.**
       **Silicone**, confirmed by hand. The description was right and the name
