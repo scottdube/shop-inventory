@@ -304,12 +304,15 @@ panel is layout A only.
   panel is pull-only, so a source going OFF at 03:00 waits for somebody to open
   the page. The transition data is already there — `preflight_state.json` records
   `changed` — so this is wiring, not design.
-- **Age in Receiving has no readout.** The `Waiting in Receiving` lamp counts
-  rows; it does not care that one has been there a week. Three items so far were
-  received and then used on the way past, leaving a row that reads "awaiting a
-  drawer" for something already fitted into a tool — see `TRAPS.md`. A row's age
-  on the staging dock is the signal that would have caught all three, and it is
-  a stocktake-style *decay* number rather than another coverage bar.
+- ~~Age in Receiving has no readout.~~ **Built 2026-08-25**: `In Receiving over
+  7d`, the panel's first true decay reading — everything else here is coverage,
+  a snapshot of how complete things are, and this one measures how long something
+  has been sitting. Threshold is a plugin setting; the default is 7 rather than
+  14 because the LiPo was 7 days in when a human caught it, and a lamp slower
+  than the human is decorative. Verified by running the lamp's own expression
+  against a populated location at six thresholds — 24/24, 22/22, 0/0 — because
+  Receiving is empty today and a lamp that has never fired is a lamp that has
+  never been tested.
 - **The pilot has no end condition.** Side-by-side is only worth something if
   the comparison is actually made; the four old widgets should either be retired
   or explicitly kept once the gauges have been read for a week.

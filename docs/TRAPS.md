@@ -3814,9 +3814,23 @@ queue and straight into `Stock with no location`, where it could never have been
 cleared — trading a wrong queue for a permanently lit lamp. Measured after the
 write: Receiving 3 → 2, lost unchanged at 39.
 
-**Open, and the obvious next lamp:** *age* in Receiving. A row that has sat on
-the staging dock for a fortnight is either not filed or not there, and both are
-worth a look. All three of these would have tripped it.
+**Built the same day: the `In Receiving over Nd` lamp.** A row that has sat on
+the staging dock past the threshold is either not filed or not there, and both
+are worth a look.
+
+**The threshold is 7 days, not the 14 first proposed, and the difference is
+measured rather than chosen.** The DIN cable and the LiPo were both received
+2026-08-18; the LiPo was **7 days old** when Scott caught it by eye. At 14 days
+the lamp would have been dark through exactly the week it was needed. It is a
+plugin setting (`RECEIVING_STALE_DAYS`) so it can be retuned, but the default
+has to be shorter than the interval at which a human notices, or the instrument
+is decorative.
+
+Age is measured from `creation_date`, not `updated` — the question is how long
+ago it landed, and `updated` is bumped by any edit, including editing the note
+that says nobody has filed it. Known limit: a row *moved into* Receiving from
+elsewhere reads older than it has been on the dock. Receiving is where things
+are created, so that is the rare case, not the normal one.
 
 ## The survivor of a merge talks about the merge — so a substring test lights the wrong side
 

@@ -124,6 +124,16 @@ LAMP_TIPS = {
         'Active parts belonging to an order that was refunded. Nothing is known '
         'to be wrong: somebody has to decide whether the item was kept, '
         'returned, or never arrived. Yellow because it is a queue, not a fault.'),
+    'recv_age': (
+        'Rows that have sat on the staging dock longer than the stale threshold '
+        '(a plugin setting, 14 days by default), measured from when the row was '
+        'created. Receiving is the blind spot: something filed to a drawer gets '
+        'seen again when that drawer is opened, but something used on the way '
+        'past the dock is never opened again — the item leaves and the row stays '
+        'behind, still answering yes to "do I have one?". Three items have gone '
+        'that way so far; the two still on record were 7 days in when the second '
+        'was caught by eye, which is why the default threshold is 7 and not the '
+        '14 first proposed.'),
     'po_open': (
         'Purchase orders placed and not yet received. Money is out and nothing '
         'is on the shelf — worth watching, not an error.'),
@@ -181,6 +191,16 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
             'name': _('Acknowledged lamps'),
             'description': _('JSON: lamp key -> {n, at}. Written by the panel.'),
             'default': '{}',
+        },
+        'RECEIVING_STALE_DAYS': {
+            'name': _('Receiving — stale after (days)'),
+            'description': _('A row on the staging dock older than this lights a lamp'),
+            # 7, not the 14 first proposed. Measured: the DIN cable and the LiPo
+            # were both received 2026-08-18 and were 7 days old when Scott found
+            # the second one by eye — at 14 days neither had aged in yet, so the
+            # lamp would have been silent through exactly the week it was needed.
+            'default': 7,
+            'validator': [int],
         },
         'PREFLIGHT_PATH': {
             'name': _('Vendor session state file'),
@@ -839,7 +859,7 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
         ]
 
     def _lamps(self):
-        """Nine lamps. Red where a failure makes another check lie, yellow
+        """Eleven lamps. Red where a failure makes another check lie, yellow
         where it is work waiting. That split, not severity, is the rule — see
         DASHBOARD.md: a null issue date did not produce a wrong aging number,
         it removed the row from aging entirely."""
@@ -907,6 +927,33 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
         if newest:
             stale_h = int((datetime.datetime.now() - newest).total_seconds() // 3600)
 
+        # Age on the staging dock. The count lamp above says there is work; this
+        # one says the work has stopped happening, which is a different claim and
+        # the one nothing else on this panel can make.
+        #
+        # Three items have now been received and then USED on the way past —
+        # a 6-20P plug, the DIN cable (#89), the LiPo (#92) — leaving a row that
+        # read "awaiting a drawer" for something already fitted into a device.
+        # Every one of them would have tripped this. See TRAPS.md.
+        try:
+            stale_days = int(self.get_setting('RECEIVING_STALE_DAYS'))
+        except (TypeError, ValueError):
+            stale_days = 14
+        cutoff = datetime.date.today() - datetime.timedelta(days=stale_days)
+        # creation_date, not `updated`: the question is how long ago it landed,
+        # and `updated` is bumped by any edit — including editing the note that
+        # says nobody has filed it.
+        stale_qs = StockItem.objects.filter(
+            StockItem.IN_STOCK_FILTER, location__in=recv, creation_date__lt=cutoff)
+        stale_n = stale_qs.count()
+        stale_link = None
+        if recv_pk and stale_n:
+            stale_link = (
+                f'/web/stock/location/{recv_pk}/stock-items?created_before={cutoff}',
+                StockItem.objects.filter(StockItem.IN_STOCK_FILTER,
+                                         location__pk=recv_pk,
+                                         creation_date__lt=cutoff).count())
+
         lamps = [
             {'key': 'contradiction', 'tone': 'warning',
              'n': est.filter(stocktake_date__isnull=False).count(),
@@ -966,6 +1013,12 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
              'link': ('/web/part/category/index/parts?active=true&search=POSSIBLE+RETURN',
                       self._search_count(Part, 'POSSIBLE RETURN')),
              'why': 'an order containing this was refunded; nobody has looked yet'},
+            {'key': 'recv_age', 'tone': 'caution',
+             'n': stale_n,
+             'label': f'In Receiving over {stale_days}d',
+             'url': '/web/stock/location/index/stock-items',
+             'link': stale_link,
+             'why': 'the staging dock is supposed to trend toward empty'},
             {'key': 'po_open', 'tone': 'caution',
              'n': placed.count(),
              'label': 'PO placed, unreceived', 'url': '/web/purchasing/index/purchaseorders/',
