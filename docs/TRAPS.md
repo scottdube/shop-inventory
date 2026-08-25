@@ -4179,3 +4179,47 @@ mail can only ever yield a prefix. eBay's order mail carries the item title in
 full — *"Order confirmed: Starrett Radius Gage Set S167C"* — which is enough to
 identify an unknown item, not merely match a known one.
 
+
+## A photograph cannot tell silicone from plastic — and it queried a record that was right
+
+#791's description said *soft silicone squeegee*. In a photograph the two
+orange NEWISHTOOL cards read as semi-rigid plastic, which would have made the
+part name wrong too — a stiff card is a stencil/vinyl applicator, not a screen
+printing squeegee. That doubt went to Scott as a one-second test.
+
+Scott, 2026-08-25: *"Silicone."*
+
+The record was right. The doubt was manufactured by the photograph, and the
+existing rule — **photographs show identity, not quantity, fullness, or
+provenance** — now has a fourth item: **not material.** Colour, gloss and edge
+sharpness do not separate soft silicone from rigid PP at any resolution. Nor
+would a better photograph have helped, which is the tell that this is a
+property of the medium and not of the picture.
+
+Worth keeping because it points the opposite way from most entries here. The
+usual failure is a record asserting more than anyone verified. This was a
+record that had it right, questioned from weaker evidence than the record was
+built on. **A written material claim outranks a look at a picture**, and the
+right move when they disagree is the cheap physical test — not a rewrite in
+either direction. Nothing was changed until a hand touched it.
+
+### Third instance, same session — and the trap being written down did not stop it
+
+The two-`scripts/` trap fired again on 2026-08-25, during the walk that
+produced the entry above. The shell's cwd reset to `~/code` between commands,
+`cat > scripts/rb22_confirm.py` wrote into `~/code/scripts`, `cat >>
+docs/TRAPS.md` **created a brand-new `~/code/docs/TRAPS.md`** holding one
+orphaned entry, and `git add -A && git commit` committed all of it to the
+parent repo. `itq run scripts/...` then found the script anyway — it falls back
+to `$PWD` — so the database work succeeded and nothing looked wrong.
+
+Two earlier entries in this file describe this exact failure, and one of them
+records a session that had *already read the trap* and hit it anyway. That is
+now three. **Reading a trap does not prevent it; the trap is about a state the
+shell changes without telling anyone.**
+
+What actually works, and what this session should have done from the first
+command: **absolute paths in every write and every `git -C`.** `cd X && cmd`
+does not survive to the next call. A redirect is the dangerous form, because
+`>` and `>>` create the file rather than failing — a wrong path is silent by
+construction, where a read of a missing file at least errors.

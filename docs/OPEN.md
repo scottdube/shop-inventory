@@ -117,16 +117,12 @@ own bin.
       Still unread: **the thread size.** A brass compression fitting is already
       made up on the stem.
 
-- [ ] **FLEX A NEWISHTOOL SQUEEGEE (#791, RB-22).** The record says *soft
-      silicone*; the two cards look semi-rigid in the photograph. The name says
-      *Screen Printing*, which came from the listing — but a stiff card is a
-      solder-paste stencil / vinyl applicator squeegee, and a soft silicone one
-      is not. One second of bending settles which tool this is, and the name is
-      wrong either way if the material is.
-
-      Located, not re-counted: #791 already carried the count and the
-      provenance, filed at the **rack** with no bin number. It was the last row
-      on the rack itself — that level is now clear.
+- [x] ~~**FLEX A NEWISHTOOL SQUEEGEE (#791, RB-22)**~~ — **done 2026-08-25.**
+      **Silicone**, confirmed by hand. The description was right and the name
+      stands; the doubt came from a photograph, where semi-rigid plastic and
+      soft silicone look the same. Located, not re-counted: #791 already
+      carried the count and the provenance, filed at the **rack** with no bin
+      number, and it was the last row at that level — the rack is now clear.
 
 - [ ] **BACKFILL THE eBay ORDER HISTORY — ~201 orders, 1 PO on file.** The
       RB-20 kits were bought 2026-06-16, ~70 days before the walk, against a
