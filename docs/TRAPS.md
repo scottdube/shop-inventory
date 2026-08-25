@@ -3999,3 +3999,31 @@ generic multi-vendor part.
 One caveat recorded on the copper-clad row: PO-0003's line predates the pack size
 being recorded and is expressed in PIECES. It must not later be re-read as ten
 packs.
+
+
+## "No filter matches" was true of the query, not of the rows
+
+2026-08-25. Scott, on the new pack-price lamp: *"When you go to open the list, it
+gives you the same unfiltered stuff the other one did before, not just the two
+results that you need."*
+
+The verified-link rule said: ship a filtered link only if it provably shows the
+lamp's rows, otherwise fall back to the plain table and say `open list`. That
+rule is right, and it was hiding a lazy conclusion. **The lamp already knows the
+exact rows** — it computed them. What was missing was a way to *express* a set of
+primary keys as a URL, because the API ignores `id`, `pk` and `id__in` outright.
+
+But `search` is a real filter, and the rows have words in common. So: take the
+words every flagged row's part name shares, mirror `StockList.search_fields` in
+the ORM, and use the link only if that search returns exactly the lamp's count.
+A word like `TERMINAL` that also catches other terminal blocks fails the count
+and is thrown away; `5.08MM` passes and returns the two rows and nothing else.
+A single row skips all of it and links straight to the item page.
+
+Verified in the browser: `?search=5.08MM&in_stock=true` → **1 - 2 / 2**.
+
+**The lesson is about the fallback, not the filter.** "No API filter matches
+this set" is easy to say and easy to stop at. It was a statement about the one
+query shape being tried, not about the rows — and the honest fallback made it
+comfortable to stop. Say what cannot be done, then check whether something else
+can.
