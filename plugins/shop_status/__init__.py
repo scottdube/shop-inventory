@@ -67,8 +67,11 @@ GAUGE_TIPS = {
         'just nothing on record saying where to look. Computed live. This is '
         "NOT the overnight sweep's reachable set, which is still owed as data."),
     'counted': (
-        'Stock rows carrying a stocktake date, over every stock row. A row with '
-        'no date has never been counted by anybody — its quantity came from an '
+        'Stock rows carrying a stocktake date, over the rows actually IN STOCK. '
+        'Rows installed in a finished device, consumed by a build or run to zero '
+        'are excluded — they are not on a shelf to be counted, and leaving them '
+        'in would make this gauge fall every time something gets built. A row '
+        'with no date has never been counted by anybody — its quantity came from an '
         'invoice, a kit label or an estimate. The oldest-count line underneath '
         'is the only figure on this panel that gets worse while nothing else '
         'changes.'),
@@ -100,9 +103,12 @@ LAMP_TIPS = {
         'merged part left active can be counted twice under two names, and a '
         'not-inventory row sits inside every denominator above.'),
     'lost': (
-        'Stock rows with no location at all. The item is in the record and '
-        'somewhere in the shop, but the record cannot say where — so it is '
-        'invisible to a drawer walk and to every location count.'),
+        'Rows that are in stock and have no location: the item is in the record '
+        'and somewhere in the shop, but the record cannot say where, so it is '
+        'invisible to a drawer walk and to every location count. Items installed '
+        'in a device or consumed by a build are NOT counted here — installing is '
+        'what removes the location, so they can never be filed and would keep '
+        'this lamp lit forever.'),
     'putaway': (
         'Stock sitting in Receiving: arrived, recorded, not yet given a home. '
         'The shortest queue here and the one that goes stale fastest, because '
@@ -525,7 +531,10 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
 
         recv_qs = StockItem.objects.filter(location__in=recv)
         unfiled_qs = StockItem.objects.filter(location__in=unfiled)
-        lost_qs = StockItem.objects.filter(location__isnull=True)
+        # Same rule as the panel's LOST lamp: installed and consumed rows have
+        # no location and cannot be given one.
+        lost_qs = StockItem.objects.filter(
+            StockItem.IN_STOCK_FILTER, location__isnull=True)
 
         sections = [
             {
@@ -586,8 +595,11 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
             'order': self._to_order(),
             'stats': {
                 'parts': parts.count(),
-                'stock': StockItem.objects.count(),
-                'uncounted': StockItem.objects.filter(stocktake_date__isnull=True).count(),
+                # In-stock rows only, so this strip and the panel's COUNTED dial
+                # cannot report two different denominators on the same screen.
+                'stock': StockItem.objects.filter(StockItem.IN_STOCK_FILTER).count(),
+                'uncounted': StockItem.objects.filter(
+                    StockItem.IN_STOCK_FILTER, stocktake_date__isnull=True).count(),
                 'no_image': parts.filter(image='').count(),
                 'no_keywords': parts.filter(keywords='').count(),
                 # Counts only locations a HUMAN confirmed empty by eye. Not
@@ -740,8 +752,15 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
             except (TypeError, ValueError):
                 return fallback
 
-        rows = StockItem.objects.count()
-        counted_qs = StockItem.objects.filter(stocktake_date__isnull=False)
+        # Only rows that are actually IN STOCK. A row installed in a device or
+        # consumed by a build cannot be counted on a shelf, so leaving it in the
+        # denominator means the gauge falls a little further every time
+        # something gets built — a coverage figure that decays for the healthiest
+        # possible reason. InvenTree's own IN_STOCK_FILTER is the definition:
+        # quantity > 0, not installed, not consumed, not sold, not in build.
+        live = StockItem.objects.filter(StockItem.IN_STOCK_FILTER)
+        rows = live.count()
+        counted_qs = live.filter(stocktake_date__isnull=False)
         counted = counted_qs.count()
         oldest = (counted_qs.order_by('stocktake_date')
                   .values_list('stocktake_date', flat=True).first())
@@ -791,12 +810,13 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
                 'key': 'counted', 'name': 'COUNTED',
                 'off': None,
                 'value': pct(counted, rows),
-                'sub': f'{counted} / {rows} stock rows',
+                'sub': f'{counted} / {rows} rows in stock',
                 'note': f'{rows - counted} never counted',
                 'fresh': fresh,
                 'target': target('TARGET_COUNTED', 90),
                 'setting': 'TARGET_COUNTED',
-                'url': '/web/stock/location/index/stock-items?has_stocktake=false',
+                'url': ('/web/stock/location/index/stock-items'
+                        '?has_stocktake=false&in_stock=true'),
                 'exact': f'{rows - counted} rows nobody has counted',
             },
             {
@@ -899,13 +919,23 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
                       self._search_count(Part, 'MERGED into')),
              'why': 'merged or not-inventory rows that can still be counted twice'},
             {'key': 'lost', 'tone': 'caution',
-             'n': StockItem.objects.filter(location__isnull=True).count(),
+             # IN_STOCK_FILTER, not "location is null". A row that is installed
+             # in a finished device, consumed by a build, sold, or run down to
+             # zero HAS no location and never will — installing is precisely
+             # what takes the location away. Counting those as lost gives a lamp
+             # that can never reach zero, and a lamp that cannot clear teaches
+             # you to stop reading it. The 7-Pin DIN cable (stock #89, wired
+             # into the Standing Desk Controller) is the case that found this.
+             'n': StockItem.objects.filter(
+                 StockItem.IN_STOCK_FILTER, location__isnull=True).count(),
              'label': 'Stock with no location', 'url': '/web/stock/location/index/stock-items',
              # cascade defaults TRUE, and with it on location=null returns every
              # row in the database. Measured: 650 back for a lamp reading 43.
-             'link': ('/web/stock/location/index/stock-items?location=null&cascade=false',
-                      StockItem.objects.filter(location__isnull=True).count()),
-             'why': 'somewhere in the shop, nowhere in the record'},
+             'link': ('/web/stock/location/index/stock-items'
+                      '?location=null&cascade=false&in_stock=true',
+                      StockItem.objects.filter(
+                          StockItem.IN_STOCK_FILTER, location__isnull=True).count()),
+             'why': 'in stock, somewhere in the shop, nowhere in the record'},
             {'key': 'putaway', 'tone': 'caution',
              'n': StockItem.objects.filter(location__in=recv).count(),
              'label': 'Waiting in Receiving', 'url': '/web/stock/location/index/stock-items',
