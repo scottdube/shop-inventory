@@ -33,6 +33,9 @@ PER_PAGE = COLS * ROWS
 
 LAYOUT_64 = [(r, 8) for r in range(1, 9)]
 LAYOUT_44 = [(r, 8) for r in range(1, 5)] + [(r, 4) for r in range(5, 8)]
+# Akro-Mils 10124, the A0/B0 pair hung 2026-08-25: 24 drawers, 6 rows of 4, all
+# large. Column ZERO — they hang to the LEFT of A1/B1, so nothing renumbers.
+LAYOUT_24 = [(r, 4) for r in range(1, 7)]
 
 
 def qr_rects(data, size, x, y):
@@ -99,7 +102,9 @@ def pages(addrs, qr, guides):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--set", default="top", choices=["top", "bottom", "all"])
+    ap.add_argument("--set", default="top",
+                    choices=["top", "bottom", "col0", "all"],
+                    help="top=A1-A3, bottom=B1-B3, col0=A0/B0")
     ap.add_argument("--no-qr", action="store_true")
     ap.add_argument("--guides", action="store_true", help="faint label outlines")
     a = ap.parse_args()
@@ -109,6 +114,8 @@ def main():
         addrs += addresses(["A1", "A2", "A3"], LAYOUT_64)
     if a.set in ("bottom", "all"):
         addrs += addresses(["B1", "B2", "B3"], LAYOUT_44)
+    if a.set in ("col0", "all"):
+        addrs += addresses(["A0", "B0"], LAYOUT_24)
 
     ps = pages(addrs, not a.no_qr, a.guides)
     for i, svg in enumerate(ps, 1):
