@@ -3685,3 +3685,51 @@ client PATCHes a whole document rather than a field, every attribute the client
 does not render is a field it is silently deleting. Either round-trip the full
 record, or patch the one key. Here the server now hands `ack_at` back out with
 each lamp so the client can put it back unchanged.
+
+## An unknown table filter is ignored, not rejected — so a bad link shows everything
+
+2026-08-25. The panel's lamps linked to `/web/stock/` and `/web/part/`, and every
+one of them opened the entire table. Two separate causes, and the second is the
+dangerous one.
+
+**`/web/stock/` and `/web/part/` are not table routes.** Both are redirects:
+`/web/stock/` → `/web/stock/location/index/sublocations`, `/web/part/` →
+`/web/part/category/index/`. The redirect **drops the query string**, so filters
+attached to them vanish without a trace. The tables actually live at:
+
+| want | route |
+|---|---|
+| stock items | `/web/stock/location/index/stock-items` |
+| one location's items | `/web/stock/location/<pk>/stock-items` |
+| parts | `/web/part/category/index/parts` |
+| purchase orders | `/web/purchasing/index/purchaseorders/` |
+
+**Query parameters on a table route are passed straight through to the API, and
+the API ignores filters it does not know.** Not a 400 — a 200 with the whole
+table. Measured against this instance:
+
+| link | expected | actually returns |
+|---|---|---|
+| `stock?location=null` | 43 | **650** — `cascade` defaults true and swallows it |
+| `stock?location=null&cascade=false` | 43 | 43 ✓ |
+| `part?has_image=false` | 478 | **1010** — no such filter |
+| `po?has_issue_date=false` | 0 | **65** — no such filter |
+| `stock?id=1` / `?pk=1` / `?id__in=1,2` | 1 | **650** — no such filter |
+| `stock?has_stocktake=false` | 281 | 281 ✓ |
+| `stock?max_stock=-0.0001` | 0 | 0 ✓ (and `max_stock=5` → 312, so it is live) |
+| `part?active=true&search=REFUNDED` | 13 | 13 ✓ |
+
+A filter that does not exist is indistinguishable from a filter that matches
+everything, which is the same shape as the `[ESTIMATE]` error: **a check that did
+not name what it queried**. The link looked right, the page looked plausible, and
+the number was the whole database.
+
+**So the panel refuses to ship an unproven link.** Each lamp carries a candidate
+URL *and the row count that URL would return*; the link is used only when that
+count equals the lamp's own. When it does not, the lamp keeps the plain table and
+says `open list →` instead of `open 43 →`, and the tooltip says no API filter
+matches. Seven of ten lamps earn an exact link today; `Row contradicts itself`
+and `PO has no issue date` cannot (there is no filter for a notes prefix, nor for
+a null issue date) and they say so.
+
+Verified in the browser, not just against the API: 43/43, 13/13, 3/3, 4/4.

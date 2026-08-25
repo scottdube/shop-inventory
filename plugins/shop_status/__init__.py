@@ -198,10 +198,16 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
         return out
 
     def _loc_url(self, locations):
-        """One location gets a deep link; several fall back to the stock index."""
+        """One location gets a deep link to its STOCK ITEMS tab; several fall
+        back to the stock-items table.
+
+        Not the location's details tab and not `/web/stock/`: the first shows a
+        description where a list was wanted, and the second is not a route at
+        all — it redirects to the location tree and drops any query string on
+        the way."""
         if len(locations) == 1:
-            return f'/web/stock/location/{locations[0].pk}/'
-        return '/web/stock/'
+            return f'/web/stock/location/{locations[0].pk}/stock-items'
+        return '/web/stock/location/index/stock-items'
 
     def _vendor_set(self, part):
         """Which vendors to offer, from the part's ROOT category.
@@ -543,7 +549,7 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
                 'tone': 'bad',
                 'n': lost_qs.count(),
                 'items': self._rows(lost_qs),
-                'url': '/web/stock/',
+                'url': '/web/stock/location/index/stock-items',
                 'empty': 'Everything has a home.',
             },
         ]
@@ -681,6 +687,25 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
     # be proved renders OFF — never zero, never green, never blank.
     # ------------------------------------------------------------------
 
+    @staticmethod
+    def _search_count(model, term):
+        """How many ACTIVE rows a `search=` link would return — or -1 if that
+        search would sweep in rows the lamp did not count.
+
+        The API search covers name, IPN, keywords and description; these lamps
+        are defined on description alone. If a part merely NAMED "refunded
+        something" existed, the link would show more rows than the lamp counted;
+        -1 makes the caller refuse the link rather than ship the discrepancy.
+        """
+        from django.db.models import Q
+        desc = model.objects.filter(active=True, description__icontains=term)
+        wide = model.objects.filter(
+            Q(active=True) & (
+                Q(description__icontains=term) | Q(name__icontains=term)
+                | Q(IPN__icontains=term) | Q(keywords__icontains=term)))
+        n = desc.count()
+        return n if wide.count() == n else -1
+
     def _ack_map(self):
         import json
         try:
@@ -757,7 +782,10 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
                 'fresh': 'reachable = has an image, or a supplier part',
                 'target': target('TARGET_IMAGES', 95),
                 'setting': 'TARGET_IMAGES',
-                'url': '/web/part/',
+                'url': '/web/part/category/index/parts',
+                # No has_image filter exists on the part API — passing one
+                # returns all 1,010 rows rather than an error. Measured.
+                'exact': '',
             },
             {
                 'key': 'counted', 'name': 'COUNTED',
@@ -768,7 +796,8 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
                 'fresh': fresh,
                 'target': target('TARGET_COUNTED', 90),
                 'setting': 'TARGET_COUNTED',
-                'url': '/web/stock/',
+                'url': '/web/stock/location/index/stock-items?has_stocktake=false',
+                'exact': f'{rows - counted} rows nobody has counted',
             },
             {
                 'key': 'binwall', 'name': 'BIN WALL',
@@ -779,7 +808,10 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
                 'fresh': 'walked = holds stock, or verified empty by eye',
                 'target': target('TARGET_BINWALL', 100),
                 'setting': 'TARGET_BINWALL',
-                'url': '/web/stock/',
+                'url': '/web/stock/location/index/sublocations',
+                # "drawers nobody has opened" is not expressible as a location
+                # filter: it is the absence of rows plus the absence of a note.
+                'exact': '',
             },
         ]
 
@@ -807,6 +839,16 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
 
         recv = StockLocation.objects.filter(name='Receiving')
         unfiled = StockLocation.objects.filter(name__istartswith='Unfiled')
+
+        # A location-filtered link can only name ONE location id, so a lamp
+        # counting several gets no exact link. Today each of these is a single
+        # location that actually holds rows — LRD/Receiving also exists and is
+        # empty, so it must not be the one linked to.
+        def one_loc(qs):
+            holding = [l for l in qs if StockItem.objects.filter(location=l).exists()]
+            return holding[0].pk if len(holding) == 1 else None
+
+        recv_pk, unfiled_pk = one_loc(recv), one_loc(unfiled)
 
         # The tombstone markers do NOT share a severity, and the first version of
         # this lamp got that wrong: it lit red on 14 rows, 13 of which were
@@ -838,7 +880,7 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
         lamps = [
             {'key': 'contradiction', 'tone': 'warning',
              'n': est.filter(stocktake_date__isnull=False).count(),
-             'label': 'Row contradicts itself', 'url': '/web/stock/',
+             'label': 'Row contradicts itself', 'url': '/web/stock/location/index/stock-items',
              'why': 'marked [ESTIMATE] and stocktake-stamped — clear the date, not the marker'},
             {'key': 'po_no_date', 'tone': 'warning',
              'n': placed.filter(issue_date__isnull=True).count(),
@@ -846,31 +888,49 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
              'why': 'a null issue date drops the row out of aging entirely'},
             {'key': 'negative', 'tone': 'warning',
              'n': StockItem.objects.filter(quantity__lt=0).count(),
-             'label': 'Negative stock', 'url': '/web/stock/',
+             'label': 'Negative stock', 'url': '/web/stock/location/index/stock-items',
+             'link': ('/web/stock/location/index/stock-items?max_stock=-0.0001',
+                      StockItem.objects.filter(quantity__lt=0).count()),
              'why': 'a stock system that can go below zero is not counting'},
             {'key': 'tombstone', 'tone': 'warning',
              'n': ghost.count(),
-             'label': 'Merged part still active', 'url': '/web/part/',
+             'label': 'Merged part still active', 'url': '/web/part/category/index/parts',
+             'link': ('/web/part/category/index/parts?active=true&search=MERGED+into',
+                      self._search_count(Part, 'MERGED into')),
              'why': 'merged or not-inventory rows that can still be counted twice'},
             {'key': 'lost', 'tone': 'caution',
              'n': StockItem.objects.filter(location__isnull=True).count(),
-             'label': 'Stock with no location', 'url': '/web/stock/',
+             'label': 'Stock with no location', 'url': '/web/stock/location/index/stock-items',
+             # cascade defaults TRUE, and with it on location=null returns every
+             # row in the database. Measured: 650 back for a lamp reading 43.
+             'link': ('/web/stock/location/index/stock-items?location=null&cascade=false',
+                      StockItem.objects.filter(location__isnull=True).count()),
              'why': 'somewhere in the shop, nowhere in the record'},
             {'key': 'putaway', 'tone': 'caution',
              'n': StockItem.objects.filter(location__in=recv).count(),
-             'label': 'Waiting in Receiving', 'url': '/web/stock/',
+             'label': 'Waiting in Receiving', 'url': '/web/stock/location/index/stock-items',
+             'link': ((f'/web/stock/location/{recv_pk}/stock-items',
+                       StockItem.objects.filter(location__pk=recv_pk).count())
+                      if recv_pk else None),
              'why': 'arrived, not yet given a home'},
             {'key': 'unfiled', 'tone': 'caution',
              'n': StockItem.objects.filter(location__in=unfiled).count(),
-             'label': 'Unfiled — find these', 'url': '/web/stock/',
+             'label': 'Unfiled — find these', 'url': '/web/stock/location/index/stock-items',
+             'link': ((f'/web/stock/location/{unfiled_pk}/stock-items',
+                       StockItem.objects.filter(location__pk=unfiled_pk).count())
+                      if unfiled_pk else None),
              'why': 'the import says it exists; nobody has found it'},
             {'key': 'to_verify', 'tone': 'caution',
              'n': verify.count(),
-             'label': 'Refund — verify these', 'url': '/web/part/',
+             'label': 'Refund — verify these', 'url': '/web/part/category/index/parts',
+             'link': ('/web/part/category/index/parts?active=true&search=REFUNDED',
+                      self._search_count(Part, 'REFUNDED')),
              'why': 'an order containing this was refunded; nobody has looked yet'},
             {'key': 'po_open', 'tone': 'caution',
              'n': placed.count(),
              'label': 'PO placed, unreceived', 'url': '/web/purchasing/index/purchaseorders/',
+             'link': ('/web/purchasing/index/purchaseorders/?status=20',
+                      placed.count()),
              'why': 'money out, nothing on the shelf yet'},
         ]
 
@@ -879,18 +939,30 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
         # the same, which is the whole argument of the fourth state.
         if stale_h is None:
             lamps.append({'key': 'sweep', 'tone': 'caution', 'n': None, 'off': True,
-                          'label': 'Sweep check-in', 'url': '/web/part/',
+                          'label': 'Sweep check-in', 'url': '/web/part/category/index/parts',
                           'why': 'no readable session-state file — cannot tell if it ran'})
         else:
             lamps.append({'key': 'sweep', 'tone': 'caution',
                           'n': stale_h if stale_h >= self.PANEL_STALE_H else 0,
                           'unit': 'h',
-                          'label': 'Sweep has not checked in', 'url': '/web/part/',
+                          'label': 'Sweep has not checked in', 'url': '/web/part/category/index/parts',
                           'why': f'last check-in {stale_h}h ago'})
 
         acks = self._ack_map()
         import datetime as _dt
         for lamp in lamps:
+            # A lamp's link must land on the rows the lamp counted. InvenTree's
+            # tables pass unknown query parameters straight through to the API,
+            # and the API IGNORES a filter it does not recognise — so a wrong
+            # filter does not error, it silently returns the whole table. That
+            # is what "open" did on the first build: 650 stock rows behind a
+            # lamp reading 43. Each link therefore states the count it would
+            # show, and is used only if that equals the lamp. Anything else
+            # keeps the plain list and says so on the face of the lamp.
+            link = lamp.pop('link', None)
+            lamp['exact'] = bool(link) and link[1] == lamp.get('n')
+            if lamp['exact']:
+                lamp['url'] = link[0]
             rec = acks.get(lamp['key']) or {}
             lamp['tip'] = LAMP_TIPS.get(lamp['key'], '')
             lamp['ack'] = bool(rec) and rec.get('n') == lamp.get('n')

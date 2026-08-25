@@ -258,6 +258,19 @@ six weeks" is an atrophy detector hiding inside the mechanism, and it was being
 destroyed on every press. The server now hands each lamp's stored timestamp back
 out so the client can preserve it.
 
+**Every lamp now opens the rows it counted — or admits that it cannot.** The
+first build linked to `/web/stock/` and `/web/part/`, and both opened the whole
+table: those paths are redirects that drop the query string, and worse, the API
+silently ignores a filter it does not recognise, so a wrong filter returns
+everything rather than an error. The rule now is that a link must prove itself —
+each lamp carries the count its URL would show, and the link is only used if that
+equals the lamp. A lamp with a proven link reads `open 43 →`; one without reads
+`open list →` and says why in its tooltip. Seven of ten qualify; `Row contradicts
+itself` and `PO has no issue date` do not, because no filter exists for a notes
+prefix or a null issue date. The COUNTED dial opens the 281 rows nobody has
+counted; IMAGES and BIN WALL have no filter that reproduces them and say so.
+Measured tables in `TRAPS.md`.
+
 **Not built in the pilot:** the worklist screen (layout B) and Gee Whiz. The
 panel is layout A only.
 
