@@ -313,16 +313,18 @@ panel is layout A only.
   against a populated location at six thresholds — 24/24, 22/22, 0/0 — because
   Receiving is empty today and a lamp that has never fired is a lamp that has
   never been tested.
-- **A brand-new cabinet reads as unknown space.** Hanging A0/B0 on 2026-08-25
-  added 48 drawers and dropped BIN WALL from 88% to 76% in one afternoon —
-  correctly, by the letter of the rule (walked = holds stock, or a human wrote
-  VERIFIED EMPTY), and misleadingly in spirit, because nobody doubts that a
-  cabinet unboxed this morning is empty. The gauge should probably not fall when
-  capacity is ADDED; that is a different event from coverage decaying. Either the
-  new drawers get stamped verified-empty on creation, or the gauge needs to
-  separate "unknown" from "new". Left alone deliberately: stamping 48 drawers as
-  eye-verified is a claim about somebody's eyes, and this project does not make
-  those on a person's behalf.
+- ~~A brand-new cabinet reads as unknown space.~~ **Settled 2026-08-25 by
+  asking.** Hanging A0/B0 added 48 drawers and dropped BIN WALL 88% → 76% in an
+  afternoon: correct by the letter of the rule (walked = holds stock, or a human
+  wrote VERIFIED EMPTY) and wrong in spirit, since capacity being ADDED is not
+  coverage decaying. Scott stamped them — *"stamp the 48 VERIFIED EMPTY"* — and
+  the gauge reads **89%, 332 of 372**, one point above where it stood before the
+  cabinets existed, which is the honest answer: 48 more drawers whose contents
+  are known.
+  **The general rule this leaves:** a new empty cabinet should be stamped when it
+  is hung, as part of hanging it. The stamp is a claim about somebody's eyes, so
+  it waits for the person who hung it rather than being assumed by the script
+  that creates the drawers.
 - **The pilot has no end condition.** Side-by-side is only worth something if
   the comparison is actually made; the four old widgets should either be retired
   or explicitly kept once the gauges have been read for a week.
