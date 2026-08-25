@@ -3775,3 +3775,45 @@ installed, 2 consumed by a build, 7 run down to zero. What that changed:
 The COUNTED correction matters more over time than the 1% suggests: with spent
 rows in the denominator the gauge falls a little **every time something gets
 built**, which is coverage decaying for the healthiest possible reason.
+
+## Received, then installed the same week — and Receiving never hears about it
+
+2026-08-25, third instance. Scott, looking at stock #92: *"this part is not in
+rec it was installed in the work probe on the 1100MX."*
+
+A LiPo 750mAh battery, received 2026-08-18 against PO-0023, filed to
+`SLN/Receiving`, and fitted into the Passive Probe Kit (BT30) at the mill almost
+immediately. The record never moved. For a week it read **in stock, quantity 1,
+awaiting a drawer** — an answer of "yes" to *do I have one?* for a battery that
+is inside a tool in service.
+
+The list so far, all the same shape:
+
+| item | where it really was | how it read |
+|---|---|---|
+| 6-20P plug | wired into an appliance cord | available |
+| 7-Pin DIN cable (#89) | inside the Standing Desk Controller | available |
+| LiPo 750mAh (#92) | inside the 1100MX probe | in Receiving, awaiting a drawer |
+
+**Receiving is the blind spot, not the drawers.** Something filed to a real
+location gets looked at again when somebody opens that drawer. Something in
+Receiving that gets *used* on the way past is never opened again — the physical
+item leaves the staging dock and the row stays behind. The location's own
+description says it "should trend toward empty", and nothing measures whether it
+does.
+
+**Recorded the same way each time: `belongs_to`, not a delete and not a zero.**
+The part physically exists and its provenance still matters; what changed is that
+it is no longer free. Taking the row to zero on this install *deletes the row and
+its notes* — see the trap above — which discards exactly the record being made.
+Uninstalling later restores it to stock honestly.
+
+**Order mattered, by luck.** The `IN_STOCK_FILTER` fix landed an hour before this
+one. Without it, installing the battery would have moved it out of the Receiving
+queue and straight into `Stock with no location`, where it could never have been
+cleared — trading a wrong queue for a permanently lit lamp. Measured after the
+write: Receiving 3 → 2, lost unchanged at 39.
+
+**Open, and the obvious next lamp:** *age* in Receiving. A row that has sat on
+the staging dock for a fortnight is either not filed or not there, and both are
+worth a look. All three of these would have tripped it.
