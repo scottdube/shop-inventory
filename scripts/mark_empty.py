@@ -12,9 +12,13 @@ django.setup()
 from stock.models import StockLocation, StockItem
 from part.models import Part
 
+BOILERPLATE = "Red bin. Holds ONE project's kit OR free storage - never both."
+
 ap = argparse.ArgumentParser()
 ap.add_argument("drawers", nargs="*", help="explicit location names")
 ap.add_argument("--cabinet", help="expand to every drawer in a cabinet, e.g. A2")
+ap.add_argument("--note", help="provenance sentence appended to the tag, e.g. "
+                "'Scott confirmed by eye during the Red Bin walk.'")
 ap.add_argument("--commit", action="store_true")
 a = ap.parse_args()
 
@@ -65,13 +69,25 @@ for name in names:
     # drawers in A2, which would have made the tool useless exactly where it
     # was needed. Strip the size annotation before deciding.
     body = re.sub(r"\[[^\]]*\]", "", desc).strip(" ,;-—")
+    # Same shape one level up: every red bin was CREATED carrying this
+    # sentence, so it names no contents at all. Left in, the guard below reads
+    # the rack's own house rule as evidence that RB-18 holds something and
+    # refuses all twelve unopened bins — the exact drawers the walk is for.
+    if body == BOILERPLATE:
+        body = ""
     if body and not body.upper().startswith(("VERIFIED EMPTY", "PRE-SORT")):
         print(f"  {name}: description names something - CHECK BY EYE, not marking")
         print(f"          \"{body[:88]}\"")
         skipped += 1
         continue
     tag = f"VERIFIED EMPTY {date.today().isoformat()}"
+    if a.note:
+        tag += f" - {a.note}"
     old = (loc.description or "").strip()
+    # Boilerplate is not a label. Carrying it forward as "previously labelled"
+    # would assert the bin had once been described as holding something.
+    if old == BOILERPLATE:
+        old = ""
     print(f"  {name}: {tag}" + (f"   (was: {old})" if old else ""))
     marked += 1
     if a.commit:

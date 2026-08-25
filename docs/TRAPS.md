@@ -4058,3 +4058,52 @@ surfaces before passing it to `decide.py`. A bucket line is a candidate, not a
 finding. The fix is for `vendor_triage` to take the same idempotency check —
 key on the order number *and* test it against existing `supplier_reference`
 values — but that is a code change, not something to do mid-sweep.
+## The default description a location was CREATED with is not a description
+
+RB-18 was reported empty by Scott standing at the rack, 2026-08-25. Two
+separate tools refused to record it, both for the same reason and neither with
+an error that said so.
+
+All 28 red bins were created carrying one sentence:
+
+> Red bin. Holds ONE project's kit OR free storage - never both.
+
+That is the **rack's house rule, stamped onto every child**. It names no
+contents, describes no bin, and distinguishes nothing — but it is text, and
+both tools test for text.
+
+- A walk board written the same morning classed a bin with a description and no
+  stock rows as **DECLARED** — the state that means *the record here is
+  finished, looking again changes nothing*. Twelve never-opened bins rendered
+  as finished. That is the DECLARED state pointed at its own negation.
+- `scripts/mark_empty.py` refused RB-18 with *"description names something -
+  CHECK BY EYE"*, having been told by eye.
+
+This is the third pass through the same guard — first "any text" as a proxy for
+"names contents", then bulk emptiness claims reading as contents, now
+boilerplate. The rule that generalises: **a guard that reads a description must
+first ask where the text came from.** Contents written by a person, a bulk
+claim, and a template stamped on creation are three different things wearing
+one field.
+
+Both tools now match the boilerplate string exactly and treat it as blank.
+Exact-match, not a fuzzy test — a bin whose description is boilerplate *plus*
+something someone typed still refuses, which is correct.
+
+**The carry-forward was wrong too.** `mark_empty.py` appends the old text as
+`— previously labelled: <old>`, and RB-18 would have read *"VERIFIED EMPTY
+2026-08-25 — previously labelled: Red bin. Holds ONE project's kit OR free
+storage - never both."* — asserting the bin was once labelled as holding a kit.
+It never was. Boilerplate is dropped rather than retired, because there is no
+superseded claim to retire.
+
+**The `--cabinet` sweep objection does not reach here**, and it was checked
+before relaxing anything: the sibling guard must keep refusing bulk claims
+because *"a bulk `--cabinet` sweep has nobody looking"*. `--cabinet` expands
+`{name}-R…`, which no `RB-nn` bin matches, so there is no sweep path onto the
+red bins at all. Every red bin has to be named explicitly, one at a time, by
+somebody standing at it.
+
+`--note` was added in the same pass so the stamp carries its provenance
+("Scott confirmed by eye during the Red Bin walk.") instead of a bare date —
+matching what RB-09, RB-10, RB-15 and RB-16 already say.
