@@ -22,12 +22,12 @@ State after the 2026-08-25 walk, 28 bins:
 
 | | |
 |---|---|
-| never opened | **4** (RB-24, RB-26 … RB-28) |
-| holds stock | 12 (RB-13 among them — the FX-951 in service) |
+| never opened | **3** (RB-26 … RB-28) |
+| holds stock | 13 (RB-13 among them — the FX-951 in service) |
 | verified empty | 7 (RB-09, 10, 15, 16, 18, 21, 23) |
 | declared, not empty | 5 (RB-01/02/05 free storage, RB-08 prototypes, RB-19 VFD salvage) |
 
-Counts read off `scripts/rb_state.py`, not maintained by hand — 12 + 7 + 5 + 4
+Counts read off `scripts/rb_state.py`, not maintained by hand — 13 + 7 + 5 + 3
 = 28.
 
 **A bin can also be a tool's shelf, and that is a third thing.** RB-13 holds
@@ -126,6 +126,17 @@ own bin.
       soft silicone look the same. Located, not re-counted: #791 already
       carried the count and the provenance, filed at the **rack** with no bin
       number, and it was the last row at that level — the rack is now clear.
+
+- [ ] **The motorized water shutoff valve has no build order** (RB-24, added
+      2026-08-25). Every other kit on the rack has one — BO-0001 Mailbox, 0002
+      Shrink-fit, 0004 Bench PSU, 0005 Voice Assistant, 0009 Rat GDO, 0010
+      Animatronic Eyes. This one is a servo and some prototype prints in a bin,
+      which is exactly the stage the others were at when theirs were created.
+      Ask Scott once; do not create it unasked.
+
+      The prints deliberately carry **no stock row** — a prototype print is the
+      state of an experiment, not stock, and a quantity would imply a spare
+      that could be reprinted identically. Same treatment as RB-08.
 
 - [ ] **BACKFILL THE eBay ORDER HISTORY — ~201 orders, 1 PO on file.** The
       RB-20 kits were bought 2026-06-16, ~70 days before the walk, against a
@@ -1633,7 +1644,7 @@ raster error rather than pointing at it.
 - [ ] File the two bus caps — B3-R5C4 recommended (761 µF and 737 µF, both
       ~0.8% loss, 0.21 Ω ESR; tested 2026-08-23).
 - [ ] Measure the heatsink TO-220 hole spacing, then file to B3-R5C3.
-- [ ] RB-24 and RB-26 … RB-28 — never opened. (RB-18 … RB-23 walked 2026-08-25; see the table at the top of this file.)
+- [ ] RB-26 … RB-28 — never opened. (RB-18 … RB-24 walked 2026-08-25; see the table at the top of this file.)
 - [ ] Verify the acrylic is **cast, not extruded** (part #1083, L1-D3). The
       listing says cast but that is seller copy, and it decides whether it
       lasers cleanly. Not urgent — but do it before cutting something that
