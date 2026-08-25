@@ -3524,3 +3524,24 @@ working directory `~/code`, `../scripts` is `/Users/scottdube/scripts`, which
 does not exist. Those rules can never have matched anything real. Left in
 place — that file is rewritten by the app and must not be hand-edited.
 
+
+## Two sessions writing TRAPS.md at once: the commit message stops describing the diff
+
+**2026-08-25 09:38:37, observed.** The daytime sweep appended the McMaster/
+Walmart wedge section above and left it staged-but-uncommitted for a few
+minutes. Another live session committed in that gap with `git add -A`, so
+commit `6785558` — whose message is entirely about `itq` never being on PATH —
+carries 96 insertions, of which only about half are its own subject.
+
+Nothing was lost and nothing conflicted; both sections are intact. What was
+lost is the *message*, and on this repo the message is the load-bearing part:
+the working rules say the diff shows what changed and only the message says
+what was ruled out. A reader running `git log -S` on the wedge trap lands on a
+commit about PATH and has no reason to trust it.
+
+**Cheapest fix: append and commit in the same breath**, never `git add -A` from
+a repo root you are sharing. `git add <specific-file> && git commit` would have
+made the collision impossible in both directions.
+
+Not fixed retroactively here: rewriting a commit another session had just
+written is a worse race than the one it repairs.
