@@ -304,6 +304,12 @@ panel is layout A only.
   panel is pull-only, so a source going OFF at 03:00 waits for somebody to open
   the page. The transition data is already there — `preflight_state.json` records
   `changed` — so this is wiring, not design.
+- **Age in Receiving has no readout.** The `Waiting in Receiving` lamp counts
+  rows; it does not care that one has been there a week. Three items so far were
+  received and then used on the way past, leaving a row that reads "awaiting a
+  drawer" for something already fitted into a tool — see `TRAPS.md`. A row's age
+  on the staging dock is the signal that would have caught all three, and it is
+  a stocktake-style *decay* number rather than another coverage bar.
 - **The pilot has no end condition.** Side-by-side is only worth something if
   the comparison is actually made; the four old widgets should either be retired
   or explicitly kept once the gauges have been read for a week.
