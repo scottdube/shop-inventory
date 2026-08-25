@@ -3646,3 +3646,22 @@ lie?*
 
 The general form: **a marker family is not a severity class.** Group markers by
 what breaks if they are ignored, not by which importer wrote them.
+
+
+## A supplier pack quantity of 1 on a multipack silently divides the shelf
+
+PO-0138 ordered **1** Outus acrylic sheet. The box holds **4** — the listing is
+a 4-pack, and the part description already said so in prose. `SupplierPart.
+pack_quantity` was `'1'`.
+
+Receiving on the order line alone would have put **1 sheet** in L1-D3 with three
+more physically in the drawer and invisible. Not a wrong number that announces
+itself: it reads as a perfectly ordinary receipt.
+
+`pack_quantity` is what future receives of that SKU multiply by, so the error
+is durable and repeats every reorder. Corrected to `4` at the same time as the
+receipt — a fix to one row that is really a fix to every future one.
+
+**Check the pack figure against the description before receiving a multipack,
+and ask for the count.** Scott counted 4 out of the box, so this row carries a
+real `stocktake_date` — receiving is not counting, but a tally at receipt is.
