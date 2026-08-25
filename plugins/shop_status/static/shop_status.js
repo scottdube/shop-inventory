@@ -330,15 +330,20 @@ const PANEL_CSS = `
 .sp .lamp.off{background:linear-gradient(180deg,#3d4448 0%,#2f3538 52%,#23282b 100%);color:#c8ced2}
 
 /* --- the three engines --- */
-.sp .engines{display:grid;grid-template-columns:repeat(auto-fit,minmax(9.5rem,1fr));
-  gap:.5rem 1rem;justify-items:center}
-.sp .eng{text-align:center}
+/* A cluster, not a row of widgets. Three engine instruments on a 727 sit
+   side by side precisely so the needles can be compared without moving your
+   eyes — spread across a metre of panel they are three separate gauges and the
+   pattern-break trick stops working. Big enough to read the needle angle from
+   standing, which is where this gets read from. */
+.sp .engines{display:flex;flex-wrap:wrap;justify-content:center;
+  gap:.4rem clamp(1rem,3vw,2.6rem)}
+.sp .eng{text-align:center;width:min(15rem,90vw)}
 .sp .eng svg{display:block;margin:0 auto;filter:drop-shadow(0 4px 5px rgba(0,0,0,.42))}
-.sp .eng .nm{font-size:.64rem;letter-spacing:.14em;color:#101416;margin-top:.4rem;font-weight:700}
-.sp .eng .sub{font-size:.56rem;color:#31383c;margin-top:.12rem;letter-spacing:.03em}
-.sp .eng .note{font-size:.52rem;color:#4a5256;margin-top:.08rem}
-.sp .eng .fresh{font-size:.52rem;color:#4a5256;margin-top:.08rem;font-style:italic}
-.sp .eng .tgt{font-size:.54rem;color:#3c4448;margin-top:.16rem;letter-spacing:.05em}
+.sp .eng .nm{font-size:.78rem;letter-spacing:.16em;color:#101416;margin-top:.45rem;font-weight:700}
+.sp .eng .sub{font-size:.66rem;color:#2b3236;margin-top:.15rem;letter-spacing:.02em}
+.sp .eng .note{font-size:.6rem;color:#454d52;margin-top:.1rem}
+.sp .eng .fresh{font-size:.58rem;color:#4a5256;margin-top:.1rem;font-style:italic}
+.sp .eng .tgt{font-size:.62rem;color:#3c4448;margin-top:.2rem;letter-spacing:.04em}
 .sp .eng .tgt b{font-variant-numeric:tabular-nums;color:#12171a}
 .sp .eng .saveerr{font-size:.52rem;color:#7a1109;font-weight:700;margin-top:.1rem}
 .sp .bug{cursor:grab;touch-action:none}
@@ -348,27 +353,89 @@ const PANEL_CSS = `
 .sp .eng a.dial:hover .dialface{stroke:#7fb2ea}
 
 /* --- sources: last read that PROVED something --- */
-.sp .sources{display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:.55rem}
-.sp .src{position:relative;display:block;text-decoration:none;border-radius:4px;
-  border:1px solid #0f1214;padding:.5rem .6rem;
+/* One line each. These are a check that the readings above are current, not a
+   readout in their own right — three lines and a card apiece gave them more of
+   the panel than the instruments. The proof line lives in the tooltip now. */
+.sp .sources{display:flex;flex-wrap:wrap;gap:.4rem}
+.sp .src{position:relative;display:flex;align-items:baseline;gap:.5rem;
+  text-decoration:none;border-radius:3px;border:1px solid #0f1214;
+  padding:.24rem .55rem;
   background:linear-gradient(180deg,#20262a 0%,#171c1f 100%);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.1), 0 2px 0 #121618, 0 4px 6px rgba(0,0,0,.35)}
-.sp .src .sname{font-size:.55rem;letter-spacing:.16em;text-transform:uppercase;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.1), 0 1px 0 #121618}
+.sp .src .sname{font-size:.55rem;letter-spacing:.14em;text-transform:uppercase;
   color:#9aa4ab;font-weight:700}
-.sp .src .stime{font-size:.95rem;color:#eef3f6;font-weight:600;margin-top:.12rem;
+.sp .src .stime{font-size:.72rem;color:#eef3f6;font-weight:600;
   font-variant-numeric:tabular-nums}
-.sp .src .sproof{font-size:.53rem;color:#7b858c;margin-top:.18rem;line-height:1.45;
-  font-family:var(--mantine-font-family, system-ui, sans-serif)}
 .sp .src.flagged .stime{color:#5b646a}
 .sp .src.out .stime{color:#f2c800}
-.sp .offflag{position:absolute;top:.4rem;right:.4rem;transform:rotate(9deg);
+.sp .offflag{transform:rotate(-4deg);
   background:repeating-linear-gradient(135deg,#d81f16 0 5px,#a4150e 5px 10px);
-  color:#fff;font-size:.55rem;font-weight:700;letter-spacing:.13em;
-  padding:.12rem .45rem;border:1px solid #121618;border-radius:2px;
-  box-shadow:0 1px 3px rgba(0,0,0,.5)}
+  color:#fff;font-size:.5rem;font-weight:700;letter-spacing:.13em;
+  padding:.06rem .35rem;border:1px solid #121618;border-radius:2px}
 .sp .foot{font-size:.52rem;color:#2b3236;letter-spacing:.06em;margin-top:.7rem;
   display:flex;gap:.6rem;flex-wrap:wrap}
 `;
+
+/* --- tooltips -----------------------------------------------------
+   A lamp whose meaning has to be remembered gets pressed without being
+   read, so every readout says what it measures on hover AND on keyboard
+   focus. The element lives on <body> rather than inside the panel: the
+   widget scrolls and clips, and a tooltip cut in half is worse than none.
+   Positioned fixed, flipped above/below by available room. */
+
+const TIP_CSS = `
+#sp-tip{position:fixed;z-index:9999;max-width:26rem;pointer-events:none;
+  opacity:0;transition:opacity .09s;
+  background:#11171c;color:#dfe7ee;border:1px solid #39434c;border-radius:5px;
+  padding:.5rem .65rem;box-shadow:0 6px 18px rgba(0,0,0,.45);
+  font:12.5px/1.5 var(--mantine-font-family, ui-sans-serif, system-ui, sans-serif)}
+#sp-tip[data-show="1"]{opacity:1}
+#sp-tip b{display:block;margin-bottom:.28rem;color:#fff;font-size:11.5px;
+  letter-spacing:.03em;font-family:var(--mantine-font-family-monospace, ui-monospace, monospace)}
+`;
+
+function tipElement() {
+    let el = document.getElementById('sp-tip');
+    if (!el) {
+        const st = document.createElement('style');
+        st.textContent = TIP_CSS;
+        document.head.appendChild(st);
+        el = document.createElement('div');
+        el.id = 'sp-tip';
+        el.setAttribute('role', 'tooltip');
+        document.body.appendChild(el);
+    }
+    return el;
+}
+
+function wireTips(root) {
+    const el = tipElement();
+    const hide = () => el.setAttribute('data-show', '0');
+
+    const show = (host) => {
+        const body = host.getAttribute('data-tip');
+        const head = host.getAttribute('data-tiphead');
+        if (!body && !head) return;
+        el.innerHTML = (head ? `<b>${esc(head)}</b>` : '') + esc(body || '');
+        el.setAttribute('data-show', '1');
+
+        const r = host.getBoundingClientRect();
+        const t = el.getBoundingClientRect();
+        const above = r.top > t.height + 12;
+        let x = r.left + r.width / 2 - t.width / 2;
+        x = Math.max(8, Math.min(x, window.innerWidth - t.width - 8));
+        el.style.left = `${Math.round(x)}px`;
+        el.style.top = `${Math.round(above ? r.top - t.height - 8 : r.bottom + 8)}px`;
+    };
+
+    root.querySelectorAll('[data-tip]').forEach((host) => {
+        host.addEventListener('mouseenter', () => show(host));
+        host.addEventListener('focusin', () => show(host));
+        host.addEventListener('mouseleave', hide);
+        host.addEventListener('focusout', hide);
+    });
+    window.addEventListener('scroll', hide, true);
+}
 
 /* --- dial geometry ------------------------------------------------
    0% sits at 135deg and the sweep runs 270deg clockwise to 100% at
@@ -401,7 +468,10 @@ function ticks() {
         const [x1, y1] = px(v, 44), [x2, y2] = px(v, major ? 36 : 41);
         out += `<line x1="${f2(x1)}" y1="${f2(y1)}" x2="${f2(x2)}" y2="${f2(y2)}"
             stroke="${major ? '#e8edf1' : '#79838c'}" stroke-width="${major ? 2 : 1}"/>`;
-        if (major) {
+        // 0 and 100 get no numeral: both land on the counter window, and the
+        // ends of a 270-degree sweep are the two points on the dial nobody has
+        // to be told. The drum carries the exact value anyway.
+        if (major && v !== 0 && v !== 100) {
             const [lx, ly] = px(v, 30);
             out += `<text x="${f2(lx)}" y="${f2(ly + 2.6)}" text-anchor="middle" fill="#aeb8c1"
                 font-size="7.5" font-family="inherit">${v}</text>`;
@@ -434,7 +504,7 @@ function gaugeSvg(g) {
                 font-weight="700" font-family="inherit" letter-spacing="2">OFF</text>
         </g>` : '';
 
-    return `<svg width="132" height="132" viewBox="0 0 120 120" role="img" aria-label="${esc(label)}">
+    return `<svg width="200" height="200" viewBox="0 0 120 120" role="img" aria-label="${esc(label)}">
       <circle cx="60" cy="60" r="58" fill="#2c3237" stroke="#4d565d" stroke-width="1"/>
       <circle cx="18" cy="18" r="1.7" fill="#14181b"/><circle cx="102" cy="18" r="1.7" fill="#14181b"/>
       <circle cx="18" cy="102" r="1.7" fill="#14181b"/><circle cx="102" cy="102" r="1.7" fill="#14181b"/>
@@ -460,7 +530,9 @@ function gaugeSvg(g) {
 }
 
 function gaugeCard(g) {
-    return `<div class="eng" data-gauge="${esc(g.key)}">
+    return `<div class="eng" data-gauge="${esc(g.key)}"
+       data-tiphead="${esc(g.name)} — ${esc(g.off ? 'no reading (OFF)' : g.value + '%')} · ${esc(g.sub)}"
+       data-tip="${esc(g.tip || '')}">
       ${gaugeSvg(g)}
       <div class="nm">${esc(g.name)}</div>
       <div class="sub">${esc(g.sub)}</div>
@@ -483,7 +555,9 @@ function lampEl(l) {
         : (lit && l.ack ? `<span class="ack">✓ ack ${esc(l.ack_age)}</span>` : '');
     return `<div class="lampwrap">
       <button class="${cls}" data-lamp="${esc(l.key)}" data-n="${off ? '' : l.n}"
-              data-ack="${l.ack ? 'true' : 'false'}" title="${esc(l.why)}"
+              data-ack="${l.ack ? 'true' : 'false'}"
+              data-tiphead="${esc(l.label)} — ${esc(n)} · ${esc(l.why)}"
+              data-tip="${esc(l.tip || '')}"
               aria-pressed="${l.ack ? 'true' : 'false'}">
         <span class="g" aria-hidden="true">${glyph}</span><b>${esc(n)}</b>${esc(l.label)}${ackLine}
       </button>
@@ -493,10 +567,10 @@ function lampEl(l) {
 
 function sourceEl(s) {
     const cls = 'src' + (s.off ? ' flagged' : (s.out ? ' out' : ''));
-    return `<a class="${cls}" href="/web/part/" data-nav="/web/part/">
-      <div class="sname">${esc(s.name)}</div>
-      <div class="stime">${esc(s.time)}</div>
-      <div class="sproof">${esc(s.proof)}</div>
+    return `<a class="${cls}" href="/web/part/" data-nav="/web/part/"
+       data-tip="${esc(s.tip || '')}" data-tiphead="${esc(s.name)} — ${esc(s.proof)}">
+      <span class="sname">${esc(s.name)}</span>
+      <span class="stime">${esc(s.time)}</span>
       ${s.off ? '<span class="offflag">OFF</span>' : ''}
     </a>`;
 }
@@ -530,6 +604,7 @@ export function renderPanel(target, data) {
     </div>`;
 
     wirePanel(target, data, p);
+    wireTips(target);
 }
 
 /* ---------------- interaction -------------------------------------
@@ -562,8 +637,11 @@ function wirePanel(target, data, p) {
     });
 
     /* --- lamps: press to silence ---------------------------------- */
+    // Seed from what the server already holds, timestamps included. Writing the
+    // whole map back with at:null would quietly reset every other lamp's ack
+    // age — and the age is the signal ("acknowledged for six weeks").
     const acks = {};
-    p.lamps.forEach((l) => { if (l.ack) acks[l.key] = { n: l.n, at: null }; });
+    p.lamps.forEach((l) => { if (l.ack) acks[l.key] = { n: l.n, at: l.ack_at ?? null }; });
 
     target.querySelectorAll('.lamp').forEach((btn) => {
         btn.addEventListener('click', () => {

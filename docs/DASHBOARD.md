@@ -169,15 +169,33 @@ snapshot by nature is called out below.
 | COUNTED | 57% | 368 of 649 stock rows carry a stocktake date |
 | BIN WALL | 88% | 284 of 324 drawers hold stock or were verified empty by eye |
 
-**IMAGES carries the OFF flag, and that is the honest output.** Coverage is
-defined against the *reachable* denominator, and the reachable/ruled-out split is
-the sweep's accumulated evidence — not a query this panel can run. The two
-alternatives were both rejected: rendering the raw 532/1010 = 53% is the
-misleading number the whole redesign threw out, and hard-coding the remembered
-"483 ruled out → 96%" is worse, because nothing on this instrument could then
-tell whether that exclusion set still holds. So the gauge drops its flag and the
-sub-line says what is missing. The first thing the panel does is demonstrate its
-own fourth state.
+**IMAGES flew its OFF flag for the first two hours, and that was the honest
+output while it lasted.** Coverage is defined against the *reachable*
+denominator; the reachable/ruled-out split is the sweep's accumulated evidence,
+not a query this panel can run, and it has still not been handed over. Two
+alternatives were rejected then and are still rejected: rendering the raw
+532/1010 = 53% is the misleading number the whole redesign threw out, and
+hard-coding the remembered "483 ruled out → 96%" is worse, because nothing on the
+instrument could then tell whether that exclusion set still holds.
+
+**What changed is that waiting was not the only honest option.** Scott asked what
+was up with the images, the imageless rows got measured, and the answer was a
+rule the panel can compute for itself:
+
+> **reachable = already has an image, or has a supplier part.**
+
+The SKU is the thing an image is fetched from. Of 478 imageless active parts,
+**334 have no supplier part at all** — nothing on record says where to look — and
+144 do (42 Amazon, 33 AliExpress, 19 Lakeshore, 15 CNC Kitchen, 12 McMaster,
+the rest in ones and twos). So the gauge reads **79% — 532 of 676 reachable**,
+with *334 ruled out — no SKU to fetch from* underneath it.
+
+This satisfies the rule the OFF flag was protecting, without pretending to be the
+sweep's number. The exclusion is **stated on the face of the instrument, computed
+live, and arguable** — "no SKU on file" does not mean unobtainable, it means
+nothing recorded says where, and the moment a supplier part is added the
+denominator moves on its own. The sweep's evidence is still worth having and is
+still listed as outstanding; it would replace this rule, not join it.
 
 **The freshness statistic exists now, in a small way.** Under COUNTED:
 *oldest count 8d old*, straight off `stocktake_date`. It is not the decay needle
@@ -206,6 +224,39 @@ older than 24 h; `OUT` is *not* OFF, because a probe that says "signed out" is a
 working probe with bad news. All four read live today; McMaster now proves its
 session rather than guessing at it, so it no longer carries the flag it carries
 in the mock.
+
+### Corrected after the first hour in front of Scott
+
+Four notes from flying it, all fixed the same morning:
+
+**Every readout now says what it measures**, on hover *and* on keyboard focus:
+lamps, gauges and source tiles each carry a heading (the label, the value, the
+one-line reason) and a paragraph explaining what is counted and why it earns the
+colour it has. This is not decoration. A lamp whose meaning has to be remembered
+is a lamp that gets pressed without being read, which is the exact failure this
+panel exists to prevent — and the tooltip is where the argument in this file
+finally reaches the person looking at the instrument. The tooltip element is
+attached to `<body>`, not to the panel: the widget scrolls and clips, and a
+tooltip cut in half is worse than none.
+
+**The gauges are half again as big and sit in a cluster.** They were 132 px and
+spread across the full width of a 12-column widget, which is three separate
+gauges rather than an engine cluster — at that spacing the eye compares nothing
+and the whole "normal is needles at the same angle" mechanism quietly stops
+working. Now 200 px, centred, close together.
+
+**The source tiles were taking four times the room they earn.** They are a check
+that the readings above are current, not a readout in their own right. One line
+each now — name and time — with the proof line moved into the tooltip where it is
+read once rather than displayed forever.
+
+**Bug fixed: pressing one lamp erased every other lamp's acknowledgement date.**
+The browser rewrites the whole `ACK_STATE` map on each press, and it was seeding
+that map with `at: null` for lamps it had not touched. Which lamp was silenced is
+the small half of that record; **how long ago is the signal** — "acknowledged for
+six weeks" is an atrophy detector hiding inside the mechanism, and it was being
+destroyed on every press. The server now hands each lamp's stored timestamp back
+out so the client can preserve it.
 
 **Not built in the pilot:** the worklist screen (layout B) and Gee Whiz. The
 panel is layout A only.
