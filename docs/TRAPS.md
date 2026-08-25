@@ -3733,3 +3733,45 @@ and `PO has no issue date` cannot (there is no filter for a notes prefix, nor fo
 a null issue date) and they say so.
 
 Verified in the browser, not just against the API: 43/43, 13/13, 3/3, 4/4.
+
+## Spent stock still answers "yes" to a lamp — and a lamp that cannot clear stops being read
+
+2026-08-25. Scott, looking at the panel: *"this DIN cable, how will it ever get
+out of stock?"*
+
+Stock #89, a 7-Pin DIN extension cable, is **wired into the Standing Desk
+Controller** (stock #120, built by BO-0003). Its notes say so. InvenTree already
+handles it correctly — `belongs_to=120`, `in_stock` is `False`, and the part's
+total stock reads 0. It is *not* in stock.
+
+But the panel's `Stock with no location` lamp was counting rows where
+`location IS NULL`, and **installing a part is precisely what removes its
+location**. So the cable was being reported as lost, forever: it cannot be given
+a location without uninstalling it from a finished device. Same for the ESP32
+in the same controller, and for rows consumed by a build.
+
+**The failure is not the wrong count, it is the lamp that can never reach zero.**
+Four rows out of 43 could never be cleared by any amount of work, so the lamp
+would have stayed lit permanently — and a warning that is always on is a warning
+nobody reads. This is the same shape as the tombstone lamp lighting red over a
+to-do queue, and the same shape as the 6-20P plug: **stock that was SPENT still
+answering yes to "do I have one?"**
+
+**The rule: anything meaning "stock I have" uses `StockItem.IN_STOCK_FILTER`,
+never `location__isnull` or a bare row count.** That filter is
+`quantity > 0, sales_order=None, belongs_to=None, customer=None,
+consumed_by=None, is_building=False, status in AVAILABLE_CODES` — and the API
+exposes it as `in_stock=true`, so a filtered link can say the same thing.
+
+Measured on this instance: 650 stock rows, **638 actually in stock** — 3
+installed, 2 consumed by a build, 7 run down to zero. What that changed:
+
+| readout | was | now |
+|---|---|---|
+| `Stock with no location` lamp | 43 | **39** |
+| COUNTED gauge | 369 / 650 = 57% | **360 / 638 = 56%** |
+| Catalog Health "stock items" | 650 | **638** |
+
+The COUNTED correction matters more over time than the 1% suggests: with spent
+rows in the denominator the gauge falls a little **every time something gets
+built**, which is coverage decaying for the healthiest possible reason.

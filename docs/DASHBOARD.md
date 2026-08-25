@@ -166,7 +166,7 @@ snapshot by nature is called out below.
 | gauge | reading | denominator |
 |---|---|---|
 | IMAGES | **OFF** | reachable denominator not supplied — see below |
-| COUNTED | 57% | 368 of 649 stock rows carry a stocktake date |
+| COUNTED | 56% | 360 of 638 rows **in stock** carry a stocktake date |
 | BIN WALL | 88% | 284 of 324 drawers hold stock or were verified empty by eye |
 
 **IMAGES flew its OFF flag for the first two hours, and that was the honest
@@ -270,6 +270,23 @@ itself` and `PO has no issue date` do not, because no filter exists for a notes
 prefix or a null issue date. The COUNTED dial opens the 281 rows nobody has
 counted; IMAGES and BIN WALL have no filter that reproduces them and say so.
 Measured tables in `TRAPS.md`.
+
+**Spent stock is out of every readout that means "stock I have".** Scott asked
+how a DIN cable wired into the Standing Desk Controller would ever get out of
+stock — and the answer was that InvenTree already had it right (`belongs_to`,
+`in_stock` false, part total 0) while the panel did not. Installing a part is
+what removes its location, so `location IS NULL` was reporting installed and
+consumed rows as *lost*: four rows that no amount of work could ever clear,
+keeping the lamp lit forever. A warning that can never reach zero is a warning
+that stops being read, which is the same failure as the tombstone lamp lighting
+red over a to-do queue.
+
+Everything that means "stock I have" now uses InvenTree's own
+`StockItem.IN_STOCK_FILTER`, and the filtered links say `in_stock=true` so they
+still match. The lamp reads 39, the COUNTED dial 360/638, and the Catalog Health
+strip 638 rather than 650 so the two cannot disagree on the same screen. The
+COUNTED change matters more than its 1% looks: with spent rows in the
+denominator the gauge drops slightly **every time something gets built**.
 
 **Not built in the pilot:** the worklist screen (layout B) and Gee Whiz. The
 panel is layout A only.
