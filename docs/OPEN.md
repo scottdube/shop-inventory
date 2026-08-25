@@ -1558,5 +1558,9 @@ raster error rather than pointing at it.
       ~0.8% loss, 0.21 Ω ESR; tested 2026-08-23).
 - [ ] Measure the heatsink TO-220 hole spacing, then file to B3-R5C3.
 - [ ] RB-18 through RB-28 — never opened.
+- [ ] Verify the acrylic is **cast, not extruded** (part #1083, L1-D3). The
+      listing says cast but that is seller copy, and it decides whether it
+      lasers cleanly. Not urgent — but do it before cutting something that
+      matters.
 - [ ] Print a test address label → decide whether DK-11201's minimum comes off.
 - [ ] InvenTree upgrade — **in Florida, co-located with the Mini**.
