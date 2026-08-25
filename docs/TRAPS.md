@@ -3404,3 +3404,27 @@ any bearing on whether the Mini's disk was mounted.
 
 **Cheapest fix is in the wording**: cite it as `mini:/Volumes/4TB_Removable/...`
 wherever the sweep instructions name it.
+
+## KiwiCo is filed `mixed_use`, but it is a child's monthly crate subscription
+
+Measured 2026-08-24 22:5x during the daytime sweep. The shape-based unknown-vendor
+search surfaced `hello@kiwico.com` "Your KiwiCo Order has been delivered!". Triage
+handled it correctly — `kiwico.com` is in `mixed_use`, and the subject matched the
+`has been delivered` lifecycle filter, so it produced zero decisions.
+
+It only came out right because the lifecycle filter caught it. The classification
+underneath is wrong: `from:kiwico.com newer_than:30d` returns four messages, two of
+which are `customercare@kiwico.com` "Important message about your subscription:
+credit card payment error … this month's crate for Gabriella". That is a recurring
+children's STEM crate subscription, which Rule 7 puts OUT — the same bucket as
+`anthropic.com`, not the same bucket as `homedepot.com`.
+
+Why it matters: `mixed_use` means "classify per order from the item titles", so the
+FIRST KiwiCo email whose subject is not a lifecycle stage — an order confirmation, a
+renewal, a "your crate is ready" — surfaces as a decision for Scott about a
+household subscription. `mixed_use` is not a safe default for a subscription; it is
+a deferred false positive waiting on a subject line nobody has seen yet.
+
+Not changed here: moving a domain between registry buckets is a policy edit, not a
+sweep action, and no order was missed. Flagged for Scott to move `kiwico.com` from
+`mixed_use` to `suppress.subscription` in `scripts/vendor_registry.json`.
