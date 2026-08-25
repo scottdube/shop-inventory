@@ -77,7 +77,11 @@ State after the 2026-08-23 walk, 28 bins:
 
 ## At the bench
 
-- [ ] **Strip the dead VFD (RB-18 area / bench).** Six parts catalogued
+- [ ] **Strip the dead VFD — the salvage lives in RB-19.** Located by Scott
+      2026-08-25 during the Red Bin walk. This entry previously read
+      *"RB-18 area / bench"*, which was a guess written at the bench and
+      is now known wrong twice over: RB-18 was verified EMPTY the same
+      day. Six parts catalogued
       2026-08-23 with identify-on-the-board and test-before-use notes; nothing
       filed except the fan, which is already tested and in B3-R5C3.
 
