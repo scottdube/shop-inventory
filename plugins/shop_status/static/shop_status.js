@@ -157,12 +157,14 @@ export function renderToOrder(target, data) {
     const o = data?.context?.order ?? {};
     shell(target,
         head('Short for open builds', o.short_n ?? 0, 'bad') +
-        rows(o.short, o.short_n ?? 0, 'Every build is covered.', '/web/part/') +
+        rows(o.short, o.short_n ?? 0, 'Every build is covered.',
+             '/web/part/category/index/parts') +
         head('Below minimum', o.floor_n ?? 0, 'warn') +
-        rows(o.floor, o.floor_n ?? 0, 'Nothing under its floor.', '/web/part/') +
+        rows(o.floor, o.floor_n ?? 0, 'Nothing under its floor.',
+             '/web/part/category/index/parts') +
         head('On the list', o.listed_n ?? 0) +
         rows(o.listed, o.listed_n ?? 0, 'Nothing written down yet.',
-             '/web/purchasing/'));
+             '/web/purchasing/index/purchaseorders/'));
 }
 
 /* Where to buy. Answers the bench question: where did this come from last,
@@ -532,7 +534,10 @@ function gaugeSvg(g) {
 function gaugeCard(g) {
     return `<div class="eng" data-gauge="${esc(g.key)}"
        data-tiphead="${esc(g.name)} — ${esc(g.off ? 'no reading (OFF)' : g.value + '%')} · ${esc(g.sub)}"
-       data-tip="${esc(g.tip || '')}">
+       data-tip="${esc((g.tip || '') + (g.exact
+           ? `  The dial opens ${g.exact}.`
+           : '  No API filter reproduces this set, so the dial opens the whole'
+             + ' list rather than the rows behind the number.'))}">
       ${gaugeSvg(g)}
       <div class="nm">${esc(g.name)}</div>
       <div class="sub">${esc(g.sub)}</div>
@@ -553,15 +558,24 @@ function lampEl(l) {
     const n = off ? '—' : `${l.n}${l.unit && l.n ? l.unit : ''}`;
     const ackLine = off ? '<span class="ack">no reading</span>'
         : (lit && l.ack ? `<span class="ack">✓ ack ${esc(l.ack_age)}</span>` : '');
+    // "open 43" promises the 43 rows this lamp counted. "open list" promises
+    // nothing but the table, which is what you get when no API filter matches
+    // the lamp — better said out loud than discovered by clicking.
+    const go = (l.exact && lit) ? `open ${l.n} →` : 'open list →';
     return `<div class="lampwrap">
       <button class="${cls}" data-lamp="${esc(l.key)}" data-n="${off ? '' : l.n}"
               data-ack="${l.ack ? 'true' : 'false'}"
               data-tiphead="${esc(l.label)} — ${esc(n)} · ${esc(l.why)}"
-              data-tip="${esc(l.tip || '')}"
+              data-tip="${esc((l.tip || '') + (lit
+                  ? (l.exact
+                      ? '  The link opens exactly these rows.'
+                      : '  No API filter matches this set, so the link opens the'
+                        + ' whole list — the rows are not singled out.')
+                  : ''))}"
               aria-pressed="${l.ack ? 'true' : 'false'}">
         <span class="g" aria-hidden="true">${glyph}</span><b>${esc(n)}</b>${esc(l.label)}${ackLine}
       </button>
-      <a class="lampgo" href="${esc(l.url)}" data-nav="${esc(l.url)}">open →</a>
+      <a class="lampgo" href="${esc(l.url)}" data-nav="${esc(l.url)}">${esc(go)}</a>
     </div>`;
 }
 
