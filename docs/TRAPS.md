@@ -3429,10 +3429,12 @@ Not changed here: moving a domain between registry buckets is a policy edit, not
 sweep action, and no order was missed. Flagged for Scott to move `kiwico.com` from
 `mixed_use` to `suppress.subscription` in `scripts/vendor_registry.json`.
 
-## mcmaster.com and walmart.com/orders can wedge the Chrome extension entirely
+## mcmaster.com and walmart.com are SLOW to become scriptable, not unreadable
 
-**2026-08-25 08:50–09:05, measured during the daytime sweep.** Neither site
-could be read at all. Every extension entry point failed the same way:
+**2026-08-25. First written as "can wedge the Chrome extension entirely."
+That was wrong and is corrected here rather than left standing.**
+
+At 08:50–09:05 neither site could be read. Every extension entry point failed:
 
 | call | failure |
 |---|---|
@@ -3440,34 +3442,38 @@ could be read at all. Every extension entry point failed the same way:
 | `javascript_tool` | `Runtime.evaluate timed out after 45000ms` |
 | `computer:screenshot` | `Script injection timed out after 5000ms` |
 
-Chrome itself was fine — `tabs_context_mcp` reported the McMaster tab with the
-correct committed URL and the real title `McMaster-Carr`, so the navigation
-succeeded and the renderer simply never went idle. Waiting did not help:
-McMaster got ~80 s across two tabs, Walmart ~60 s, far past the 21 s the
-login-detection section budgets.
+At 09:55 — same browser, same profile, same session, no intervention — the
+McMaster tab that had been left sitting read instantly, and both sites proved
+**signed in**: McMaster's masthead showed `Scott Dube` with Settings/Log Out
+and the phone switched to the account-rep line (609) 689-3000; Walmart showed
+`Hi, Scott D` and rendered purchase history. Scott confirmed McMaster
+independently at the same time.
 
-**The control that makes this diagnosable:** `amazon.com/gp/css/order-history`
-and `shop.app/account` were read on the *same browser, same run*, both signed
-in, both instant. So this is per-site, not a dead browser and not a dead
-session.
+**So the observation was real and the conclusion was not.** These pages take
+minutes, not seconds, to reach `document_idle`, and every extension entry point
+blocks on it. Nothing is wedged; it has not finished.
 
-**Therefore the login state was recorded `UNKNOWN`, not `OUT`.** This is the
-same mistake as the 2026-08-24 spurious notification in a new costume: a test
-that cannot execute has not observed a signed-out session, and reporting `OUT`
-would fire a NOTIFY for a transition that was never measured.
-`preflight_state.py` already treats `UNKNOWN` as non-notifying — the only way
-to get that right is to actually pass `UNKNOWN`.
+**What made it look permanent:** Amazon and shop.app were read on the same
+browser in the same run, both instant. That contrast reads as "per-site and
+fatal" when the truth is "per-site and slow", and it was the contrast, not the
+timeouts, that produced the wrong write-up.
 
-Consequence for the sweep: the click-first McMaster procedure and the Walmart
-order-detail read are both **unrunnable** while this holds, because both begin
-with a real click and a click needs a screenshot for its coordinates. Nothing
-in either queue can be worked around; the vendors are simply skipped.
+**Recording `UNKNOWN` rather than `OUT` was still right** — a test that cannot
+execute has observed nothing, and `OUT` would have fired a NOTIFY for a
+transition nobody measured. The error was treating `UNKNOWN` as *final* after
+one round of timeouts inside a few minutes.
 
-Cause not established. It is consistent with a bot-detection interstitial that
-spins scripts forever (both sites run one; Amazon and Shop do not challenge
-this profile), but nothing here proves it — the page could not be looked at,
-which is the whole problem. If it recurs, the thing to capture is whether a
-human-driven Chrome window on the same profile renders the site normally.
+**Procedure:** when a vendor page times out, leave the tab loading, go do other
+queue work, and retest before recording state. One round of timeouts is not a
+reading. Budget minutes for these two.
+
+**Additionally, and separately from the above:** a cold deep route renders a
+blank content pane for roughly another 25 s *after* the page is already
+scriptable — `/order-history/` returned `No text content found` and a
+screenshot showing only the masthead, then filled in completely on the next
+look. The account-rep phone number was visible in the masthead the whole time,
+which is the tell that the blank pane is not a signed-out page. This is the
+same pre-auth-SPA-shell effect documented above; it is not a second bug.
 
 ## `itq` was never on PATH — the unattended job's first command always failed
 
