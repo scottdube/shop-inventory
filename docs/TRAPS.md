@@ -3363,3 +3363,44 @@ for every future vendor that gets added to the registry but not to Section 3.
 
 **Do not read "already swept" as proof of anything** until that lands. It is a
 statement about the registry, not about the database.
+
+## `/Volumes/4TB_Removable` is on the MINI — two sessions in one day read it as local
+
+**2026-08-24, twice.** The 16:46 and 22:46 daytime sweeps each stopped to
+diagnose a "missing volume" that was never missing. Both ran `ls /Volumes/` on
+the **laptop**, found no `4TB_Removable`, and started reasoning about an
+unmounted drive.
+
+The path is the Mini's. `scripts/itq` sets it explicitly:
+
+```
+HOST="${ITQ_HOST:-mini}"
+ROOT="/Volumes/4TB_Removable/inventree"
+```
+
+Everything under it — the venv, `enrich_progress.md`, `pending_decisions.md` —
+lives there and is reachable **only** through `itq`:
+
+```
+itq pull /Volumes/4TB_Removable/inventree/pending_decisions.md ./local.md
+```
+
+### Why it catches a careful reader
+
+`journal.py` and `decide.py` both open the path as a plain local file, because
+they are *written to run on the Mini* — `itq run` ships them there. So the
+source reads local, and the sweep instructions cite the path bare, with no host
+attached. Nothing on the page says "remote" until you read `itq` itself.
+
+The tell is that **`itq run scripts/journal.py --start` succeeds in the same
+session where `ls /Volumes/4TB_Removable` fails.** If a script can write the
+file but the shell cannot see it, the file is not local — stop diagnosing the
+volume and reach for `itq pull`.
+
+A `ls /Volumes/` on the laptop is evidence about the laptop and nothing else.
+On 2026-08-24 it returned two *different* listings six hours apart (`Bambu
+Studio, pulseview NIGHTLY` at 16:46; a NAS share set at 22:46) and neither had
+any bearing on whether the Mini's disk was mounted.
+
+**Cheapest fix is in the wording**: cite it as `mini:/Volumes/4TB_Removable/...`
+wherever the sweep instructions name it.
