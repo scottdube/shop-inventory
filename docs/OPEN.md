@@ -22,10 +22,13 @@ State after the 2026-08-25 walk, 28 bins:
 
 | | |
 |---|---|
-| never opened | **5** (RB-23, RB-24, RB-26 … RB-28) |
-| holds stock | 12 |
-| verified empty | 6 (RB-09, 10, 15, 16, 18, 21) |
-| declared | 5 (RB-05 bags, RB-08 prototypes, RB-01/02 free storage, RB-19 VFD salvage) |
+| never opened | **4** (RB-24, RB-26 … RB-28) |
+| holds stock | 12 (RB-13 among them — the FX-951 in service) |
+| verified empty | 7 (RB-09, 10, 15, 16, 18, 21, 23) |
+| declared, not empty | 5 (RB-01/02/05 free storage, RB-08 prototypes, RB-19 VFD salvage) |
+
+Counts read off `scripts/rb_state.py`, not maintained by hand — 12 + 7 + 5 + 4
+= 28.
 
 **A bin can also be a tool's shelf, and that is a third thing.** RB-13 holds
 the FX-951 with its cord run out of the bin and its handpiece on the bench.
@@ -1630,7 +1633,7 @@ raster error rather than pointing at it.
 - [ ] File the two bus caps — B3-R5C4 recommended (761 µF and 737 µF, both
       ~0.8% loss, 0.21 Ω ESR; tested 2026-08-23).
 - [ ] Measure the heatsink TO-220 hole spacing, then file to B3-R5C3.
-- [ ] RB-18 through RB-28 — never opened.
+- [ ] RB-24 and RB-26 … RB-28 — never opened. (RB-18 … RB-23 walked 2026-08-25; see the table at the top of this file.)
 - [ ] Verify the acrylic is **cast, not extruded** (part #1083, L1-D3). The
       listing says cast but that is seller copy, and it decides whether it
       lasers cleanly. Not urgent — but do it before cutting something that
