@@ -22,13 +22,15 @@ State after the 2026-08-25 walk, 28 bins:
 
 | | |
 |---|---|
-| never opened | **3** (RB-26 … RB-28) |
-| holds stock | 13 (RB-13 among them — the FX-951 in service) |
+| walked | **all 25** — the rack is done |
+| holds stock | 14 |
 | verified empty | 7 (RB-09, 10, 15, 16, 18, 21, 23) |
-| declared, not empty | 5 (RB-01/02/05 free storage, RB-08 prototypes, RB-19 VFD salvage) |
+| declared, not empty | 4 (RB-01/02/05 free storage, RB-08 prototypes, RB-19 VFD salvage) |
+| label only, no bin | RB-26, RB-27, RB-28 — marked structural |
 
-Counts read off `scripts/rb_state.py`, not maintained by hand — 13 + 7 + 5 + 3
-= 28.
+**The rack has 25 bins, not 28.** The location tree was built from the label
+run; three labels were printed with no container behind them. Counts read off
+`scripts/rb_state.py`, not maintained by hand.
 
 **A bin can also be a tool's shelf, and that is a third thing.** RB-13 holds
 the FX-951 with its cord run out of the bin and its handpiece on the bench.
@@ -127,12 +129,14 @@ own bin.
       carried the count and the provenance, filed at the **rack** with no bin
       number, and it was the last row at that level — the rack is now clear.
 
-- [ ] **The motorized water shutoff valve has no build order** (RB-24, added
-      2026-08-25). Every other kit on the rack has one — BO-0001 Mailbox, 0002
-      Shrink-fit, 0004 Bench PSU, 0005 Voice Assistant, 0009 Rat GDO, 0010
-      Animatronic Eyes. This one is a servo and some prototype prints in a bin,
-      which is exactly the stage the others were at when theirs were created.
-      Ask Scott once; do not create it unasked.
+- [x] ~~**The motorized water shutoff valve has no build order**~~ —
+      **BO-0014 created 2026-08-25** on Scott's yes, against new assembly part
+      #1098 in Projects. BOM carries the servo only.
+
+- [ ] **Add the printed mounting parts to BO-0014's BOM when the geometry
+      settles.** Safe to add later *because the build is not complete* —
+      completing one freezes its line items, and lines added afterwards never
+      appear.
 
       The prints deliberately carry **no stock row** — a prototype print is the
       state of an experiment, not stock, and a quantity would imply a spare

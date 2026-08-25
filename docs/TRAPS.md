@@ -4223,3 +4223,52 @@ command: **absolute paths in every write and every `git -C`.** `cd X && cmd`
 does not survive to the next call. A redirect is the dangerous form, because
 `>` and `>>` create the file rather than failing — a wrong path is silent by
 construction, where a read of a missing file at least errors.
+
+## A label is not a bin — three of the rack's "unopened" bins were never bought
+
+The Red Bins location tree was built from the **labels**, and 28 labels were
+printed. The rack holds **25 bins**. RB-26, RB-27 and RB-28 existed only as
+locations with a label behind them and no container, and every report since has
+counted them as unopened bins — the last three on the walk's list, sending
+somebody to look for a thing that was never bought.
+
+Scott, 2026-08-25: *"26, 27, 28 do not exist except as labels."*
+
+**Marked `structural=True`, not deleted.** A structural location cannot hold
+stock, so the phantom can never receive a part by mistake, and the fact that
+three labels were made survives for whoever buys three more bins. Deleting
+would have destroyed the only record of that. `scripts/rb_state.py` now counts
+structural children separately and reports "25 bins (+3 label-only)".
+
+The general form, and it applies anywhere a location tree is generated:
+**making the label is not the same act as owning the container**, and a tree
+seeded from a label run will always run ahead of the shelf. The tell is a block
+of never-opened locations at the END of a numbered range — the same shape as a
+real unwalked block, which is why it survived a whole walk.
+
+## `reference_int` can diverge from the reference it belongs to
+
+Creating the water-valve build on 2026-08-25 produced **BO-0026**, skipping
+twelve numbers, when the highest existing build was BO-0013.
+
+The new build was not the problem. `generate_reference()` takes the next number
+from `MAX(reference_int)`, and **BO-0013 carried `reference_int = 25`** against
+a reference reading 0013. The two fields had diverged at some earlier point, so
+every future build would have inherited the jump — and the gap grows, because
+each new record writes its own inflated integer back.
+
+Same family as the PO `reference_int` trap already recorded here, and milder
+only by luck: there a raw vendor order number clamped the field to int32 max and
+broke `generate_reference()` permanently. **This one was recoverable precisely
+because 25 is a small wrong number.**
+
+Fixed by putting `reference_int` back in agreement with its own reference
+(13), then renumbering the new build into the gap it should have had (BO-0014,
+`reference_int` 14). Both writes via queryset `.update()` — `reference` is
+format-validated on the model, and `save()` on this install has reported
+success and written nothing.
+
+**Worth a periodic check, because nothing surfaces it:** every reference should
+satisfy `reference == f"BO-{reference_int:04d}"`. A mismatch is silent, costs
+nothing until the next record is created, and then shows up as a number that
+merely looks odd.
