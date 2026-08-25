@@ -148,6 +148,68 @@ breakdown (delisted / login-gated / synthetic SKU). The panel cannot compute it;
 it is their sweep's accumulated evidence. Without the breakdown the exclusion is
 a hidden rule, which their own tombstone tile argues against better than we can.
 
+## Built — side-by-side pilot, 2026-08-25
+
+Shipped as a **fifth dashboard widget**, `Instrument Panel`, with the four
+existing widgets left exactly where they were. Side-by-side rather than a
+replacement, because the gauges' *numbers* are new even where the queries are
+old, and a panel that reads wrong should be comparable against the widgets that
+have been right for weeks — not the only thing left on the page.
+
+`plugins/shop_status/` `v1.3.0`. `renderPanel` in the plugin JS; `_panel()`,
+`_gauges()`, `_lamps()`, `_sources()` server-side. Everything is computed live
+per render, so there is no snapshot to go stale — the one thing that is a
+snapshot by nature is called out below.
+
+**What the three needles read, measured 2026-08-25:**
+
+| gauge | reading | denominator |
+|---|---|---|
+| IMAGES | **OFF** | reachable denominator not supplied — see below |
+| COUNTED | 57% | 368 of 649 stock rows carry a stocktake date |
+| BIN WALL | 88% | 284 of 324 drawers hold stock or were verified empty by eye |
+
+**IMAGES carries the OFF flag, and that is the honest output.** Coverage is
+defined against the *reachable* denominator, and the reachable/ruled-out split is
+the sweep's accumulated evidence — not a query this panel can run. The two
+alternatives were both rejected: rendering the raw 532/1010 = 53% is the
+misleading number the whole redesign threw out, and hard-coding the remembered
+"483 ruled out → 96%" is worse, because nothing on this instrument could then
+tell whether that exclusion set still holds. So the gauge drops its flag and the
+sub-line says what is missing. The first thing the panel does is demonstrate its
+own fourth state.
+
+**The freshness statistic exists now, in a small way.** Under COUNTED:
+*oldest count 8d old*, straight off `stocktake_date`. It is not the decay needle
+this document says is missing, but it is the first number on the panel that can
+get worse while nothing else changes.
+
+**Lamps, and the severity split that had to be corrected on the first run.**
+Red where the failure makes another check lie, yellow where it is work waiting.
+The tombstone lamp got this wrong initially and lit red over a to-do queue; see
+`TRAPS.md`, "Tombstone markers do not share a severity". Live at first light:
+one red (a merged part still active — a genuine double-count), five yellow.
+
+**Both interactions write to plugin settings, and both were verified against the
+live instance.** Dragging or arrow-keying a bug PATCHes `TARGET_IMAGES` /
+`TARGET_COUNTED` / `TARGET_BINWALL`; pressing a lamp writes `ACK_STATE`. The ack
+records the *count* as well as the time, which is what makes a silenced lamp
+flash again when the condition changes rather than every morning. A failed write
+says so on the instrument — a bug that moves but does not stick is worse than one
+that will not move.
+
+**Sources come from the sweep's own session file** (`PREFLIGHT_PATH`, default
+`/Volumes/4TB_Removable/inventree/preflight_state.json`) — the vendor state the
+overnight job already writes on transition. `last_ok` is the reading, not
+`checked`. A vendor goes **OFF** when its state is `UNKNOWN` or its last check is
+older than 24 h; `OUT` is *not* OFF, because a probe that says "signed out" is a
+working probe with bad news. All four read live today; McMaster now proves its
+session rather than guessing at it, so it no longer carries the flag it carries
+in the mock.
+
+**Not built in the pilot:** the worklist screen (layout B) and Gee Whiz. The
+panel is layout A only.
+
 ## Still open
 
 - **What earns a lamp, and which lamps earn a flash?** A lamp that re-flashes
@@ -155,7 +217,15 @@ a hidden rule, which their own tombstone tile argues against better than we can.
   without reading. That is how five settled drawers came to read as "nobody has
   looked" until amber stopped meaning anything.
 - **Do target changes get dated?** "When did we decide 80 was good enough" is
-  the kind of question this project has wanted before.
+  the kind of question this project has wanted before. The bug writes a bare
+  integer to a plugin setting today, so the answer is still no.
+- **Nothing pushes yet.** The push/pull answer above is argued and unbuilt: the
+  panel is pull-only, so a source going OFF at 03:00 waits for somebody to open
+  the page. The transition data is already there — `preflight_state.json` records
+  `changed` — so this is wiring, not design.
+- **The pilot has no end condition.** Side-by-side is only worth something if
+  the comparison is actually made; the four old widgets should either be retired
+  or explicitly kept once the gauges have been read for a week.
 
 ## A note on the corrections rate
 

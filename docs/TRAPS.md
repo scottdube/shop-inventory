@@ -3592,3 +3592,57 @@ lateness is the measurement — lines at their scheduled times mean the Mac was
 awake and the fault lies with the app or the job; lines clustered at a single
 morning timestamp mean it slept. Read it FIRST on any NEVER_STARTED, before
 touching `pmset -g log`.
+
+## Dashboard widget selection lives on the SERVER, not in localStorage
+
+2026-08-25, piloting the instrument panel. A new plugin dashboard item does not
+appear on the dashboard by itself — InvenTree stores a per-user *selection*, and
+a widget the API offers is simply not shown until it is in that list.
+
+The list looks like it lives in `localStorage['session-settings']`, and it does
+appear there: `state.widgets` and `state.layouts`. **It is a mirror, not the
+source.** `LocalState.setWidgets()` calls `patchUser('widgets', …)`, which PATCHes
+`/api/user/profile/`, and the profile copy is pulled back over the local one on
+load. Editing localStorage and reloading therefore "works" for a fraction of a
+second and then silently reverts — three attempts read as "the widget is broken"
+when the widget was fine.
+
+Add one from the console like this (the label is
+`identifierString('p-' + plugin_name + '-' + key)`, lowercased, non-alphanumerics
+to `-`):
+
+```js
+const p = await (await fetch('/api/user/profile/',{credentials:'include'})).json();
+p.widgets.widgets.unshift('p-shopstatus-shop-status-panel');
+p.widgets.layouts.lg.unshift({i:'p-shopstatus-shop-status-panel',x:0,y:0,w:12,h:10,minW:12,minH:10});
+await fetch('/api/user/profile/',{method:'PATCH',credentials:'include',
+  headers:{'Content-Type':'application/json',
+           'X-CSRFToken':document.cookie.match(/csrftoken=([^;]+)/)[1]},
+  body:JSON.stringify({widgets:p.widgets})});
+```
+
+In the UI the same thing is done from ⋮ → Add Widget — but **the control is the
+small green icon in the left column, not the widget's name**. Clicking the name
+does nothing and closes nothing, which reads exactly like a failed add.
+
+## Tombstone markers do not share a severity
+
+The panel's first tombstone lamp counted all four markers — `NOT INVENTORY`,
+`MERGED into`, `REFUNDED`, `POSSIBLE RETURN` — and lit **red on 14 parts**. Then
+the 14 were read: 13 were `POSSIBLE RETURN — an order containing this was
+refunded; verify`, which is a deliberate to-do queue, and exactly one was a real
+fault (part 71, Arduino Nano, `MERGED into` another part while still `active` —
+so it can be counted twice).
+
+A red warning over a to-do list is the cry-wolf failure `DASHBOARD.md` is written
+to avoid, and it would have trained the lamp to be pressed unread within a week.
+Split by the rule already in that file — *does this failure make another check
+lie?*
+
+| marker | on an active part | lamp |
+|---|---|---|
+| `MERGED into`, `NOT INVENTORY` | double-counts, and sits in every coverage denominator | red |
+| `REFUNDED`, `POSSIBLE RETURN` | nothing is wrong yet; someone has to look | yellow |
+
+The general form: **a marker family is not a severity class.** Group markers by
+what breaks if they are ignored, not by which importer wrote them.
