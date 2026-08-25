@@ -259,3 +259,400 @@ export function renderStats(target, data) {
               'Bin-wall drawers with no stock rows that nobody has opened. Not free space — unknown space.'),
         'stats');
 }
+
+/* ==================================================================
+   The instrument panel.  docs/DASHBOARD.md carries the argument; the
+   short version is the principle everything below serves:
+
+       make normal look uniform, so abnormal breaks the pattern.
+
+   Three round gauges read by needle ANGLE, not by number — a healthy
+   set points the same way and the eye finds the odd one before it
+   reads a figure.  The value is in a drum counter in the dead zone at
+   the bottom of the sweep: present, never in the scan path.
+
+   Deliberately a depicted object in its own single dark-panel theme
+   rather than following Mantine's light/dark. It is an instrument face,
+   and an instrument face that restyles itself stops being one.
+   ================================================================== */
+
+const PANEL_CSS = `
+.sp{--met:#9aa1a5;--metd:#6b7276;--face:#0d1012;--needle:#f7fafc;
+  font-family:var(--mantine-font-family-monospace, ui-monospace, "IBM Plex Mono", monospace);
+  background:var(--met);border:1px solid var(--metd);border-radius:8px;
+  box-shadow:inset 0 1px 0 #b6bcbf, inset 0 -1px 0 #7d8488;
+  padding:.75rem .8rem;height:100%;overflow:auto}
+.sp::-webkit-scrollbar{width:7px}
+.sp::-webkit-scrollbar-thumb{background:#7d8488;border-radius:4px}
+.sp .plabel{font-size:.58rem;letter-spacing:.19em;color:#1e2427;text-transform:uppercase;
+  margin-bottom:.7rem;display:flex;gap:.75rem;flex-wrap:wrap;font-weight:700;align-items:baseline}
+.sp .plabel .sp2{flex:1}
+.sp .rule{margin-top:1rem;padding-top:.85rem;border-top:1px solid #757c80}
+
+/* --- annunciator: Korry pushbuttons, flashing until pressed --- */
+.sp .annun{display:grid;grid-template-columns:repeat(auto-fit,minmax(8.5rem,1fr));gap:.55rem}
+.sp .lampwrap{position:relative}
+.sp .lamp{width:100%;display:block;border:1px solid #0f1214;border-radius:4px;
+  background:linear-gradient(180deg,#3d4448 0%,#2f3538 52%,#23282b 100%);color:#7f888d;
+  /* bottom padding is the link's room: the 'open' anchor is positioned over the
+     button (a link cannot nest inside one) and would otherwise sit on the label */
+  padding:.45rem .5rem 1.05rem;font:inherit;font-size:.6rem;letter-spacing:.08em;text-align:center;
+  text-transform:uppercase;font-weight:700;line-height:1.25;cursor:pointer;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.16), inset 1px 0 0 rgba(255,255,255,.07),
+    inset -1px 0 0 rgba(0,0,0,.3), 0 3px 0 #1a1e20, 0 5px 7px rgba(0,0,0,.4);
+  transition:transform .06s, box-shadow .06s}
+.sp .lamp:active{transform:translateY(3px);
+  box-shadow:inset 0 2px 4px rgba(0,0,0,.55), 0 0 0 #1a1e20, 0 1px 2px rgba(0,0,0,.4)}
+.sp .lamp b{display:block;font-size:.95rem;letter-spacing:0;margin-bottom:.1rem}
+.sp .lamp .g{font-size:.78rem;display:block;line-height:1}
+.sp .lamp.caution{background:linear-gradient(180deg,#ffe95c 0%,#f2c800 50%,#cfa800 100%);
+  color:#161200;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.72), inset 0 -3px 3px rgba(140,105,0,.35),
+    0 3px 0 #8c7200, 0 5px 8px rgba(0,0,0,.42), 0 0 14px rgba(242,200,0,.42)}
+.sp .lamp.warning{background:linear-gradient(180deg,#f4574b 0%,#d81f16 50%,#ac150d 100%);
+  color:#ffffff;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5), inset 0 -3px 3px rgba(95,10,6,.4),
+    0 3px 0 #6d0c07, 0 5px 8px rgba(0,0,0,.42), 0 0 14px rgba(216,31,22,.42)}
+/* lit and unacknowledged flashes; pressing stops the flash, never the lamp */
+.sp .lamp.lit[data-ack="false"]{animation:sp-korry 1.1s steps(1,end) infinite}
+@keyframes sp-korry{50%{filter:brightness(.32) saturate(.5)}}
+.sp .lamp .ack{display:block;font-size:.48rem;letter-spacing:.06em;opacity:.75;margin-top:.22rem}
+.sp .lamp:focus-visible{outline:3px solid #fff;outline-offset:2px}
+@media (prefers-reduced-motion: reduce){
+  .sp .lamp.lit[data-ack="false"]{animation:none;outline:3px solid #fff;outline-offset:-5px}
+}
+.sp .lampgo{position:absolute;left:0;right:0;bottom:.3rem;text-align:center;
+  font-size:.5rem;letter-spacing:.05em;
+  color:inherit;opacity:.65;text-decoration:underline;text-underline-offset:2px}
+.sp .lamp.lit + .lampgo{color:#161200}
+.sp .lamp.warning.lit + .lampgo{color:#fff}
+.sp .lampgo:hover{opacity:1}
+.sp .lamp.off{background:linear-gradient(180deg,#3d4448 0%,#2f3538 52%,#23282b 100%);color:#c8ced2}
+
+/* --- the three engines --- */
+.sp .engines{display:grid;grid-template-columns:repeat(auto-fit,minmax(9.5rem,1fr));
+  gap:.5rem 1rem;justify-items:center}
+.sp .eng{text-align:center}
+.sp .eng svg{display:block;margin:0 auto;filter:drop-shadow(0 4px 5px rgba(0,0,0,.42))}
+.sp .eng .nm{font-size:.64rem;letter-spacing:.14em;color:#101416;margin-top:.4rem;font-weight:700}
+.sp .eng .sub{font-size:.56rem;color:#31383c;margin-top:.12rem;letter-spacing:.03em}
+.sp .eng .note{font-size:.52rem;color:#4a5256;margin-top:.08rem}
+.sp .eng .fresh{font-size:.52rem;color:#4a5256;margin-top:.08rem;font-style:italic}
+.sp .eng .tgt{font-size:.54rem;color:#3c4448;margin-top:.16rem;letter-spacing:.05em}
+.sp .eng .tgt b{font-variant-numeric:tabular-nums;color:#12171a}
+.sp .eng .saveerr{font-size:.52rem;color:#7a1109;font-weight:700;margin-top:.1rem}
+.sp .bug{cursor:grab;touch-action:none}
+.sp .bug:active{cursor:grabbing}
+.sp .bug:hover polygon,.sp .bug:focus-visible polygon{fill:#4da3ff;stroke:#f2f6fa;stroke-width:1.1}
+.sp .bug:focus{outline:none}
+.sp .eng a.dial:hover .dialface{stroke:#7fb2ea}
+
+/* --- sources: last read that PROVED something --- */
+.sp .sources{display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:.55rem}
+.sp .src{position:relative;display:block;text-decoration:none;border-radius:4px;
+  border:1px solid #0f1214;padding:.5rem .6rem;
+  background:linear-gradient(180deg,#20262a 0%,#171c1f 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.1), 0 2px 0 #121618, 0 4px 6px rgba(0,0,0,.35)}
+.sp .src .sname{font-size:.55rem;letter-spacing:.16em;text-transform:uppercase;
+  color:#9aa4ab;font-weight:700}
+.sp .src .stime{font-size:.95rem;color:#eef3f6;font-weight:600;margin-top:.12rem;
+  font-variant-numeric:tabular-nums}
+.sp .src .sproof{font-size:.53rem;color:#7b858c;margin-top:.18rem;line-height:1.45;
+  font-family:var(--mantine-font-family, system-ui, sans-serif)}
+.sp .src.flagged .stime{color:#5b646a}
+.sp .src.out .stime{color:#f2c800}
+.sp .offflag{position:absolute;top:.4rem;right:.4rem;transform:rotate(9deg);
+  background:repeating-linear-gradient(135deg,#d81f16 0 5px,#a4150e 5px 10px);
+  color:#fff;font-size:.55rem;font-weight:700;letter-spacing:.13em;
+  padding:.12rem .45rem;border:1px solid #121618;border-radius:2px;
+  box-shadow:0 1px 3px rgba(0,0,0,.5)}
+.sp .foot{font-size:.52rem;color:#2b3236;letter-spacing:.06em;margin-top:.7rem;
+  display:flex;gap:.6rem;flex-wrap:wrap}
+`;
+
+/* --- dial geometry ------------------------------------------------
+   0% sits at 135deg and the sweep runs 270deg clockwise to 100% at
+   45deg, leaving the dead zone at the bottom for the counter window. */
+const A0 = 135, SWEEP = 270, CX = 60, CY = 60;
+const ang = (v) => (A0 + (SWEEP * Math.max(0, Math.min(100, v)) / 100)) * Math.PI / 180;
+const px = (v, r) => [CX + r * Math.cos(ang(v)), CY + r * Math.sin(ang(v))];
+const f2 = (n) => n.toFixed(2);
+
+/* Value under a pointer, for the draggable bug. Beyond either end of the
+   sweep the bug snaps to the nearer end rather than jumping across the
+   dead zone. */
+function valueAt(cx, cy, x, y) {
+    let a = (Math.atan2(y - cy, x - cx) * 180 / Math.PI - A0 + 720) % 360;
+    if (a > SWEEP) return (a < SWEEP + (360 - SWEEP) / 2) ? 100 : 0;
+    return Math.round(a / SWEEP * 100);
+}
+
+function arc(from, to, color) {
+    const [x1, y1] = px(from, 48), [x2, y2] = px(to, 48);
+    const big = (to - from) / 100 * SWEEP > 180 ? 1 : 0;
+    return `<path d="M${f2(x1)},${f2(y1)} A48,48 0 ${big} 1 ${f2(x2)},${f2(y2)}"
+        fill="none" stroke="${color}" stroke-width="4"/>`;
+}
+
+function ticks() {
+    let out = '';
+    for (let v = 0; v <= 100; v += 5) {
+        const major = v % 20 === 0;
+        const [x1, y1] = px(v, 44), [x2, y2] = px(v, major ? 36 : 41);
+        out += `<line x1="${f2(x1)}" y1="${f2(y1)}" x2="${f2(x2)}" y2="${f2(y2)}"
+            stroke="${major ? '#e8edf1' : '#79838c'}" stroke-width="${major ? 2 : 1}"/>`;
+        if (major) {
+            const [lx, ly] = px(v, 30);
+            out += `<text x="${f2(lx)}" y="${f2(ly + 2.6)}" text-anchor="middle" fill="#aeb8c1"
+                font-size="7.5" font-family="inherit">${v}</text>`;
+        }
+    }
+    return out;
+}
+
+function gaugeSvg(g) {
+    const off = !!g.off;
+    const [nx1, ny1] = px(g.value ?? 0, -11), [nx2, ny2] = px(g.value ?? 0, 40);
+    const [bx, by] = px(g.target, 52);
+    const bugAng = (A0 + SWEEP * g.target / 100);
+    const label = off ? `${g.name} — no reading, OFF flag shown`
+                      : `${g.name} ${g.value} percent, target ${g.target}`;
+
+    // needle only when there is a reading. An instrument that has lost its
+    // signal drops a flag; it does not park the needle at zero and let that
+    // read as "none".
+    const needle = off ? '' : `
+        <line x1="${f2(nx1)}" y1="${f2(ny1)}" x2="${f2(nx2)}" y2="${f2(ny2)}"
+              stroke="var(--needle,#f7fafc)" stroke-width="2.8" stroke-linecap="round"/>
+        <circle cx="60" cy="60" r="6.5" fill="#616a72" stroke="#2b3136" stroke-width="1.5"/>
+        <circle cx="60" cy="60" r="2" fill="#0d1012"/>`;
+
+    const flag = off ? `
+        <g transform="rotate(-9 60 56)">
+          <rect x="26" y="47" width="68" height="18" rx="2" fill="#c2231a" stroke="#121618"/>
+          <text x="60" y="60" text-anchor="middle" fill="#fff" font-size="11"
+                font-weight="700" font-family="inherit" letter-spacing="2">OFF</text>
+        </g>` : '';
+
+    return `<svg width="132" height="132" viewBox="0 0 120 120" role="img" aria-label="${esc(label)}">
+      <circle cx="60" cy="60" r="58" fill="#2c3237" stroke="#4d565d" stroke-width="1"/>
+      <circle cx="18" cy="18" r="1.7" fill="#14181b"/><circle cx="102" cy="18" r="1.7" fill="#14181b"/>
+      <circle cx="18" cy="102" r="1.7" fill="#14181b"/><circle cx="102" cy="102" r="1.7" fill="#14181b"/>
+      <a class="dial" href="${esc(g.url)}" data-nav="${esc(g.url)}">
+        <circle class="dialface" cx="60" cy="60" r="51" fill="var(--face,#0d1012)"
+                stroke="#0a0c0d" stroke-width="2"/>
+      </a>
+      ${arc(0, 40, '#c2231a')}${arc(40, 80, '#e8be00')}${arc(80, 100, '#0f9d58')}
+      ${ticks()}
+      <rect x="41" y="77" width="38" height="17" rx="2" fill="#05080a" stroke="#464e55"/>
+      <text x="60" y="89.5" text-anchor="middle" fill="${off ? '#5b646a' : '#f4f7f9'}"
+            font-size="12" font-weight="600" font-family="inherit" class="drum">${off ? '--' : g.value + '%'}</text>
+      ${needle}${flag}
+      <ellipse cx="44" cy="38" rx="27" ry="17" fill="#fff" opacity=".05" transform="rotate(-30 44 38)"/>
+      <g class="bug" tabindex="0" role="slider" aria-valuemin="0" aria-valuemax="100"
+         aria-valuenow="${g.target}" aria-label="${esc(g.name)} target, drag or use arrow keys"
+         data-key="${esc(g.setting)}" data-gauge="${esc(g.key)}">
+        <circle class="bughit" cx="${f2(bx)}" cy="${f2(by)}" r="9" fill="transparent"/>
+        <polygon points="-4.6,-3.4 5.2,0 -4.6,3.4" fill="#ffffff" stroke="#0a0c0d" stroke-width=".8"
+                 transform="translate(${f2(bx)},${f2(by)}) rotate(${f2(bugAng + 180)})"/>
+      </g>
+    </svg>`;
+}
+
+function gaugeCard(g) {
+    return `<div class="eng" data-gauge="${esc(g.key)}">
+      ${gaugeSvg(g)}
+      <div class="nm">${esc(g.name)}</div>
+      <div class="sub">${esc(g.sub)}</div>
+      ${g.note ? `<div class="note">${esc(g.note)}</div>` : ''}
+      ${g.fresh ? `<div class="fresh">${esc(g.fresh)}</div>` : ''}
+      <div class="tgt">▼ target <b class="tv">${g.target}</b>%</div>
+      <div class="saveerr" hidden>target not saved</div>
+    </div>`;
+}
+
+/* Glyph as well as colour, always: red and yellow are the pair most likely
+   to be confused, so neither state is ever carried by hue alone. */
+function lampEl(l) {
+    const off = !!l.off;
+    const lit = !off && !!l.n;
+    const glyph = off ? '⌧' : (lit ? (l.tone === 'warning' ? '■' : '▲') : '·');
+    const cls = ['lamp', off ? 'off' : (lit ? `lit ${l.tone}` : '')].join(' ');
+    const n = off ? '—' : `${l.n}${l.unit && l.n ? l.unit : ''}`;
+    const ackLine = off ? '<span class="ack">no reading</span>'
+        : (lit && l.ack ? `<span class="ack">✓ ack ${esc(l.ack_age)}</span>` : '');
+    return `<div class="lampwrap">
+      <button class="${cls}" data-lamp="${esc(l.key)}" data-n="${off ? '' : l.n}"
+              data-ack="${l.ack ? 'true' : 'false'}" title="${esc(l.why)}"
+              aria-pressed="${l.ack ? 'true' : 'false'}">
+        <span class="g" aria-hidden="true">${glyph}</span><b>${esc(n)}</b>${esc(l.label)}${ackLine}
+      </button>
+      <a class="lampgo" href="${esc(l.url)}" data-nav="${esc(l.url)}">open →</a>
+    </div>`;
+}
+
+function sourceEl(s) {
+    const cls = 'src' + (s.off ? ' flagged' : (s.out ? ' out' : ''));
+    return `<a class="${cls}" href="/web/part/" data-nav="/web/part/">
+      <div class="sname">${esc(s.name)}</div>
+      <div class="stime">${esc(s.time)}</div>
+      <div class="sproof">${esc(s.proof)}</div>
+      ${s.off ? '<span class="offflag">OFF</span>' : ''}
+    </a>`;
+}
+
+export function renderPanel(target, data) {
+    const p = data?.context?.panel;
+    if (!p) {
+        target.innerHTML = `<style>${CSS}</style><div class="ss">` +
+            '<div class="none">Panel data unavailable — see the server log.</div></div>';
+        return;
+    }
+
+    target.innerHTML = `<style>${CSS}${PANEL_CSS}</style><div class="sp">
+      <div class="plabel"><span>Annunciator</span><span>·</span>
+        <span>lit lamps flash until pressed · pressing silences, never clears</span>
+        <span class="sp2"></span><span>read ${esc(p.measured)}</span></div>
+      <div class="annun">${p.lamps.map(lampEl).join('')}</div>
+
+      <div class="plabel rule"><span>Shop systems</span><span>·</span><span>coverage %</span>
+        <span>·</span><span>red 0–40</span><span>yellow 40–80</span><span>green 80–100</span>
+        <span>·</span><span>▼ bug = target, drag or arrow-key it</span></div>
+      <div class="engines">${p.gauges.map(gaugeCard).join('')}</div>
+
+      <div class="plabel rule"><span>Sources</span><span>·</span>
+        <span>last read that actually proved something</span>
+        <span class="sp2"></span><span>aged out after ${p.stale_h}h</span></div>
+      <div class="sources">${p.sources.map(sourceEl).join('')}</div>
+
+      <div class="foot"><span>normal is three needles at the same angle</span><span>·</span>
+        <span>an OFF flag is a missing reading, not a zero</span></div>
+    </div>`;
+
+    wirePanel(target, data, p);
+}
+
+/* ---------------- interaction -------------------------------------
+   Both writes go to plugin settings through the authenticated api the
+   host handed us. A write that fails says so on the instrument rather
+   than leaving a moved bug that did not stick. */
+function localStamp() {
+    const d = new Date();
+    const p2 = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}` +
+        `T${p2(d.getHours())}:${p2(d.getMinutes())}:${p2(d.getSeconds())}`;
+}
+
+function wirePanel(target, data, p) {
+    const api = data?.api;
+    const navigate = data?.navigate;
+    const setting = (key, value) =>
+        api ? api.patch(`/api/plugins/shopstatus/settings/${key}/`, { value })
+            : Promise.reject(new Error('no api'));
+
+    // In-app routing where the host offers it; the anchors stay real anchors
+    // so middle-click and copy-link still work.
+    target.querySelectorAll('[data-nav]').forEach((el) => {
+        el.addEventListener('click', (ev) => {
+            const to = el.getAttribute('data-nav');
+            if (!navigate || ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.button !== 0) return;
+            ev.preventDefault();
+            navigate(to.replace(/^\/web/, ''));
+        });
+    });
+
+    /* --- lamps: press to silence ---------------------------------- */
+    const acks = {};
+    p.lamps.forEach((l) => { if (l.ack) acks[l.key] = { n: l.n, at: null }; });
+
+    target.querySelectorAll('.lamp').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const key = btn.dataset.lamp;
+            const raw = btn.dataset.n;
+            if (raw === '' || Number(raw) === 0) return;   // nothing to silence
+            const on = btn.dataset.ack !== 'true';
+            btn.dataset.ack = on ? 'true' : 'false';
+            btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+            let line = btn.querySelector('.ack');
+            if (on && !line) {
+                line = document.createElement('span');
+                line.className = 'ack';
+                btn.appendChild(line);
+            }
+            if (line) line.textContent = on ? '✓ ack today' : '';
+            if (on) acks[key] = { n: Number(raw), at: localStamp() };
+            else delete acks[key];
+            setting('ACK_STATE', JSON.stringify(acks)).catch(() => {
+                if (line) line.textContent = 'ack not saved';
+            });
+        });
+    });
+
+    /* --- bugs: drag or arrow-key the target ----------------------- */
+    target.querySelectorAll('.bug').forEach((bug) => {
+        const svg = bug.closest('svg');
+        const card = bug.closest('.eng');
+        const err = card.querySelector('.saveerr');
+        const readout = card.querySelector('.tv');
+        let val = Number(bug.getAttribute('aria-valuenow'));
+
+        const paint = (v) => {
+            const a = (A0 + SWEEP * v / 100);
+            const rad = a * Math.PI / 180;
+            const bx = CX + 52 * Math.cos(rad), by = CY + 52 * Math.sin(rad);
+            bug.querySelector('.bughit').setAttribute('cx', f2(bx));
+            bug.querySelector('.bughit').setAttribute('cy', f2(by));
+            bug.querySelector('polygon').setAttribute(
+                'transform', `translate(${f2(bx)},${f2(by)}) rotate(${f2(a + 180)})`);
+            bug.setAttribute('aria-valuenow', v);
+            readout.textContent = v;
+        };
+
+        const commit = () => {
+            err.hidden = true;
+            setting(bug.dataset.key, val).catch(() => { err.hidden = false; });
+        };
+
+        // Pointer position in the SVG's own 120x120 space, so the maths does
+        // not care what size the gauge is drawn at.
+        const local = (ev) => {
+            const r = svg.getBoundingClientRect();
+            return [(ev.clientX - r.left) / r.width * 120, (ev.clientY - r.top) / r.height * 120];
+        };
+
+        bug.addEventListener('pointerdown', (ev) => {
+            ev.preventDefault();
+            ev.stopPropagation();
+            bug.setPointerCapture(ev.pointerId);
+            const move = (e) => {
+                const [x, y] = local(e);
+                val = valueAt(CX, CY, x, y);
+                paint(val);
+            };
+            const up = (e) => {
+                bug.releasePointerCapture(ev.pointerId);
+                bug.removeEventListener('pointermove', move);
+                bug.removeEventListener('pointerup', up);
+                commit();
+            };
+            bug.addEventListener('pointermove', move);
+            bug.addEventListener('pointerup', up);
+        });
+
+        // Drag-only is unusable from a keyboard, so the same control takes
+        // arrow keys — 1 a step, 10 with page keys, ends with home/end.
+        bug.addEventListener('keydown', (ev) => {
+            const step = { ArrowLeft: -1, ArrowDown: -1, ArrowRight: 1, ArrowUp: 1,
+                           PageDown: -10, PageUp: 10 }[ev.key];
+            let next = null;
+            if (step !== undefined) next = val + step;
+            else if (ev.key === 'Home') next = 0;
+            else if (ev.key === 'End') next = 100;
+            if (next === null) return;
+            ev.preventDefault();
+            val = Math.max(0, Math.min(100, next));
+            paint(val);
+            commit();
+        });
+    });
+}

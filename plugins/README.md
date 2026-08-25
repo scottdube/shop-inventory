@@ -6,15 +6,31 @@ and served from a symlink under `data/static/plugins/`.
 
 ## shop_status — dashboard widgets
 
-Four widgets, all rendered from data the plugin computes server-side and
+Five widgets, all rendered from data the plugin computes server-side and
 passes in `context`, so the JS makes no second API call:
 
 | Widget | Shows |
 |---|---|
+| **Instrument Panel** | three coverage gauges, annunciator lamps, source tiles |
 | Needs Attention | put-away queue, unfiled items, lost stock |
 | Orders & Projects | open POs and per-build allocation progress |
 | **To Order** | short for open builds, below minimum, already listed |
 | Catalog Health | counts, images, keywords coverage |
+
+**Instrument Panel** is piloted alongside the other four rather than replacing
+them — see `docs/DASHBOARD.md` for why it looks the way it does, and read that
+before changing anything about it. Two things about it differ from every other
+widget here:
+
+- It **writes**. The gauge bugs PATCH `TARGET_*` plugin settings and pressing a
+  lamp writes `ACK_STATE`, both through the authenticated `api` the host passes
+  into the render function. Failed writes are shown on the instrument.
+- It is deliberately **single-theme**. Everything else follows InvenTree's
+  light/dark switch; the panel is a depicted instrument face, and an instrument
+  face that restyles itself stops being one.
+
+A new widget does not appear on the dashboard just because the plugin offers it
+— the selection is per user and lives on `/api/user/profile/`. See `TRAPS.md`.
 
 **To Order** exists because InvenTree's own Low Stock report structurally
 cannot answer "what do I need to buy". Low Stock compares on-hand against

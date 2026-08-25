@@ -17,7 +17,7 @@ from urllib.parse import quote
 from django.utils.translation import gettext_lazy as _
 
 from plugin import InvenTreePlugin
-from plugin.mixins import UserInterfaceMixin
+from plugin.mixins import SettingsMixin, UserInterfaceMixin
 
 # Rows shown per section before the "N more" link. The widget scrolls, but
 # what fits without scrolling is what actually gets acted on.
@@ -55,13 +55,55 @@ PN = re.compile(r'^[A-Za-z0-9][A-Za-z0-9\-./]{2,24}$')
 
 
 
-class ShopStatusPlugin(UserInterfaceMixin, InvenTreePlugin):
+class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
     NAME = 'ShopStatus'
     SLUG = 'shopstatus'
     TITLE = _('Shop Status')
     DESCRIPTION = _('Open loops: put-away queue, unfiled items, lost stock, orders, projects')
-    VERSION = '1.2.0'
+    VERSION = '1.3.0'
     AUTHOR = 'Scott Dube'
+
+    # Targets live in settings because the gauge bugs write to them: you set a
+    # goal by dragging it on the instrument you read it from, not by finding a
+    # form. See docs/DASHBOARD.md.
+    SETTINGS = {
+        'TARGET_IMAGES': {
+            'name': _('Target — image coverage'),
+            'description': _('Where the bug sits on the IMAGES gauge (percent)'),
+            'default': 95,
+            'validator': [int],
+        },
+        'TARGET_COUNTED': {
+            'name': _('Target — stock counted'),
+            'description': _('Where the bug sits on the COUNTED gauge (percent)'),
+            'default': 90,
+            'validator': [int],
+        },
+        'TARGET_BINWALL': {
+            'name': _('Target — bin wall walked'),
+            'description': _('Where the bug sits on the BIN WALL gauge (percent)'),
+            'default': 100,
+            'validator': [int],
+        },
+        # Which lamps have been silenced, and at what count. Silencing is not
+        # clearing: the lamp stays lit while the condition holds, it just stops
+        # flashing. Storing the COUNT as well as the time is what makes the
+        # lamp flash again when the condition changes rather than every morning.
+        'ACK_STATE': {
+            'name': _('Acknowledged lamps'),
+            'description': _('JSON: lamp key -> {n, at}. Written by the panel.'),
+            'default': '{}',
+        },
+        'PREFLIGHT_PATH': {
+            'name': _('Vendor session state file'),
+            'description': _('Written by the overnight sweep; source of the SOURCES tiles'),
+            'default': '/Volumes/4TB_Removable/inventree/preflight_state.json',
+        },
+    }
+
+    # A vendor reading older than this has aged out. A stale reading rendered as
+    # a live one is the failure the OFF flag exists to prevent.
+    PANEL_STALE_H = 24
 
     def _rows(self, qs):
         """Stock rows. Links go to the STOCK ITEM, not the part — the action
@@ -486,22 +528,32 @@ class ShopStatusPlugin(UserInterfaceMixin, InvenTreePlugin):
         r'\b(?=[A-Z0-9][A-Z0-9\-]{3,})(?=[A-Z0-9\-]*[0-9])(?=[A-Z0-9\-]*[A-Z])'
         r'[A-Z][A-Z0-9]*[0-9][A-Z0-9\-]*\b')
 
-    def _unchecked_drawers(self):
-        """Bin-wall drawers with no stock rows that nobody has actually looked in."""
+    _DRAWER = re.compile(r'^[A-Z][0-9]+-R\d+C\d+$')
+
+    def _binwall(self):
+        """(walked, total) bin-wall drawers.
+
+        WALKED means somebody has established what is in it: it holds stock
+        rows, or a human wrote VERIFIED EMPTY on it. Records alone are not
+        evidence of emptiness — B3-R3C2 had zero rows and a drawer full of ICs,
+        which is why "no stock rows" counts as unknown, not as empty.
+        """
         from stock.models import StockItem, StockLocation
-        pat = re.compile(r'^[A-Z][0-9]+-R\d+C\d+$')
         occupied = set(StockItem.objects.filter(location__isnull=False)
                        .values_list('location_id', flat=True))
-        n = 0
+        walked = total = 0
         for l in StockLocation.objects.all().only('pk', 'name', 'description'):
-            if not pat.match(l.name or ''):
+            if not self._DRAWER.match(l.name or ''):
                 continue
-            if l.pk in occupied:
-                continue
-            if (l.description or '').upper().startswith('VERIFIED EMPTY'):
-                continue
-            n += 1
-        return n
+            total += 1
+            if l.pk in occupied or (l.description or '').upper().startswith('VERIFIED EMPTY'):
+                walked += 1
+        return walked, total
+
+    def _unchecked_drawers(self):
+        """Bin-wall drawers nobody has actually looked in."""
+        walked, total = self._binwall()
+        return total - walked
 
     def _datasheet_coverage(self):
         """(have, eligible) — NOT (missing, total).
@@ -543,16 +595,344 @@ class ShopStatusPlugin(UserInterfaceMixin, InvenTreePlugin):
                 have += 1
         return have, eligible
 
+
+    # ------------------------------------------------------------------
+    # The instrument panel. docs/DASHBOARD.md carries the argument; the one
+    # rule that shapes this code rather than the CSS is: a reading that cannot
+    # be proved renders OFF — never zero, never green, never blank.
+    # ------------------------------------------------------------------
+
+    def _ack_map(self):
+        import json
+        try:
+            return json.loads(self.get_setting('ACK_STATE') or '{}')
+        except (ValueError, TypeError):
+            # A corrupt ack map must not read as "everything is silenced".
+            return {}
+
+    @staticmethod
+    def _when(dt):
+        """A timestamp as a person reads it: time if today, else a date."""
+        import datetime
+        if not dt:
+            return '--:--'
+        now = datetime.datetime.now()
+        if dt.date() == now.date():
+            return dt.strftime('%H:%M today')
+        if (now.date() - dt.date()).days == 1:
+            return dt.strftime('%H:%M yesterday')
+        return dt.strftime('%b %-d %H:%M')
+
+    def _gauges(self):
+        from part.models import Part
+        from stock.models import StockItem
+
+        def pct(a, b):
+            return round(100.0 * a / b) if b else 0
+
+        def target(key, fallback):
+            try:
+                return int(self.get_setting(key))
+            except (TypeError, ValueError):
+                return fallback
+
+        rows = StockItem.objects.count()
+        counted_qs = StockItem.objects.filter(stocktake_date__isnull=False)
+        counted = counted_qs.count()
+        oldest = (counted_qs.order_by('stocktake_date')
+                  .values_list('stocktake_date', flat=True).first())
+        if oldest:
+            import datetime
+            age = (datetime.date.today() - oldest).days
+            fresh = f'oldest count {age}d old'
+        else:
+            fresh = 'no count on record'
+
+        walked, drawers = self._binwall()
+
+        act = Part.objects.filter(active=True)
+        img_all = act.count()
+        img_have = act.exclude(image='').exclude(image__isnull=True).count()
+
+        return [
+            {
+                # OFF on purpose. Coverage is meant to run against the
+                # REACHABLE denominator, and the reachable/ruled-out split is
+                # the sweep's accumulated evidence, not a query this panel can
+                # run. Rendering the raw 53% instead would be exactly the
+                # misleading number the redesign threw out — and rendering the
+                # remembered 96% would be worse, because nothing here can tell
+                # whether that exclusion set still holds.
+                'key': 'images', 'name': 'IMAGES',
+                'off': 'reachable denominator not supplied',
+                'value': None,
+                'sub': f'{img_have} / {img_all} raw — not the real denominator',
+                'note': 'ruled-out split still owed by the sweep',
+                'fresh': '',
+                'target': target('TARGET_IMAGES', 95),
+                'setting': 'TARGET_IMAGES',
+                'url': '/web/part/',
+            },
+            {
+                'key': 'counted', 'name': 'COUNTED',
+                'off': None,
+                'value': pct(counted, rows),
+                'sub': f'{counted} / {rows} stock rows',
+                'note': f'{rows - counted} never counted',
+                'fresh': fresh,
+                'target': target('TARGET_COUNTED', 90),
+                'setting': 'TARGET_COUNTED',
+                'url': '/web/stock/',
+            },
+            {
+                'key': 'binwall', 'name': 'BIN WALL',
+                'off': None,
+                'value': pct(walked, drawers),
+                'sub': f'{walked} / {drawers} drawers',
+                'note': f'{drawers - walked} never opened',
+                'fresh': 'walked = holds stock, or verified empty by eye',
+                'target': target('TARGET_BINWALL', 100),
+                'setting': 'TARGET_BINWALL',
+                'url': '/web/stock/',
+            },
+        ]
+
+    def _lamps(self):
+        """Nine lamps. Red where a failure makes another check lie, yellow
+        where it is work waiting. That split, not severity, is the rule — see
+        DASHBOARD.md: a null issue date did not produce a wrong aging number,
+        it removed the row from aging entirely."""
+        import datetime
+
+        from part.models import Part
+        from stock.models import StockItem, StockLocation
+        from order.models import PurchaseOrder
+        try:
+            from order.status_codes import PurchaseOrderStatus as POS
+        except ImportError:
+            from InvenTree.status_codes import PurchaseOrderStatus as POS
+
+        placed = PurchaseOrder.objects.filter(status=POS.PLACED.value)
+
+        # [ESTIMATE] is a PREFIX on StockItem.notes, not a substring anywhere in
+        # it, and not on Part.description. Both of those wrong tests have been
+        # run here and both returned a confident wrong number.
+        est = StockItem.objects.filter(notes__istartswith='[ESTIMATE]')
+
+        recv = StockLocation.objects.filter(name='Receiving')
+        unfiled = StockLocation.objects.filter(name__istartswith='Unfiled')
+
+        # The tombstone markers do NOT share a severity, and the first version of
+        # this lamp got that wrong: it lit red on 14 rows, 13 of which were
+        # "POSSIBLE RETURN - verify", a deliberate to-do queue. A red lamp over a
+        # to-do list is the cry-wolf failure this panel exists to avoid.
+        #
+        # The split follows the rule in DASHBOARD.md - does this failure make
+        # another check LIE?
+        #   MERGED into / NOT INVENTORY on an ACTIVE part: yes. A merged part
+        #     still active can be counted twice, and a non-inventory row sits in
+        #     every coverage denominator on this panel. Red.
+        #   REFUNDED / POSSIBLE RETURN: no. Nothing is wrong yet; somebody has to
+        #     go and look. Yellow.
+        def _tombs(tags):
+            qs = Part.objects.none()
+            for tag in tags:
+                qs = qs | Part.objects.filter(active=True, description__icontains=tag)
+            return qs.distinct()
+
+        ghost = _tombs(('MERGED into', 'NOT INVENTORY'))
+        verify = _tombs(('REFUNDED', 'POSSIBLE RETURN')).exclude(
+            pk__in=ghost.values_list('pk', flat=True))
+
+        state, newest = self._preflight()
+        stale_h = None
+        if newest:
+            stale_h = int((datetime.datetime.now() - newest).total_seconds() // 3600)
+
+        lamps = [
+            {'key': 'contradiction', 'tone': 'warning',
+             'n': est.filter(stocktake_date__isnull=False).count(),
+             'label': 'Row contradicts itself', 'url': '/web/stock/',
+             'why': 'marked [ESTIMATE] and stocktake-stamped — clear the date, not the marker'},
+            {'key': 'po_no_date', 'tone': 'warning',
+             'n': placed.filter(issue_date__isnull=True).count(),
+             'label': 'PO has no issue date', 'url': '/web/purchasing/index/purchaseorders/',
+             'why': 'a null issue date drops the row out of aging entirely'},
+            {'key': 'negative', 'tone': 'warning',
+             'n': StockItem.objects.filter(quantity__lt=0).count(),
+             'label': 'Negative stock', 'url': '/web/stock/',
+             'why': 'a stock system that can go below zero is not counting'},
+            {'key': 'tombstone', 'tone': 'warning',
+             'n': ghost.count(),
+             'label': 'Merged part still active', 'url': '/web/part/',
+             'why': 'merged or not-inventory rows that can still be counted twice'},
+            {'key': 'lost', 'tone': 'caution',
+             'n': StockItem.objects.filter(location__isnull=True).count(),
+             'label': 'Stock with no location', 'url': '/web/stock/',
+             'why': 'somewhere in the shop, nowhere in the record'},
+            {'key': 'putaway', 'tone': 'caution',
+             'n': StockItem.objects.filter(location__in=recv).count(),
+             'label': 'Waiting in Receiving', 'url': '/web/stock/',
+             'why': 'arrived, not yet given a home'},
+            {'key': 'unfiled', 'tone': 'caution',
+             'n': StockItem.objects.filter(location__in=unfiled).count(),
+             'label': 'Unfiled — find these', 'url': '/web/stock/',
+             'why': 'the import says it exists; nobody has found it'},
+            {'key': 'to_verify', 'tone': 'caution',
+             'n': verify.count(),
+             'label': 'Refund — verify these', 'url': '/web/part/',
+             'why': 'an order containing this was refunded; nobody has looked yet'},
+            {'key': 'po_open', 'tone': 'caution',
+             'n': placed.count(),
+             'label': 'PO placed, unreceived', 'url': '/web/purchasing/index/purchaseorders/',
+             'why': 'money out, nothing on the shelf yet'},
+        ]
+
+        # The sweep's own liveness. OFF rather than 0 when the state file
+        # cannot be read: "the job is fine" and "I cannot tell" must not render
+        # the same, which is the whole argument of the fourth state.
+        if stale_h is None:
+            lamps.append({'key': 'sweep', 'tone': 'caution', 'n': None, 'off': True,
+                          'label': 'Sweep check-in', 'url': '/web/part/',
+                          'why': 'no readable session-state file — cannot tell if it ran'})
+        else:
+            lamps.append({'key': 'sweep', 'tone': 'caution',
+                          'n': stale_h if stale_h >= self.PANEL_STALE_H else 0,
+                          'unit': 'h',
+                          'label': 'Sweep has not checked in', 'url': '/web/part/',
+                          'why': f'last check-in {stale_h}h ago'})
+
+        acks = self._ack_map()
+        import datetime as _dt
+        for lamp in lamps:
+            rec = acks.get(lamp['key']) or {}
+            lamp['ack'] = bool(rec) and rec.get('n') == lamp.get('n')
+            lamp['ack_age'] = ''
+            if lamp['ack'] and rec.get('at'):
+                try:
+                    at = _dt.datetime.fromisoformat(rec['at'])
+                    days = (_dt.datetime.now() - at).days
+                    # A lamp silenced for weeks is itself a signal, so the age
+                    # is shown rather than just a tick.
+                    lamp['ack_age'] = 'today' if days < 1 else f'{days}d'
+                except ValueError:
+                    pass
+        return lamps
+
+    def _preflight(self):
+        """(state dict, newest check-in) from the sweep's session file."""
+        import datetime
+        import json
+        path = self.get_setting('PREFLIGHT_PATH')
+        try:
+            with open(path) as fh:
+                state = json.load(fh)
+        except (OSError, ValueError):
+            return {}, None
+        if not isinstance(state, dict):
+            return {}, None
+        newest = None
+        for rec in state.values():
+            if not isinstance(rec, dict):
+                continue
+            try:
+                seen = datetime.datetime.fromisoformat(rec.get('checked') or '')
+            except (TypeError, ValueError):
+                continue
+            newest = seen if (newest is None or seen > newest) else newest
+        return state, newest
+
+    def _sources(self):
+        """Last read that PROVED something — not the last time a job ran.
+
+        Those two diverge exactly when something is wrong, which is why the
+        proof line is shown and the run time is not.
+        """
+        import datetime
+
+        state, _ = self._preflight()
+        if not state:
+            return [{'key': 'sweep', 'name': 'Vendor sessions', 'time': '--:--',
+                     'proof': 'session-state file unreadable', 'off': True}]
+
+        out = []
+        for vendor in sorted(state):
+            rec = state[vendor] if isinstance(state[vendor], dict) else {}
+            st = (rec.get('state') or 'UNKNOWN').upper()
+            try:
+                checked = datetime.datetime.fromisoformat(rec.get('checked') or '')
+            except (TypeError, ValueError):
+                checked = None
+            try:
+                last_ok = datetime.datetime.fromisoformat(rec.get('last_ok') or '')
+            except (TypeError, ValueError):
+                last_ok = None
+
+            stale = (checked is None
+                     or (datetime.datetime.now() - checked).total_seconds()
+                     > self.PANEL_STALE_H * 3600)
+
+            if st == 'UNKNOWN' or stale:
+                # No usable reading. A reading that has aged out is not a
+                # reading; a needle parked on the last known value is a lie
+                # with a timestamp.
+                row = {'time': '--:--', 'off': True,
+                       'proof': ('never proved' if checked is None
+                                 else f'last checked {self._when(checked)} — aged out')}
+            elif st == 'OUT':
+                # A real reading that says "signed out". Not OFF: the probe
+                # worked, the answer is bad news.
+                row = {'time': self._when(checked), 'off': False, 'out': True,
+                       'proof': f'signed out · last healthy {self._when(last_ok)}'}
+            else:
+                row = {'time': self._when(last_ok or checked), 'off': False,
+                       'proof': 'session proved live'}
+            row['key'] = vendor
+            row['name'] = vendor.title()
+            out.append(row)
+        return out
+
+    def _panel(self):
+        import datetime
+        return {
+            'gauges': self._gauges(),
+            'lamps': self._lamps(),
+            'sources': self._sources(),
+            'measured': datetime.datetime.now().strftime('%H:%M'),
+            'stale_h': self.PANEL_STALE_H,
+        }
+
     def get_ui_dashboard_items(self, request, context, **kwargs):
-        """Four widgets: the work queue, orders/projects, what to buy, the numbers."""
+        """Five widgets: the instrument panel, then the work queue,
+        orders/projects, what to buy, the numbers.
+
+        The panel is computed in its own try. It is the new one and the four
+        below have been right for weeks — a panel that throws must not take
+        the working widgets down with it.
+        """
+        import logging
+
         try:
             data = self._gather()
         except Exception:
-            import logging
             logging.getLogger('inventree').exception('ShopStatus: _gather failed')
             return []
 
-        return [
+        items = []
+        try:
+            items.append({
+                'key': 'shop-status-panel',
+                'title': _('Instrument Panel'),
+                'description': _('Coverage gauges, annunciator lamps, source tiles'),
+                'icon': 'ti:gauge:outline',
+                'source': self.plugin_static_file('shop_status.js:renderPanel'),
+                'context': {'panel': self._panel()},
+                'options': {'width': 12, 'height': 10},
+            })
+        except Exception:
+            logging.getLogger('inventree').exception('ShopStatus: _panel failed')
+
+        return items + [
             {
                 'key': 'shop-status-queue',
                 'title': _('Needs Attention'),
