@@ -46,3 +46,8 @@ for b in bins:
     print()
 
 print(f"{len(bins)} bins")
+# RB-14 counts five rows, all stamped, and also holds a jig nobody catalogued.
+# A count is per-ROW; completeness is per-CONTAINER, and nothing here measures
+# the second. Say so, rather than letting a green line read as "done".
+print("\nCOUNTED means the rows are right. It does NOT mean the bin's contents")
+print("are all on the books - only a person at the open bin can say that.")
