@@ -140,10 +140,11 @@ LAMP_TIPS = {
         'The price on such a row is one division away from being 10x or 50x '
         'wrong, because a pack price booked per piece looks perfectly '
         'reasonable: 19 storage bins read $208.62 against a $21.96 spend and '
-        'nothing objected. This lamp does NOT claim the price is wrong. A kit '
-        'stocked as one unit is correctly priced per pack, and some parts really '
-        'do cost that each. It says the record cannot tell you which, while '
-        'money is riding on it — settle it from the invoice, then set '
+        'nothing objected. Rows holding a single unit are skipped — one of a '
+        'stated pack is a kit, priced per kit. This lamp does NOT claim the '
+        'price is wrong: Haas pull studs really are $8.40 each, verified from '
+        'the vendor. It says the record cannot tell you which, while money is '
+        'riding on it — settle it from the invoice, then set '
         'pack_quantity on the supplier part so the next receipt prices itself.'),
     'recv_age': (
         'Rows that have sat on the staging dock longer than the stale threshold '
@@ -1117,7 +1118,13 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
         from company.models import SupplierPart
         from stock.models import StockItem
 
-        rows = (StockItem.objects.filter(StockItem.IN_STOCK_FILTER)
+        # quantity > 1 only. ONE unit of a stated pack is a kit stocked as a kit
+        # and priced per kit — an ER20 collet set at $152.85, a 58-piece clamp
+        # kit at $89.95, 2,000 Avery labels at $11.99 are all correct, and the
+        # number in the name describes the CONTENTS, not a purchase multiple.
+        # The shape that was wrong on the bins is quantity N of a stated pack of
+        # N, so that is what this asks about.
+        rows = (StockItem.objects.filter(StockItem.IN_STOCK_FILTER, quantity__gt=1)
                 .exclude(purchase_price=None).select_related('part'))
         n, sample = 0, []
         for r in rows:
