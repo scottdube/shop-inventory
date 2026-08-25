@@ -20,9 +20,17 @@ as the B wall's rows 5-7, so drawers are interchangeable with those. Shell is
 20 x 6-3/8 x 15-13/16 in, identical to the 10164s that make up the A wall, so
 two stacked are 31-5/8 in and sit level with the A row over the B row.
 
-**Check before running:** confirm the drawer really is the large class. The
-62 x 4-1/2 x 2-3/16 figure came from Walmart's AI-generated spec block, not from
-Akro-Mils. Returns are free for 90 days, so measure one on arrival.
+**Drawer class CONFIRMED 2026-08-25**, on arrival, by Scott: *"They are
+identical size to the, uh, other bins."* The cabinets were delivered that day and
+compared against the wall in the shop, which is what this check was waiting for —
+the 62 x 4-1/2 x 2-3/16 figure had come from Walmart's AI-generated spec block
+rather than from Akro-Mils, and returns are free for 90 days precisely so a
+mismatch could be sent back.
+
+Recorded as a COMPARISON against the existing large drawers, not a tape
+measurement — which is the right evidence for the question actually being asked,
+"do these interchange with B rows 5-7". If a future session needs the absolute
+dimensions rather than the match, that is still unmeasured.
 """
 import argparse
 import os
@@ -104,4 +112,5 @@ print(f"\n  created {made} cabinet(s); stale pathstrings: {stale or 'none'}")
 print("\n  NEXT:")
 print("    1. itq run scripts/link_barcodes.py --commit      link the QR data")
 print("    2. itq run scripts/make_labels_avery.py A0 B0     or the 62mm roll")
-print("    3. measure one drawer and confirm it IS the large class")
+print("    3. drawer class already confirmed 2026-08-25 by comparison —")
+print("       nothing to measure unless absolute dimensions are needed")

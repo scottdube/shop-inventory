@@ -976,7 +976,7 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
                                          location__pk=recv_pk,
                                          creation_date__lt=cutoff).count())
 
-        pack_n, pack_sample = self._pack_price_suspects()
+        pack_n, pack_sample, pack_rows = self._pack_price_suspects()
 
         lamps = [
             {'key': 'contradiction', 'tone': 'warning',
@@ -1041,6 +1041,7 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
              'n': pack_n,
              'label': 'Pack price may be per piece',
              'url': '/web/stock/location/index/stock-items',
+             'link': self._rows_link(pack_rows),
              'why': 'the record states a pack size that nothing confirms — '
                     + ('; '.join(pack_sample) if pack_sample else 'none')},
             {'key': 'recv_age', 'tone': 'caution',
@@ -1105,6 +1106,52 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
                     pass
         return lamps
 
+    @staticmethod
+    def _rows_link(rows):
+        """A link that opens exactly THESE stock rows, or None.
+
+        The API has no filter for a set of primary keys — `id`, `pk` and
+        `id__in` are all silently ignored and return the whole table (measured;
+        see TRAPS.md). What it does have is `search`, so: find a word every one
+        of these rows' parts shares, mirror the API's own search fields in the
+        ORM, and use the link ONLY if that search returns this exact number of
+        rows. A word like "TERMINAL" that also catches other terminal blocks
+        fails the count and is discarded; "KF301" passes.
+
+        One row needs no filter at all — link straight to the item.
+        """
+        from django.db.models import Q
+        from stock.models import StockItem
+
+        if not rows:
+            return None
+        if len(rows) == 1:
+            return (f'/web/stock/item/{rows[0].pk}/', 1)
+
+        def mirror(term):
+            # These are StockList.search_fields, verbatim. If they drift, the
+            # count check fails and the link is simply not offered.
+            q = (Q(serial__icontains=term) | Q(batch__icontains=term)
+                 | Q(location__name__icontains=term)
+                 | Q(part__name__icontains=term) | Q(part__IPN__icontains=term)
+                 | Q(part__description__icontains=term)
+                 | Q(supplier_part__SKU__icontains=term)
+                 | Q(supplier_part__supplier__name__icontains=term)
+                 | Q(supplier_part__manufacturer_part__MPN__icontains=term))
+            return (StockItem.objects.filter(StockItem.IN_STOCK_FILTER)
+                    .filter(q).distinct().count())
+
+        words = None
+        for r in rows:
+            w = {t for t in re.split(r'[^A-Za-z0-9.]+', (r.part.name or '').upper())
+                 if len(t) >= 3}
+            words = w if words is None else (words & w)
+        for term in sorted(words or (), key=len, reverse=True):
+            if mirror(term) == len(rows):
+                return (f'/web/stock/location/index/stock-items'
+                        f'?search={quote(term)}&in_stock=true', len(rows))
+        return None
+
     def _pack_price_suspects(self):
         """(count, sample) — priced stock whose part states a pack size that
         nothing in the record confirms.
@@ -1126,7 +1173,7 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
         # N, so that is what this asks about.
         rows = (StockItem.objects.filter(StockItem.IN_STOCK_FILTER, quantity__gt=1)
                 .exclude(purchase_price=None).select_related('part'))
-        n, sample = 0, []
+        n, sample, hits = 0, [], []
         for r in rows:
             p = r.part
             m = PACK_SIZE.search(f'{p.name} {p.description or ""}')
@@ -1136,11 +1183,12 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
                    for sp in SupplierPart.objects.filter(part=p)):
                 continue          # the pack size IS recorded; nothing to ask
             n += 1
+            hits.append(r)
             if len(sample) < 4:
                 pack = next((g for g in m.groups() if g), '?')
                 sample.append(f'{p.name[:34]} ({float(r.quantity):g} @ '
                               f'{r.purchase_price}, stated pack {pack})')
-        return n, sample
+        return n, sample, hits
 
     def _preflight(self):
         """(state dict, newest check-in) from the sweep's session file."""
