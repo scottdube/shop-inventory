@@ -38,6 +38,19 @@ new function.
   produced this rule.
 - **Measure, don't model.** When measurement is cheap, go measure. Analysis
   outrunning the build is the recurring failure here.
+- **One stock row per part per location.** Once goods are in inventory the shelf
+  answers *how many do I have*, in one number — not a line per purchase that has
+  to be added up in your head. Buying more of something MERGES into the existing
+  row; the purchase orders and the row's notes carry where it came from. Split
+  rows are for things that are genuinely not interchangeable: serialised items,
+  a different status (damaged, quarantined), a real batch or expiry difference,
+  or a different location. Scott, 2026-08-25: *"once they go into inventory they
+  should be a combined qty"*.
+- **A pack is a supplier fact, not a part.** Stock is counted in PIECES; the
+  supplier part carries `pack_quantity`. Get that wrong and the pack price is
+  booked against every piece — 19 storage bins read $208.62 instead of $20.86.
+  If a part NAME says "10 pack" while its quantity counts pieces, the name is
+  the bug.
 - **`default_location` is where a spare goes home** — never a project bin, never
   a staging area.
 - **Check for a duplicate before creating a part.** Two importers have already

@@ -3875,3 +3875,60 @@ same date, same $18.99. One purchase imported twice under two vendor titles — 
 two connector variants, so the merge was correct and there is nothing to unpick.
 Total stock is 0 on both sides, so no boards existed to inspect even if it had
 mattered. Written into the part's notes with the evidence.
+
+
+## A pack is a supplier fact — get pack_quantity wrong and every piece wears the pack price
+
+2026-08-25. Scott: *"the pricing of those bins are wrong they were 10.98 for a
+10 pack not per piece."*
+
+`SupplierPart` 5297809753 (Walmart, Sterilite 6-quart bins) carried
+**`pack_quantity='1'`**. PO-0141 bought one ten-pack for $10.98, so the receipt
+created stock priced at **$10.98 per bin**. Nineteen bins read **$208.62** of
+storage bins on a $21.96 spend — an order of magnitude, in the direction that
+flatters.
+
+**Fixed at the root, not just on the rows:** `pack_quantity` is now 10, so the
+next receipt of that SKU prices itself. Existing rows repriced to $1.098.
+
+**And `.update()` is not enough for this field.** `pack_quantity` is a string;
+`pack_quantity_native` is the number InvenTree actually calculates with, and it
+is recomputed in `save()`. A queryset `.update()` writes the string and leaves
+the native value stale — it read `1.0000000000` next to a `pack_quantity` of
+`'10'`, which is a record that contradicts itself. Only the re-read caught it.
+Use `.save()` for this field and verify BOTH.
+
+**The smell to watch for:** a part whose NAME says "10 pack" while its quantity
+counts pieces. That mismatch is what makes the wrong price look reasonable —
+19 of something called a "10 pack" at $10.98 each is not obviously absurd until
+you notice the quantity is bins.
+
+## One row per part per location, and what the merge costs
+
+Same conversation. Scott: *"if I follow that logic any time we buy more of
+anything it becomes its own stock? so each time we get new ESP32-C6s I have to
+contend with another line and add those in my head to know how many I have?"*
+
+He is right, and the earlier answer here (keep the bins as two rows, one per
+purchase) optimised for provenance while ignoring the question the shelf is
+actually asked. **The rule is now in `CLAUDE.md`:** one stock row per part per
+location; buying more merges. Purchase history lives on the purchase orders and
+in the row's notes.
+
+**What the merge actually costs, so it is chosen and not discovered:**
+`merge_stock_items` **deletes the other row and its tracking history**, and
+computes a weighted-average unit price. So anything the merged-away row knew has
+to be written into the surviving note FIRST. Here that was the counter purchase —
+ten bins bought in store because the delivery was late, with no email and no
+portal entry, so there is no PO to point at and never will be. That story would
+have died in the merge.
+
+**Reprice before merging, not after.** The average is weighted by quantity, so
+merging two wrong prices gives a confidently wrong average.
+
+**Exceptions that stay split:** serialised items, mixed status, real batch or
+expiry differences, different locations. Measured across the whole instance the
+day the rule was written: only 3 (part, location) pairs held more than one row —
+the bins (merged), two SHT31-D rows with no location at all, and two BT30 collet
+chuck rows at different prices, which is a judgement call rather than a
+duplicate.
