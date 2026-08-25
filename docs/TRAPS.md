@@ -3551,3 +3551,44 @@ made the collision impossible in both directions.
 
 Not fixed retroactively here: rewriting a commit another session had just
 written is a worse race than the one it repairs.
+
+## The 2026-08-25 NEVER_STARTED was idle sleep, not permissions and not the API
+
+**Measured from `pmset -g log`.** The Mac entered `Idle Sleep` at **01:52:19**,
+thirteen minutes before the 02:05 enrich, and spent the rest of the night
+cycling Sleep -> DarkWake roughly every 90 seconds. All three attempts
+(02:05/03:00/04:00) deferred to Scott's 08:46 morning wake, which is why the
+journal window 01:00-06:00 held zero events.
+
+**This is the third distinct cause behind an identical symptom**, which is the
+whole point of writing it down:
+
+| night | symptom | actual cause |
+|---|---|---|
+| 08-23 and before | "permission stall" | `itq` was not on PATH — exit 127 |
+| 08-24 | ran, did nothing | `API Error: 529` at 02:09 |
+| 08-25 | no events at all | machine idle-slept at 01:52 |
+
+None of the three is distinguishable from the others by looking at the
+scheduler, which reports all of them as "the task ran".
+
+**Fixed the same morning, by another session:** `com.sln.overnight-caffeinate`
+(holds from 01:45 for 12300 s) plus `pmset repeat wakepoweron 01:55`. Neither
+existed last night. Verified today by `launchctl kickstart` that caffeinate
+does take both `PreventSystemSleep` and `PreventUserIdleSystemSleep` when
+launchd starts it — not merely that it works from a shell, which is a
+different test and has already lied once in this repo.
+
+**The RTC wake at 01:55 is the single point of failure and nothing guards it.**
+`caffeinate` cannot promote a dark wake to a full wake, so if the repeat wake
+is ever lost — a macOS update, an NVRAM reset, a restore — the caffeinate hold
+will faithfully pin the machine in DarkWake, where the app's scheduler is
+throttled. That failure looks exactly like a healthy hold. Check it with
+`pmset -g sched`; it must list a `wakepoweron` at 1:55AM.
+
+**Instrument added:** `com.sln.overnight-witness` writes one line at 01:44,
+02:00, 03:00, 04:00 and 05:00 to `~/.claude/overnight-witness.log`. Its own
+lateness is the measurement — lines at their scheduled times mean the Mac was
+awake and the fault lies with the app or the job; lines clustered at a single
+morning timestamp mean it slept. Read it FIRST on any NEVER_STARTED, before
+touching `pmset -g log`.
