@@ -167,7 +167,7 @@ snapshot by nature is called out below.
 |---|---|---|
 | IMAGES | **OFF** | reachable denominator not supplied — see below |
 | COUNTED | 56% | 360 of 638 rows **in stock** carry a stocktake date |
-| BIN WALL | 88% | 284 of 324 drawers hold stock or were verified empty by eye |
+| BIN WALL | 88% → **76%** | 284 of **372** drawers, after A0/B0 added 48 on 2026-08-25 |
 
 **IMAGES flew its OFF flag for the first two hours, and that was the honest
 output while it lasted.** Coverage is defined against the *reachable*
@@ -313,6 +313,16 @@ panel is layout A only.
   against a populated location at six thresholds — 24/24, 22/22, 0/0 — because
   Receiving is empty today and a lamp that has never fired is a lamp that has
   never been tested.
+- **A brand-new cabinet reads as unknown space.** Hanging A0/B0 on 2026-08-25
+  added 48 drawers and dropped BIN WALL from 88% to 76% in one afternoon —
+  correctly, by the letter of the rule (walked = holds stock, or a human wrote
+  VERIFIED EMPTY), and misleadingly in spirit, because nobody doubts that a
+  cabinet unboxed this morning is empty. The gauge should probably not fall when
+  capacity is ADDED; that is a different event from coverage decaying. Either the
+  new drawers get stamped verified-empty on creation, or the gauge needs to
+  separate "unknown" from "new". Left alone deliberately: stamping 48 drawers as
+  eye-verified is a claim about somebody's eyes, and this project does not make
+  those on a person's behalf.
 - **The pilot has no end condition.** Side-by-side is only worth something if
   the comparison is actually made; the four old widgets should either be retired
   or explicitly kept once the gauges have been read for a week.
