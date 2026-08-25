@@ -3428,3 +3428,99 @@ a deferred false positive waiting on a subject line nobody has seen yet.
 Not changed here: moving a domain between registry buckets is a policy edit, not a
 sweep action, and no order was missed. Flagged for Scott to move `kiwico.com` from
 `mixed_use` to `suppress.subscription` in `scripts/vendor_registry.json`.
+
+## mcmaster.com and walmart.com/orders can wedge the Chrome extension entirely
+
+**2026-08-25 08:50–09:05, measured during the daytime sweep.** Neither site
+could be read at all. Every extension entry point failed the same way:
+
+| call | failure |
+|---|---|
+| `get_page_text` / `read_page` | `executeScript waited 45000ms for document_idle` |
+| `javascript_tool` | `Runtime.evaluate timed out after 45000ms` |
+| `computer:screenshot` | `Script injection timed out after 5000ms` |
+
+Chrome itself was fine — `tabs_context_mcp` reported the McMaster tab with the
+correct committed URL and the real title `McMaster-Carr`, so the navigation
+succeeded and the renderer simply never went idle. Waiting did not help:
+McMaster got ~80 s across two tabs, Walmart ~60 s, far past the 21 s the
+login-detection section budgets.
+
+**The control that makes this diagnosable:** `amazon.com/gp/css/order-history`
+and `shop.app/account` were read on the *same browser, same run*, both signed
+in, both instant. So this is per-site, not a dead browser and not a dead
+session.
+
+**Therefore the login state was recorded `UNKNOWN`, not `OUT`.** This is the
+same mistake as the 2026-08-24 spurious notification in a new costume: a test
+that cannot execute has not observed a signed-out session, and reporting `OUT`
+would fire a NOTIFY for a transition that was never measured.
+`preflight_state.py` already treats `UNKNOWN` as non-notifying — the only way
+to get that right is to actually pass `UNKNOWN`.
+
+Consequence for the sweep: the click-first McMaster procedure and the Walmart
+order-detail read are both **unrunnable** while this holds, because both begin
+with a real click and a click needs a screenshot for its coordinates. Nothing
+in either queue can be worked around; the vendors are simply skipped.
+
+Cause not established. It is consistent with a bot-detection interstitial that
+spins scripts forever (both sites run one; Amazon and Shop do not challenge
+this profile), but nothing here proves it — the page could not be looked at,
+which is the whole problem. If it recurs, the thing to capture is whether a
+human-driven Chrome window on the same profile renders the site normally.
+
+## `itq` was never on PATH — the unattended job's first command always failed
+
+Measured 2026-08-25, after a third consecutive night of "not running unattended
+due to a permission issue".
+
+The scheduled task file instructs every run to begin with, literally:
+
+    itq run scripts/run_gap_check.py
+
+`itq` lived only at `~/code/scripts/itq` and **no directory containing it was
+ever on `PATH`**. So that command did not stall — it exited **127,
+command-not-found**, instantly, on every run that has ever executed it.
+
+**Why this read as a permission problem.** The permission rules were never the
+fault; `Bash(itq run *)` exists and matched fine. What happened is downstream:
+
+1. The documented command returns 127.
+2. The agent, unattended and with no instruction covering this, starts
+   *diagnosing* — `ls -la ~/code/scripts/ && echo $PATH`, `command -v itq`,
+   and so on.
+3. Those improvised diagnostics are **compound `&&` commands, unique every
+   time**. Per `settings.json`'s own note, the matcher cannot decompose them,
+   so each one is a fresh one-off that no wildcard rule can cover.
+4. Prompt. Nobody is awake. The run hangs.
+
+So the visible symptom (a permission prompt) was two steps removed from the
+cause (a missing symlink), which is why it survived several rounds of adding
+permission rules — none of which could ever have helped.
+
+**The tell that separates the two:** a permissions stall produces *no* output;
+this produces `command not found` and *then* stalls. Exit 127 in the first
+command of a run means PATH, not policy.
+
+**Fix applied:** `~/.local/bin/itq -> ~/code/scripts/itq`. That directory is
+exported by **both** `.zprofile` and `.zshrc`, so it is present in login and
+interactive shells alike.
+
+**`~/bin` was the wrong target and is a trap of its own.** It appears in this
+session's `PATH` but is set by *neither* shell file — it is injected by
+something outside the user's dotfiles, so a symlink there would work when
+tested by hand and vanish under a differently-initialised unattended shell.
+That is the same class of bug, one layer deeper. Verified the fix with
+`zsh -lc 'command -v itq'` — a *fresh login shell*, not the warm one that was
+already broken-but-working-by-accident.
+
+`itq run` resolves a bare relative script path against `$ITQ_REPO`
+(`~/code/shop-inventory`), not against `$0`, so invoking it through a symlink
+changes nothing about where scripts are found.
+
+**Two junk rules in `settings.local.json`** are now visible as fossils of this:
+`Bash(../scripts/itq run *)` and `Bash(../scripts/itq push *)`. From the
+working directory `~/code`, `../scripts` is `/Users/scottdube/scripts`, which
+does not exist. Those rules can never have matched anything real. Left in
+place — that file is rewritten by the app and must not be hand-edited.
+
