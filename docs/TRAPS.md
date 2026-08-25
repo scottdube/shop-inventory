@@ -4027,3 +4027,34 @@ this set" is easy to say and easy to stop at. It was a statement about the one
 query shape being tried, not about the rows — and the honest fallback made it
 comfortable to stop. Say what cannot be done, then check whether something else
 can.
+
+## `vendor_triage` emits a decision for an order that already has a PO
+
+2026-08-25, 16:40 sweep. The classifier reported `=> 1 distinct purchases need a
+decision` and emitted a `decide.py --add` line for `walmart.com`, subject
+`Arrived: Your Akro-Mils 24 Drawer Pl... +1 item`. That order is
+`2000151-82176030` and **already has PO-0142**. Adding the decision would have
+put a resolved item on Scott's queue.
+
+**Why.** `order_no()` reads only `subject + snippet`. Walmart's *Arrived* mail
+puts the order number in neither — it lives in the body. So `_order_no` is
+`None`, and the dedupe key falls back to `(domain, subject)`:
+
+```python
+key = r["_order_no"] or (r["_domain"], r.get("subject"))
+```
+
+The two *Shipped* mails for the same order **do** carry the number in the
+snippet, so they dedupe to `2000151-82176030` while the *Arrived* mail dedupes to
+a tuple. Two different keys for one order, so it survives as "distinct".
+
+**The deeper point:** the dedupe is only against the other emails in the batch.
+Nothing in this path ever asks InvenTree whether the order was already imported —
+`po_check` is Section 3's idempotency key and Section 4 never calls it. So the
+guard against double-work is spelling, not state.
+
+**Procedure until fixed:** run `po_check` on every order number the triage
+surfaces before passing it to `decide.py`. A bucket line is a candidate, not a
+finding. The fix is for `vendor_triage` to take the same idempotency check —
+key on the order number *and* test it against existing `supplier_reference`
+values — but that is a code change, not something to do mid-sweep.
