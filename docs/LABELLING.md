@@ -133,6 +133,38 @@ Two independent problems, both fixed by authoring at the tape's real width:
 | `Shop Part 62mm (QR + Text)` | 62 × 18 mm | ~14 mm | name (3 lines) + location · category |
 | `Shop Stock Item 62mm (QR + Text)` | 62 × 18 mm | ~14 mm | name + quantity · location + serial/batch |
 
+## Printing an Avery sheet — the Chrome route
+
+The 62 mm roll goes through CUPS (below). **Avery sheets go through Chrome**, and
+the settings matter more than the file does: a die-cut sheet is unforgiving, and
+every one of these failures prints a whole sheet of scrap.
+
+**Open the `.html`, never the `.svg`.** `make_labels_avery.py` writes both. Chrome
+treats a bare SVG as an *image* and fits it to the printable area, which shifts
+every label a few millimetres off its die-cut — the sheet looks fine on screen and
+is unusable on the page. The HTML wrapper pins it: `@page { size: 8.5in 11in;
+margin: 0 }` with the sheet held at exactly 816 x 1056 px = 8.5 x 11 in at 96 dpi.
+
+    itq run scripts/make_labels_avery.py --set col0     # top | bottom | col0 | all
+    itq pull <BACKEND>/avery5167_col0_p1.html ~/Desktop/
+    open -a "Google Chrome" ~/Desktop/avery5167_col0_p1.html
+
+Then **Cmd-P**, and set all four:
+
+| setting | value | why |
+|---|---|---|
+| Paper size | **Letter** | the sheet is authored at 8.5 x 11 exactly |
+| Margins | **None** | any margin re-centres the grid |
+| Scale | **100%** — Custom, *not* "Fit to printable area" | Fit is the default and it silently shrinks by a few percent |
+| Headers and footers | **off** | the header pushes the whole grid down |
+
+**Then print one on plain paper and hold it against a blank Avery sheet before
+committing a real one.** Every label failure in this shop passed an automated
+check and was caught by eye; a sheet costs more than the thirty seconds.
+
+The label carries the ADDRESS only — a place, not contents — plus a QR of the
+same plain text, so any phone reads it and BinScan takes it directly.
+
 Sources live in `labels/`. Rules any new template must follow:
 
 - **Author at 62 mm.** Never narrower, or CUPS will scale it.

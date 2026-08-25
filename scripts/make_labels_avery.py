@@ -120,11 +120,29 @@ def main():
     ps = pages(addrs, not a.no_qr, a.guides)
     for i, svg in enumerate(ps, 1):
         pathlib.Path(f"avery5167_{a.set}_p{i}.svg").write_text(svg)
+        # An HTML wrapper as well, because the sheet gets PRINTED FROM CHROME and
+        # a bare SVG is treated as an image: Chrome fits it to the printable area
+        # and every label lands a few millimetres off its die-cut. @page pins the
+        # media to Letter with zero margin, and the fixed px box holds the sheet
+        # at exactly 1:1. Open the .html, not the .svg.
+        pathlib.Path(f"avery5167_{a.set}_p{i}.html").write_text(
+            "<!doctype html><meta charset=utf-8>"
+            f"<title>Avery 5167 — {a.set} sheet {i}</title>"
+            "<style>@page{size:8.5in 11in;margin:0}"
+            "html,body{margin:0;padding:0}"
+            f"svg{{display:block;width:{PAGE_W:.0f}px;height:{PAGE_H:.0f}px}}"
+            "@media screen{body{background:#e9e9e9}"
+            "svg{box-shadow:0 2px 12px rgba(0,0,0,.25);margin:12px auto}}"
+            "</style>" + svg)
 
     print(f"{len(addrs)} labels -> {len(ps)} sheet(s) of Avery 5167 (80/sheet)")
     print(f"  label 1.75 x 0.5 in, QR={'no' if a.no_qr else 'yes'}")
     for i in range(1, len(ps) + 1):
+        print(f"  avery5167_{a.set}_p{i}.html   <- open THIS in Chrome to print")
         print(f"  avery5167_{a.set}_p{i}.svg")
+    print("  Chrome: Cmd-P, Margins NONE, Scale 100% (not 'Fit to page'),")
+    print("          headers/footers OFF. Print one on plain paper and hold it")
+    print("          against a blank Avery sheet before committing a sheet.")
     if len(addrs) % PER_PAGE:
         print(f"  last sheet uses {len(addrs) % PER_PAGE} of {PER_PAGE} labels")
 
