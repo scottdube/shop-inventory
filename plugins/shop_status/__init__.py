@@ -99,7 +99,10 @@ LAMP_TIPS = {
         'negative is not counting, and every coverage figure on this panel is '
         'computed over these same rows.'),
     'tombstone': (
-        'Active parts whose description says MERGED into or NOT INVENTORY. A '
+        'Active parts whose description BEGINS with MERGED into or NOT '
+        'INVENTORY — the tombstone marker is a prefix, and the surviving record '
+        'of a merge mentions it in prose, so a substring test lights this lamp '
+        'on the wrong side of the merge. A '
         'merged part left active can be counted twice under two names, and a '
         'not-inventory row sits inside every denominator above.'),
     'lost': (
@@ -882,14 +885,21 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
         #     every coverage denominator on this panel. Red.
         #   REFUNDED / POSSIBLE RETURN: no. Nothing is wrong yet; somebody has to
         #     go and look. Yellow.
+        # istartswith, NOT icontains. The tombstone marker is a PREFIX: every
+        # one of the 28 merged records begins "MERGED into part #N". Matched as
+        # a substring it also catches the SURVIVOR, whose description explains
+        # the merge in prose — part #71 reads "part #381 was merged into this
+        # record", is supposed to be active, and lit the red lamp for a day.
+        # This is the [ESTIMATE] error again, three files apart: a prefix marker
+        # tested as a substring returns confident, plausible, wrong rows.
         def _tombs(tags):
             qs = Part.objects.none()
             for tag in tags:
-                qs = qs | Part.objects.filter(active=True, description__icontains=tag)
+                qs = qs | Part.objects.filter(active=True, description__istartswith=tag)
             return qs.distinct()
 
         ghost = _tombs(('MERGED into', 'NOT INVENTORY'))
-        verify = _tombs(('REFUNDED', 'POSSIBLE RETURN')).exclude(
+        verify = _tombs(('POSSIBLE RETURN',)).exclude(
             pk__in=ghost.values_list('pk', flat=True))
 
         state, newest = self._preflight()
@@ -953,8 +963,8 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
             {'key': 'to_verify', 'tone': 'caution',
              'n': verify.count(),
              'label': 'Refund — verify these', 'url': '/web/part/category/index/parts',
-             'link': ('/web/part/category/index/parts?active=true&search=REFUNDED',
-                      self._search_count(Part, 'REFUNDED')),
+             'link': ('/web/part/category/index/parts?active=true&search=POSSIBLE+RETURN',
+                      self._search_count(Part, 'POSSIBLE RETURN')),
              'why': 'an order containing this was refunded; nobody has looked yet'},
             {'key': 'po_open', 'tone': 'caution',
              'n': placed.count(),
