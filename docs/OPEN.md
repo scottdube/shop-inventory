@@ -22,9 +22,9 @@ State after the 2026-08-25 walk, 28 bins:
 
 | | |
 |---|---|
-| never opened | **7** (RB-21 … RB-24, RB-26 … RB-28) |
+| never opened | **6** (RB-22 … RB-24, RB-26 … RB-28) |
 | holds stock | 11 |
-| verified empty | 5 (RB-09, 10, 15, 16, 18) |
+| verified empty | 6 (RB-09, 10, 15, 16, 18, 21) |
 | declared | 5 (RB-05 bags, RB-08 prototypes, RB-01/02 free storage, RB-19 VFD salvage) |
 
 **A bin can also be a tool's shelf, and that is a third thing.** RB-13 holds
@@ -104,6 +104,21 @@ own bin.
       `docs/TRAPS.md`: a bin reading *"5 rows, 5 counted"* says the ROWS were
       counted. It says nothing about whether the bin's contents are all on the
       books, and the walk board renders the two identically.
+
+- [ ] **READ THE MEANLIN GAUGE'S DIAL (#1097, RB-17).** The box carries
+      accuracy (±3-2-3%), lower mount, media and service temperature — and **no
+      pressure range**, which is the only spec that decides whether it can do
+      the job. A general-service 0-to-N psi dial cannot show vacuum at all.
+      Being found in the vacuum project's bin is not evidence of which half of
+      the scale it reads — the same split already recorded between #107
+      (0 to −115 kPa) and the positive-only transducers in B3-R7C2. The NPT
+      thread size is unread too. Both are one glance at the gauge in hand.
+
+- [x] ~~**RB-21**~~ — **emptied 2026-08-25.** Held the MEANLIN gauge; it moved
+      to RB-17 to join the MPXV6115VC6U, on Scott's call. One project, one bin
+      — the rack's own rule — and it takes a bin off the board rather than
+      leaving the Vacuum Controller spanning two the way the bench PSU does
+      across RB-07/RB-08.
 
 - [ ] **RB-20 — three eBay soldering practice kits**, counted at 3 by Scott
       2026-08-25 and created as #1096, because **nothing in the catalogue
