@@ -23,7 +23,12 @@ if rack.description:
     print(f"  {rack.description}")
 print()
 
-bins = sorted(rack.get_children(), key=lambda l: l.name)
+# A STRUCTURAL location cannot hold stock. Here that means the label exists and
+# the bin does not -- RB-26..28. Counting them as bins made the walk chase three
+# containers that were never bought.
+children = sorted(rack.get_children(), key=lambda l: l.name)
+bins = [b for b in children if not b.structural]
+phantom = [b for b in children if b.structural]
 for b in bins:
     rows = list(StockItem.objects.filter(location=b))
     counted = sum(1 for r in rows if r.stocktake_date)
@@ -45,7 +50,9 @@ for b in bins:
         print(f"         #{r.part.pk:<5} qty {r.quantity:<8g} {r.part.name[:52]:<52} {mark}{est}")
     print()
 
-print(f"{len(bins)} bins")
+print(f"{len(bins)} bins" + (
+    f"  (+{len(phantom)} label-only, no bin: {', '.join(p.name for p in phantom)})"
+    if phantom else ""))
 # RB-14 counts five rows, all stamped, and also holds a jig nobody catalogued.
 # A count is per-ROW; completeness is per-CONTAINER, and nothing here measures
 # the second. Say so, rather than letting a green line read as "done".
