@@ -3817,3 +3817,47 @@ write: Receiving 3 → 2, lost unchanged at 39.
 **Open, and the obvious next lamp:** *age* in Receiving. A row that has sat on
 the staging dock for a fortnight is either not filed or not there, and both are
 worth a look. All three of these would have tripped it.
+
+## The survivor of a merge talks about the merge — so a substring test lights the wrong side
+
+2026-08-25. The red `Merged part still active` lamp pointed at **part #71,
+Arduino Nano V3.0** — a record that is supposed to be active. Nothing was wrong
+with it. The lamp was.
+
+The tombstone convention here is a **prefix**: all 28 merged-away records begin
+`MERGED into part #N`, and every one of them is `active=False`. Part #71 is the
+*surviving* record, and its description explains the merge in prose —
+*"part #381 (AYWHP 5-pack) was merged into this record"*. Tested with
+`description__icontains='MERGED into'`, that prose matches, and the survivor gets
+reported as a tombstone that failed to be retired.
+
+**This is the `[ESTIMATE]` error again, three files apart.** Same shape: a marker
+that is a *prefix* tested as a *substring*, returning a confident, plausible,
+wrong row. It has now cost a false red lamp, and the earlier version cost a wrong
+`[ESTIMATE]` count twice.
+
+| marker | active rows, `icontains` | active rows, `istartswith` |
+|---|---|---|
+| `MERGED into` | 1 (the survivor) | **0** ✓ |
+| `NOT INVENTORY` | 0 | 0 |
+| `POSSIBLE RETURN` | 13 | **13** ✓ |
+| `REFUNDED` | 13 | 0 — it is prose *inside* the POSSIBLE RETURN sentence, never the marker |
+
+The last row is the one to remember when writing the next check: **`REFUNDED` is
+not a marker at all.** It reads like one, it matches 13 rows, and it agrees with
+the right answer today purely by coincidence of wording.
+
+### And the warning nobody could read
+
+Part #71's description ended `…this merge conflated two CONNECTOR variants —
+verify before tru`. Not a typo: **`Part.description` is capped at 250
+characters**, and the warning was silently truncated mid-word when it was
+written. A caveat that cannot be read is not a caveat. Long-form findings belong
+in `Part.notes`, which has no such limit; the description gets the verdict only.
+
+**Resolved, from the records themselves:** #71's `orig:` says *USB-C*, #381's
+says *(USB C Port)*, and both carry the same Amazon order `113-2421163-1104249`,
+same date, same $18.99. One purchase imported twice under two vendor titles — not
+two connector variants, so the merge was correct and there is nothing to unpick.
+Total stock is 0 on both sides, so no boards existed to inspect even if it had
+mattered. Written into the part's notes with the evidence.
