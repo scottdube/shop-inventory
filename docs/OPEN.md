@@ -127,6 +127,16 @@ own bin.
       1/8 NPT is ≈10.3 mm OD and 1/4 NPT ≈13.7 mm — not confusable. Measure the
       **gauge's** thread: a brass compression fitting is made up on the stem.
 
+      **Scott expects BOTH** — the larger thread on the gauge with a bushing
+      stepping down to the smaller — and will check next time he is in the lab.
+      Recorded as an expectation, not a measurement. Plausible: MEANLIN ships
+      at least one gauge in this family *"with Stainless Steel Hex Bushing"*,
+      though that variant is the −30inHG~60Psi 1/4in NPT — a different range,
+      so it corroborates the practice, not this unit. **If it is a gauge in a
+      bushing, record both numbers and say which is which**: what the gauge
+      *is* and what it currently *presents to a fitting* are two facts, and a
+      single "thread size" field would lose one of them.
+
       **The "3in dial" recorded earlier today was wrong and is retracted.** It
       was read off the box's elided Amazon label, `MEANLIN MEASURE -3… Gauge`,
       where the `-3` is the head of `-30inHG` — the range. See `docs/TRAPS.md`.
