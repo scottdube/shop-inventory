@@ -22,8 +22,8 @@ State after the 2026-08-25 walk, 28 bins:
 
 | | |
 |---|---|
-| never opened | **6** (RB-22 … RB-24, RB-26 … RB-28) |
-| holds stock | 11 |
+| never opened | **5** (RB-23, RB-24, RB-26 … RB-28) |
+| holds stock | 12 |
 | verified empty | 6 (RB-09, 10, 15, 16, 18, 21) |
 | declared | 5 (RB-05 bags, RB-08 prototypes, RB-01/02 free storage, RB-19 VFD salvage) |
 
@@ -116,6 +116,17 @@ own bin.
 
       Still unread: **the thread size.** A brass compression fitting is already
       made up on the stem.
+
+- [ ] **FLEX A NEWISHTOOL SQUEEGEE (#791, RB-22).** The record says *soft
+      silicone*; the two cards look semi-rigid in the photograph. The name says
+      *Screen Printing*, which came from the listing — but a stiff card is a
+      solder-paste stencil / vinyl applicator squeegee, and a soft silicone one
+      is not. One second of bending settles which tool this is, and the name is
+      wrong either way if the material is.
+
+      Located, not re-counted: #791 already carried the count and the
+      provenance, filed at the **rack** with no bin number. It was the last row
+      on the rack itself — that level is now clear.
 
 - [ ] **BACKFILL THE eBay ORDER HISTORY — ~201 orders, 1 PO on file.** The
       RB-20 kits were bought 2026-06-16, ~70 days before the walk, against a
