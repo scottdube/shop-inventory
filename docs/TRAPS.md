@@ -3665,3 +3665,23 @@ receipt — a fix to one row that is really a fix to every future one.
 **Check the pack figure against the description before receiving a multipack,
 and ask for the count.** Scott counted 4 out of the box, so this row carries a
 real `stocktake_date` — receiving is not counting, but a tally at receipt is.
+
+## A client that rewrites a whole stored map must seed it from the server
+
+The panel stores lamp acknowledgements as one JSON blob in a plugin setting, and
+the browser rewrites the entire blob every time a lamp is pressed. It seeded that
+blob from the lamps it had just rendered — which carry `ack: true/false` but did
+not, at first, carry the *time* of the ack. Every unpressed lamp was therefore
+written back as `{n: 43, at: null}`.
+
+Nothing looked wrong: the lamps stayed silenced, the counts stayed right. What
+was quietly destroyed was the only part of the record that was a *signal* — a
+lamp acknowledged six weeks ago says something a lamp acknowledged this morning
+does not, and `DASHBOARD.md` calls that "an atrophy detector hiding inside the
+mechanism".
+
+**The general shape, worth watching for anywhere else in this project:** when a
+client PATCHes a whole document rather than a field, every attribute the client
+does not render is a field it is silently deleting. Either round-trip the full
+record, or patch the one key. Here the server now hands `ack_at` back out with
+each lamp so the client can put it back unchanged.

@@ -53,6 +53,85 @@ VENDORS = {
 # "MB10S", "2N7002", "AO3400A", "LM2596" pass; "Capacitor", "Resistor" do not.
 PN = re.compile(r'^[A-Za-z0-9][A-Za-z0-9\-./]{2,24}$')
 
+# What each readout MEANS, shown on hover and on keyboard focus. These are part
+# of the instrument, not decoration: a lamp whose meaning has to be remembered
+# is a lamp that gets pressed without being read, and that is the failure mode
+# this panel was built to avoid. Each one says what is counted and why it earns
+# the colour it has.
+GAUGE_TIPS = {
+    'images': (
+        'Parts carrying an image, over the parts an image could actually be '
+        'fetched for. Reachable means it already has one, or it has a supplier '
+        'part — the SKU is what an image is fetched from. Ruled out is the '
+        'imageless rows with no supplier part on file: not unreachable forever, '
+        'just nothing on record saying where to look. Computed live. This is '
+        "NOT the overnight sweep's reachable set, which is still owed as data."),
+    'counted': (
+        'Stock rows carrying a stocktake date, over every stock row. A row with '
+        'no date has never been counted by anybody — its quantity came from an '
+        'invoice, a kit label or an estimate. The oldest-count line underneath '
+        'is the only figure on this panel that gets worse while nothing else '
+        'changes.'),
+    'binwall': (
+        'Bin-wall drawers where somebody has established what is inside: it '
+        'holds stock rows, or a human wrote VERIFIED EMPTY on it. Records alone '
+        'are not evidence of emptiness — B3-R3C2 had zero rows and a drawer '
+        'full of ICs — so a drawer nobody has opened counts as unknown space, '
+        'never as free space.'),
+}
+
+LAMP_TIPS = {
+    'contradiction': (
+        'Stock rows whose notes begin [ESTIMATE] and which also carry a '
+        'stocktake date. An estimate is by definition unstamped, so the two '
+        'together mean a reasoned guess is wearing a counted label. The fix is '
+        'to clear the DATE, not the marker — the notes say never counted.'),
+    'po_no_date': (
+        'Purchase orders marked Placed with no issue date. Aging is computed '
+        'from that date, so these rows do not age wrongly — they drop out of '
+        'aging altogether. The alarm does not misfire, it stops existing, which '
+        'is what makes this one red rather than yellow.'),
+    'negative': (
+        'Stock rows holding a quantity below zero. A stock system that can go '
+        'negative is not counting, and every coverage figure on this panel is '
+        'computed over these same rows.'),
+    'tombstone': (
+        'Active parts whose description says MERGED into or NOT INVENTORY. A '
+        'merged part left active can be counted twice under two names, and a '
+        'not-inventory row sits inside every denominator above.'),
+    'lost': (
+        'Stock rows with no location at all. The item is in the record and '
+        'somewhere in the shop, but the record cannot say where — so it is '
+        'invisible to a drawer walk and to every location count.'),
+    'putaway': (
+        'Stock sitting in Receiving: arrived, recorded, not yet given a home. '
+        'The shortest queue here and the one that goes stale fastest, because '
+        'the box is usually still on the floor.'),
+    'unfiled': (
+        'Stock in an Unfiled location. An import claims these exist; nobody has '
+        'put eyes on them. Unlike Receiving there is no box to point at — each '
+        'one is a search.'),
+    'to_verify': (
+        'Active parts belonging to an order that was refunded. Nothing is known '
+        'to be wrong: somebody has to decide whether the item was kept, '
+        'returned, or never arrived. Yellow because it is a queue, not a fault.'),
+    'po_open': (
+        'Purchase orders placed and not yet received. Money is out and nothing '
+        'is on the shelf — worth watching, not an error.'),
+    'sweep': (
+        'Hours since the overnight sweep last recorded a vendor check, from its '
+        'own session-state file. Lights after 24 h. Reads OFF, never zero, when '
+        'that file cannot be read: "the job is fine" and "I cannot tell" must '
+        'not look the same.'),
+}
+
+SOURCE_TIP = (
+    'The last read that PROVED something for this vendor, not the last time a '
+    'job ran — those two diverge exactly when something is wrong. OFF means '
+    'there is no usable reading: never checked, or the last check has aged out. '
+    'A probe reporting SIGNED OUT is not OFF; that is a working probe with bad '
+    'news.')
+
 
 
 class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
@@ -653,22 +732,29 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
         act = Part.objects.filter(active=True)
         img_all = act.count()
         img_have = act.exclude(image='').exclude(image__isnull=True).count()
+        # Reachable = already has an image, or has a supplier part. The SKU is
+        # the thing an image gets fetched from, so a row without one has nowhere
+        # to fetch from and does not belong in the denominator.
+        img_reach = img_have + (
+            (act.filter(image='') | act.filter(image__isnull=True))
+            .filter(supplier_parts__isnull=False).distinct().count())
 
         return [
             {
-                # OFF on purpose. Coverage is meant to run against the
-                # REACHABLE denominator, and the reachable/ruled-out split is
-                # the sweep's accumulated evidence, not a query this panel can
-                # run. Rendering the raw 53% instead would be exactly the
-                # misleading number the redesign threw out — and rendering the
-                # remembered 96% would be worse, because nothing here can tell
-                # whether that exclusion set still holds.
+                # This gauge flew its OFF flag for a day, because the REACHABLE
+                # denominator was defined as the sweep's accumulated evidence
+                # (delisted / login-gated / synthetic SKU) and that has still not
+                # been handed over. What changed is the realisation that waiting
+                # for it was not the only honest option: "has somewhere to fetch
+                # from" is a rule this panel can compute live, state in one line
+                # on its own face, and be argued with. It is NOT the sweep's 96%
+                # and does not pretend to be.
                 'key': 'images', 'name': 'IMAGES',
-                'off': 'reachable denominator not supplied',
-                'value': None,
-                'sub': f'{img_have} / {img_all} raw — not the real denominator',
-                'note': 'ruled-out split still owed by the sweep',
-                'fresh': '',
+                'off': None,
+                'value': pct(img_have, img_reach),
+                'sub': f'{img_have} / {img_reach} reachable',
+                'note': f'{img_all - img_reach} ruled out — no SKU to fetch from',
+                'fresh': 'reachable = has an image, or a supplier part',
                 'target': target('TARGET_IMAGES', 95),
                 'setting': 'TARGET_IMAGES',
                 'url': '/web/part/',
@@ -806,8 +892,13 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
         import datetime as _dt
         for lamp in lamps:
             rec = acks.get(lamp['key']) or {}
+            lamp['tip'] = LAMP_TIPS.get(lamp['key'], '')
             lamp['ack'] = bool(rec) and rec.get('n') == lamp.get('n')
             lamp['ack_age'] = ''
+            # Handed back so the browser can rewrite the whole ack map without
+            # flattening every OTHER lamp's timestamp. A lamp silenced six weeks
+            # ago is itself a signal; losing the date destroys it.
+            lamp['ack_at'] = rec.get('at') if lamp['ack'] else None
             if lamp['ack'] and rec.get('at'):
                 try:
                     at = _dt.datetime.fromisoformat(rec['at'])
@@ -889,13 +980,17 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
                        'proof': 'session proved live'}
             row['key'] = vendor
             row['name'] = vendor.title()
+            row['tip'] = SOURCE_TIP + f'  Reported state: {st}.'
             out.append(row)
         return out
 
     def _panel(self):
         import datetime
+        gauges = self._gauges()
+        for g in gauges:
+            g['tip'] = GAUGE_TIPS.get(g['key'], '')
         return {
-            'gauges': self._gauges(),
+            'gauges': gauges,
             'lamps': self._lamps(),
             'sources': self._sources(),
             'measured': datetime.datetime.now().strftime('%H:%M'),
