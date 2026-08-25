@@ -3969,3 +3969,33 @@ the next receipt prices itself.
 instrument missed. That is the right order for this panel — every lamp on it so
 far was earned by something going wrong first — but it is also the reason the
 panel is not yet trustworthy on its own.
+
+### Settled the same hour, and the lesson underneath
+
+Scott, on being asked which way the pull studs went: *"84 but couldnt you do a
+quick inet search if you were unsure? Thats what I would do."* Correct, and it
+took two searches:
+
+| SKU | vendor says | ours | verdict |
+|---|---|---|---|
+| Haas `04-1420` BT30 TSC stud | **pack of 10**, $93.97 sale / $103.95 list | 10 @ $8.40 = $83.97 | correct |
+| Haas `04-1421` BT30 standard stud | **pack of 10** | 10 @ $7.20 = $71.97 | correct |
+| Tormach `35724` 4in coolant nozzle | **10-pack, $44.95** | 10 @ $4.50 = $44.95 | correct — the importer divided |
+| Amazon `B07DJXQK54` copper clad | — | PO-0003 line reads qty 10 @ $1.00, already per piece | correct |
+
+**Every one was right. The bins were the only real error** — and asking Scott to
+adjudicate four rows that a web search settles in a minute is the wrong division
+of labour. *Live price is checkable; check it.* The `+40%` rule in `CLAUDE.md`
+exists precisely because an unverified price is a guess, and the same logic
+applies to verifying one that is already on the books.
+
+`pack_quantity` is now recorded on all four supplier parts, which is what the
+lamp was really asking for — not "is this price wrong" but "does the record say
+what a pack contains". With that, and with single-unit kits skipped, the lamp
+falls from 9 to **2**: the two KF301 terminal-block rows (27 and 18 pieces at
+$0.15, stated pack of 50), which no vendor page settles because the listing is a
+generic multi-vendor part.
+
+One caveat recorded on the copper-clad row: PO-0003's line predates the pack size
+being recorded and is expressed in PIECES. It must not later be re-read as ten
+packs.
