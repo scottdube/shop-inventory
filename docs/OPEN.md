@@ -18,14 +18,21 @@ project kit being worked, or for bulk with nowhere better. Loose parts belong
 in the wall cabinets, where they have a home and an address.** Anything found
 loose in a red bin gets filed to the wall rather than tidied within the rack.
 
-State after the 2026-08-23 walk, 28 bins:
+State after the 2026-08-25 walk, 28 bins:
 
 | | |
 |---|---|
-| never opened | **14** (RB-17 … RB-28, plus 2 earlier) |
-| holds stock | 8 |
-| verified empty | 4 (RB-09, 10, 15, 16) |
-| declared | 2 (RB-05 bags, RB-08 prototypes) |
+| never opened | **8** (RB-20 … RB-24, RB-26 … RB-28) |
+| holds stock | 10 |
+| verified empty | 5 (RB-09, 10, 15, 16, 18) |
+| declared | 5 (RB-05 bags, RB-08 prototypes, RB-01/02 free storage, RB-19 VFD salvage) |
+
+**A bin can also be a tool's shelf, and that is a third thing.** RB-13 holds
+the FX-951 with its cord run out of the bin and its handpiece on the bench.
+That is neither a project kit nor free storage, and it is **not emptiable** —
+the walk should stop counting it toward the goal. Read the rack rule as: a kit
+being worked, bulk with nowhere better, or a tool in service standing in its
+own bin.
 
 - [x] ~~**RB-17**~~ — **done 2026-08-23.** Four displays moved out to B3-R5C1
       (ESP32-S3-LCD-2.8C #1072, waveshare 1.28in round #70, bare panel
@@ -71,9 +78,25 @@ State after the 2026-08-23 walk, 28 bins:
       of unknown space left in the shop now that the bin wall is at 89%.
 - [ ] **RB-12, the RAT GDO kit** — 9 uncounted rows, skipped deliberately on
       2026-08-23. One stop converts nine purchased figures into counts.
-- [ ] **RB-13, the Hakko FX-951** — Scott named it during the walk but no count
-      was taken and it is unclear whether the bin holds the station, a spare, or
-      accessories. #311 `Soldering Station, FX951-66` exists with no stock.
+- [x] ~~**RB-13, the Hakko FX-951**~~ — **settled 2026-08-25, by photograph.**
+      It is the station itself (#311), **in service**, standing in the bin with
+      its cord run out and its handpiece in a 599B cleaner on the bench. Not a
+      spare, not accessories. One row at qty 1, deliberately **not counted**,
+      following the FR-301 precedent. #311's `default_location` was the bare
+      site root and is now empty — there is no spare station, so there is no
+      place a spare goes home to.
+
+- [ ] **RB-13's tips are still unaccounted.** #333 (T15, the correct cartridge
+      for the FM-2027 handpiece) and #160 (T12, "for FX-951" per the vendor)
+      both sit at zero stock with no rows. Nothing in the photo shows where the
+      tips live. **If the T12 set turns up, flag it**: Hakko never states T12
+      fits the FM-2027, and the cartridge carries the heater and sensor.
+
+- [ ] **RB-14 may hold an uncatalogued jig.** The RB-13 photo caught the next
+      bin along: a black moulded object labelled **"JIG DONT TOSS OUT"**, a
+      white enclosure, and a perfboard with a toroid. RB-14's record is the AC
+      wall adapter kit — five component rows, no jig. Read from a photograph,
+      so identity only; ask before writing anything.
 
 ## At the bench
 
