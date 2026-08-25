@@ -53,6 +53,16 @@ VENDORS = {
 # "MB10S", "2N7002", "AO3400A", "LM2596" pass; "Capacitor", "Resistor" do not.
 PN = re.compile(r'^[A-Za-z0-9][A-Za-z0-9\-./]{2,24}$')
 
+# A pack size stated in the name or description: "10 pcs", "pack of 50",
+# "(10-pack)", "Set of (10)". If the record says a part comes in packs and
+# nothing records the pack SIZE, then any price on it is one division away from
+# being ten or fifty times wrong — booked per piece when it was paid per pack.
+# 19 storage bins read $208.62 against a $21.96 spend before this was noticed by
+# a human rather than by the panel.
+PACK_SIZE = re.compile(
+    r'\b(\d{2,4})\s*(?:x\s*)?(?:pcs?|pieces|pack|-pack)\b'
+    r'|\bset of \((\d+)\)|\bpack of (\d+)\b|\((\d+)-pack\)', re.I)
+
 # What each readout MEANS, shown on hover and on keyboard focus. These are part
 # of the instrument, not decoration: a lamp whose meaning has to be remembered
 # is a lamp that gets pressed without being read, and that is the failure mode
@@ -124,6 +134,17 @@ LAMP_TIPS = {
         'Active parts belonging to an order that was refunded. Nothing is known '
         'to be wrong: somebody has to decide whether the item was kept, '
         'returned, or never arrived. Yellow because it is a queue, not a fault.'),
+    'pack_price': (
+        'Priced stock whose part name or description states a pack size — "10 '
+        'pcs", "pack of 50" — while no supplier part records that pack size. '
+        'The price on such a row is one division away from being 10x or 50x '
+        'wrong, because a pack price booked per piece looks perfectly '
+        'reasonable: 19 storage bins read $208.62 against a $21.96 spend and '
+        'nothing objected. This lamp does NOT claim the price is wrong. A kit '
+        'stocked as one unit is correctly priced per pack, and some parts really '
+        'do cost that each. It says the record cannot tell you which, while '
+        'money is riding on it — settle it from the invoice, then set '
+        'pack_quantity on the supplier part so the next receipt prices itself.'),
     'recv_age': (
         'Rows that have sat on the staging dock longer than the stale threshold '
         '(a plugin setting, 14 days by default), measured from when the row was '
@@ -954,6 +975,8 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
                                          location__pk=recv_pk,
                                          creation_date__lt=cutoff).count())
 
+        pack_n, pack_sample = self._pack_price_suspects()
+
         lamps = [
             {'key': 'contradiction', 'tone': 'warning',
              'n': est.filter(stocktake_date__isnull=False).count(),
@@ -1013,6 +1036,12 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
              'link': ('/web/part/category/index/parts?active=true&search=POSSIBLE+RETURN',
                       self._search_count(Part, 'POSSIBLE RETURN')),
              'why': 'an order containing this was refunded; nobody has looked yet'},
+            {'key': 'pack_price', 'tone': 'caution',
+             'n': pack_n,
+             'label': 'Pack price may be per piece',
+             'url': '/web/stock/location/index/stock-items',
+             'why': 'the record states a pack size that nothing confirms — '
+                    + ('; '.join(pack_sample) if pack_sample else 'none')},
             {'key': 'recv_age', 'tone': 'caution',
              'n': stale_n,
              'label': f'In Receiving over {stale_days}d',
@@ -1074,6 +1103,37 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
                 except ValueError:
                     pass
         return lamps
+
+    def _pack_price_suspects(self):
+        """(count, sample) — priced stock whose part states a pack size that
+        nothing in the record confirms.
+
+        Deliberately NOT "this price is wrong". It cannot know that: a kit
+        stocked as ONE unit is correctly priced per pack, and a Tormach pull
+        stud really can cost $8.40 each. What it knows is that the record does
+        not say which, while money is riding on the answer — and that is a
+        question for the invoice, not for a guess.
+        """
+        from company.models import SupplierPart
+        from stock.models import StockItem
+
+        rows = (StockItem.objects.filter(StockItem.IN_STOCK_FILTER)
+                .exclude(purchase_price=None).select_related('part'))
+        n, sample = 0, []
+        for r in rows:
+            p = r.part
+            m = PACK_SIZE.search(f'{p.name} {p.description or ""}')
+            if not m:
+                continue
+            if any(sp.pack_quantity_native and float(sp.pack_quantity_native) > 1
+                   for sp in SupplierPart.objects.filter(part=p)):
+                continue          # the pack size IS recorded; nothing to ask
+            n += 1
+            if len(sample) < 4:
+                pack = next((g for g in m.groups() if g), '?')
+                sample.append(f'{p.name[:34]} ({float(r.quantity):g} @ '
+                              f'{r.purchase_price}, stated pack {pack})')
+        return n, sample
 
     def _preflight(self):
         """(state dict, newest check-in) from the sweep's session file."""

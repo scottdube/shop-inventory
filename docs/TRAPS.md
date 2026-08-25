@@ -3932,3 +3932,40 @@ day the rule was written: only 3 (part, location) pairs held more than one row �
 the bins (merged), two SHT31-D rows with no location at all, and two BT30 collet
 chuck rows at different prices, which is a judgement call rather than a
 duplicate.
+
+
+## The price was 10x out on screen and the panel had nothing to say about it
+
+2026-08-25. Scott, after the bins: *"I would have thought you would have caught
+the price being so wildly out of line?"* Fair. The stock table showed
+`$98.82` and `$109.80`, the part name said **10 pack**, and the row's own note
+said **"$10.98 for the 10-pack"** — all on one screen — and the reading went to
+"are these two rows duplicates?" without ever asking whether $208 of plastic
+storage bins was a plausible number.
+
+**Nothing on the panel was watching either**, which is the more useful half. So:
+`Pack price may be per piece` — priced stock whose part states a pack size that
+no supplier part records. **9 rows today.**
+
+It deliberately does NOT claim a price is wrong, because it cannot know:
+
+| row | reading | verdict |
+|---|---|---|
+| ER20 Collet Set 10pc | 1 @ $152.85 | **fine** — stocked as one set, priced per set |
+| Clamp Kit, 58 pcs | 1 @ $89.95 | **fine** — same shape |
+| Avery 8167, 2000 labels | 1 @ $11.99 | **fine** |
+| BT30 pull studs, pack of 10 | 10 @ $8.40 | **unsettled** — Tormach studs really can be $8.40 each |
+| 4in coolant nozzle (10-pack) | 10 @ $4.50 | **unsettled** |
+| Copper clad 7x10, pack of 10 | 9 @ $1.00 | **unsettled** |
+| KF301 terminal blocks, 50 | 27 @ $0.15 | **unsettled** |
+
+The pattern that separates them: **quantity 1 of a stated pack is a kit and is
+priced correctly; quantity N of a stated pack of N is the shape that was wrong
+on the bins.** Only the invoice settles it, so the lamp asks rather than
+asserts — and the fix, once settled, is `pack_quantity` on the supplier part so
+the next receipt prices itself.
+
+**Worth stating plainly:** the check exists because a human caught what the
+instrument missed. That is the right order for this panel — every lamp on it so
+far was earned by something going wrong first — but it is also the reason the
+panel is not yet trustworthy on its own.
