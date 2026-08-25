@@ -22,8 +22,8 @@ State after the 2026-08-25 walk, 28 bins:
 
 | | |
 |---|---|
-| never opened | **8** (RB-20 … RB-24, RB-26 … RB-28) |
-| holds stock | 10 |
+| never opened | **7** (RB-21 … RB-24, RB-26 … RB-28) |
+| holds stock | 11 |
 | verified empty | 5 (RB-09, 10, 15, 16, 18) |
 | declared | 5 (RB-05 bags, RB-08 prototypes, RB-01/02 free storage, RB-19 VFD salvage) |
 
@@ -86,17 +86,30 @@ own bin.
       site root and is now empty — there is no spare station, so there is no
       place a spare goes home to.
 
-- [ ] **RB-13's tips are still unaccounted.** #333 (T15, the correct cartridge
-      for the FM-2027 handpiece) and #160 (T12, "for FX-951" per the vendor)
-      both sit at zero stock with no rows. Nothing in the photo shows where the
-      tips live. **If the T12 set turns up, flag it**: Hakko never states T12
-      fits the FM-2027, and the cartridge carries the heater and sensor.
+- [ ] **The FX-951 tips are in BL-D1** (Scott, 2026-08-25) — recorded on the
+      drawer, **not counted**, and *which* tips is still open: #333 (T15, the
+      correct cartridge for the FM-2027 handpiece) and #160 (T12) both sit at
+      zero stock with no rows, and "the tips" could be either or both. One stop
+      at BL-D1 closes it. **If the T12 set is there, flag it**: Hakko never
+      states T12 fits the FM-2027, and the cartridge carries the heater and
+      sensor.
 
-- [ ] **RB-14 may hold an uncatalogued jig.** The RB-13 photo caught the next
-      bin along: a black moulded object labelled **"JIG DONT TOSS OUT"**, a
-      white enclosure, and a perfboard with a toroid. RB-14's record is the AC
-      wall adapter kit — five component rows, no jig. Read from a photograph,
-      so identity only; ask before writing anything.
+- [ ] **RB-14 holds more than its five rows.** A jig labelled *"JIG DONT TOSS
+      OUT"*, a white enclosure and a perfboard with a toroid are in there;
+      Scott, 2026-08-25: the jig is part of that bin's group. So RB-14 needs
+      the rest of its contents catalogued — the five component rows are the AC
+      wall adapter allocation, not an inventory of the bin.
+
+      **This is the finding that outlives RB-14**, and it is now in
+      `docs/TRAPS.md`: a bin reading *"5 rows, 5 counted"* says the ROWS were
+      counted. It says nothing about whether the bin's contents are all on the
+      books, and the walk board renders the two identically.
+
+- [ ] **RB-20 — three eBay soldering practice kits**, counted at 3 by Scott
+      2026-08-25 and created as #1096, because **nothing in the catalogue
+      matched**. Two things still open: the **eBay listing title** (the string a
+      future duplicate would arrive under), and **whether a practice PCB is in
+      the bin** — only the component bag was seen.
 
 ## At the bench
 

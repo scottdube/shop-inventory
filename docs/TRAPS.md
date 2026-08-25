@@ -4107,3 +4107,40 @@ somebody standing at it.
 `--note` was added in the same pass so the stamp carries its provenance
 ("Scott confirmed by eye during the Red Bin walk.") instead of a bare date —
 matching what RB-09, RB-10, RB-15 and RB-16 already say.
+
+## "5 rows, 5 counted" is a fact about the rows, not about the bin
+
+RB-14 renders on every report as finished: five stock rows, all five counted
+2026-08-23, no estimates. It is the best-looking bin on the rack.
+
+Scott, 2026-08-25: *"in RB-14, that uncatalogued jig is part of the other
+contents of that fourteen. So if you look at fourteen, you're gonna see a bunch
+of contents. A jig is part of that group."*
+
+The five rows are the **AC wall adapter build's allocation** — fuses,
+varistors, chokes, X2 caps, HLK modules. They were never an inventory of the
+bin. The bin also holds a jig labelled *"JIG DONT TOSS OUT"*, a white
+enclosure, and a perfboard with a toroid, none of which are on the books.
+
+**Counting is per-row, and completeness is per-container, and no amount of the
+first produces the second.** `stocktake_date` answers *is this number right*.
+Nothing in the schema answers *is this list the whole list*, and every report
+built so far — the walk board, the per-cabinet tables, the "313 of 587 counted"
+figure — silently treats the first as the second.
+
+The cost is specific: a fully-counted bin is exactly the bin nobody re-opens.
+RB-14 would have stayed "done" indefinitely, and the jig would have surfaced
+the day somebody threw it out — which is why it has that label written on it in
+the first place.
+
+**Do not read a green bin as a complete bin.** Completeness is a claim only a
+person standing at the open container can make, and until somebody makes it,
+the honest rendering of RB-14 is *five rows counted, contents not attested*.
+The walk board now says so in its legend rather than implying otherwise; a
+real per-container `contents_complete` flag is the durable fix and is not built
+— see `docs/OPEN.md`.
+
+Sibling of the DECLARED trap two entries up. There, boilerplate made unopened
+bins look finished. Here, a genuine count makes an under-recorded bin look
+finished. Both are the same mistake: **a report showing the strongest thing it
+knows, with no way to say what it does not know.**
