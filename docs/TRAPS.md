@@ -4880,3 +4880,40 @@ call may not inherit.
 match its diff.** `git show --stat HEAD` after committing costs nothing and is
 the only cheap check — a message about receiving a PO sitting on top of a
 one-line settings change is the signature.
+
+## Order history shows a TRUNCATED listing title — never take a quantity from it
+
+2026-08-26. The 30203 tapered rollers went in as **2** and are **5**.
+
+Three sources, and the two I used were both the same second-hand one:
+
+| source | says |
+|---|---|
+| bag label | "2 Sets 30203 Tapered Roller Bearing 17x40x12mm" |
+| Amazon **order history** | "2 Sets 30203 Tapered Roller Bearing 17x40x12mm" |
+| the **listing** (ASIN B077KFZL1K) | "…**2-Sets** of Metal Bearings **- 5 pcs**", and "INCLUDES: **5 pc**" |
+| Scott, counting boxes | **5** |
+
+**The seller's title contradicts itself**, and order history had truncated away
+the half that was right. The order details page compounded it: one line, no
+quantity multiplier, `$19.99` — which reads as "one unit" and *is*, because the
+one unit contains five.
+
+**A quantity from order history is second-hand and truncated.** It is fine for
+answering *did we buy this and when*. It is not a count and it is not even a
+reliable pack figure — the pack figure lives in the listing's contents bullet,
+which is the only field on Amazon that is trying to state contents rather than
+attract a click.
+
+Scott caught it by counting boxes on the bench. That is the third time in one
+afternoon that a bench count has beaten a printed number:
+
+- LM8UU: bag said 12, bench said **10**
+- 30203: label and order said 2 sets, bench said **5**
+- MGN9 carriages: I could not tell from a photo, bench said **2**
+
+**Where this leaves the tiers.** "Card-stated" was already `[ESTIMATE]`; this
+adds that a *seller's* stated figure can be internally inconsistent, not merely
+stale. When the label and the listing disagree, neither is evidence — go and
+count. And when only the label is available, say which one it came from, so the
+next person knows there is a second source worth opening.
