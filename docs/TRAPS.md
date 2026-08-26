@@ -5132,3 +5132,38 @@ The broad reading was five rows and a retraction.
 
 A person saying "all of them" means the ones in front of them. Things that were
 merely *discussed* are not in front of anyone.
+
+## Never offer "same?" as a yes/no when the question is which of two things
+
+2026-08-26. Two spring cards were photographed hours apart:
+
+- a **yellow** hang card — "Hand Made Springs", "P-9602", "QTY 2"
+- a **white** card — "EXTENSION SPRING / 15/32" x 4-1/2" x .041 / max safe load
+  5.28 lbs"
+
+I asked: *"same card as the yellow P-9602 one, or a second card?"* Scott
+answered **"same"** — meaning *the same card I already showed you* — and it was
+read as *same card, both faces*.
+
+One part then carried the P-9602 name, the white card's dimensions, and a
+quantity of 3 that came from the other lot. Three facts about two products.
+Scott, later: *"the p9602 card is two springs and they are not 4.5in, there was
+a lot of 3 springs that are 4.5in but they are not p9602."*
+
+**The question was built to fail.** It offered "same" as a one-word answer, and
+"same" is exactly what a person says about a thing they have already shown you.
+The word carried both meanings and nothing in the reply could distinguish them.
+
+**Ask so the answer has to NAME one:**
+
+> *"Which card is that — the yellow P-9602 one, or the white one with the
+> dimensions?"*
+
+That cannot be answered "same". The general rule: **for an identity question,
+never offer a yes/no or a bare comparator. Make the reply carry the
+identifier.** Same failure family as the bare `count 45` that landed on the
+wrong part — a reply with no referent in it is a reply that can attach anywhere.
+
+It also compounded a live problem: the dimensions were recorded on the WRONG
+part, which is worse than not recording them, because "no dimensions" invites a
+measurement and a wrong 4-1/2 in does not.
