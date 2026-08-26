@@ -55,6 +55,17 @@ INCH = {
     "R16": ("1",    "2",      "1/2",  25.400,  50.800, 12.700),
 }
 
+# Seals ADD WIDTH on the inch R-series, so the INCH table's open-bearing width
+# is wrong for a sealed part. R6 open is 7/32; R6-2RS is 9/32. That error is
+# already in this shop's record once -- the R6-2RS in the bin was entered at
+# 7/32 off the open table, and the Amazon listing it was bought from says 9/32.
+# An unlisted sealed size falls back to the open width and SAYS SO in the note,
+# rather than quietly asserting a number nobody checked.
+SEALED_WIDTH = {
+    "R6": {"2RS": ("9/32", 7.14), "RS": ("9/32", 7.14)},
+    "R8": {"2RS": ("5/16", 7.94), "RS": ("5/16", 7.94)},
+}
+
 CLOSURE = {
     "RS":  ("rubber sealed", "single contact rubber seal"),
     "2RS": ("rubber sealed both sides", "two contact rubber seals"),
@@ -78,15 +89,30 @@ if series not in DIMS and series not in INCH:
              f"datasheet figure. This script does not guess bores.")
 
 short, longd = CLOSURE[suffix]
-desig = series + suffix
+# Inch designations hyphenate before the suffix (R6-2RS); metric ones do not
+# (608ZZ, 6203RS). "R62RS" is not a part number anybody would recognise.
+desig = (f"{series}-{suffix}" if suffix and series.startswith("R") and len(series) <= 3
+         else series + suffix)
 if series in INCH:
     fb, fo, fw, bore, od, w = INCH[series]
+    width_caveat = ""
+    if suffix:
+        sw = SEALED_WIDTH.get(series, {}).get(suffix)
+        if sw:
+            fw, w = sw
+        else:
+            width_caveat = (
+                f"WIDTH UNVERIFIED: {fw} in is the OPEN {series} width and this "
+                f"is a sealed bearing. Seals add width on the inch R-series and "
+                f"no figure for {desig} is on file. Measure before cutting "
+                f"anything to fit.\n\n")
     sizetxt = f"{fb} x {fo} x {fw} in"
     NAME = f"Ball Bearing {desig}, {sizetxt}"
     DESC = (f"Deep-groove radial ball bearing, {series} INCH series -- {fb} in "
             f"bore ({bore:.3f} mm), {fo} in OD ({od:.3f} mm), {fw} in wide, "
             f"{short}.")
-    UNITS = ("INCH SERIES. This bearing is dimensioned in inches and is NOT a "
+    UNITS = (width_caveat +
+             "INCH SERIES. This bearing is dimensioned in inches and is NOT a "
              "metric size with a converted label. Do not substitute a metric "
              "bearing for it or the reverse -- the fits are what fail, not the "
              "nominal numbers.\n\n")
