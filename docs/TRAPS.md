@@ -5230,3 +5230,35 @@ wrong part — a reply with no referent in it is a reply that can attach anywher
 It also compounded a live problem: the dimensions were recorded on the WRONG
 part, which is worse than not recording them, because "no dimensions" invites a
 measurement and a wrong 4-1/2 in does not.
+
+## A lamp with no filtered view must name its rows, or "open list" is a shrug
+
+2026-08-26. The `PO has no issue date` lamp lit with **2**, its link opened the
+purchase-order list, and Scott got five orders: *"I have no idea which ones are
+the problem."*
+
+The verified-link rule was doing its job — no filter matches "issue_date is
+null", so no filtered link was offered — but "the whole list" is only half an
+answer when the lamp has already identified the rows. The panel knew it was
+PO-0143 and PO-0144 and said nothing.
+
+**So every row-backed lamp now carries its rows.** When the link is exact, the
+link is the answer. When it is not, the tooltip lists what the lamp counted — up
+to 8, then `(+N more)` — and a lamp counting exactly ONE row skips the list
+entirely and links straight to that item, part or order.
+
+**Measured which filters exist for purchase orders, so the next attempt does not
+repeat it:** `has_issue_date`, `issue_date_before` and `issue_date_after` are all
+ignored and return the full set. `search` works and matches the reference, so a
+single PO is linkable and a pair sharing no distinctive token is not.
+
+### The gap in the fix, found by testing it
+
+The first version added row-naming to the four lamps that had no exact link *that
+morning* — which is not the same set as the lamps that can lose one. Forcing the
+search-link check to fail proved `Refund — verify these` went silent: not exact,
+and no rows either. Every row-backed lamp carries identities now.
+
+**A conditional path that is never exercised is not built, it is written.** The
+`In Receiving over 7d` lamp had the same problem earlier the same day and was
+tested against a stand-in location for exactly this reason.

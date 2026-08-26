@@ -570,7 +570,8 @@ function lampEl(l) {
                   ? (l.exact
                       ? '  The link opens exactly these rows.'
                       : '  No API filter matches this set, so the link opens the'
-                        + ' whole list — the rows are not singled out.')
+                        + ' whole list. The rows it counted are: '
+                        + (l.rows || 'not listed'))
                   : ''))}"
               aria-pressed="${l.ack ? 'true' : 'false'}">
         <span class="g" aria-hidden="true">${glyph}</span><b>${esc(n)}</b>${esc(l.label)}${ackLine}
