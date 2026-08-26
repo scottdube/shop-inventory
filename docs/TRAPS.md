@@ -5057,3 +5057,45 @@ Two rules, one for each side:
 The general form: **an inferred number is not a count, and the note is the only
 place that distinction can live.** `stocktake_date` says somebody looked; it
 cannot say *what they were looking at*.
+
+## `database is locked` — check state before re-running the write
+
+2026-08-26. Filing the 440C balls died mid-write:
+
+```
+sqlite3.OperationalError: database is locked
+  ... in take_stock -> updateQuantity -> save
+```
+
+InvenTree here runs on **SQLite**, which takes a database-wide write lock.
+Anything else writing — the server's own background tasks, another script, a
+person in the web UI — will block a script mid-transaction.
+
+**Nothing had landed.** Quantity was still 100, location still null, no new
+tracking entry. The failure was clean, because the write was inside a
+transaction that rolled back.
+
+**That is the thing to verify, not assume.** The instinct on seeing a traceback
+is to re-run, and a re-run after a HALF-applied stock change would double it.
+`take_stock` is not idempotent: run it twice and two come off the shelf on
+paper. Read the row back first, then decide.
+
+Retry with backoff rather than by hand, and make the retry conditional on the
+current value:
+
+```python
+def retry(fn, what, tries=6):
+    for i in range(tries):
+        try:
+            return fn()
+        except OperationalError as e:
+            if "locked" not in str(e).lower() or i == tries - 1:
+                raise
+            time.sleep(0.5 * (2 ** i))
+
+if float(si.quantity) == 100:        # guard: only if the change has NOT applied
+    retry(lambda: si.take_stock(1, user, notes=...), "take_stock")
+```
+
+The guard matters more than the backoff. A retry loop around a non-idempotent
+write is a way to apply it several times.
