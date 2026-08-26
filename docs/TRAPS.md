@@ -3364,6 +3364,38 @@ for every future vendor that gets added to the registry but not to Section 3.
 **Do not read "already swept" as proof of anything** until that lands. It is a
 statement about the registry, not about the database.
 
+### The stalled call was an Edit, and it was the capture-as-you-go write
+
+**2026-08-26, measured on the 16:40 run's own transcript.** The run spanned
+156.3 min for roughly 25 tool calls. The gap distribution is not a spread — it
+is **one gap of 149.2 min and nothing else at or above 60 s**:
+
+```
+149.2 min  after 16:52:38  Edit: docs/TRAPS.md
+```
+
+Everything after that Edit — `decide.py`, a `git commit`, `journal --end` —
+completed within seconds of its approval.
+
+This **corrects `stall-is-one-bash-prompt`**, which concluded from two nights
+that the lost window is always one unapproved *Bash* call and recommended
+adding `Bash(~/code/scripts/itq *)`. That is still worth doing, but it would
+not have saved this run: every `itq` call here returned promptly, including
+`push`, `pull`, and running an absolute-path script out of the scratchpad.
+
+The invariant that survives all three measured stalls is weaker and more
+useful: **one unapproved tool call, of any kind.** The tool has been Bash twice
+and Edit once. Nominating a subsystem from two samples is what went wrong; the
+gap distribution is the measurement that settles it, and it is cheap —
+`scratchpad/gaps.py` prints it from the newest transcript in
+`~/.claude/projects/-Users-scottdube-code`.
+
+**The interaction worth naming:** the call that blocked was the write to *this
+file*. Capture-as-you-go is the rule that makes an unattended sweep worth
+running, and it is also the rule that stalls it — a run that obeys blocks, a
+run that skips finishes and looks healthier. Do not let that asymmetry quietly
+select for runs that write nothing down.
+
 ### An item on the decision queue does not stop the sweep re-finding it
 
 **2026-08-26 16:5x, third sighting.** The 16:40 run rediscovered
