@@ -3364,6 +3364,37 @@ for every future vendor that gets added to the registry but not to Section 3.
 **Do not read "already swept" as proof of anything** until that lands. It is a
 statement about the registry, not about the database.
 
+### An item on the decision queue does not stop the sweep re-finding it
+
+**2026-08-26 16:5x, third sighting.** The 16:40 run rediscovered
+`8213410090395753` from nothing, wrote a fresh decision-queue entry for it, and
+only caught the duplication by grepping the queue *after* the write. Both
+AliExpress orders had been on the queue since 08-24.
+
+Nothing in the loop closes: `vendor_triage` still says "already swept",
+`po_check` still says `absent`, and neither one consults
+`pending_decisions.md`. So the gap costs more than the two missed orders — it
+costs a re-derivation every run, and each re-derivation is a chance to write a
+duplicate entry that makes the queue *look* like it is growing.
+
+Two consequences worth acting on:
+
+- **Grep the queue before `decide.py --add`.** The tool appends
+  unconditionally; it has no `--remove` and no duplicate check, so an unattended
+  run cannot undo its own duplicate without pulling, editing and pushing the
+  file.
+- Fixing `procedure-gap-aliexpress` by the *triage* route (test the order
+  number, not the sender domain) also closes
+  `vendor-triage-no-idempotency-check`. One change, two open items — which is
+  why it is the better of the two options recorded above.
+
+New fact for the platform question itself: **AliExpress has no cost history at
+all.** Company #10 is a real supplier with 42 SupplierParts and exactly one PO
+in the instance — `TO-ORDER-ALI`, Pending, `supplier_reference` empty. That is a
+shopping list, not an order. It is the same shape as `seeed-orders-no-po`, and
+it means the Pending PO may be the very list these orders fulfil — so creating
+POs from the emails risks the double-count that got PO-0019 cancelled.
+
 ## `/Volumes/4TB_Removable` is on the MINI — two sessions in one day read it as local
 
 **2026-08-24, twice.** The 16:46 and 22:46 daytime sweeps each stopped to
