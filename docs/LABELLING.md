@@ -386,3 +386,29 @@ than by squinting at 62 mm of tape.
 rasterises it with `qlmanage` in a single command. That exists so that when a
 preview IS warranted it costs one step instead of three. poppler is not
 installed on this laptop; `qlmanage` is macOS built-in and needs nothing.
+
+---
+
+## Do not print unless Scott asks
+
+**Standing instruction, 2026-08-26.** Create the part, file the stock, render the
+label if it is worth looking at — then stop. Printing happens when Scott calls
+for it.
+
+The session that produced this rule printed fourteen labels as parts were
+entered, and Scott was applying each one to its bag as it came off the printer.
+**Four had to be peeled off and replaced.** Three because reading the actual
+Amazon listings *afterwards* showed the bearings were double-sealed — `608RS` →
+`608-2RS`, `6803RS` → `6803-2RS`, `R6RS` → `R6-2RS`, the last also 9/32 wide and
+not the 7/32 taken from an open-bearing table — and one because a bin was
+renamed an hour after it was created.
+
+Nothing about those labels was wrong when printed. They were printed *before the
+facts settled*, which is a different failure and not one a render check can
+catch: the tape was correct and the record behind it was not.
+
+**Entering a part and labelling it are two separate acts.** `print_part_label.py`
+already defaults to render-only for the visual check this file demands. Treat
+that default as the END of the job rather than a step on the way to `--print`,
+and batch the labelling when it is called for — by which time names, counts and
+locations have stopped moving.
