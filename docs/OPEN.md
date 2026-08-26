@@ -34,10 +34,14 @@ And now a **Kerr Lakeside box of 1/4-20 x 1 in black-oxide** has surfaced off
 the wire shelves — the same part as C7, from a different vendor. Merging it into
 C7 would put ~90 screws in one cell of a row that is already over capacity.
 
-**Parked, not merged.** The Kerr box goes to an empty cell as its own row while
-the rebuild waits. Two rows of one part in two locations is allowed — the
-invariant is one row per part per *location* — and it records the truth, which
-is that the stock is in two places.
+**Parked, not merged — done 2026-08-26.** The Kerr box (45 counted, of a box of
+50) is now its own row at **B2-R4C7**, a temp cell. Two rows of one part in two
+locations is allowed — the invariant is one row per part per *location* — and it
+records the truth, which is that #955 is in two places and totals 85.
+
+`default_location` was deliberately NOT moved to B2-R4C7. Policy is that
+default_location is where a spare goes home, never a staging area; pointing it
+at a temp cell is how a temp cell becomes permanent.
 
 **For the rebuild:** B2-R5, R6 and R7 are entirely empty, 12 large cells. The
 question to settle is whether nuts and washers should share a row with screws at
