@@ -4949,3 +4949,50 @@ every unlocated row should say whether anyone has actually looked.
 Related: the McMaster-import trap above, which is the same import and the same
 root cause — order history was written into stock rows that nothing ever
 completed.
+
+## McMaster names put the discriminator LAST, so the label truncates away the identity
+
+2026-08-26. The dash-135 Viton O-ring printed as:
+
+```
+Chemical-Resistant Viton Fluoroelastomer O-Ring, 3/32 Fractional Width, Da…
+```
+
+Three lines of adjectives, then a truncation **exactly where the identity was**.
+Everything on that label is true of hundreds of different O-rings. The one field
+that says *which one* — Dash Number 135 — fell off the end.
+
+**The import used the VENDOR DESCRIPTION as the part name.** Vendor
+descriptions are written to be *searched*: material and qualities first, size
+last, because that is how a person types a query. A shelf label needs the
+reverse — the discriminator first, because the reader is standing in front of
+six similar bags trying to tell them apart.
+
+**This is not one bad name. Measured: 90 McMaster-imported parts have names
+over 40 characters,** and any whose distinguishing detail sits past that
+truncates the same way. The worst offenders are the ones that come in families:
+
+- `0.032" Thick Washer for 3/8" Shaft Diameter Needle-Roller Thrust B…` — and
+  the 7/8" one, identical for the first 30 characters
+- `1018-1045 Carbon Steel Machine Key Stock, 1/2" x 1/2", 36" Long, O…` — and
+  the 1/4" one
+- `Alloy Steel Socket Head Screw, Black-Oxide, M6 x 1 mm Thread, 20 m…` — and
+  the 25 mm one
+
+Each pair is indistinguishable on tape.
+
+**Rename before printing, not in a batch.** A good shelf name is
+`<what it is>, <the number that picks it out>, <secondary spec>`:
+
+```
+Viton O-Ring, Dash 135, 3/32 Width
+```
+
+The full vendor text goes in `description`, where length costs nothing and the
+searchable phrasing is still there. **The 90 are not renamed** — doing it
+blind would churn every part in the catalogue and most will never get a label.
+Fix each one the moment it earns tape.
+
+**The check is free and it is the render.** `print_part_label.py` defaults to
+render-only for exactly this: a truncated name looks like a perfectly good
+label until you read it.
