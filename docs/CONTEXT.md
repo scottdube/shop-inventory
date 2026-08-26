@@ -289,3 +289,36 @@ ACT on. A check that reports something you would shrug at teaches you to ignore
 the panel — which is exactly how the amber-drawer problem started, where five
 settled places read as "nobody has looked" until the walk stopped meaning
 anything.
+
+## Report parts the way Scott would say them, never by pk
+
+2026-08-26, after a put-away session reported spring stock as a table of
+`#976 6 · #978 2 · #1132 3`. Scott: *"these pk numbers do nothing to help me
+know what you are referring to."*
+
+This is written up in memory as a standing rule and repeated here because it is
+a **shop-floor** failure, not a formatting one: a person holding a bag cannot
+act on a number that appears nowhere on the bag, the shelf, or the label.
+
+**The failure mode is tables.** Prose resists it — you cannot write a sentence
+about "#1132" without hearing that it says nothing. A column of pks looks tidy
+and reads as a summary while carrying no information, and the pull toward it is
+strongest when there are several items to report, which is precisely when the
+distinctions matter most.
+
+**Use what he handled**: size, end type, what the packet looks like, who made
+it, what it was bought for.
+
+| instead of | say |
+|---|---|
+| #976 | the W.B. Jones compression springs, 3 in, McMaster bag with the yellow sticker |
+| #978 | the Associated Spring hook-end, 5 in, white poly bag |
+| #1132 | the P-9602 card, loop ends, 4½ in |
+
+He identified the P-9602 springs as not-the-McMaster-ones by finish and feel
+across a bench. That is the register to write in.
+
+**Test: if the line would be unreadable spoken aloud, it is unreadable.** "Nine
+seventy six, six" tells him nothing. "Six W.B. Jones compression springs" lands.
+
+Keep pks inside scripts, where they are the right identifier.
