@@ -4917,3 +4917,35 @@ adds that a *seller's* stated figure can be internally inconsistent, not merely
 stale. When the label and the listing disagree, neither is evidence — go and
 count. And when only the label is available, say which one it came from, so the
 next person knows there is a second source worth opening.
+
+## "Location unknown" mostly meant the RECORD didn't know — ask before you hunt
+
+2026-08-26. Three McMaster washer bags read `location=NULL` and had done since
+the import. Scott, in one line: *"these were in b1 r7c3 lets put all 3 there"*.
+
+**They were never lost.** They were in a labelled cell on the bin wall, exactly
+where anybody would look, for four years. The import created stock rows and
+never set a location, and the null had been read all day as *the part might be
+missing*.
+
+Those are two different problems wearing the same field value:
+
+| | |
+|---|---|
+| the SHOP doesn't know where it is | costs a search, maybe a write-off |
+| the RECORD doesn't know where it is | costs one question to a person |
+
+The 47 unlocated rows were triaged this morning by AGE and by whether a part
+looked consumable — a reasonable-sounding heuristic that would have sent
+somebody hunting the shelves. The cheap move is the opposite order: **read the
+list out to whoever bought the parts first.** Three of forty-seven came back in
+a single sentence, with a cell number.
+
+Contrast the two SHT31 rows (573/574), which are the genuine version: Scott
+searched B3-R4C8 and they were not there. That null is a real unknown and it is
+still open. **The field cannot tell the two apart, so the notes have to** —
+every unlocated row should say whether anyone has actually looked.
+
+Related: the McMaster-import trap above, which is the same import and the same
+root cause — order history was written into stock rows that nothing ever
+completed.
