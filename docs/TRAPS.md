@@ -4996,3 +4996,35 @@ Fix each one the moment it earns tape.
 **The check is free and it is the render.** `print_part_label.py` defaults to
 render-only for exactly this: a truncated name looks like a perfectly good
 label until you read it.
+
+## Renaming a bin invalidates every PART label inside it
+
+2026-08-26. The "Parked Projects" bin was renamed to "Sim Rudder Pedals" about
+an hour after it was made. Two printed labels went in the bin:
+
+- the bin's own, obviously
+- **the damper's part label**, whose footer reads `<location> · <category>`
+
+The second is the one that surprises. `Shop Part 62mm` deliberately prints the
+LOCATION rather than the IPN — LABELLING.md explains why: the thing a person
+standing at a shelf needs is where it lives. The cost of that choice is that
+**a bin rename silently invalidates every part label in the bin.**
+
+One part here, so two pieces of tape. A bin holding twenty bagged parts costs
+twenty reprints and twenty peels, and nothing warns you — the old labels stay
+legible and simply name a location that no longer exists.
+
+**Settle a bin's name before filing parts into it.** If a rename is
+unavoidable, reprint the contents in the same pass:
+
+```
+itq run scripts/print_part_label.py <part pks...>          # look first
+itq run scripts/print_part_label.py <part pks...> --print
+```
+
+Get the part list from the location, not from memory:
+`StockItem.objects.filter(location_id=<pk>).values_list('part_id', flat=True)`.
+
+Related: the `pathstring` trap above. A rename has two failure modes — the
+derived field that goes stale in the database, and the printed tape that goes
+stale in the shop. Only the first one is fixable from a keyboard.
