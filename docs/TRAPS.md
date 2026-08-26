@@ -5099,3 +5099,36 @@ if float(si.quantity) == 100:        # guard: only if the change has NOT applied
 
 The guard matters more than the backoff. A retry loop around a non-idempotent
 write is a way to apply it several times.
+
+## "All" from a person covers what they HANDLED, not what was mentioned
+
+2026-08-26. Scott, asked whether the springs were in B2-R7C1: *"they're all
+there that we talked about this afternoon."*
+
+Five spring rows had been discussed. **Three had been on the bench and
+handled**; two had only been named in conversation. All five got filed.
+
+Scott: *"neither of these were located or counted."*
+
+**The ambiguity was noticed and resolved the wrong way.** The script that did it
+withheld `stocktake_date` from the two unhandled rows and called them "located
+but not counted" — a compromise that felt careful and was not.
+
+**Withholding the count did not make the location true.** One uncertain
+assertion got split across two fields and the half with no evidence behind it
+was written down. That is worse than writing nothing: a null location says
+UNKNOWN out loud, while a location says *a person put it there*.
+
+**The same script got it right for a third row and wrong for these two.** It
+deliberately excluded the music-wire loop-end springs, on the grounds that "all
+there" could not include a part fitted to the rudder pedals — and said in its own
+docstring that sweeping it in "is the exact failure mode of a bulk operation
+reading a casual 'all'." Knowing the trap by name was not enough to avoid it one
+paragraph later.
+
+**The rule: apply an ambiguous bulk instruction to the NARROW reading, and ask
+about the remainder.** Here the narrow reading was three rows and one question.
+The broad reading was five rows and a retraction.
+
+A person saying "all of them" means the ones in front of them. Things that were
+merely *discussed* are not in front of anyone.
