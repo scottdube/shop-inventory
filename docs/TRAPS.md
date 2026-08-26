@@ -4686,3 +4686,43 @@ itq push labels/location_62mm.html /Volumes/4TB_Removable/inventree/data/media/r
 ```
 
 No restart needed — the template is read per render.
+
+## Renaming a location with `.update()` leaves `pathstring` telling the old name
+
+2026-08-26, renaming the bin from "Linear Motion" to "Bearings & Motion".
+
+`StockLocation.objects.filter(pk=587).update(name=...)` wrote the name and
+returned success. The very next read showed:
+
+```
+name       = 'Bearings & Motion'
+pathstring = 'SLN/Storage/WS2/WS2-S4/Linear Motion'
+```
+
+**`pathstring` is denormalised and rebuilt in `save()`.** A queryset `.update()`
+goes straight to SQL and never runs it, so the row contradicts itself — and
+`pathstring` is what the UI breadcrumb, the location picker and every
+`pathstring__icontains` search actually read. The rename would have looked done
+and been invisible to search.
+
+This is the **same shape** as `pack_quantity` / `pack_quantity_native` earlier
+in this file, and the general rule is worth stating once: on this install,
+`.update()` is the right tool when a plain column is being written and the WRONG
+tool whenever `save()` derives something from that column. The two known cases
+are both names-and-caches; assume there are more.
+
+Fix is `.save()` on the instance, then verify the derived field, not the one
+you set:
+
+```python
+l = StockLocation.objects.get(pk=587)
+l.name = "Bearings & Motion"
+l.save()
+l.refresh_from_db()
+assert "Linear Motion" not in l.pathstring
+assert not StockLocation.objects.filter(pathstring__icontains="Linear Motion").exists()
+```
+
+The second assert is the one that matters — children carry the parent's path in
+their own `pathstring`, so a rename with descendants can leave a whole subtree
+stale even after the renamed row itself looks right.
