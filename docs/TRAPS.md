@@ -4534,3 +4534,40 @@ This is the mirror image of the open item `vendor-triage-no-idempotency-check`:
 that one is triage surfacing an order InvenTree already has because triage never
 asks InvenTree. Both fixes are the same one — **ask `po_check` first, and let
 triage classify only things that genuinely arrived as email.**
+
+## The pack price arrives on the LINE too — and by then pack_quantity is the wrong lever
+
+2026-08-26, receiving PO-0139 (Amazon 113-5011479-9313006, SHT31-D breakouts).
+
+The confirmation sweep auto-creates a PO line from what the order page states,
+and an Amazon order page states a **grand total against one "item"**. So the
+line was written **`qty=1 @ $16.99`** for an ASIN that ships **four pieces**.
+Supplier part 193 carried `pack_quantity=1`, so receiving it unrepaired would
+have created **one** stock row of **one** sensor at **$16.99** — the $208.62 bin
+error again, reached through a different door. The previous purchase of the
+identical ASIN (PO-0028) had been entered `qty=4 @ $4.25`, so the same SKU had
+two contradictory shapes on file and only the *unreceived* one was wrong.
+
+**The sweep cannot tell a 1-piece order from an N-piece pack**, because the
+order page does not say. Every auto-created line is therefore *suspect on
+quantity* until a human has the box. Check the line against the pack size at
+**receiving time** — that is the one moment the truth is in the room.
+
+**Which lever to pull depends on whether the SKU has already been received.**
+The bins fix above raised `pack_quantity` at the root, correctly: no receipt had
+happened yet. Here PO-0028 was already **Complete** with 4 pieces booked against
+a 4-unit line. `pack_quantity` is read at receive time and is not versioned, so
+raising it to 4 would have made that finished receipt reread as **16 pieces**.
+
+- **No completed receipt for the SKU** → fix `pack_quantity` on the supplier
+  part. It is the durable fact and it fixes every future receive.
+- **A completed receipt already exists** → fix the **line** (`quantity` and
+  per-piece `purchase_price`) and leave `pack_quantity` alone. Say in the line
+  notes why, or the next session will "helpfully" fix the root and silently
+  quadruple history.
+
+**A per-piece price with more than two decimals is not a rounding bug.**
+$16.99 / 4 = **$4.2475**. The UI renders `$4.25` and the instinct is to store
+$4.25 — which turns the order into $17.00. `purchase_price` has
+`decimal_places=6`; store the exact quotient and let the display round. Verified:
+stored `Decimal('4.247500')`, line total `16.99000000000`.
