@@ -5028,3 +5028,32 @@ Get the part list from the location, not from memory:
 Related: the `pathstring` trap above. A rename has two failure modes — the
 derived field that goes stale in the database, and the printed tape that goes
 stale in the shop. Only the first one is fixable from a keyboard.
+
+## A bare count with two questions open lands on the wrong part
+
+2026-08-26. Two counts were outstanding — M3 x 10 screws and spring cards — when
+Scott said just **"count 45"**. It was assigned to the screws, on the reasoning
+that 45 cards of springs is not a thing.
+
+It was neither. The screws are **100** and the springs are **one card of two**.
+The 45 was almost certainly the Kerr 1/4-20 box, which was under discussion in
+the same breath and had never been framed as a *count* question at all — it had
+been asked about its FINISH.
+
+**The dictation format agreed earlier already solves this** — `608 ZZ count 13`
+names the part and the number together — and it broke down precisely because the
+number arrived alone while the conversation had more than one open slot.
+
+Two rules, one for each side:
+
+- **Asking**: never leave two count questions open at once. Ask one, or ask them
+  as a numbered list so the reply can say *"1: 100, 2: one card"*.
+- **Recording**: if a number has to be assigned by inference, **write the
+  inference into the stock note in the same breath**, in those words. The row
+  here said *"taken as the M3 count, not the spring cards... say so if that
+  reading is wrong"* — which is the only reason the correction cost one message
+  instead of surviving as a fact.
+
+The general form: **an inferred number is not a count, and the note is the only
+place that distinction can live.** `stocktake_date` says somebody looked; it
+cannot say *what they were looking at*.
