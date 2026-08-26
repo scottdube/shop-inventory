@@ -64,6 +64,11 @@ INCH = {
 SEALED_WIDTH = {
     "R6": {"2RS": ("9/32", 7.14), "RS": ("9/32", 7.14)},
     "R8": {"2RS": ("5/16", 7.94), "RS": ("5/16", 7.94)},
+    # R4-2RS VERIFIED off the XiKe box 2026-08-26: "ID 1/4" x OD 5/8" x Width
+    # 0.196"". Same as the open width -- on this size the seals do not add any.
+    # That is worth having explicitly: without it the script would keep printing
+    # WIDTH UNVERIFIED for a figure the manufacturer had already stated.
+    "R4": {"2RS": ("0.196", 4.978), "RS": ("0.196", 4.978)},
 }
 
 CLOSURE = {
