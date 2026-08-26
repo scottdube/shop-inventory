@@ -4726,3 +4726,157 @@ assert not StockLocation.objects.filter(pathstring__icontains="Linear Motion").e
 The second assert is the one that matters — children carry the parent's path in
 their own `pathstring`, so a rename with descendants can leave a whole subtree
 stale even after the renamed row itself looks right.
+
+## `stocktake()` is a no-op when the count matches — so the DATE never lands
+
+2026-08-26, confirming the MGN9 rails at 2.
+
+```python
+si.stocktake(2, user, notes="Counted in hand by Scott.")
+# quantity 2 -> 2, stocktake_date: None -> None
+```
+
+InvenTree's `stocktake()` short-circuits when the counted number equals the
+stored one. Nothing is written, nothing errors — the same silent-success shape
+as `.save()` elsewhere in this file.
+
+**The bug is that quantity and `stocktake_date` are two different claims.**
+The number says *how many*; the date says *somebody looked*. Confirming a
+quantity that was already right is a real stocktake and is exactly the case
+where the date is most valuable — it converts an estimate into a count without
+changing a digit. The no-op throws that away and the row keeps reading
+never-counted.
+
+The LM8UU row the same afternoon went 12 → 10 and got its date automatically,
+which is why this is easy to miss: **the method works whenever it changes
+something, and silently fails to record precisely the confirmations.** Those
+are the majority of stocktakes on a shelf that is basically correct.
+
+Set the date explicitly after any confirming count:
+
+```python
+StockItem.objects.filter(pk=pk).update(stocktake_date=datetime.date(Y, M, D))
+```
+
+And verify the DATE, not the quantity — the quantity was never going to be
+wrong, which is the whole reason the failure hides.
+
+## The McMaster import booked four years of ORDER HISTORY as if it were stock
+
+2026-08-26. Scott, on four unlocated rows: *"used on repair projects."*
+
+Those four were the two needle-roller thrust bearing sets — and the purchase
+record says exactly what happened:
+
+| PO | issued | contents |
+|---|---|---|
+| PO-0126 | **2022-08-01** | 5909K25 bearing + 2× 5909K251 washers (3/8") |
+| PO-0125 | **2022-10-04** | 5909K35 bearing + 2× 5909K48 washers (7/8") |
+
+Single quantities, bearing and washers on one order, four years ago. **That is
+the shape of a repair, not of stock.** They were never lost — they were fitted,
+and the catalogue has been carrying them as owned ever since.
+
+**The import equated "you ordered this" with "you have this."** It read
+McMaster order history and created a stock row per line, at the ordered
+quantity, with no location. That is a defensible way to seed a *parts
+catalogue* and an indefensible way to seed *stock*, because a purchase four
+years old says nothing about what is on the shelf today.
+
+**Scale, measured 2026-08-26:** 47 unlocated rows carry stock > 0. Aged by the
+issue date of their earliest PO:
+
+| ordered | rows | |
+|---|---|---|
+| 2021 | 1 | |
+| **2022** | **19** | four years old |
+| 2023 | 7 | |
+| 2024 | 6 | |
+| 2026 | 4 | the SHT31s and friends — a different problem |
+| no PO | 10 | ZVS induction kit, supplied-with-kit items |
+
+**33 of them predate 2025.** Every one asserts a quantity nobody has seen.
+
+**What survives the doubt and what does not.** Consumables bought by the
+hundred (100 washers, 250 spring pins, 100 steel balls) are probably still
+largely there — nobody uses 100 M5 washers on one job. **One-off single
+quantities bought alongside their own mating parts are the suspect class**, and
+that is precisely what the thrust bearings were. Triage that way rather than
+row by row.
+
+**The fix is not to delete them.** A part record with a McMaster number is worth
+having even at zero. Zero them *with the reason*, per stock 341's rule: a zero
+with an explanation is a fact; a zero without one is a question that costs
+somebody a trip to the bench.
+
+## Taking stock to zero DELETES the row, explanation and all
+
+Same afternoon, zeroing those four:
+
+```python
+si.take_stock(si.quantity, user, notes="Consumed on a repair project.")
+si.refresh_from_db()   # StockItem.DoesNotExist
+```
+
+`delete_on_deplete` defaults **True**, so InvenTree removes a stock item the
+moment it hits zero. Stock 522 was destroyed that way — along with the note
+explaining why it was zero, which was the entire point of zeroing it rather
+than deleting it.
+
+The two rules collide head-on: *keep a zero with its explanation* cannot be
+carried out with `take_stock` alone. Clear the flag first, and on a row you are
+creating at zero, set it at creation:
+
+```python
+StockItem.objects.filter(pk=pk).update(delete_on_deplete=False)
+si.refresh_from_db()
+si.take_stock(si.quantity, user, notes=...)
+assert StockItem.objects.filter(pk=pk).exists()      # verify the ROW, not the qty
+
+StockItem.objects.create(part_id=ppk, quantity=0, delete_on_deplete=False)
+```
+
+Assert on the row's existence. Reading the quantity back cannot detect this —
+there is nothing left to read it from.
+
+## shop-inventory is a NESTED git repo, and the shell's cwd resets to ~/code
+
+2026-08-26. Eight commits of inventory work — the bearing scripts, three new
+traps — landed in **`~/code`** instead of here, and two earlier ones carried
+inventory commit messages over completely unrelated files.
+
+Two known hazards combined into a third that neither one predicts:
+
+1. `~/code/CLAUDE.md` already warns that **the shell's cwd resets to `~/code`
+   without warning**, which is why `itq run` resolves a bare relative path
+   against the repo rather than `$PWD`.
+2. **`shop-inventory/` is its own git repo inside `~/code`**, not a submodule.
+
+So `cat > scripts/foo.py` written after a cwd reset creates
+`~/code/scripts/foo.py`, and `git add -A` from `~/code` commits it there
+happily. Neither command errors. And `~/code/docs/` exists too, so
+`cat >> docs/TRAPS.md` silently **created a second TRAPS.md** in the wrong repo
+rather than failing.
+
+`itq run scripts/foo.py` then still WORKS — it falls back to `$PWD` — so the
+script runs, the write to InvenTree succeeds, and nothing looks wrong until
+somebody goes looking for the script in this repo and it is not here.
+
+**Use absolute paths for both halves.** Not `cd` — `cd` is what fails:
+
+```bash
+cat > /Users/scottdube/code/shop-inventory/scripts/foo.py <<'EOF'
+...
+EOF
+git -C /Users/scottdube/code/shop-inventory add -A
+git -C /Users/scottdube/code/shop-inventory commit -m "..."
+```
+
+`git -C <path>` is the important half. A `cd X && git commit` chain reads as
+atomic and is not: the `cd` is one command's worth of state that the next tool
+call may not inherit.
+
+**The tell that something has gone wrong is a commit whose message does not
+match its diff.** `git show --stat HEAD` after committing costs nothing and is
+the only cheap check — a message about receiving a PO sitting on top of a
+one-line settings change is the signature.
