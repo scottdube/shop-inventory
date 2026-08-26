@@ -4638,3 +4638,51 @@ itself written `for o in …; do itq …; done` twice, and got away with it only
 because Scott happened to be at the keyboard. Knowing the rule is not the same
 as following it; the shape has to be impossible to reach for, not merely
 discouraged.
+
+## The location label's name field silently overprinted the breadcrumb at 11 characters
+
+2026-08-26, printing the new LINEAR MOTION bin.
+
+`Shop Location 62mm (QR + Text)` (template 9) pinned the name at `top: 4mm`,
+`font-size: 6mm`, and the breadcrumb at `top: 11mm`. **"Adhesives" fit on one
+line. "Linear Motion" did not** — it wrapped, and the second line printed
+straight through `WS2-S4`. The render is legible-looking ink in exactly the
+right place, which is why nothing automated could have caught it.
+
+This is LABELLING.md's own WeasyPrint rule firing for the first time on a
+location: `overflow: hidden` is ignored on an absolutely-positioned block, so
+the overflow does not clip, it overprints.
+
+**Why it had never bitten before:** every location labelled up to now was a
+DRAWER CODE — `BR-D3`, `A3-R8C6`, `WS2-S4`. Four to seven characters. The
+template was authored against that and the assumption was never written down.
+Bins broke it because a bin is named for what is in it, and topic names are
+words. `Electrical`, `Plumbing`, `Air System` were all already in the tree and
+would each have failed the same way the moment anyone printed one.
+
+**Fixed by sizing the name to the name.** WeasyPrint has no auto-fit, so the
+template picks a font size from `location.name|length` and sets
+`white-space: nowrap` so a miss can never hide itself in a wrap again:
+
+| chars | size | fits ~35 mm of usable width |
+|---|---|---|
+| ≤ 10 | 6.0 mm | `Adhesives`, `Plumbing` |
+| ≤ 13 | 4.6 mm | `Linear Motion`, `Air System` |
+| ≤ 17 | 3.6 mm | |
+| more | 2.9 mm | plus `truncatechars:22` as a backstop |
+
+**Renaming the bin was the wrong fix and was considered first.** "Motion" would
+have printed cleanly and left the template broken for the next word-named bin —
+and the bin wall is going to accumulate them, because that is what the bin
+pattern is for.
+
+**The template lives in the DATABASE, not in the repo.** `labels/` holds the
+source; the file InvenTree actually renders is
+`<MEDIA_ROOT>/report/label/location_62mm.html` on the Mini. Editing the repo
+copy alone changes nothing. Push it:
+
+```
+itq push labels/location_62mm.html /Volumes/4TB_Removable/inventree/data/media/report/label/location_62mm.html
+```
+
+No restart needed — the template is read per render.

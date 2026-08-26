@@ -30,6 +30,17 @@
     {% endlocalize %}
 }
 
+/* The name is sized to the name, because a bin is not a drawer code.
+
+   "Adhesives" fits at 6mm; "Linear Motion" does not -- it wrapped to a second
+   line and printed straight through the breadcrumb below it. That is the
+   WeasyPrint overflow trap in LABELLING.md: overflow:hidden is ignored on an
+   absolutely-positioned block, so the failure is silent and looks like ink in
+   the right place. There is no CSS auto-fit in WeasyPrint, so the size is
+   chosen by character count and `nowrap` makes a miss impossible to hide.
+
+   ~35mm of usable width, Arial bold at roughly 0.55em per character:
+     6.0mm -> ~10 chars    4.6mm -> ~13    3.6mm -> ~17    2.9mm -> ~22 */
 .loc {
     font-family: Arial, Helvetica, sans-serif;
     position: absolute;
@@ -37,9 +48,18 @@
     left: {{ height|add:"-1" }}mm;
     {% endlocalize %}
     top: 4mm;
-    font-size: 6mm;
     font-weight: bold;
     line-height: 1.05;
+    white-space: nowrap;
+    {% if location.name|length <= 10 %}
+    font-size: 6mm;
+    {% elif location.name|length <= 13 %}
+    font-size: 4.6mm;
+    {% elif location.name|length <= 17 %}
+    font-size: 3.6mm;
+    {% else %}
+    font-size: 2.9mm;
+    {% endif %}
 }
 
 /* The trail is what makes a label useful on a drawer you are standing at:
@@ -61,7 +81,7 @@
 
 <img class='qr' alt="{% trans 'QR code' %}" src='{% qrcode qr_data %}'>
 
-<div class='loc'>{{ location.name }}</div>
+<div class='loc'>{{ location.name|truncatechars:22 }}</div>
 
 <div class='trail'>
     {% if location.parent %}{{ location.parent.name }}{% endif %}
