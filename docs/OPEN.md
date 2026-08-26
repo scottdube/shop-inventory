@@ -6,43 +6,46 @@ docs and a backlog you cannot read in one place is hiding, not parking.
 Add here when something is deliberately deferred. Delete when done — this is a
 queue, not a log.
 
-## B1 row 1 is labelled for an M3 layout that was never loaded
+## B1 metric fastener cabinet — LAY IT OUT FRESH (Scott, 2026-08-27)
 
-Found 2026-08-26 while answering "location for the M3s". Parked at Scott's
-request, not dropped — the finding is cheap to act on and expensive to
-rediscover.
+**Scott 2026-08-26: "I want to start fresh on that" — tomorrow.** So the
+legacy labels are NOT the plan, and the earlier proposal to load parts into
+the cells they already name is withdrawn.
 
-**27 bags sit at B1 cabinet level with no cell**, while row 1 carries legacy
-labels for exactly the parts in that pile:
+That is the right call and B1's own record says why: *"Legacy labels READ FROM
+A PHOTO and partial... NOT WALKED."* Those labels are an inherited guess. Filing
+into them would cement a layout nobody chose, using a scheme nobody checked, and
+make it look deliberate.
 
-| cell | label says | actually holds |
-|---|---|---|
-| B1-R1C1 | `M3 .5 x20` | x20 **and x25** |
-| B1-R1C2 | `M3 .5 x25` | empty |
-| B1-R1C3 | — | empty |
-| B1-R1C4 | `M3 .5 x35` | empty |
-| B1-R1C5 | `M3 .5 x40` | empty |
-| B1-R1C6 | — | empty |
-| B1-R1C7 | verified empty 2026-08-22 | empty |
-| B1-R1C8 | — | M3 hex nuts, 76 |
+**The state to start from, measured 2026-08-26:**
 
-The cells labelled for x35 and x40 are empty while the x35 and x40 screws are
-loose in the pile, and x25 is in the x20 cell.
+- **27 bags sit at B1 cabinet level with no cell.** That is most of the metric
+  fastener stock.
+- Only **four cells in the whole cabinet hold anything**: R1C1 (M3 x20 *and*
+  x25 together), R1C8 (M3 nuts), R2C1 (M4 nuts), R5C4 (M8 socket head + an M16
+  eyebolt).
+- 44 cells, 40 empty.
+- The legacy labels claim R1C2/C4/C5 are `M3 .5 x25/x35/x40`. All three are
+  empty; those screws are in the pile.
 
-**Proposed, not done:**
+**The decision to make first is the SORT KEY, because everything else follows
+from it.** The legacy scheme sorts by thread then length — and that is exactly
+the scheme that cannot express what is now in the cabinet:
 
-- x25 → C2, x35 → C4, x40 → C5 — into the cells already labelled for them
-- x10 pan → C3, x12 pan → C6 — the two unlabelled cells
-- **M3 FLAT heads to row 2**, which is empty apart from the M4 nuts
+- **Head type.** There are M3 flat heads *and* M3 pan heads. #1131 is M3x10
+  flat, #983 is M3x10 pan. Same thread, same length, different screw.
+- **Material.** #980 is M3x30 **black-oxide alloy**; #1131 is M3x10
+  **stainless**. Alloy is stronger and rusts; stainless is weaker and does not.
+- **Head type and material are what get grabbed wrong.** Length is what is easy
+  to eyeball. A scheme that sorts by the easy thing and mixes the hard ones is
+  backwards.
 
-That last point is the one that matters. The legacy labels sort by LENGTH only,
-and there are now two M3 flat-head parts — #980 at 30 mm (black-oxide alloy) and
-#1131 at 10 mm (stainless). **An M3x10 flat head and an M3x10 pan head must not
-share a cell**, and neither must alloy and stainless: head type and material are
-what gets grabbed wrong, and length is what the labels record.
+**Do not write locations from a keyboard.** Filing means somebody carries bags
+to cells; a location nobody walked is what stranded the SHT31 rows in August.
 
-Not written to the database, deliberately. Filing means carrying bags to cells,
-and a location nobody walked is the error that stranded the SHT31 rows.
+Bring: `scripts/b1_state.py` does not exist yet — the equivalent of
+`rb_state.py` for this cabinet would make the walk readable instead of
+maintained by hand.
 
 ## SHT31-D — four owned, location unknown — WRITE OFF 2026-09-02 if not found
 
