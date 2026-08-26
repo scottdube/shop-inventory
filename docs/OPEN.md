@@ -6,6 +6,44 @@ docs and a backlog you cannot read in one place is hiding, not parking.
 Add here when something is deliberately deferred. Delete when done — this is a
 queue, not a log.
 
+## B1 row 1 is labelled for an M3 layout that was never loaded
+
+Found 2026-08-26 while answering "location for the M3s". Parked at Scott's
+request, not dropped — the finding is cheap to act on and expensive to
+rediscover.
+
+**27 bags sit at B1 cabinet level with no cell**, while row 1 carries legacy
+labels for exactly the parts in that pile:
+
+| cell | label says | actually holds |
+|---|---|---|
+| B1-R1C1 | `M3 .5 x20` | x20 **and x25** |
+| B1-R1C2 | `M3 .5 x25` | empty |
+| B1-R1C3 | — | empty |
+| B1-R1C4 | `M3 .5 x35` | empty |
+| B1-R1C5 | `M3 .5 x40` | empty |
+| B1-R1C6 | — | empty |
+| B1-R1C7 | verified empty 2026-08-22 | empty |
+| B1-R1C8 | — | M3 hex nuts, 76 |
+
+The cells labelled for x35 and x40 are empty while the x35 and x40 screws are
+loose in the pile, and x25 is in the x20 cell.
+
+**Proposed, not done:**
+
+- x25 → C2, x35 → C4, x40 → C5 — into the cells already labelled for them
+- x10 pan → C3, x12 pan → C6 — the two unlabelled cells
+- **M3 FLAT heads to row 2**, which is empty apart from the M4 nuts
+
+That last point is the one that matters. The legacy labels sort by LENGTH only,
+and there are now two M3 flat-head parts — #980 at 30 mm (black-oxide alloy) and
+#1131 at 10 mm (stainless). **An M3x10 flat head and an M3x10 pan head must not
+share a cell**, and neither must alloy and stainless: head type and material are
+what gets grabbed wrong, and length is what the labels record.
+
+Not written to the database, deliberately. Filing means carrying bags to cells,
+and a location nobody walked is the error that stranded the SHT31 rows.
+
 ## SHT31-D — four owned, location unknown — WRITE OFF 2026-09-02 if not found
 
 Stock [573] and [574], 2 + 2, no location. Created by receiving PO-0028 **on
