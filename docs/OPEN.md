@@ -6,6 +6,44 @@ docs and a backlog you cannot read in one place is hiding, not parking.
 Add here when something is deliberately deferred. Delete when done — this is a
 queue, not a log.
 
+## B2-R3, the 1/4-20 row, has outgrown itself — reorder it
+
+Scott 2026-08-26: *"I think we're gonna have to redo that entire row... park
+them somewhere in that wall bin until we can get around to moving a bunch of
+stuff around."*
+
+**All eight cells are occupied**, and the family does not fit:
+
+| cell | holds |
+|---|---|
+| B2-R3C1 | hex nuts, 95 |
+| B2-R3C2 | nylon-insert locknuts, 95 |
+| B2-R3C3 | flat washers 1/4 x 5/8 stainless, 79 |
+| B2-R3C4 | SHCS 3/8 in, 30 |
+| B2-R3C5 | SHCS 1/2 in, 84 |
+| B2-R3C6 | SHCS 3/4 in, 17 |
+| B2-R3C7 | SHCS **1 in**, 40 |
+| B2-R3C8 | SHCS 1-1/2 in, 50 |
+
+**The 1-1/4 in length (#959, 50) is homeless** — it sits at B2 cabinet level
+with no cell, because there is no cell left. Three cells go to nuts and washers
+and five to screws, and the family has six lengths. The row was full before
+today.
+
+And now a **Kerr Lakeside box of 1/4-20 x 1 in black-oxide** has surfaced off
+the wire shelves — the same part as C7, from a different vendor. Merging it into
+C7 would put ~90 screws in one cell of a row that is already over capacity.
+
+**Parked, not merged.** The Kerr box goes to an empty cell as its own row while
+the rebuild waits. Two rows of one part in two locations is allowed — the
+invariant is one row per part per *location* — and it records the truth, which
+is that the stock is in two places.
+
+**For the rebuild:** B2-R5, R6 and R7 are entirely empty, 12 large cells. The
+question to settle is whether nuts and washers should share a row with screws at
+all, or whether 1/4-20 wants a whole row for lengths and its consumables move
+elsewhere. Decide that before moving anything, or it gets moved twice.
+
 ## B1 metric fastener cabinet — LAY IT OUT FRESH (Scott, 2026-08-27)
 
 **Scott 2026-08-26: "I want to start fresh on that" — tomorrow.** So the
