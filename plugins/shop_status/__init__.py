@@ -981,20 +981,24 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
         lamps = [
             {'key': 'contradiction', 'tone': 'warning',
              'n': est.filter(stocktake_date__isnull=False).count(),
+             'ident': (est.filter(stocktake_date__isnull=False), 'stock'),
              'label': 'Row contradicts itself', 'url': '/web/stock/location/index/stock-items',
              'why': 'marked [ESTIMATE] and stocktake-stamped — clear the date, not the marker'},
             {'key': 'po_no_date', 'tone': 'warning',
              'n': placed.filter(issue_date__isnull=True).count(),
+             'ident': (placed.filter(issue_date__isnull=True), 'po'),
              'label': 'PO has no issue date', 'url': '/web/purchasing/index/purchaseorders/',
              'why': 'a null issue date drops the row out of aging entirely'},
             {'key': 'negative', 'tone': 'warning',
              'n': StockItem.objects.filter(quantity__lt=0).count(),
+             'ident': (StockItem.objects.filter(quantity__lt=0), 'stock'),
              'label': 'Negative stock', 'url': '/web/stock/location/index/stock-items',
              'link': ('/web/stock/location/index/stock-items?max_stock=-0.0001',
                       StockItem.objects.filter(quantity__lt=0).count()),
              'why': 'a stock system that can go below zero is not counting'},
             {'key': 'tombstone', 'tone': 'warning',
              'n': ghost.count(),
+             'ident': (ghost, 'part'),
              'label': 'Merged part still active', 'url': '/web/part/category/index/parts',
              'link': ('/web/part/category/index/parts?active=true&search=MERGED+into',
                       self._search_count(Part, 'MERGED into')),
@@ -1009,6 +1013,8 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
              # into the Standing Desk Controller) is the case that found this.
              'n': StockItem.objects.filter(
                  StockItem.IN_STOCK_FILTER, location__isnull=True).count(),
+             'ident': (StockItem.objects.filter(
+                 StockItem.IN_STOCK_FILTER, location__isnull=True), 'stock'),
              'label': 'Stock with no location', 'url': '/web/stock/location/index/stock-items',
              # cascade defaults TRUE, and with it on location=null returns every
              # row in the database. Measured: 650 back for a lamp reading 43.
@@ -1019,6 +1025,7 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
              'why': 'in stock, somewhere in the shop, nowhere in the record'},
             {'key': 'putaway', 'tone': 'caution',
              'n': StockItem.objects.filter(location__in=recv).count(),
+             'ident': (StockItem.objects.filter(location__in=recv), 'stock'),
              'label': 'Waiting in Receiving', 'url': '/web/stock/location/index/stock-items',
              'link': ((f'/web/stock/location/{recv_pk}/stock-items',
                        StockItem.objects.filter(location__pk=recv_pk).count())
@@ -1026,6 +1033,7 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
              'why': 'arrived, not yet given a home'},
             {'key': 'unfiled', 'tone': 'caution',
              'n': StockItem.objects.filter(location__in=unfiled).count(),
+             'ident': (StockItem.objects.filter(location__in=unfiled), 'stock'),
              'label': 'Unfiled — find these', 'url': '/web/stock/location/index/stock-items',
              'link': ((f'/web/stock/location/{unfiled_pk}/stock-items',
                        StockItem.objects.filter(location__pk=unfiled_pk).count())
@@ -1033,12 +1041,14 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
              'why': 'the import says it exists; nobody has found it'},
             {'key': 'to_verify', 'tone': 'caution',
              'n': verify.count(),
+             'ident': (verify, 'part'),
              'label': 'Refund — verify these', 'url': '/web/part/category/index/parts',
              'link': ('/web/part/category/index/parts?active=true&search=POSSIBLE+RETURN',
                       self._search_count(Part, 'POSSIBLE RETURN')),
              'why': 'an order containing this was refunded; nobody has looked yet'},
             {'key': 'pack_price', 'tone': 'caution',
              'n': pack_n,
+             'ident': (pack_rows, 'stock'),
              'label': 'Pack price may be per piece',
              'url': '/web/stock/location/index/stock-items',
              'link': self._rows_link(pack_rows),
@@ -1046,12 +1056,14 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
                     + ('; '.join(pack_sample) if pack_sample else 'none')},
             {'key': 'recv_age', 'tone': 'caution',
              'n': stale_n,
+             'ident': (stale_qs, 'stock'),
              'label': f'In Receiving over {stale_days}d',
              'url': '/web/stock/location/index/stock-items',
              'link': stale_link,
              'why': 'the staging dock is supposed to trend toward empty'},
             {'key': 'po_open', 'tone': 'caution',
              'n': placed.count(),
+             'ident': (placed, 'po'),
              'label': 'PO placed, unreceived', 'url': '/web/purchasing/index/purchaseorders/',
              'link': ('/web/purchasing/index/purchaseorders/?status=20',
                       placed.count()),
@@ -1087,6 +1099,31 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
             lamp['exact'] = bool(link) and link[1] == lamp.get('n')
             if lamp['exact']:
                 lamp['url'] = link[0]
+
+            # A lamp with no filtered view has to NAME its rows, or "open list"
+            # hands over five purchase orders and no way to tell which two are
+            # the ones it counted. Scott, 2026-08-26: "there are 5 I have no idea
+            # which ones are the problem."
+            ident = lamp.pop('ident', None)
+            lamp['rows'] = ''
+            if ident and not lamp['exact'] and lamp.get('n'):
+                qs, kind = ident
+                shown = []
+                for o in list(qs[:8]):
+                    if kind == 'stock':
+                        shown.append(f'#{o.pk} {o.part.name[:36]}')
+                    elif kind == 'part':
+                        shown.append(f'#{o.pk} {o.name[:36]}')
+                    else:
+                        shown.append(f'{o.reference} — {(o.description or "")[:32]}')
+                    # A single row needs no filter at all: link straight to it.
+                    if lamp['n'] == 1:
+                        lamp['url'] = (f'/web/stock/item/{o.pk}/' if kind == 'stock'
+                                       else f'/web/part/{o.pk}/' if kind == 'part'
+                                       else f'/web/purchasing/purchase-order/{o.pk}/')
+                        lamp['exact'] = True
+                more = lamp['n'] - len(shown)
+                lamp['rows'] = ' · '.join(shown) + (f'  (+{more} more)' if more > 0 else '')
             rec = acks.get(lamp['key']) or {}
             lamp['tip'] = LAMP_TIPS.get(lamp['key'], '')
             lamp['ack'] = bool(rec) and rec.get('n') == lamp.get('n')
