@@ -4454,3 +4454,83 @@ of a live session — localStorage persists, so it only proves someone signed in
 at some point. The open decision item `mcmaster-preflight-false-pass` already
 says so. Every absence-based *and* every storage-based test for this vendor has
 now failed; the only signal that has held is post-click UI.
+
+## RESOLVED — McMaster auth has a reliable UI signal after all: wait ~30 s, then read the login control's own text
+
+**2026-08-26 08:50, measured, daytime sweep.** The two earlier sections above
+(`the test could never have said "signed in"` and the `VSTR_USR_NM` correction)
+left the procedure in a bad place: the localStorage key is persistent and so
+can only ever produce a false pass, and the recommended fallback — a real click
+on `#LoginUsrCtrlWebPart_LoginLnk` — needs a screenshot-frame coordinate that
+is easy to get wrong silently. Today's run found a third signal that needs
+neither.
+
+**The masthead is a cached shell, but it is not permanently cached — it
+resolves on its own.** Two independent things flip once account state lands:
+
+| | cold load (t≈3 s) | after ~30 s |
+|---|---|---|
+| `#LoginUsrCtrlWebPart_LoginLnk` text | `Log in` | **`Scott Dube`** |
+| masthead phone | **(630) 833-0300** — Elmhurst IL, generic | **(609) 689-3000** — Robbinsville NJ, the account rep line |
+| `VSTR_USR_NM` | `Scott Dube` (stale, proves nothing) | `Scott Dube` |
+
+Measured sequence today: at t≈3 s the link read `Log in` and the screenshot
+masthead showed (630) 833-0300; a click was attempted at the
+`getBoundingClientRect` x (1679) which — exactly as the open decision item
+predicted — did nothing, since the screenshot frame is only 1416 px wide
+against `innerWidth` 1728. By the next read the link text was `Scott Dube` and
+the phone was (609) 689-3000 **without any successful click**. Time, not the
+click, is what populates it.
+
+**The test to use, in this order:**
+
+1. Load `mcmaster.com`, wait ~30 s (or poll the link text).
+2. Signed in ⇔ `document.querySelector('#LoginUsrCtrlWebPart_LoginLnk').innerText`
+   is **not** `Log in` and matches the account name.
+3. Corroborate with the phone: generic (630) 833-0300 = signed out, an account
+   rep line = signed in. Two independent signals, neither of them storage.
+
+`VSTR_USR_NM` is now a **corroborating** read only, never the deciding one.
+Note `hasLogOut` was false in the DOM text — the Settings/Log Out items live
+behind a dropdown, so do not test for `Log out` in `body.innerText`; test the
+link text.
+
+**Why this matters beyond the daytime sweep:** the open decision item
+`preflight-eats-the-window` blames the McMaster preflight for 4h49m of a lost
+night. A test that is a fixed ~30 s wait plus one DOM read has a bounded cost
+and cannot hang the way polling `/order-history/` for a shell that never
+renders did. This does not by itself fix the overnight budget problem — the
+recommendation there (network-free work first, hard preflight budget) still
+stands — but it removes the reason the preflight was slow in the first place.
+
+## vendor_triage keys on the SENDER DOMAIN — a synthetic sender always comes back "unknown"
+
+**2026-08-26 09:0x, measured, daytime sweep.** Section 4's discovery step found
+a genuine non-email purchase on `shop.app` (MFC Machining & Design Services,
+order #MFCMD1086, ArmorGuard Tormach way covers, $349.95 + $29.95 shipping,
+paid over Affirm installments). Since there was no email, the candidate was fed
+to `vendor_triage.py` with an invented sender string, `shop.app-installments`.
+
+Triage bucketed it **unknown — "needs a call"** and emitted a `decide.py` line.
+That was wrong twice over:
+
+1. MFC **is** in `vendor_registry.json` (by Shopify store id `70819512477`).
+2. MFC **is** already a Company in InvenTree, and the order was **already
+   imported as PO-0140**.
+
+The classifier buckets on the sender's **domain**. An invented sender matches
+nothing, so it is guaranteed to fall through to `unknown` no matter how well
+known the vendor actually is. Feeding it one manufactures a false decision-queue
+item for a vendor that is fully handled.
+
+**Rule: never invent a sender to get a non-email purchase through triage.**
+Non-email purchases (Shop Pay installments, Walmart in-store, anything found by
+reading an account page rather than a mailbox) are outside what triage can
+classify. Take them straight to `po_check <order-no>` — that is the idempotency
+key and it answers the only question that matters. Only if `po_check` says
+`absent` does the purchase need a decision line.
+
+This is the mirror image of the open item `vendor-triage-no-idempotency-check`:
+that one is triage surfacing an order InvenTree already has because triage never
+asks InvenTree. Both fixes are the same one — **ask `po_check` first, and let
+triage classify only things that genuinely arrived as email.**
