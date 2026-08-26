@@ -1711,3 +1711,23 @@ raster error rather than pointing at it.
       matters.
 - [ ] Print a test address label → decide whether DK-11201's minimum comes off.
 - [ ] InvenTree upgrade — **in Florida, co-located with the Mini**.
+
+## The Jet mill/drill is not in the shop documentation
+
+Found 2026-08-26 while tracing why ten bearing rows had no home. They were
+bought through 2022 for an **automated head mover** on a Jet mill/drill —
+built, installed, and photographed that day, in service in the shop.
+
+Nineteen machines are documented. This one is not, and neither is the head
+mover on it: no drawing, no BOM, no note anywhere. The only reason the story
+was recoverable at all is that Scott remembered the phrase "automated head
+mover for the Jet Mill Drill" when shown a chain roller.
+
+That is the gap worth closing. Purchases for an undocumented machine look
+identical to purchases for nothing, which is exactly how these ten rows read
+until this afternoon.
+
+Recorded as [Jet Mill/Drill Automated Head Mover](http://192.168.50.10:8001/web/part/1126).
+Wants: the machine itself in the equipment documentation, and enough of the
+head mover written down — motor, drive ratio, sprockets, control — that the
+next repair does not start from a photograph.
