@@ -4371,3 +4371,31 @@ appear on an existing build order — BO-0003 was completed with 2 of its eventu
 7 lines for this reason. After editing an assembly's BOM, call
 `build.create_build_line_items()` on every open BO for that part and re-read the
 count to confirm.
+
+## `itq run` script arguments are paths on the MINI, not on the laptop
+
+`itq run` ships the *script* to the Mini and runs it there. Everything after the
+script name is passed through verbatim and resolved **in the Mini's filesystem**,
+which the laptop does not share. So a data file written locally and handed over
+as an argument fails with a bare `FileNotFoundError` naming a path that plainly
+exists — on the wrong machine.
+
+Measured 2026-08-25 22:5x on the daytime sweep's Section 4:
+
+```
+itq run scripts/vendor_triage.py --candidates /tmp/…/scratchpad/cands.json
+  -> FileNotFoundError: '/tmp/…/scratchpad/cands.json'
+```
+
+Push first, then pass the **remote** path:
+
+```
+itq push <local>/cands.json /tmp/cands.json
+itq run scripts/vendor_triage.py --candidates /tmp/cands.json
+```
+
+This is the same boundary as the `/Volumes/4TB_Removable` rule, in the direction
+nobody expects: that rule warns against reading a Mini path locally, and this is
+a local path being read on the Mini. The task file's `--candidates /tmp/cands.json`
+reads like a scratch path on this laptop and is not — it is the Mini's `/tmp`,
+and it only ever worked because an earlier run had pushed something there.

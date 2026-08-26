@@ -1647,11 +1647,25 @@ raster error rather than pointing at it.
       intermittent-or-unknown power fault on a five-day-old refurb is not worth
       keeping. Return still stands.)*
 
-- [ ] **Then: stock #570 needs to follow the printer.** The QL-810W is stocked
-      1 @ SLN/Electronics Bench. If it goes back, that row and `PO-0134` both
-      need to reflect it — a returned item left in stock is the same class of
-      lie as a receipt that was never a put-away. Not done yet, because it has
-      not gone back yet.
+- [ ] **~~Then: stock #570 needs to follow the printer.~~ There is no stock row
+      to follow.** Measured 2026-08-25 22:5x: `StockItem` **#570 does not
+      exist**, and part **#1057** (QL-810W) holds **0 stock rows**. The claim
+      above — "stocked 1 @ SLN/Electronics Bench" — was never true in the
+      database, so a session acting on it hunts a phantom row.
+
+      `PO-0134` still reads `received=1.0` and Complete, which is the other half
+      of the same lie: the receipt counter advanced and the put-away never
+      happened. That combination is this install's documented silent-save trap.
+
+      **What this changes for check-in:** the replacement arrives 2026-08-26.
+      There is nothing to correct, transfer or scrap first — check it in as a
+      **new** serialised qty-1 row. Do not go looking for #570 to edit.
+
+      Sweep-wide, the gap is isolated, not systemic:
+      `itq run scripts/received_no_stock.py` checked all 156 received PO lines
+      and `PO-0134` is the **only** one with zero stock. That settles the
+      "worth checking whether other Complete POs have the same gap" question on
+      the decision queue — answer: no others.
 
 - [ ] **The DK-22205 roll (#922, stock #656 in BR-D3) stays.** Separate
       purchase, `PO-0133`, nothing wrong with it.
