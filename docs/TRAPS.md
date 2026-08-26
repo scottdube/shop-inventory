@@ -4400,7 +4400,14 @@ a local path being read on the Mini. The task file's `--candidates /tmp/cands.js
 reads like a scratch path on this laptop and is not — it is the Mini's `/tmp`,
 and it only ever worked because an earlier run had pushed something there.
 
-## The overnight window is now lost to the browser PREFLIGHT, not to sleep
+## WRONG — "the overnight window is lost to the browser PREFLIGHT, not to sleep"
+
+> **Superseded 2026-08-26 13:2x by "Every lost window so far is ONE unapproved
+> Bash call" at the end of this file.** The preflight was never the cost. The
+> browser call this section blames was issued in the same turn as a Bash
+> permission prompt and simply waited behind it. Everything below is a correct
+> account of *ruling out the clock* and is kept for that; its conclusion about
+> where the time went is wrong. Do not act on it.
 
 The wake chain works. `pmset` wakepoweron, the caffeinate agent and the keepalive
 all did their job on 2026-08-26: the scheduled session was born at **02:05:07**,
@@ -4571,3 +4578,63 @@ $16.99 / 4 = **$4.2475**. The UI renders `$4.25` and the instinct is to store
 $4.25 — which turns the order into $17.00. `purchase_price` has
 `decimal_places=6`; store the exact quotient and let the display round. Verified:
 stored `Decimal('4.247500')`, line total `16.99000000000`.
+
+## Every lost window so far is ONE unapproved Bash call, waiting for a click
+
+Three separate write-ups blamed three different subsystems for the same
+symptom — a run that starts on time and reaches real work hours later. All
+three were wrong, and each cost a night before the next one replaced it:
+
+| Blamed | Written | Actually |
+|---|---|---|
+| Idle sleep | 2026-08-25 | Fixed, and the symptom continued |
+| The browser preflight (McMaster) | 2026-08-26 07:05 | A casualty, not the cause |
+| Gmail call size / browser round trips | 2026-08-26 13:07 | Never measured, just plausible |
+
+**Measured 2026-08-26 from the run transcripts.** Both of that day's lost
+windows are a single Bash tool call whose result arrived hours later with
+`is_error: False` — the signature of a permission prompt that a human
+eventually clicked, not of anything slow:
+
+| Run | Call | Stalled |
+|---|---|---|
+| 02:05 overnight `46785ba4` | `~/code/scripts/itq pull …` | **286.8 min** |
+| 08:46 daytime `75e20072` | `for o in …; do itq run po_check.py; done` | **250.7 min** |
+
+Two different ways to miss the allow list, one outcome:
+
+* **Path form.** The rule was `Bash(/Users/scottdube/code/scripts/*)`. `~/code/…`
+  is a different literal string, so nothing matched. Approving it at 06:52 is
+  what put `Bash(~/code/scripts/itq pull *)` into `settings.local.json` — the
+  rule's own existence is the fossil of the four hours it cost.
+* **Compound shape.** A `for … do … done` loop can never match a rule. This is
+  the documented `one stable command shape` failure, and the loop was not even
+  necessary: `po_check.py` takes `nargs="*"`, so one call with four order
+  numbers returns exactly what the loop returned.
+
+**How to tell this apart from a slow subsystem, in one measurement.** Do not
+reason about which subsystem "feels" slow — diff the timestamps of adjacent
+records in the session `.jsonl` and look at the *distribution*. A slow
+subsystem spreads its cost over many calls. A permission stall is one gap
+holding essentially the whole window:
+
+    gaps >=2min: 2, total 4.26h of 4.43h      <- 08:46 daytime
+    gaps >=2min: 2, total 4.83h of 5.01h      <- 02:05 overnight
+
+The tell is the ratio of tool calls to wall time. The 08:46 run made **60 tool
+calls in 4 h 26 m**; the 13:14 run made **51 tool calls in 12 minutes** doing
+strictly more work (it created two POs; the 08:46 run created none). Same
+procedure, same sites, same vendors. Nothing was slow.
+
+**The browser error is downstream, and it is what sent the last diagnosis
+wrong.** The overnight `navigate` was issued in the same turn as the stalled
+`itq pull`. When the prompt finally cleared 4 h 47 m later, the tab it named
+was long gone and it returned `Tab 1602223450 no longer exists`. A browser
+failure at the end of a browser-shaped delay is extremely convincing and was
+entirely an artefact.
+
+**Corollary worth stating plainly.** The 13:14 run that found all this had
+itself written `for o in …; do itq …; done` twice, and got away with it only
+because Scott happened to be at the keyboard. Knowing the rule is not the same
+as following it; the shape has to be impossible to reach for, not merely
+discouraged.
