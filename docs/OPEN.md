@@ -6,6 +6,29 @@ docs and a backlog you cannot read in one place is hiding, not parking.
 Add here when something is deliberately deferred. Delete when done — this is a
 queue, not a log.
 
+## SHT31-D — four owned, location unknown — WRITE OFF 2026-09-02 if not found
+
+Stock [573] and [574], 2 + 2, no location. Created by receiving PO-0028 **on
+paper** on 2026-08-23: the receipt allocated them to a drawer by plan, nobody
+carried anything there, and Scott searched B3-R4C8 and found nothing. PO-0028
+is itself a stub whose line item was *inferred* from an Amazon confirmation
+carrying no line items ("1 Hardware item", $16.9x). Amazon reports it
+delivered and Scott recalls the order as the SHT31s, so the purchase is
+probably real — owned, location unknown, which is a fact. "Two are in B3-R4C8"
+was not.
+
+**Scott 2026-08-26: leave one more week; if not located by 2026-09-02, write
+them off.** The decision is made. On that date the only question is *found or
+not*.
+
+Part 292 currently reads **8 on the books, 4 findable**. The findable four are
+stock [688] (RB-12) and [689] (B3-R4C8), received 2026-08-26 against PO-0139
+and counted in hand.
+
+**Do not fold 573/574 into 688/689 to make the number tidy.** They are separate
+claims; merging hides the open question rather than answering it. If they turn
+up, they merge into 689 then — one row per part per location.
+
 ## Red Bins — walk and empty out
 
 **Goal, Scott 2026-08-23: get the rack as close to empty as possible.** *"We
