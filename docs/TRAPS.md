@@ -4399,3 +4399,58 @@ nobody expects: that rule warns against reading a Mini path locally, and this is
 a local path being read on the Mini. The task file's `--candidates /tmp/cands.json`
 reads like a scratch path on this laptop and is not — it is the Mini's `/tmp`,
 and it only ever worked because an earlier run had pushed something there.
+
+## The overnight window is now lost to the browser PREFLIGHT, not to sleep
+
+The wake chain works. `pmset` wakepoweron, the caffeinate agent and the keepalive
+all did their job on 2026-08-26: the scheduled session was born at **02:05:07**,
+exactly on time. It then reached its first line of real work at **06:54** —
+**4 h 49 m** gone, essentially all of it inside the browser preflight, with
+McMaster the dominant cost.
+
+**Rule out the clock first, because the symptom looks exactly like a clock jump.**
+The journal recorded `RUN STARTED 02:05` and then a `--line` at `06:54` minutes
+later by subjective reckoning, which reads as the Mini's clock lurching forward.
+It had not. Two independent measurements settle it:
+
+```
+stat -f "%SB" ~/.claude/projects/<proj>/<session-uuid>.jsonl   # 2026-08-26 02:05:07
+itq run scripts/clock_check.py                                 # Mini  06:58:55 EDT
+date                                                           # laptop 06:58:55 EDT
+```
+
+The transcript's **birth time on the laptop** is the load-bearing measurement:
+it is recorded by a different machine than the one journal.py stamps, so agreement
+between the two rules out drift on either. `clock_check.py` exists for exactly
+this check.
+
+**2026-08-23 has the identical signature** — `02:05 RUN STARTED` →
+`06:57 RUN COMPLETE`, and that run also reported McMaster trouble. Two nights,
+same shape, same vendor. It was read as "a long run" both times.
+
+What each site cost, measured:
+
+| site | result |
+|---|---|
+| Amazon `/gp/css/order-history` | answered promptly; `Hello, Scott`, no sign-in form |
+| McMaster home | 1657-char shell, **no** account name, literal `Log in` |
+| McMaster `/order-history/` | 714-char pre-auth shell, unchanged across 38 s of polling, after warming the home page; both same-origin iframes empty |
+
+Consequences, in order of how much they cost:
+
+1. **A queue that needs no network must run BEFORE any browser call.** Queue D
+   (keywords) is pure Mini-side and finishes in under a minute. Run it first and
+   a wedged preflight costs a chunk, not a night.
+2. **A slow preflight is invisible.** Nothing times it, nothing reports it, and
+   the journal only shows two timestamps that a reader charitably explains away.
+3. **"Ran to completion" and "ran in the window" are different claims.** The
+   stand-down guard checks only that a `RUN COMPLETE` exists inside the window,
+   so a run that starts at 02:05 and finishes at 06:5x satisfies it and reports
+   `NOTIFY: none` — while every useful hour was spent on a hung SPA.
+
+Related, and why tonight is journalled `mcmaster=UNKNOWN` rather than `OK`:
+`localStorage.VSTR_USR_NM` read `Scott Dube` throughout. That is **not** proof
+of a live session — localStorage persists, so it only proves someone signed in
+at some point. The open decision item `mcmaster-preflight-false-pass` already
+says so. Every absence-based *and* every storage-based test for this vendor has
+now failed; the only signal that has held is post-click UI.
