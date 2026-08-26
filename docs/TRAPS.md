@@ -4305,3 +4305,69 @@ digital route is closed, and both numbers are **one caliper away** — face
 across the bezel, thread OD (1/8 NPT ≈ 10.3 mm, 1/4 NPT ≈ 13.7 mm, not
 confusable). Measure the gauge's own thread: a brass compression fitting is
 made up on the stem.
+
+---
+
+## Searching for the answer instead of the requirement
+
+Asked "check inventory for the Phase 1 parts," a stock check reported **no
+low-current MOSFETs** and offered a 1 k **0805 SMD** resistor for a breadboard.
+Both wrong. The drawer at `L2-D4` held 24× 2N3904 and 28× 1 k 1/4 W THT the
+whole time.
+
+Neither miss was a search-engine failure. The queries ran were `2N7000`,
+`AO3400A`, `RFP30N06LE` — **the parts already chosen**, not the function they
+were chosen for. Nothing named `2N3904` was ever asked for, so nothing named
+`2N3904` came back. The resistor was worse: the query was right, and the first
+hit was taken without reading the other 32 rows in the same category.
+
+**Search the requirement, not the conclusion.** "Small NPN switch" and
+"1 k through-hole" are the queries. A part number is a query only when the part
+number is itself the requirement.
+
+**And read the whole result set.** These records are decomposed from kits, so
+one value legitimately exists in several packages. The first row is not the
+answer; the set is.
+
+### Why the wrong answer looked authoritative: two category trees
+
+| Tree | Parts | State |
+|---|---|---|
+| `Passives/Resistors` | 9 | kit-level records, **all qty 0**, sited at LRD/SLN |
+| `Electronics/Passives/Resistors` | 33 | decomposed, real counts, sited to a drawer |
+
+The same split exists for transistors — `#169 Transistor kit, BC337 …` sits at
+qty 0 while its ten decomposed children carry 20–24 each. A search that lands in
+the legacy tree returns **zeroes that read as "you don't own this."** The kit
+record going to zero is correct — it was consumed into its children — but the
+two trees make absence and decomposition indistinguishable at a glance.
+
+**Check the category path on every zero before reporting it as a shortage.**
+
+## `allocation_count()` counts the build you are asking about
+
+A coverage check for BO-0002 reported four lines SHORT — SSR, heat sink, tubing,
+mains plug — all of them on-hand qty 1. `Part.allocation_count()` returns stock
+committed *anywhere*, and those four were committed **to BO-0002 itself**. Stock
+reserved for a build is the opposite of stock unavailable to it, so the report
+inverted the truth on exactly the lines that were most securely covered.
+
+Subtract this build's own `BuildItem` quantities back out:
+
+```python
+BuildItem.objects.filter(build_line__build=bo, stock_item__part=sp
+                         ).aggregate(t=Sum("quantity"))["t"]
+```
+
+`scripts/canbuild.py` in `~/code` does this and prints `else` (committed to other
+work) beside `mine` (reserved for this build) so the two can never merge again.
+`Part.can_build` has the same blind spot — it read **0** for an assembly with
+every line covered — so do not quote it as the answer for a build order.
+
+## Adding BOM lines after a build order exists
+
+Build lines are snapshotted when the BO is created. New `BomItem` rows do **not**
+appear on an existing build order — BO-0003 was completed with 2 of its eventual
+7 lines for this reason. After editing an assembly's BOM, call
+`build.create_build_line_items()` on every open BO for that part and re-read the
+count to confirm.
