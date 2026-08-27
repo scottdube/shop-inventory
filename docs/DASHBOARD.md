@@ -79,6 +79,16 @@ silence. The PO lamp's four states are now: dark (nothing on order), green (open
 and inside their promised dates), yellow (something late), OFF (no dates on file,
 so lateness cannot be measured).
 
+**A check that did not run is RED, not dark.** Scott, 2026-08-26, extending his
+own green rule: *"the rationale is that the checks ran — if they didn't run they
+should probably go red, cuz you have no idea where you are in that field."* That
+splits the old dark lamp in two, because dark was carrying two opposite facts:
+*this check ran and found nothing* and *this check could not run*. Now the first
+is green and the second is red with an OFF flag, flashing, and — alone among the
+lamps — **not silenceable**. Every other lamp can be acknowledged because you
+have seen the thing it reports; there is nothing to see in a check that did not
+run, which is exactly why it must not be possible to sit on it.
+
 **Four states, never two.** Good / needs action / blocked / **not measured**.
 The fourth gets an **OFF flag**, never a zero, never green, never blank. This
 came from the import brief and aviation had already solved it: an instrument

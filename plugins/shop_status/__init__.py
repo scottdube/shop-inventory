@@ -991,7 +991,13 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
                                          location__pk=recv_pk,
                                          creation_date__lt=cutoff).count())
 
-        pack_n, pack_sample, pack_rows = self._pack_price_suspects()
+        try:
+            pack_n, pack_sample, pack_rows = self._pack_price_suspects()
+            pack_failed = False
+        except Exception:
+            import logging
+            logging.getLogger('inventree').exception('ShopStatus: pack check failed')
+            pack_n, pack_sample, pack_rows, pack_failed = None, [], [], True
 
         lamps = [
             {'key': 'contradiction', 'tone': 'warning',
@@ -1063,6 +1069,7 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
              'why': 'an order containing this was refunded; nobody has looked yet'},
             {'key': 'pack_price', 'tone': 'caution',
              'n': pack_n,
+             'off': pack_failed,
              'ident': (pack_rows, 'stock'),
              'label': 'Pack size not recorded',
              'url': '/web/stock/location/index/stock-items',
@@ -1123,7 +1130,7 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
         # cannot be read: "the job is fine" and "I cannot tell" must not render
         # the same, which is the whole argument of the fourth state.
         if stale_h is None:
-            lamps.append({'key': 'sweep', 'tone': 'caution', 'n': None, 'off': True,
+            lamps.append({'key': 'sweep', 'tone': 'warning', 'n': None, 'off': True,
                           'label': 'Sweep check-in', 'url': '/web/part/category/index/parts',
                           'why': 'no readable session-state file — cannot tell if it ran'})
         else:
@@ -1136,6 +1143,22 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
         acks = self._ack_map()
         import datetime as _dt
         for lamp in lamps:
+            # Scott, 2026-08-26: "the rationale is that the checks ran — if they
+            # didn't run they should probably go red, cuz you have no idea where
+            # you are in that field."
+            #
+            # That splits the old dark lamp in two. Dark used to mean both "this
+            # check ran and found nothing" and "this check could not run", which
+            # are opposite facts wearing the same face. Now:
+            #
+            #   ran, found nothing  -> GREEN, and it says so
+            #   ran, found something-> yellow / red by severity
+            #   could not run       -> RED with an OFF flag, because an
+            #                          unmeasured field is not a clean one
+            if lamp.pop('off', False):
+                lamp['failed'] = True         # rendered red, flagged, not silenceable
+            elif not lamp.get('n') and lamp.get('tone') != 'good':
+                lamp['tone'] = 'good'
             # A lamp's link must land on the rows the lamp counted. InvenTree's
             # tables pass unknown query parameters straight through to the API,
             # and the API IGNORES a filter it does not recognise — so a wrong
