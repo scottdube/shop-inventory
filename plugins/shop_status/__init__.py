@@ -156,9 +156,18 @@ LAMP_TIPS = {
         'that way so far; the two still on record were 7 days in when the second '
         'was caught by eye, which is why the default threshold is 7 and not the '
         '14 first proposed.'),
-    'po_open': (
-        'Purchase orders placed and not yet received. Money is out and nothing '
-        'is on the shelf — worth watching, not an error.'),
+    'po_late': (
+        'Purchase orders past the delivery date the supplier promised. An order '
+        'that is merely OPEN is not a fault — money is out and the box is in '
+        'transit, which is what ordering looks like — so this lamp stays dark '
+        'until something is actually late. The open orders themselves are listed '
+        'in the Orders & Projects widget with their ages. It reads OFF, not '
+        'zero, while no purchase order carries an expected date: with nothing to '
+        'compare against, "nothing is late" would be a claim this panel cannot '
+        'support. InvenTree HAS the field (target_date, and the API filters on '
+        'it); nothing here fills it in. Teaching the overnight sweep to capture '
+        'the promised date off the order page it already reads turns this flag '
+        'into a real reading.'),
     'sweep': (
         'Hours since the overnight sweep last recorded a vendor check, from its '
         'own session-state file. Lights after 24 h. Reads OFF, never zero, when '
@@ -896,6 +905,11 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
             from InvenTree.status_codes import PurchaseOrderStatus as POS
 
         placed = PurchaseOrder.objects.filter(status=POS.PLACED.value)
+        # `overdue` is a real API filter keying on target_date, so the panel can
+        # mirror it exactly — when there is anything to mirror.
+        dated = placed.filter(target_date__isnull=False).exists()
+        late = placed.filter(target_date__isnull=False,
+                             target_date__lt=datetime.date.today())
 
         # [ESTIMATE] is a PREFIX on StockItem.notes, not a substring anywhere in
         # it, and not on Part.description. Both of those wrong tests have been
@@ -1061,13 +1075,27 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
              'url': '/web/stock/location/index/stock-items',
              'link': stale_link,
              'why': 'the staging dock is supposed to trend toward empty'},
-            {'key': 'po_open', 'tone': 'caution',
-             'n': placed.count(),
-             'ident': (placed, 'po'),
-             'label': 'PO placed, unreceived', 'url': '/web/purchasing/index/purchaseorders/',
-             'link': ('/web/purchasing/index/purchaseorders/?status=20',
-                      placed.count()),
-             'why': 'money out, nothing on the shelf yet'},
+            # An open order is not a fault. Scott, 2026-08-26: "they're not
+            # overdue, they're on time ... it's no real reason to raise a
+            # warning. The warning should come when they are not on time." So
+            # this lamp asks about LATENESS; the count of open orders lives in
+            # the Orders & Projects widget, where it is a list rather than an
+            # alarm.
+            #
+            # Lateness needs an expected date, and nothing on this instance has
+            # one — 0 purchase orders of 67 carry target_date. "Nothing is late"
+            # and "I cannot tell whether anything is late" must not render the
+            # same, so with no dates on file this reads OFF rather than 0.
+            {'key': 'po_late', 'tone': 'caution',
+             'n': None if not dated else late.count(),
+             'off': not dated,
+             'ident': (late, 'po'),
+             'label': 'PO overdue', 'url': '/web/purchasing/index/purchaseorders/',
+             'link': (('/web/purchasing/index/purchaseorders/?status=20&overdue=true',
+                       late.count()) if dated else None),
+             'why': ('no expected date on any purchase order — lateness cannot '
+                     'be measured' if not dated else
+                     'past the date the supplier promised')},
         ]
 
         # The sweep's own liveness. OFF rather than 0 when the state file
