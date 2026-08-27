@@ -5803,6 +5803,54 @@ the only ref that broke the even-step id pattern within its cluster
 (`...28 / ...31 / ...32 / ...34`). Either it belongs to a different AliExpress
 account or the id captured into that SKU is wrong. Needs Scott.
 
+## The overnight stalls are FIXED — with a hook, because rules never could
+
+Closed 2026-08-27, after a 14-day census (`scripts/gaps.py` shape, run across
+every transcript) replaced three competing theories with one measured fact:
+**every lost window since the sleep fix was ONE tool call sitting on a
+permission prompt** — eight nights, 149 to 1168 minutes each. ssh one-liners
+(3), compound/heredoc Bash (3), a tilde-path mismatch (1), an Edit (1), plus
+the one genuine crash (the 08-24 529). Nothing else. Not sleep, not the
+McMaster preflight, not Gmail payload size.
+
+Three structural findings, each of which invalidates a "fix" that was tried:
+
+1. **A stalled run swallows its own retries.** The 02/03/04 cron ladder never
+   fired on 08-27: the stalled 02:05 run still counted as running, so
+   `nextRunAt` jumped to the next day. The ladder protects against crashes
+   only. Stalls had to be made impossible, not retried around.
+2. **The Write/Edit allow rules never matched once.** File-tool path rules
+   need a DOUBLE leading slash for absolute paths (`Edit(//Users/...)`); a
+   single slash is relative to the settings file's directory, so
+   `Edit(/Users/scottdube/code/shop-inventory/**)` matched
+   `~/code/Users/...` — nonexistent — and the 08-26 16:52 Edit of this very
+   file stalled 149 minutes with its "rule" sitting in settings.json. Fixed.
+3. **Compound commands are unapprovable by construction, and discipline does
+   not hold.** The 08-27 stall was written by a session that had read the
+   rule against it the same night. The 08-25 attempt to build a Bash-shape
+   guard stalled 51 minutes on its own Write and was never finished.
+
+**The fix is `scripts/unattended_gate.py`** (in ~/code/scripts, wired as a
+PreToolUse hook in ~/code/.claude/settings.json). In any session started by an
+`inventree-*` scheduled task — detected by the scheduled-task tag in the
+transcript's first record — it DECIDES every Bash/Edit/Write/WebFetch call:
+allow for the sanctioned shapes (itq, `git -C` in ~/code, python3 on
+repo/scratchpad scripts, single read-only commands, writes outside `.claude`),
+deny-with-instructions for everything else. A denial is feedback the model
+recovers from in seconds; a prompt was a dead night. Interactive sessions
+defer to the normal permission flow.
+
+Operational notes: 30-case test suite replays every historical stall;
+decisions log to `/tmp/unattended_gate.log`; escape hatch is
+`touch ~/.claude/no-unattended-gate` (Scott's hand only — the gate refuses to
+let a gated session create it, or edit settings, hooks, or the task files).
+Known accepted property: an allowed `python3 <script>` can itself do anything;
+the gate's threat model is stalls, not sandboxing. If overnight windows go
+missing AGAIN: read `/tmp/unattended_gate.log` and run the gap census FIRST —
+and remember the failure mode the gate cannot fix is a hang inside an allowed
+call (a wedged MCP browser call, a dead ssh), which looks like one long gap
+with an ALLOW as its last log line.
+
 ## The medical/personal-care exclusion applies to EXPORTS, not just to imports
 
 Noticed 2026-08-27 while putting the imageless-parts backlog into Google Sheets.
