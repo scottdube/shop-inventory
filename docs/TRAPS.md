@@ -5948,3 +5948,44 @@ repeats across unrelated products, and it arrives in the **path** form
 `/kf/<hash>/160x160.png` rather than the `<hash>.jpg_WxH.jpg` suffix form, so
 the suffix-stripper leaves it at 160 px. `scripts/ali_images.py` rejects
 anything under 300 px for this reason. An empty slot beats a wrong photo.
+
+## `po_check.py` does NOT normalize hyphens — and Walmart's URL drops them
+
+Measured 2026-08-27, 08:5x, daytime sweep. Walmart shows an order number two
+different ways in the same session, and the two do not match as strings:
+
+| Where | Form |
+|---|---|
+| Order-details page body | `Order# 2000151-82176030` |
+| The URL that page lives at | `walmart.com/orders/200015182176030` |
+
+The task file tells you to reach detail pages at
+`walmart.com/orders/<order-no-without-hyphen>`, and the purchase-history page
+only exposes the number via `a[href*="/orders/"]` — so **the number an agent
+naturally holds is the unhyphenated one**, and that is the one it feeds to the
+idempotency check. Measured, both forms, same instance, same minute:
+
+```
+absent  200015182176030
+EXISTS  2000151-82176030 -> PO-0142 (status=Complete, supplier=Walmart)
+```
+
+`vendor_triage.py` normalizes before comparing (2026-08-27 fix, above) — but
+**`po_check.py` compares raw**, and `po_check.py` is what section 3 of the task
+file names as *"the idempotency key… never create the same order twice"*. So
+the safety net that was fixed is not the one on the critical path. A sweep that
+scraped the href, po-checked it, believed `absent`, and created the PO would
+have produced a duplicate of PO-0142 — silently, since nothing downstream
+compares hyphen-insensitively either.
+
+**Until `po_check.py` normalizes: check Walmart numbers in BOTH forms.** One
+call takes both (`nargs="*"`), so it costs nothing:
+`itq run scripts/po_check.py 200015182176030 2000151-82176030`.
+
+The general shape, worth carrying to any vendor added later: *an idempotency
+key is only a key if every producer of it agrees on the format.* Here the
+producers disagree by one character and both are official.
+
+Caught only because the two Walmart items already existed as parts (#1089,
+#1090) while their PO read absent — a contradiction visible only from checking
+parts and POs in the same turn. Absent that accident, the duplicate gets made.
