@@ -2933,6 +2933,20 @@ The sequence that matters, since two steps are easy to get backwards:
 5. **Power-cycle the printer** — the reservation does not apply until the client
    re-DHCPs, and skipping this looks exactly like the reservation failing
 
+**Re-onboarding a QL-810W needs its Wireless Direct AP, and the key is derived
+from the serial**, so it is different for every unit and cannot be looked up
+from anything we store:
+
+- SSID: `DIRECT-*****_QL-810W`
+- Password: `810*****`
+
+where `*****` is the **last five digits of the serial number**, the same five in
+both. **The serial label is inside the DK roll compartment**, not on the bottom
+of the case where you will look first. Wireless Direct also has to be the active
+mode before the AP advertises at all — the Wi-Fi button cycles modes, and a
+missing SSID usually means the printer is in Infrastructure mode rather than
+broken. Verified against Brother's own FAQ 2026-08-26.
+
 Also cleaned up here: a stray auto-created queue `_192_168_30_252` pointing at
 the same URI had been sitting alongside `QL810W` since setup. Harmless until the
 day something picks the wrong one. Removed with `lpadmin -x`.

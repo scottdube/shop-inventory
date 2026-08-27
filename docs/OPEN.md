@@ -6,6 +6,26 @@ docs and a backlog you cannot read in one place is hiding, not parking.
 Add here when something is deliberately deferred. Delete when done — this is a
 queue, not a log.
 
+## The dead QL-810W has to be de-modified before it ships back — by Nov 19
+
+The first printer is physically still on the electronics bench with **two wires
+soldered to the board**: 25 V onto the rear lug of barrel jack J1 and a ground
+lead, run out through the case. It is powered from the bench supply.
+
+Before it goes to Staples: **unsolder both jumpers, reinstall the bottom cover.**
+Scott's read is that the only remaining evidence will be a dab of solder on the
+back of the jack's centre pin, which nobody will open the case to find. The
+return window runs to **2026-11-19**, so there is no rush — but a printer that
+arrives visibly hacked is a return Amazon can refuse, and that is $129.99.
+
+Send it back with **its own adapter and whatever else was in its box**. The new
+unit came with its own.
+
+**Related, and easy to forget: the replacement is ALSO an Amazon Renewed refurb.**
+Its guarantee window runs from delivery on **2026-08-26**. The first one died at
+28 jobs and five days, so a failure in the next few months is a claim, not a
+purchase. Do not let that window pass unnoticed the way the first failure did.
+
 ## B2-R3, the 1/4-20 row, has outgrown itself — reorder it
 
 Scott 2026-08-26: *"I think we're gonna have to redo that entire row... park
