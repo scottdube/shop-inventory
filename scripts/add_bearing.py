@@ -1,6 +1,7 @@
 """Add a counted bearing to the Bearings & Motion bin. One stable command shape.
 
     itq run scripts/add_bearing.py 6203RS 2 --commit
+    itq run scripts/add_bearing.py HK2512 5 --commit   # drawn cup needle
 
 Exists because Scott is walking a shelf and calling out designations one at a
 time, and the fourth hand-written near-identical script is where copy-paste
@@ -71,6 +72,14 @@ SEALED_WIDTH = {
     "R4": {"2RS": ("0.196", 4.978), "RS": ("0.196", 4.978)},
 }
 
+# DRAWN CUP NEEDLE ROLLER, metric HK series (ISO 3245). The designation
+# encodes bore (first two digits) and width (last two); the OD is the standard
+# for that bore and is the only figure that has to be looked up. Conservative
+# on purpose -- an unlisted bore is a hard error, same rule as DIMS.
+HK_OD = {4: 8, 5: 9, 6: 10, 7: 11, 8: 12, 9: 13, 10: 14, 12: 16, 13: 19,
+         14: 20, 15: 21, 16: 22, 17: 23, 18: 24, 20: 26, 22: 28, 25: 32,
+         28: 35, 30: 37, 35: 42, 40: 47}
+
 CLOSURE = {
     "RS":  ("rubber sealed", "single contact rubber seal"),
     "2RS": ("rubber sealed both sides", "two contact rubber seals"),
@@ -85,20 +94,49 @@ ap.add_argument("qty", type=float)
 ap.add_argument("--commit", action="store_true")
 a = ap.parse_args()
 
+hk = re.fullmatch(r"HK[- ]?(\d{2})(\d{2})", a.designation.upper())
 m = re.fullmatch(r"(R\d{1,2}|\d{3,4})[- ]?(2RS|RS|ZZ|Z)?", a.designation.upper())
-if not m:
+if not (hk or m):
     sys.exit(f"cannot parse designation {a.designation!r}")
-series, suffix = m.group(1), (m.group(2) or "")
-if series not in DIMS and series not in INCH:
-    sys.exit(f"unknown series {series!r} -- add it to DIMS or INCH with a real "
-             f"datasheet figure. This script does not guess bores.")
+if hk:
+    series, suffix = f"HK{hk.group(1)}{hk.group(2)}", ""
+    hk_bore, w = int(hk.group(1)), float(hk.group(2))
+    if hk_bore not in HK_OD:
+        sys.exit(f"unknown HK bore {hk_bore} mm -- add it to HK_OD from a real "
+                 f"datasheet. This script does not guess bores.")
+    bore, od = float(hk_bore), float(HK_OD[hk_bore])
+else:
+    series, suffix = m.group(1), (m.group(2) or "")
+    if series not in DIMS and series not in INCH:
+        sys.exit(f"unknown series {series!r} -- add it to DIMS or INCH with a "
+                 f"real datasheet figure. This script does not guess bores.")
 
-short, longd = CLOSURE[suffix]
+short, longd = ("open both ends", "no seal or shield -- open drawn cup") \
+    if hk else CLOSURE[suffix]
 # Inch designations hyphenate before the suffix (R6-2RS); metric ones do not
 # (608ZZ, 6203RS). "R62RS" is not a part number anybody would recognise.
 desig = (f"{series}-{suffix}" if suffix and series.startswith("R") and len(series) <= 3
          else series + suffix)
-if series in INCH:
+if hk:
+    desig = series
+    sizetxt = f"{bore:g} x {od:g} x {w:g} mm"
+    NAME = f"Needle Bearing {desig}, {sizetxt}"
+    DESC = (f"Drawn cup needle roller bearing, HK series (ISO 3245) -- "
+            f"{bore:g} mm bore, {od:g} mm OD, {w:g} mm wide, open both ends, "
+            f"caged needle rollers, no inner ring.")
+    UNITS = (
+        "THERE IS NO INNER RING. The needles run DIRECTLY ON THE SHAFT, so the "
+        "shaft IS the raceway and must be hardened and ground -- typically "
+        "58-64 HRC, and to the bearing's own tolerance. Running one on a soft "
+        "or as-turned shaft destroys the shaft, not the bearing, and it is not "
+        "a failure you see coming.\n\n"
+        "THE OUTER SHELL IS THIN AND FORMED, NOT MACHINED. It takes its final "
+        "roundness from the housing bore, so an HK is a press fit by design and "
+        "its free-state OD is not a measurement to work from. Press only on the "
+        "stamped end face, never on the open end or through the rollers.\n\n"
+        "SUFFIX FAMILY MATTERS: HK is open both ends; BK is closed one end. "
+        "They are not substitutes and share this bin.\n\n")
+elif series in INCH:
     fb, fo, fw, bore, od, w = INCH[series]
     width_caveat = ""
     if suffix:
@@ -165,9 +203,12 @@ if not si:
     si = StockItem.objects.create(part=p, location=binloc, quantity=a.qty)
 else:
     StockItem.objects.filter(pk=si.pk).update(quantity=a.qty)
+# Was hardcoded to 2026-08-26, which would silently stamp that date on every
+# future count. A wrong stocktake_date is invisible -- it reads as a real count.
+TODAY = datetime.date.today()
 StockItem.objects.filter(pk=si.pk).update(
-    stocktake_date=datetime.date(2026, 8, 26),
-    notes=f"TALLIED 2026-08-26. Scott counted {a.qty:g} in hand.")
+    stocktake_date=TODAY,
+    notes=f"TALLIED {TODAY}. Scott counted {a.qty:g} in hand.")
 
 # --- cross-reference by BORE and by OD ------------------------------------
 # Bore is what you check when matching a bearing to a shaft; section is what
@@ -203,7 +244,7 @@ for q in Part.objects.filter(default_location_id=BIN):
         near_od.append((q, qb, qo))
 
 def label(q):
-    return q.name.replace("Ball Bearing ", "")
+    return re.sub(r"^(Ball|Needle|Linear) Bearing ", "", q.name)
 
 lines = ""
 if same_bore:
