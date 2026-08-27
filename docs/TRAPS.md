@@ -5506,3 +5506,61 @@ resized by dragging, so window width says nothing about how wide the panel is;
 `container-type: inline-size` on `.sp` makes the breakpoints respond to the tile.
 Verified by setting the panel width directly: 1600 -> 6 cols, 900 -> 4, 560 -> 3,
 380 -> 2.
+## The AliExpress order history is not missing — it is sitting in the SKU field
+
+Measured 2026-08-26 22:5x, read-only, on the live instance.
+
+Company #10 AliExpress has 42 SupplierParts and exactly ONE PurchaseOrder,
+pk=60 `TO-ORDER-ALI`. That PO is **not an order record and was never meant to
+be one**: `description='AliExpress shopping list - not placed'`, status 10
+(Pending), `supplier_reference=''`, `reference_int=0`, `issue_date=None`,
+`total_price=$0.00`, and both of its two lines carry `purchase_price=None`.
+It is the sibling of TO-ORDER (Amazon) — a standing shopping list. So "the
+AliExpress POs are missing information" is true but misleading: there is no
+AliExpress PO with missing fields, there is **no AliExpress PO at all**, plus
+one placeholder that is empty by design.
+
+**The part that matters: the cost data was never lost.** Two separate stores
+already hold it.
+
+1. **Unit prices are on the SupplierParts.** All 42 have a qty-1 price break —
+   `$0.054` for the 392-series fuses up to `$46.99` for the Keyestudio starter
+   kit. Nothing needs to be scraped to know what these cost.
+2. **The order ids are inside the `SKU` field.** Every SKU is
+   `<16-digit id>/<variant text>`, e.g.
+   `'8211821285145753/5 PCS HLK-5M05B'`. All 38 distinct ids end in the same
+   four digits, `5753`, which is the account suffix — so these are AliExpress
+   ids, not vendor part numbers. The `SKU` column is doing a job it was never
+   meant to do, which is why no order-number search ever finds them.
+
+**Do NOT read one id as one order.** First pass grouped on the full id and got
+38 "orders" for 42 parts, which is absurd on its face. The two digits before
+the account suffix step by 1-2 within a cluster
+(`...04 / ...08 / ...10 / ...12 / ...14 / ...16 / ...18` all share the stem
+`8211821285`) — that is an item index inside a parent order. Stripping the
+trailing six digits collapses 38 ids to **13 candidate parent orders**, which
+is a plausible number of AliExpress purchases.
+
+**That last step is inferred from digit patterns and nothing else.** No column
+in the database labels any of these as order-vs-item. The AliExpress account's
+own order list would settle it in one look — but AliExpress is **signed out**
+in the agent Chrome (preflight does not test it, and the guardrail forbids
+logging in), so it stays a hypothesis. Confirm the stem/child split before
+building anything on it.
+
+**Why this changes the standing decision.** The open items
+`aliexpress-still-open-3rd-sighting` and `seeed-orders-no-po` were filed as the
+same shape of problem: importer-sourced parts with no cost history, recoverable
+only from the vendor account. For Seeed that is still true. **For AliExpress it
+is not** — ~13 orders and every unit price are already in the database and can
+be reconstructed offline. The remaining unknown is per-line **quantity**, which
+is stored nowhere; summing qty-1 prices gives $206.22, and that is a floor, not
+an order value.
+
+**Creating those POs would not double-count stock** (the PO-0019 / Haas fear).
+Stock arrives from *receiving*, not from a PO existing, and the standing rule
+already says leave every PO in PLACED and never receive. Several of these parts
+do already hold stock — part 494 qty 48, part 488 qty 18, part 718 qty 9 — but
+that stock came in through the importer and is untouched by adding a Placed PO
+above it. The real reason not to do it unattended is that the stem/child split
+is unconfirmed, not that it is dangerous.
