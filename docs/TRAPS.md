@@ -5352,3 +5352,36 @@ and no rows either. Every row-backed lamp carries identities now.
 **A conditional path that is never exercised is not built, it is written.** The
 `In Receiving over 7d` lamp had the same problem earlier the same day and was
 tested against a stand-in location for exactly this reason.
+
+
+## The pack lamp asks about the record, not the money — and the answer was on the supplier part
+
+2026-08-26. Scott, on the last two rows the pack lamp was flagging: *"Not sure
+where the confusion comes in on this one. You've got fifteen cents per part. If
+you multiply fifteen cents times fifty, you get essentially seven dollars and
+fifty nine cents, which is what the total of the entire purchase was."*
+
+Correct, and checkable without asking him — **the ASIN was on the supplier
+part.** `B07T8GZ3T6` is ZYAMY 50 pcs for $7.59, $0.15/count, and the record
+already agreed with itself in three places: the PO lines read 30 @ $0.15 and
+20 @ $0.15, the part descriptions say *"From the ZYAMY 50-pack (30x 2-pos + 20x
+3-pos)"*, and 50 x $0.15 = $7.50 against $7.59 (Amazon rounding $0.1518/count).
+Calling it "a generic multi-vendor listing that no vendor page settles" was
+wrong: the listing was one click from the row. **Second time in a day** —
+see the pull studs above.
+
+**A mixed pack has a different pack_quantity per part**, which is exactly how
+this instance already models it: one supplier part per InvenTree part, so
+`B07T8GZ3T6` carries 30 against the 2-position part and the synthetic
+`ORDER-…-821` SKU carries 20 against the 3-position one.
+
+**The lamp is renamed `Pack size not recorded`.** Every row it has ever flagged —
+nine of them — turned out to be priced correctly. Calling it *"Pack price may be
+per piece"* accused the money when the question was always about the record, and
+a lamp that cries fraud nine times for nine correct rows is one you learn to
+ignore. What it actually prevents is the bin error: a $10.98 ten-pack booked at
+$10.98 per bin, 19 bins reading $208.62, because nothing recorded that a pack
+was ten. It now reads **0** — not because the check was abandoned, but because
+the record it was asking for is complete.
+
+**Name a check for what it asks, not for what you fear.**
