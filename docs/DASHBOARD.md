@@ -68,6 +68,17 @@ and removed, because it silenced lamps that had not been read yet.
 A lamp acknowledged for six weeks is itself a signal — that is an atrophy
 detector hiding inside the mechanism.
 
+**Green is a state, and it took until 2026-08-26 to build.** Scott, on the PO
+lamp: *"make it green if the PO's are not overdue, dark if there are no POs."*
+Until then a dark lamp meant both *nothing is wrong* and *nothing is here*, so a
+check that ran and passed looked exactly like a check with nothing to look at.
+That is the opposite of reading engines by pattern: the healthy case has to SHOW.
+A green lamp is lit, carries a filled dot rather than the caution triangle, says
+`checked`, never flashes, and cannot be acknowledged — there is nothing to
+silence. The PO lamp's four states are now: dark (nothing on order), green (open
+and inside their promised dates), yellow (something late), OFF (no dates on file,
+so lateness cannot be measured).
+
 **Four states, never two.** Good / needs action / blocked / **not measured**.
 The fourth gets an **OFF flag**, never a zero, never green, never blank. This
 came from the import brief and aviation had already solved it: an instrument

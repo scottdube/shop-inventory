@@ -907,6 +907,7 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
         placed = PurchaseOrder.objects.filter(status=POS.PLACED.value)
         # `overdue` is a real API filter keying on target_date, so the panel can
         # mirror it exactly — when there is anything to mirror.
+        open_n = placed.count()
         dated = placed.filter(target_date__isnull=False).exists()
         late = placed.filter(target_date__isnull=False,
                              target_date__lt=datetime.date.today())
@@ -1086,16 +1087,36 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
             # one — 0 purchase orders of 67 carry target_date. "Nothing is late"
             # and "I cannot tell whether anything is late" must not render the
             # same, so with no dates on file this reads OFF rather than 0.
-            {'key': 'po_late', 'tone': 'caution',
-             'n': None if not dated else late.count(),
-             'off': not dated,
+            # Four states, and Scott named three of them: "make it green if the
+            # PO's are not overdue, dark if there are no POs."
+            #
+            #   no open orders          -> DARK    nothing to say
+            #   open, dated, none late  -> GREEN   checked, and good
+            #   open, dated, some late  -> YELLOW  a real warning
+            #   open but no dates       -> OFF     cannot tell, must not read 0
+            #
+            # Green is the state this panel was missing. A dark lamp meant both
+            # "nothing wrong" and "nothing here", so a healthy check looked
+            # identical to an absent one — and on a 727 the crew reads the
+            # engines by pattern, which needs the healthy case to SHOW.
+            {'key': 'po_late',
+             'tone': ('caution' if (dated and late.count()) else 'good'),
+             'n': (None if (open_n and not dated)
+                   else late.count() if late.count() else open_n),
+             'off': bool(open_n) and not dated,
              'ident': (late, 'po'),
-             'label': 'PO overdue', 'url': '/web/purchasing/index/purchaseorders/',
+             'label': ('PO overdue' if (dated and late.count()) else
+                       'PO on time' if open_n else 'No open POs'),
+             'url': '/web/purchasing/index/purchaseorders/',
              'link': (('/web/purchasing/index/purchaseorders/?status=20&overdue=true',
-                       late.count()) if dated else None),
-             'why': ('no expected date on any purchase order — lateness cannot '
-                     'be measured' if not dated else
-                     'past the date the supplier promised')},
+                       late.count()) if (dated and late.count()) else
+                      ('/web/purchasing/index/purchaseorders/?status=20', open_n)
+                      if open_n else None),
+             'why': ('no expected date on these orders — lateness cannot be '
+                     'measured' if (open_n and not dated) else
+                     'past the date the supplier promised' if late.count() else
+                     'every open order is inside its promised date' if open_n else
+                     'nothing on order')},
         ]
 
         # The sweep's own liveness. OFF rather than 0 when the state file

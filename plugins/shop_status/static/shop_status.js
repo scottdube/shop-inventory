@@ -311,6 +311,16 @@ const PANEL_CSS = `
   color:#161200;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.72), inset 0 -3px 3px rgba(140,105,0,.35),
     0 3px 0 #8c7200, 0 5px 8px rgba(0,0,0,.42), 0 0 14px rgba(242,200,0,.42)}
+/* Green: checked and healthy. Lit like the others so a working check SHOWS —
+   a dark lamp used to mean both "nothing wrong" and "nothing here" — but it
+   never flashes and takes no acknowledgement, because there is nothing to
+   acknowledge. Glyph is a filled dot, distinct from the caution triangle and
+   the warning square in shape as well as hue. */
+.sp .lamp.good{background:linear-gradient(180deg,#7fe3a4 0%,#22a35b 52%,#178146 100%);
+  color:#04240f;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.6), inset 0 -3px 3px rgba(10,80,40,.35),
+    0 3px 0 #0d5c31, 0 5px 8px rgba(0,0,0,.42), 0 0 12px rgba(34,163,91,.35)}
+.sp .lamp.good + .lampgo{color:#04240f}
 .sp .lamp.warning{background:linear-gradient(180deg,#f4574b 0%,#d81f16 50%,#ac150d 100%);
   color:#ffffff;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.5), inset 0 -3px 3px rgba(95,10,6,.4),
@@ -552,16 +562,20 @@ function gaugeCard(g) {
    to be confused, so neither state is ever carried by hue alone. */
 function lampEl(l) {
     const off = !!l.off;
-    const lit = !off && !!l.n;
-    const glyph = off ? '⌧' : (lit ? (l.tone === 'warning' ? '■' : '▲') : '·');
-    const cls = ['lamp', off ? 'off' : (lit ? `lit ${l.tone}` : '')].join(' ');
+    const good = !off && l.tone === 'good' && !!l.n;
+    const lit = !off && !good && !!l.n;
+    const glyph = off ? '⌧' : good ? '●'
+        : (lit ? (l.tone === 'warning' ? '■' : '▲') : '·');
+    const cls = ['lamp', off ? 'off' : good ? 'lit good'
+        : (lit ? `lit ${l.tone}` : '')].join(' ');
     const n = off ? '—' : `${l.n}${l.unit && l.n ? l.unit : ''}`;
     const ackLine = off ? '<span class="ack">no reading</span>'
+        : good ? '<span class="ack">checked</span>'
         : (lit && l.ack ? `<span class="ack">✓ ack ${esc(l.ack_age)}</span>` : '');
     // "open 43" promises the 43 rows this lamp counted. "open list" promises
     // nothing but the table, which is what you get when no API filter matches
     // the lamp — better said out loud than discovered by clicking.
-    const go = (l.exact && lit) ? `open ${l.n} →` : 'open list →';
+    const go = (l.exact && (lit || good)) ? `open ${l.n} →` : 'open list →';
     return `<div class="lampwrap">
       <button class="${cls}" data-lamp="${esc(l.key)}" data-n="${off ? '' : l.n}"
               data-ack="${l.ack ? 'true' : 'false'}"
@@ -662,6 +676,7 @@ function wirePanel(target, data, p) {
         btn.addEventListener('click', () => {
             const key = btn.dataset.lamp;
             const raw = btn.dataset.n;
+            if (btn.classList.contains('good')) return;    // nothing to silence
             if (raw === '' || Number(raw) === 0) return;   // nothing to silence
             const on = btn.dataset.ack !== 'true';
             btn.dataset.ack = on ? 'true' : 'false';

@@ -5419,3 +5419,36 @@ Orders & Projects widget, where it is a list with ages rather than an alarm.
 rather than on a failure had to be rewritten — the tombstone lamp over a to-do
 queue, the lost lamp over installed parts, and this one over orders in transit.
 *Ask whether the thing is WRONG, not whether it is OPEN.*
+
+
+## Where a delivery date comes from, and what the sweep must capture
+
+2026-08-26. Backfilled `target_date` on the three open POs by reading Amazon's
+order-details page — the same page the sweep already opens for prices. The date
+lives in the shipment status line:
+
+    .shipment-top-row .od-status-message
+
+**It is often relative, and it is per SHIPMENT, not per order:**
+
+| PO | order | page said | recorded |
+|---|---|---|---|
+| PO-0137 | 113-6309387-8181062 | "Arriving tomorrow" *and* "Delivered today" | 2026-08-27 |
+| PO-0143 | 111-8717191-1899411 | "Arriving September 2" | 2026-09-02 |
+| PO-0144 | 111-4846191-6220252 | "Arriving Friday" | 2026-08-28 |
+
+Two traps in that table:
+
+1. **"Arriving Friday" / "Arriving tomorrow" resolve against today**, so the
+   phrase must be captured verbatim in the notes beside the resolved date. A
+   date with no source text cannot be re-checked later, and this shop has been
+   bitten before by numbers whose provenance was lost.
+2. **PO-0137 shows TWO shipment lines** because it is partially received — one
+   "Delivered today", one "Arriving tomorrow". The outstanding shipment is the
+   one that matters for lateness. An importer that grabs the first status line
+   it finds will record a delivered order as still coming, or vice versa.
+
+`sweep_0826_1315.py` now sets `issue_date` and `target_date` at creation and
+asserts both stuck, alongside the existing `supplier_reference` assertion. The
+same gap produced both missing fields, and both were invisible until a lamp went
+looking.
