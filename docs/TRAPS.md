@@ -5385,3 +5385,37 @@ was ten. It now reads **0** — not because the check was abandoned, but because
 the record it was asking for is complete.
 
 **Name a check for what it asks, not for what you fear.**
+## An open order is not a fault — and nothing here knows when anything is due
+
+2026-08-26. Scott, on the `PO placed, unreceived` lamp reading 3: *"they're not
+overdue, they're on time. It's no real reason to raise a warning. The warning
+should come when they are not on time."*
+
+He is right, and chasing it turned up something worse than a mislabelled lamp.
+**No purchase order on this instance carries an expected date: 0 of 67 have
+`target_date`.** The lamp could not have distinguished late from on-time if it
+had wanted to — it was counting open orders and calling that a warning, which is
+the alarm-that-cries-wolf failure this panel keeps re-learning.
+
+**Is the date unavailable, or merely unrecorded? Unrecorded, at our end.**
+
+- **InvenTree has the field.** `PurchaseOrder.target_date`, and the API exposes a
+  working `overdue` filter that keys on it — measured: `overdue=true` → 0,
+  `overdue=false` → 3. The filter evaluates fine; it has nothing to evaluate.
+- **The vendor states it.** Amazon's order page carries the delivery estimate,
+  and the overnight sweep already opens that page to read prices — it walks past
+  the date every night.
+- **The scripts that create POs never set it.** `sweep_0826_1315.py` and its
+  predecessors write reference, supplier, supplier_reference, description and
+  notes. Not `target_date`. The same gap produced the missing `issue_date` fixed
+  earlier the same day.
+
+So the lamp is now **`PO overdue`**, and it reads **OFF** rather than 0 — with no
+dates on file, "nothing is late" is a claim the panel cannot support, and the
+fourth state exists precisely for that. The count of open orders moves to the
+Orders & Projects widget, where it is a list with ages rather than an alarm.
+
+**The pattern, which is now three-for-three:** every lamp that fired on a state
+rather than on a failure had to be rewritten — the tombstone lamp over a to-do
+queue, the lost lamp over installed parts, and this one over orders in transit.
+*Ask whether the thing is WRONG, not whether it is OPEN.*
