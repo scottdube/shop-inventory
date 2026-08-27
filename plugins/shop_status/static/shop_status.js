@@ -325,13 +325,22 @@ const PANEL_CSS = `
   color:#ffffff;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.5), inset 0 -3px 3px rgba(95,10,6,.4),
     0 3px 0 #6d0c07, 0 5px 8px rgba(0,0,0,.42), 0 0 14px rgba(216,31,22,.42)}
-/* lit and unacknowledged flashes; pressing stops the flash, never the lamp */
-.sp .lamp.lit[data-ack="false"]{animation:sp-korry 1.1s steps(1,end) infinite}
+/* lit and unacknowledged flashes; pressing stops the flash, never the lamp.
+   :not(.good) — a green lamp is lit but has nothing to announce, and a flashing
+   green light is a contradiction: it demands attention in order to say there is
+   nothing to attend to. */
+.sp .lamp.lit:not(.good)[data-ack="false"]{animation:sp-korry 1.1s steps(1,end) infinite}
 @keyframes sp-korry{50%{filter:brightness(.32) saturate(.5)}}
 .sp .lamp .ack{display:block;font-size:.48rem;letter-spacing:.06em;opacity:.75;margin-top:.22rem}
+/* DID NOT RUN keeps flashing however often it is pressed. Every other lamp can
+   be silenced because you have seen the thing it is reporting; there is nothing
+   to see here, which is the point. */
+.sp .lamp.failed{animation:sp-korry 1.1s steps(1,end) infinite !important}
+.sp .lamp.failed .ack{opacity:1;font-weight:700}
 .sp .lamp:focus-visible{outline:3px solid #fff;outline-offset:2px}
 @media (prefers-reduced-motion: reduce){
-  .sp .lamp.lit[data-ack="false"]{animation:none;outline:3px solid #fff;outline-offset:-5px}
+  .sp .lamp.lit:not(.good)[data-ack="false"]{animation:none;outline:3px solid #fff;
+    outline-offset:-5px}
 }
 .sp .lampgo{position:absolute;left:0;right:0;bottom:.3rem;text-align:center;
   font-size:.5rem;letter-spacing:.05em;
@@ -561,23 +570,26 @@ function gaugeCard(g) {
 /* Glyph as well as colour, always: red and yellow are the pair most likely
    to be confused, so neither state is ever carried by hue alone. */
 function lampEl(l) {
-    const off = !!l.off;
-    const good = !off && l.tone === 'good' && !!l.n;
-    const lit = !off && !good && !!l.n;
-    const glyph = off ? '⌧' : good ? '●'
+    // A check that could not run is RED, not dark: an unmeasured field is not a
+    // clean one, and the two used to look identical. Green means the check ran
+    // and found nothing — the only lamp state that is genuinely reassuring.
+    const failed = !!l.failed;
+    const good = !failed && l.tone === 'good';
+    const lit = !failed && !good && !!l.n;
+    const glyph = failed ? '⌧' : good ? '●'
         : (lit ? (l.tone === 'warning' ? '■' : '▲') : '·');
-    const cls = ['lamp', off ? 'off' : good ? 'lit good'
+    const cls = ['lamp', failed ? 'lit warning failed' : good ? 'lit good'
         : (lit ? `lit ${l.tone}` : '')].join(' ');
-    const n = off ? '—' : `${l.n}${l.unit && l.n ? l.unit : ''}`;
-    const ackLine = off ? '<span class="ack">no reading</span>'
+    const n = failed ? '—' : `${l.n}${l.unit && l.n ? l.unit : ''}`;
+    const ackLine = failed ? '<span class="ack">DID NOT RUN</span>'
         : good ? '<span class="ack">checked</span>'
         : (lit && l.ack ? `<span class="ack">✓ ack ${esc(l.ack_age)}</span>` : '');
     // "open 43" promises the 43 rows this lamp counted. "open list" promises
     // nothing but the table, which is what you get when no API filter matches
     // the lamp — better said out loud than discovered by clicking.
-    const go = (l.exact && (lit || good)) ? `open ${l.n} →` : 'open list →';
+    const go = (l.exact && (lit || good) && l.n) ? `open ${l.n} →` : 'open list →';
     return `<div class="lampwrap">
-      <button class="${cls}" data-lamp="${esc(l.key)}" data-n="${off ? '' : l.n}"
+      <button class="${cls}" data-lamp="${esc(l.key)}" data-n="${failed ? '' : l.n}"
               data-ack="${l.ack ? 'true' : 'false'}"
               data-tiphead="${esc(l.label)} — ${esc(n)} · ${esc(l.why)}"
               data-tip="${esc((l.tip || '') + (lit
@@ -677,6 +689,7 @@ function wirePanel(target, data, p) {
             const key = btn.dataset.lamp;
             const raw = btn.dataset.n;
             if (btn.classList.contains('good')) return;    // nothing to silence
+            if (btn.classList.contains('failed')) return;  // cannot be sat on
             if (raw === '' || Number(raw) === 0) return;   // nothing to silence
             const on = btn.dataset.ack !== 'true';
             btn.dataset.ack = on ? 'true' : 'false';

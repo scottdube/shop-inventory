@@ -5452,3 +5452,27 @@ Two traps in that table:
 asserts both stuck, alongside the existing `supplier_reference` assertion. The
 same gap produced both missing fields, and both were invisible until a lamp went
 looking.
+
+## The browser caches the plugin module — md5 of the served file is not enough
+
+2026-08-26. The existing rule here is: after pushing plugin JS, restart with
+`launchctl kickstart` and verify by comparing md5 of the SERVED file against
+disk. Did that. Served matched disk. The dashboard still ran the **old module**
+and threw `off is not defined` twice in a row, on a full page reload.
+
+The SPA imports the plugin source as an ES module from a fixed URL, so the
+browser's HTTP cache satisfies the import without asking the server. `md5` of a
+`curl` fetch proves the SERVER is right and says nothing about what the page is
+executing.
+
+Force it from the page before reloading:
+
+```js
+await fetch('/static/plugins/shopstatus/shop_status.js', {cache: 'reload'});
+location.reload();
+```
+
+**Read the error, not the deploy.** The two failed reloads both said
+`off is not defined` — a symptom of code that had already been fixed on disk and
+on the server. Ten minutes went into re-checking a file that was already correct.
+When a symptom outlives its cause, suspect a cache before suspecting the fix.
