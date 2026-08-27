@@ -136,16 +136,16 @@ LAMP_TIPS = {
         'returned, or never arrived. Yellow because it is a queue, not a fault.'),
     'pack_price': (
         'Priced stock whose part name or description states a pack size — "10 '
-        'pcs", "pack of 50" — while no supplier part records that pack size. '
-        'The price on such a row is one division away from being 10x or 50x '
-        'wrong, because a pack price booked per piece looks perfectly '
-        'reasonable: 19 storage bins read $208.62 against a $21.96 spend and '
-        'nothing objected. Rows holding a single unit are skipped — one of a '
-        'stated pack is a kit, priced per kit. This lamp does NOT claim the '
-        'price is wrong: Haas pull studs really are $8.40 each, verified from '
-        'the vendor. It says the record cannot tell you which, while money is '
-        'riding on it — settle it from the invoice, then set '
-        'pack_quantity on the supplier part so the next receipt prices itself.'),
+        'pcs", "pack of 50" — while no supplier part records what that pack '
+        'contains. It is a question about the RECORD, not an accusation about '
+        'the price: every row this has flagged so far turned out to be priced '
+        'correctly. What it prevents is the bin error, where a $10.98 ten-pack '
+        'was booked at $10.98 per bin and 19 bins read $208.62, because nothing '
+        'in the record said a pack was ten. Rows holding a single unit are '
+        'skipped: one of a stated pack is a kit, priced per kit. Settle it from '
+        'the vendor listing — the SKU and usually the link are on the supplier '
+        'part — then set pack_quantity, which both clears this lamp and makes '
+        'the next receipt of that SKU price itself.'),
     'recv_age': (
         'Rows that have sat on the staging dock longer than the stale threshold '
         '(a plugin setting, 14 days by default), measured from when the row was '
@@ -1049,10 +1049,10 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
             {'key': 'pack_price', 'tone': 'caution',
              'n': pack_n,
              'ident': (pack_rows, 'stock'),
-             'label': 'Pack price may be per piece',
+             'label': 'Pack size not recorded',
              'url': '/web/stock/location/index/stock-items',
              'link': self._rows_link(pack_rows),
-             'why': 'the record states a pack size that nothing confirms — '
+             'why': 'the name states a pack size that no supplier part records — '
                     + ('; '.join(pack_sample) if pack_sample else 'none')},
             {'key': 'recv_age', 'tone': 'caution',
              'n': stale_n,
