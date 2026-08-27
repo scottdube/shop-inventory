@@ -5803,6 +5803,23 @@ the only ref that broke the even-step id pattern within its cluster
 (`...28 / ...31 / ...32 / ...34`). Either it belongs to a different AliExpress
 account or the id captured into that SKU is wrong. Needs Scott.
 
+## The medical/personal-care exclusion applies to EXPORTS, not just to imports
+
+Noticed 2026-08-27 while putting the imageless-parts backlog into Google Sheets.
+Rule 3 is written as an intake rule — medical and personal-care items are OUT,
+and *"do not transcribe the item"*. Three such rows are already in InvenTree from
+before the rule (a CGM adhesive patch, a wrist BP monitor, a toothbrush), all
+correctly marked `NOT INVENTORY` and `active=False`. Correctly handled on the way
+in, and then about to be copied verbatim into a cloud document, because every
+query written since filters on *"has no image"* and nothing filters on *"should
+this leave the building"*.
+
+**Any list that leaves the shop system — a spreadsheet, a Drive upload, a
+report, a paste into chat — drops those rows.** They are excluded from inventory
+anyway, so they have no business on a worklist at all. The tell is
+`NOT INVENTORY` / `excluded` / `personal-care` in the description; filter on it
+the way `kw_dump.py` consumers filter on `REFUNDED` and `MERGED into`.
+
 ## AliExpress order pages are also the image source — and the SKU was never useless
 
 Measured 2026-08-27. On 2026-08-23 queue A wrote AliExpress off in the journal:
