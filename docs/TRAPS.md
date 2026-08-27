@@ -5701,3 +5701,38 @@ the story stays readable.
 #265 (113-3718431-0520246), #267, #353, #453. All seven have zero stock, so
 nothing on a shelf depends on the answer; what depends on it is whether the
 catalogue keeps offering things this shop does not own.
+
+## POSSIBLE RETURN was an ORDER-level guess about ITEM-level facts
+
+2026-08-26. Scott: *"I'm not quite sure why I have to go verify these, especially
+the Amazon returns which are explicit."* He was right, and the marker was the
+problem rather than the workload.
+
+`POSSIBLE RETURN — an order containing this was refunded; verify` was stamped on
+**every line of any order that carried a refund**. Amazon does not work that way:
+the order-details page states the outcome **per item**, on the same page the
+sweep already opens to read prices. Thirteen parts were flagged; reading the
+pages settled all thirteen in one pass, and **three of them had never been
+returned at all** — the refund on their order was for something else entirely:
+
+| part | the refund on that order was actually | verdict |
+|---|---|---|
+| #267 Molence terminal blocks | the VSDISPLAY 10.4" LCD | KEPT |
+| #353 Kaisi soldering mat | the VSDISPLAY 10.4" LCD | KEPT |
+| #453 THMOOTHER LED strips | an Amico 24-pack of recessed ceiling lights | KEPT |
+
+**How to read it, for whoever automates this.** Amazon's status lives in
+`.od-status-message` — `Return complete`, `Refunded`, `Delivered`, `Arriving …`
+— inside the shipment box that also holds the item's product link. Walk up from
+the status node until you find `a[href*="/dp/"]`, and the status is tied to the
+item it belongs to. Orders with no return show no such node at all (one showed
+only *"Return window closed on April 15, 2026"*).
+
+**The rule:** never write a marker that asserts something about an ITEM from
+evidence that is only true of the ORDER. If the per-item fact is reachable — and
+here it was, on a page the job already loads — reach it. A marker phrased as a
+question for a human is a job that was handed over rather than done, and thirteen
+of them sat for weeks.
+
+All thirteen are now settled: ten returned and inactive, three kept and active.
+The refund lamp reads **green**.
