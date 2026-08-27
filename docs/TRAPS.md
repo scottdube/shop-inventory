@@ -5802,3 +5802,44 @@ bridge, stored $27.00) renders `Please switch account or feedback`. It is also
 the only ref that broke the even-step id pattern within its cluster
 (`...28 / ...31 / ...32 / ...34`). Either it belongs to a different AliExpress
 account or the id captured into that SKU is wrong. Needs Scott.
+
+## AliExpress order pages are also the image source — and the SKU was never useless
+
+Measured 2026-08-27. On 2026-08-23 queue A wrote AliExpress off in the journal:
+*"SupplierPart.SKU is an order-line string (`8211821285085753/0.1UF 10mm, 275V
+AC`), not a product ID — nothing to look up."* Every word of the observation is
+correct and the conclusion is wrong. The leading 16 digits **are** the order id,
+and the order-detail page shows the exact item bought, with its photo. 30 of 34
+imageless AliExpress parts were filled in one pass. **A key you do not recognise
+is not the same as no key.**
+
+**The thumbnail is a CSS `background-image`, not an `<img>`.** It lives on
+`.order-detail-item-content-img`; one wrap element per line item at
+`.order-detail-item-content-wrap`, with `.item-title` and the variant beside it.
+A document-wide `img` scrape returns 140+ **"More to love"** recommendations and
+none of the purchased item — the same wrong-part shape as the LCSC first-URL
+trap, in a new costume. Scope to the wrap element or take a neighbour's photo.
+
+**Strip the size suffix for the original:** `<hash>.jpg_220x220.jpg` →
+`<hash>.jpg` gives 800–2300 px (same trick as Shars' `/cache/<hash>/` segment).
+
+**The `ae-pic-a1.aliexpress-media.com` CDN is undefended and answers plain
+urllib FROM THE MINI.** Only the order page needs the logged-in laptop browser.
+So the fetch belongs on the Mini, via one `itq run` — no laptop `curl`, no
+`scp`. That is not a micro-optimisation: on 2026-08-27 a laptop
+`cd … && mkdir && curl && file` one-liner, unapprovable by construction, stalled
+the overnight run for 280 minutes. Every command shape removed is a stall that
+cannot happen.
+
+**The CDN content-negotiates.** A `.jpg` URL returns `image/webp` to a modern
+`Accept` header, and an `Accept: image/jpeg` header does *not* change it. Decode
+and re-save as JPEG rather than trusting the extension.
+
+**A repeated image hash is a delisting PLACEHOLDER, not a photo.** Orders
+`100837932055753`, `91301677995753`, `90294522855753` (parts 727/728/729 — a
+radar module, a Hall sensor and an nRF24 socket adapter) all return the SAME
+hash `Sf5a31ce867174aa7bf499352d6875ddc`. Two independent tells: the hash
+repeats across unrelated products, and it arrives in the **path** form
+`/kf/<hash>/160x160.png` rather than the `<hash>.jpg_WxH.jpg` suffix form, so
+the suffix-stripper leaves it at 160 px. `scripts/ali_images.py` rejects
+anything under 300 px for this reason. An empty slot beats a wrong photo.
