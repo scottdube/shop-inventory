@@ -142,18 +142,29 @@ for order in ORDERS:
 
     # generate_reference() only. A raw Amazon number here clamps reference_int
     # to int32 max and permanently breaks reference generation instance-wide.
+    # issue_date and target_date are NOT optional. A null issue_date does not
+    # make order aging wrong, it drops the row out of aging entirely; a null
+    # target_date makes lateness unmeasurable, so the dashboard's PO lamp can
+    # only fly an OFF flag. Both were missing from every PO this instance had
+    # (0 of 67 carried a target date) until 2026-08-26. The order-details page
+    # this sweep already opens states both: "Ordered <date>" and the shipment
+    # line "Arriving <date>" / "Arriving tomorrow" / "Arriving Friday".
     po = PurchaseOrder.objects.create(
         reference=PurchaseOrder.generate_reference(),
         supplier=AMAZON,
         supplier_reference=order["ref"],
         description=f"Amazon order {order['ref']}",
         notes=order["notes"],
+        issue_date=order.get("placed"),
+        target_date=order.get("expected"),
     )
     po.status = PurchaseOrderStatus.PLACED.value
     po.save()
 
     po = PurchaseOrder.objects.get(pk=po.pk)
     assert po.supplier_reference == order["ref"], "PO supplier_reference did not stick"
+    assert po.issue_date == order.get("placed"), "PO issue_date did not stick"
+    assert po.target_date == order.get("expected"), "PO target_date did not stick"
     assert po.status == PurchaseOrderStatus.PLACED.value, f"PO status is {po.status}, not PLACED"
     print(f"  CREATE {po.reference}  status=PLACED  supplier_reference={po.supplier_reference}")
 
