@@ -9,6 +9,12 @@ Three cases, because a photo is not one kind of thing:
                     is the right one: what the drawer looks like is a fact about
                     the drawer.
 
+  --stockitem N     a unit. Attached to one StockItem. This is the right home
+                    for anything true of THAT physical unit and not of the part:
+                    a serial-number label, a factory-refurbished sticker, damage,
+                    a modification. Putting such a photo on the part would claim
+                    it of every unit, which for a serialised item is simply false.
+
   --part N          a portrait. Attached to the part. If --primary is given AND
                     the part's image slot is empty, it also becomes the part
                     image. If the slot is already filled it stays filled and the
@@ -33,7 +39,7 @@ from common.models import Attachment          # noqa: E402
 from django.contrib.auth import get_user_model  # noqa: E402
 from django.core.files.base import ContentFile  # noqa: E402
 from part.models import Part                  # noqa: E402
-from stock.models import StockLocation        # noqa: E402
+from stock.models import StockItem, StockLocation  # noqa: E402
 
 
 def attach(model_type, model_id, path, comment, user):
@@ -59,6 +65,8 @@ def main():
     ap.add_argument('--loc', help='stock location name')
     ap.add_argument('--part', type=int, action='append', default=[],
                     help='part pk (repeatable)')
+    ap.add_argument('--stockitem', type=int, action='append', default=[],
+                    help='stock item pk (repeatable)')
     ap.add_argument('--primary', action='store_true',
                     help='also use as the part image IF that slot is empty')
     ap.add_argument('--comment', default='')
@@ -72,6 +80,12 @@ def main():
         loc = StockLocation.objects.get(name=args.loc)
         print(f'{loc.name} (pk {loc.pk})')
         attach('stocklocation', loc.pk, args.file, args.comment, user)
+
+    for pk in args.stockitem:
+        it = StockItem.objects.get(pk=pk)
+        label = f'serial {it.serial}' if it.serial else f'qty {it.quantity}'
+        print(f'stock #{pk} {it.part.name[:48]} ({label})')
+        attach('stockitem', pk, args.file, args.comment, user)
 
     for pk in args.part:
         p = Part.objects.get(pk=pk)
