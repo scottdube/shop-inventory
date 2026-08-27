@@ -5851,6 +5851,46 @@ and remember the failure mode the gate cannot fix is a hang inside an allowed
 call (a wedged MCP browser call, a dead ssh), which looks like one long gap
 with an ALLOW as its last log line.
 
+## Daytime sweep: the same census, and three triage defects the gate can't fix
+
+The 2026-08-27 stall census covered the daytime sweep too — seven of its runs
+lost 30 to 468 minutes to the identical one-prompt mechanism, including the
+worst case on record: the 08-25 **22:46 canary hung on a git-commit heredoc
+through the entire overnight window it exists to protect**. The unattended
+gate now covers these sessions (the hook matches any `inventree-*` scheduled
+task; verified with the daytime tag in the 38-case suite).
+
+What the gate could NOT fix was fixed in the tools the same day:
+
+1. **`po_check.py` takes any number of order numbers** (`nargs="*"`). The
+   task file's own singular example is what invited the `for`-loop that cost
+   251 minutes on 08-26. One call, whole batch. The file now says so.
+2. **`vendor_triage.py` now asks InvenTree before asking Scott.** Every
+   extracted order number is checked against `PurchaseOrder.supplier_reference`
+   (normalized); already-imported orders print `ALREADY IMPORTED as PO-nnnn`
+   and emit no decision. Regression-tested on the live instance with the
+   exact historical case (Walmart 2000151-82176030 → PO-0142 suppressed).
+   Off the Mini the check degrades LOUDLY, never silently. Two more bugs
+   caught by the same regression run: the order-number regex captured the
+   English word "Confirmation" (numbers must now contain a digit), and the
+   no-number dedupe key lacked a date, which merged two same-subject Walmart
+   orders into one decision on 08-24. Both fixed.
+3. **"already swept" was a lie for five known domains.** aliexpress, seeed,
+   jlcpcb, lcsc and precisebits sat in the registry's `known` bucket, whose
+   only label said their orders were handled — but section 3 sweeps none of
+   them, which is why `procedure-gap-aliexpress` got re-derived four runs in
+   a row. The registry now carries `known.not_actually_swept` per-domain
+   truth strings, and triage prints them. The buckets and behavior are
+   unchanged — this fixes the LABEL, because a wrong label is what turned a
+   queued decision into a nightly rediscovery. The AliExpress platform-policy
+   question itself is untouched and remains Scott's, on the queue.
+
+**Operational trap the fix created:** the Mini runs its own copy of the
+registry at `/tmp/vendor_registry.json`. Editing
+`scripts/vendor_registry.json` locally does nothing until
+`itq push scripts/vendor_registry.json /tmp/vendor_registry.json` — a silent
+staleness by construction, now noted in the task file too.
+
 ## The medical/personal-care exclusion applies to EXPORTS, not just to imports
 
 Noticed 2026-08-27 while putting the imageless-parts backlog into Google Sheets.
