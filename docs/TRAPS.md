@@ -5989,3 +5989,48 @@ producers disagree by one character and both are official.
 Caught only because the two Walmart items already existed as parts (#1089,
 #1090) while their PO read absent — a contradiction visible only from checking
 parts and POs in the same turn. Absent that accident, the duplicate gets made.
+
+## The task file's McMaster test FIRED a false pass today — SKILL.md section 2 still teaches the superseded procedure
+
+**2026-08-27 16:4x, measured, daytime sweep.** The resolved procedure at
+"McMaster auth has a reliable UI signal after all" (above, 2026-08-26) is
+correct and was confirmed again today. The problem is that **nothing propagated
+it into the scheduled-task file**, and the sweep follows the task file.
+
+`inventree-daytime-sweep/SKILL.md` section 2 still says: real-click
+`#LoginUsrCtrlWebPart_LoginLnk`, then *"Signed in ⇔ `localStorage.VSTR_USR_NM`
+is non-empty and matches the account name."* Today that test was run first and
+returned **signed in**, because at t≈3 s:
+
+| signal | reading at t≈3 s | what SKILL.md concludes |
+|---|---|---|
+| `VSTR_USR_NM` | `Scott Dube` | **signed in** ← the false pass |
+| link text | `Log in` | (SKILL.md says to ignore this) |
+
+`preflight_state.py --set mcmaster=OK` was written on that basis. The corrected
+test then contradicted it — link text `Log in` and generic masthead phone
+**(630) 833-0300** at **both t≈33 s and t≈63 s**, i.e. well past the ~30 s the
+resolved section says account state needs. McMaster was **signed OUT the whole
+time**; state was corrected to `OUT` and the transition notified.
+
+**This is the first time the false pass has been caught in the act.** The
+earlier write-ups reasoned that a persistent localStorage key *could* only ever
+produce a false pass; today it *did*, on a genuinely signed-out session, and it
+did so on the run whose entire job is to be a canary before the 02:05 enrich.
+A silent `mcmaster=OK` here is worth exactly as much as no preflight at all.
+
+Two things worth carrying:
+
+1. **A doc that supersedes a procedure has not landed until the file that gets
+   executed is changed.** TRAPS.md marked this RESOLVED on 08-26; the sweep
+   read SKILL.md on 08-27 and did the wrong thing anyway. Write-ups are not a
+   propagation mechanism.
+2. **The ~30 s in the resolved procedure is a floor, not a timeout.** Waiting
+   longer never converts a genuine signed-out reading into a signed-in one, so
+   the cost of a second read at ~60 s is 30 s and it is what makes the negative
+   trustworthy. Two reads, both cold ⇒ OUT.
+
+`VSTR_USR_NM` stayed `Scott Dube` across every read of a signed-out session —
+one more direct confirmation that the key is stale storage and must never be
+the deciding signal.
+
