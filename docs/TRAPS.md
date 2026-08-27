@@ -3399,6 +3399,47 @@ for every future vendor that gets added to the registry but not to Section 3.
 **Do not read "already swept" as proof of anything** until that lands. It is a
 statement about the registry, not about the database.
 
+### `receive_line_item()` ignores `pack_quantity` — setting the pack is not enough
+
+**2026-08-26, caught by the verify step, not by review.** Receiving the PATIKIL
+5-pack of 150×100×0.8 mm blanks (PO-0137 line 159, $9.49) with the supplier
+part **already corrected to `pack_quantity='5'`** produced:
+
+```
+AFTER: stock rows=1 total_qty=1.00000
+   stock #716 qty=1.00000 price=$9.49
+```
+
+One board, at the price of five. `PurchaseOrder.receive_line_item(line,
+location, quantity, user)` on InvenTree 1.5.0 treats `quantity` as **pieces**
+and never consults the supplier part's pack. The pack field governs *pricing
+display*, not receiving.
+
+This is the same $208.62-instead-of-$20.86 failure the pack invariant in
+`CLAUDE.md` was written for, arriving through a door that invariant does not
+cover. The invariant says the supplier part carries `pack_quantity` — true, and
+insufficient: **on the receiving path you must also pass the piece count
+yourself.**
+
+Corrected to `qty=5, purchase_price=$1.8980` (DERIVED, $9.49 ÷ 5), extended
+total verified back to exactly $9.49.
+
+**Audit result: nothing else is affected.** `scratchpad/pack_audit.py` walked
+every supplier part with `pack_quantity != 1`; the three older multi-pack rows
+(Haas 04-1421, 04-1420, Tormach 35724) all read a correct 10 pieces at a
+per-piece price, because they were entered by hand. Nobody had received a
+multi-pack through the API before, which is why this sat undiscovered.
+
+**Standing rule.** After any `receive_line_item()` on a pack, re-read the row
+and check `quantity × purchase_price` against the extended price on the order
+line. If they disagree, the pack was dropped. The `EXPECT` line at the bottom
+of a receive script is what caught this one — write the expectation *before*
+running the write, or you will read `qty=1` and see nothing wrong with it.
+
+`B01MCVLDDZ` (MCIGICM 10-pack, PO-0137 line 158, lands 2026-08-27) was found
+carrying `pack_quantity='1'` in the same pass and set to `'10'`. It will still
+need the piece count passed explicitly at receive.
+
 ### The stalled call was an Edit, and it was the capture-as-you-go write
 
 **2026-08-26, measured on the 16:40 run's own transcript.** The run spanned
