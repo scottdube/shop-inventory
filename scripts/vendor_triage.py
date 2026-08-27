@@ -17,6 +17,16 @@ question is asked once per vendor rather than once per order.
 
 Input: JSON array of {sender, subject, date, snippet, threadId}.
 Output: three buckets, and decision-queue lines for the unknown one.
+
+CHANGED 2026-08-27, closing decision item vendor-triage-no-idempotency-check:
+the script now asks InvenTree whether an extracted order number already has a
+PO, and drops those candidates from the decision output. Before this, triage
+re-surfaced Walmart 2000151-82176030 as "needs a decision" while PO-0142 sat
+in the system — its "Arrived" mail carries the order number in the body only,
+the dedupe key fell back to (domain, subject), and NOTHING here ever called
+po_check. The fallback key also gains the date, because two DISTINCT Walmart
+orders thread under one identical subject and were merged into a single
+decision on 2026-08-24, which Scott had to split by hand.
 """
 import argparse
 import json
@@ -48,6 +58,16 @@ def suffix_hit(dom, domains):
 
 def bucket_of(dom):
     if suffix_hit(dom, reg["known"]["domains"]):
+        # "already swept" was a lie for five of these domains and generated
+        # the same journal contradiction four runs in a row: aliexpress/seeed/
+        # jlcpcb/lcsc/precisebits are KNOWN (skip: don't re-ask about the
+        # vendor) but NOT swept by section 3, so their orders are invisible,
+        # not handled. The registry now says which is which; print the truth.
+        for d, note in reg["known"].get("not_actually_swept", {}).items():
+            if d == "_comment":
+                continue
+            if dom == d or dom.endswith("." + d):
+                return "known", note
         return "known", "already swept"
     for reason, spec in reg["suppress"].items():
         if reason == "_comment":
@@ -70,8 +90,14 @@ def is_order_event(subject):
 
 
 def order_no(text):
-    m = re.search(r"(?:order|#)\s*#?\s*([A-Z0-9][A-Z0-9\-]{4,})", text or "", re.I)
-    return m.group(1) if m else None
+    # A real order number contains a DIGIT. Without that requirement the
+    # regex returned "Confirmation" for "Order Confirmation #FTC-99887"
+    # (caught by the 2026-08-27 regression test) — an English word that then
+    # poisoned the dedupe key, the idempotency lookup, and the decision line.
+    for m in re.finditer(r"(?:order|#)\s*#?\s*([A-Z0-9][A-Z0-9\-]{4,})", text or "", re.I):
+        if any(c.isdigit() for c in m.group(1)):
+            return m.group(1)
+    return None
 
 
 buckets = {"known": [], "suppress": [], "platform": [], "mixed": [], "unknown": []}
@@ -82,6 +108,41 @@ for r in rows:
     r["_order_event"] = is_order_event(r.get("subject"))
     r["_order_no"] = order_no((r.get("subject") or "") + " " + (r.get("snippet") or ""))
     buckets[b].append(r)
+
+
+def existing_po_refs():
+    """supplier_reference -> PO reference for every PO, normalized.
+
+    Runs under itq on the Mini where Django is importable; anywhere else the
+    check degrades to 'unknown' with a visible warning rather than a silent
+    pass, because a suppression nobody can see is how the Walmart bug lived.
+    """
+    try:
+        import django
+        sys.path.insert(0, os.getcwd())
+        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "InvenTree.settings")
+        django.setup()
+        from order.models import PurchaseOrder
+        out = {}
+        for ref, sref in PurchaseOrder.objects.values_list("reference", "supplier_reference"):
+            key = re.sub(r"[^A-Za-z0-9]", "", (sref or "")).lower()
+            if key:
+                out[key] = ref
+        return out
+    except Exception as exc:  # noqa: BLE001
+        print(f"!! InvenTree not reachable from here ({type(exc).__name__}) — "
+              "idempotency check SKIPPED; already-imported orders may re-surface. "
+              "Run via itq so the check works.\n")
+        return None
+
+
+PO_REFS = existing_po_refs()
+
+
+def already_imported(order):
+    if PO_REFS is None or not order:
+        return None
+    return PO_REFS.get(re.sub(r"[^A-Za-z0-9]", "", order).lower())
 
 print(f"{len(rows)} candidates\n")
 for b in ("known", "suppress"):
@@ -116,12 +177,20 @@ for b in ("platform", "mixed", "unknown"):
     noise = len(buckets[b]) - len(live)
     print(f"-- {b}: {len(buckets[b])}  ({len(live)} order events, {noise} lifecycle/non-order)")
     # One line per ORDER, not per email — a purchase emits four of these.
+    # The no-order-number fallback key includes the DATE: two distinct Walmart
+    # orders share one identical subject, and (domain, subject) alone merged
+    # them into a single decision on 2026-08-24.
     seen = {}
     for r in sorted(live, key=lambda x: x.get("date", "")):
-        key = r["_order_no"] or (r["_domain"], r.get("subject"))
+        key = r["_order_no"] or (r["_domain"], r.get("subject"), (r.get("date") or "")[:10])
         if key in seen:
             continue
         seen[key] = r
+        po = already_imported(r["_order_no"])
+        if po:
+            print(f"     {r.get('date','')[:10]}  {r['_domain']:28s} "
+                  f"order {r['_order_no']} ALREADY IMPORTED as {po} — no decision")
+            continue
         actionable.append((b, r))
         via = "" if r["_order_event"] else "  [via ship notice]"
         print(f"     {r.get('date','')[:10]}  {r['_domain']:28s} "
@@ -136,7 +205,10 @@ if a.emit_decisions:
     print("--- decide.py lines ---")
     for b, r in actionable:
         vend = r["_domain"]
-        on = r["_order_no"] or "no order number in subject/snippet"
+        # The no-number fallback must carry the date, or two such orders from
+        # one vendor share a decide.py key and the second is silently deduped
+        # away at queue time — a decision that never reaches Scott.
+        on = r["_order_no"] or f"no-order-no-{(r.get('date') or 'undated')[:10]}"
         print(f'--add "new vendor {vend} {on} | unknown vendor, needs a call | '
               f'{(r.get("subject") or "")[:90]} | first seen {r.get("date","")[:10]} '
               f'| {r["_why"]}"')
