@@ -5576,14 +5576,39 @@ that stock came in through the importer and is untouched by adding a Placed PO
 above it. The real reason not to do it unattended is that the stem/child split
 is unconfirmed, not that it is dangerous.
 
-## The AliExpress unit prices are LIST prices — every one is ~10.9% high
+## AliExpress: the stored prices are RIGHT — and `Total:` is the trap
 
-Measured 2026-08-26 against the live order list, once Scott logged the agent
-Chrome in. Six samples, and the rule is exact in all six:
+**RETRACTED, same night, one hour later: an earlier version of this section
+said the stored prices were "uniformly ~10.9% high" and told you to take the
+price from the order's `Total:`. Both claims were wrong, and the second one is
+actively dangerous.** It is left described here because the mistake is a
+repeatable one, not a typo.
 
-**InvenTree stores `listed unit price ÷ pieces in the pack`.** That half is
-right and worth keeping — it is the per-piece price, which is what the stock
-system wants:
+What happened: the first check sampled six orders, five of them from the same
+day — Jun 20 2026 — which happened to carry a checkout promo. Every one showed
+`Total` below the item line by a factor near 0.891, so it looked like a constant.
+It was a property of that one basket. Pulling all 38 orders settles it:
+
+    sub vs tot, 19 orders where both are recorded:
+      17  shipping ADDED   (tot > sub)
+       1  exact            (tot == sub)
+       1  discount         (tot < sub)   <- 8211821285165753, the sampled one
+
+The single discount in the whole dataset is the order the first pass generalised
+from. And the error runs the wrong way: order `8124403479875753` has `sub $1.80`
+against `tot $7.47`, so "take the price from `Total`" would have booked a $0.60
+potentiometer at **$2.49 — four times its real cost**.
+
+**`Total` includes shipping.** That is the whole explanation, and AliExpress
+shipping on a cheap item routinely exceeds the item. `Subtotal` is `unit x qty`.
+Neither field alone is "what the goods cost" when a discount and shipping can
+both be present.
+
+**So the rule is: use the ITEM LINE price, which is what InvenTree already
+stores.** The existing values are correct and should not be touched.
+
+**InvenTree stores `listed unit price ÷ pieces in the pack`** — the per-piece
+price, which is what the stock system wants. Verified against every order:
 
 | item | AliExpress line | pack | InvenTree price break |
 |---|---|---|---|
@@ -5594,25 +5619,24 @@ system wants:
 | RELIFE UV solder mask | `$8.96` | 6pcs | `$1.49333` |
 | 15MH inductor | `$2.75` | single | `$2.75` |
 
-**But the listed price is not what was paid.** The order's own `Total:` line is
-consistently lower, and by a near-constant factor:
+**Two orders corroborate this independently, from the other end.** The quantity
+on the order line matches the stock actually on the shelf, exactly: order
+`8184296236785753` was `$0.26 x10` of the D4184 module and part 501 holds
+qty 10; order `8178758373675753` was `$2.45 x3` of the UNO R3 SMD and part 730
+holds qty 3. When the vendor's quantity and an independent physical count agree,
+the price basis that sits between them is very unlikely to be wrong.
 
-    $4.26  -> $3.80   0.8920
-    $8.96  -> $7.98   0.8906
-    $1.44  -> $1.28   0.8889
-    $13.75 -> $12.25  0.8909   (inductor, $2.75 x5)
+**The generalisable lesson, which cost two retractions in one night.** Both
+wrong conclusions — "13 parent orders" and "prices are 10.9% high" — came from
+the same cluster of Jun 20 2026 orders, and both looked *more* convincing than
+the truth. A same-day cluster is one basket: one promo, one shipping deal, one
+checkout. It is a sample of size one wearing the costume of a sample of seven.
+Before generalising a rate, a ratio or a structure from vendor data, check that
+the sample spans more than one order date.
 
-That is a ~10.9% checkout discount applied to every one of them, and it is
-missing from every stored price. So the AliExpress cost basis in this instance
-is uniformly about 11% too high. Not catastrophic, but it is a systematic bias
-rather than noise, and it will quietly inflate any build cost that draws on
-these parts.
-
-**Take the price from the order's `Total:`, divided by pack, not from the item
-line.** Same shape as the standing Amazon rule (never use the email's
-`Grand Total:`) but the failure runs the other way: on Amazon the headline is
-too *low* because points are applied invisibly; here the item line is too *high*
-because the discount is applied invisibly.
+Full dataset: `data/aliexpress_orders_2026-08-26.json` — all 38 refs, with
+per-order dates, estimated delivery dates, subtotals, totals, unit prices and
+quantities.
 
 **One sample does not fit and is NOT explained.** Order `8211821285085753`
 (X2 caps) reads `$0.69 x2` against `Total:$8.56`. Every other order reconciles
@@ -5736,3 +5760,45 @@ of them sat for weeks.
 
 All thirteen are now settled: ten returned and inactive, three kept and active.
 The refund lamp reads **green**.
+## Pulling AliExpress order history: what works, and the two dead ends
+
+Done 2026-08-26 with Scott's session live. All 38 refs recovered; the whole
+pull took about ten minutes.
+
+**The order LIST tops out at 17 orders.** Its date filter offers only
+`last 6 months / last 1 year / last 2 years` — there is no "all time" — and the
+`?page=N` query parameter is ignored. What looks like pagination at the bottom
+of the list is a single **"View orders"** expander that fires once, taking 10 to
+17, and then removes itself. Everything older than two years is unreachable from
+the list at all, and this account's history runs back to **2018**.
+
+**Two dead ends, both worth not repeating:**
+
+1. **`fetch()` on a detail page returns HTTP 200 and no data.** The detail page
+   is client-rendered, so a same-origin `fetch` yields the SPA shell — 200,
+   plausible length, zero order content. Exactly the McMaster failure shape
+   already documented above: on this class of site a 200 is not evidence the
+   content is there. The fetch loop ran all 23 ids, "succeeded" 23 times, and
+   returned nothing. It was caught only because the extractor also recorded
+   whether the string `Ref. Number` was present at all — keep that check in any
+   scraper here.
+2. **`javascript_tool` does not await async code.** An `async` IIFE returns `{}`
+   — not an error, an empty object, which reads as "no results". Kick the work
+   off, park the result on `window`, and read it back in a second call. The
+   progress counter (`window.__done`) is what makes that legible.
+
+**What works: navigate to `/p/order/detail.html?orderId=<ref>` directly.** Every
+ref resolves, including 2018 orders that the list cannot reach. Allow ~5s to
+render; one order needed 15s and still failed to render, so re-check rather than
+recording a null.
+
+**The detail page carries an `Estimated delivery date`** — 19 of the 38 have one.
+That is precisely the field `target_date` wants, and it is a real backfill
+source for the 64 POs that have none. Orders older than about 2019 render only
+the item line: no subtotal, no total, no ETA.
+
+**One ref is not on this account.** `8123957119315753` (part 726, HDMI to CSI-2
+bridge, stored $27.00) renders `Please switch account or feedback`. It is also
+the only ref that broke the even-step id pattern within its cluster
+(`...28 / ...31 / ...32 / ...34`). Either it belongs to a different AliExpress
+account or the id captured into that SKU is wrong. Needs Scott.
