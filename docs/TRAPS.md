@@ -5990,6 +5990,13 @@ Caught only because the two Walmart items already existed as parts (#1089,
 #1090) while their PO read absent — a contradiction visible only from checking
 parts and POs in the same turn. Absent that accident, the duplicate gets made.
 
+## RETRACTED — the section below got it backwards; see the correction that follows it
+
+The entry immediately below concluded `mcmaster=OUT` and was **wrong**. Read it
+only for the measurements; its conclusion, its notification and its queued
+decision item were all retracted within the hour. The correction after it is
+the one to act on.
+
 ## The task file's McMaster test FIRED a false pass today — SKILL.md section 2 still teaches the superseded procedure
 
 **2026-08-27 16:4x, measured, daytime sweep.** The resolved procedure at
@@ -6033,4 +6040,76 @@ Two things worth carrying:
 `VSTR_USR_NM` stayed `Scott Dube` across every read of a signed-out session —
 one more direct confirmation that the key is stale storage and must never be
 the deciding signal.
+
+## CORRECTION — McMaster was signed IN. No masthead test is trustworthy from an agent-driven tab, in EITHER direction
+
+**2026-08-27 17:0x, measured, same run, after Scott said "I see mcmaster live
+on chrome".** He was right and the section above is retracted.
+
+What settled it: the same tab, read a few minutes later, returned link text
+**`Scott Dube`** and the account-rep phone **(609) 689-3000**. The session had
+been live the entire time. So the sequence for one continuously-signed-in
+session was:
+
+| read | link text | masthead phone | verdict it produces |
+|---|---|---|---|
+| t≈3 s | `Log in` | — | (SKILL.md's storage test said *in*) |
+| t≈33 s | `Log in` | (630) 833-0300 generic | **out** ← wrong |
+| t≈63 s | `Log in` | (630) 833-0300 generic | **out** ← wrong |
+| several min later | `Scott Dube` | (609) 689-3000 rep | in ← correct |
+
+**Both of this file's own recommended signals produced a false NEGATIVE for a
+full minute.** The `~30 s` figure in the RESOLVED section above is not a
+settling time; it was one lucky sample.
+
+Then the decisive measurement. Freshly loaded `/order-history/` in the
+agent-driven tab and polled to **+150 s**:
+
+```
++30s   link "Log in"  body 872 chars
++90s   link "Log in"  body 872 chars
++150s  link "Log in"  body 872 chars   <- frozen, never hydrates
+```
+
+872 chars is the catalog nav and nothing else — the order list never renders at
+all. Meanwhile `document.hidden` was `false` and `visibilityState` was
+`"visible"`, but **`document.hasFocus()` was `false` on every single read.**
+
+**Hypothesis, NOT confirmed:** McMaster defers account-state resolution and
+order-history rendering until the tab has real window focus — which an
+MCP-driven background tab never has. It is not the Page Visibility API, since
+`visibilityState` reads `visible` throughout. The one correct read happened
+while Scott was actually looking at Chrome. Plausible but unproven; a network
+trace across a focus change would settle it and was not run (tracking only
+starts when the tool is first called, so it caught nothing on an
+already-loaded page).
+
+**What IS established, and is enough to act on:**
+
+1. **A McMaster "signed out" reading from an unattended run means nothing.**
+   Every available signal — storage key, link text, masthead phone, rendered
+   order content — has now produced a measured false reading. The storage key
+   false-passes; the other three false-negative on an unfocused tab.
+2. **This is very likely the cause of `preflight-eats-the-window`.** That item
+   blames 4h49m of a lost night on polling `/order-history/` for "a shell that
+   never renders". That is precisely the 872-char freeze reproduced here on
+   demand. The night was not lost to a slow site; it was lost to a page that
+   was never going to render for an agent, polled by a loop with no deadline.
+3. **It also explains the spurious 2026-08-24 notification** — same false
+   negative, same vendor, believed and sent.
+
+**Rule until the focus question is settled: the McMaster preflight may report
+`OK` or `UNKNOWN`, never `OUT`, and must never notify on a negative.** A
+positive is trustworthy (nothing renders `Scott Dube` and a rep phone for a
+signed-out session); a negative is indistinguishable from an unhydrated tab, so
+it carries no information and a notification on it is pure false alarm. Cap the
+check at one bounded read and move on — the failure mode here is an unbounded
+poll, not a slow answer.
+
+**The wider lesson, which is not about McMaster.** A canary that cannot
+distinguish "the thing is broken" from "I cannot see the thing" will
+manufacture emergencies. Today it burned a push notification and would have
+had Scott re-authenticating a session that was already fine. An unattended
+check needs a third state, and `UNKNOWN` has to be cheap to report and must
+never page anyone.
 
