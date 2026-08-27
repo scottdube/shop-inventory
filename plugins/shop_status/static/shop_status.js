@@ -280,6 +280,10 @@ export function renderStats(target, data) {
 
 const PANEL_CSS = `
 .sp{--met:#9aa1a5;--metd:#6b7276;--face:#0d1012;--needle:#f7fafc;
+  /* The panel sizes itself against the WIDGET, not the window: a dashboard
+     tile is resized by dragging, so a viewport media query would lay the
+     annunciator out for the wrong width. */
+  container-type:inline-size;
   font-family:var(--mantine-font-family-monospace, ui-monospace, "IBM Plex Mono", monospace);
   background:var(--met);border:1px solid var(--metd);border-radius:8px;
   box-shadow:inset 0 1px 0 #b6bcbf, inset 0 -1px 0 #7d8488;
@@ -291,10 +295,24 @@ const PANEL_CSS = `
 .sp .plabel .sp2{flex:1}
 .sp .rule{margin-top:1rem;padding-top:.85rem;border-top:1px solid #757c80}
 
-/* --- annunciator: Korry pushbuttons, flashing until pressed --- */
-.sp .annun{display:grid;grid-template-columns:repeat(auto-fit,minmax(8.5rem,1fr));gap:.55rem}
-.sp .lampwrap{position:relative}
-.sp .lamp{width:100%;display:block;border:1px solid #0f1214;border-radius:4px;
+/* --- annunciator: Korry pushbuttons, flashing until pressed ---
+   Fixed column counts rather than auto-fit. auto-fit packs as many as will fit
+   and leaves whatever is left over stranded on the next row — eleven lamps and
+   one orphan. A real annunciator is a rectangular block of identical caps, so
+   the count steps 6 / 4 / 3 / 2 and every cap is the same size at every step. */
+.sp .annun{display:grid;grid-template-columns:repeat(2,1fr);gap:.55rem;
+  align-items:stretch}
+@container (min-width:26rem){ .sp .annun{grid-template-columns:repeat(3,1fr)} }
+@container (min-width:38rem){ .sp .annun{grid-template-columns:repeat(4,1fr)} }
+@container (min-width:62rem){ .sp .annun{grid-template-columns:repeat(6,1fr)} }
+/* The wrapper is the grid cell and stretches; the button did NOT, so the link
+   pinned to the wrapper's bottom edge fell BELOW the cap it belongs to. The
+   button now fills the cell, which is also what makes every lamp the same
+   size — the tallest label sets the height and the rest match it. */
+.sp .lampwrap{position:relative;display:flex}
+.sp .lamp{width:100%;height:100%;min-height:5.4rem;display:flex;
+  flex-direction:column;align-items:center;justify-content:center;
+  border:1px solid #0f1214;border-radius:4px;
   background:linear-gradient(180deg,#3d4448 0%,#2f3538 52%,#23282b 100%);color:#7f888d;
   /* bottom padding is the link's room: the 'open' anchor is positioned over the
      button (a link cannot nest inside one) and would otherwise sit on the label */
@@ -306,6 +324,7 @@ const PANEL_CSS = `
 .sp .lamp:active{transform:translateY(3px);
   box-shadow:inset 0 2px 4px rgba(0,0,0,.55), 0 0 0 #1a1e20, 0 1px 2px rgba(0,0,0,.4)}
 .sp .lamp b{display:block;font-size:.95rem;letter-spacing:0;margin-bottom:.1rem}
+.sp .lamp .lbl{display:block;text-wrap:balance}
 .sp .lamp .g{font-size:.78rem;display:block;line-height:1}
 .sp .lamp.caution{background:linear-gradient(180deg,#ffe95c 0%,#f2c800 50%,#cfa800 100%);
   color:#161200;
@@ -600,7 +619,8 @@ function lampEl(l) {
                         + (l.rows || 'not listed'))
                   : ''))}"
               aria-pressed="${l.ack ? 'true' : 'false'}">
-        <span class="g" aria-hidden="true">${glyph}</span><b>${esc(n)}</b>${esc(l.label)}${ackLine}
+        <span class="g" aria-hidden="true">${glyph}</span><b>${esc(n)}</b>
+        <span class="lbl">${esc(l.label)}</span>${ackLine}
       </button>
       <a class="lampgo" href="${esc(l.url)}" data-nav="${esc(l.url)}">${esc(go)}</a>
     </div>`;

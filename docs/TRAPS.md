@@ -5476,3 +5476,33 @@ location.reload();
 `off is not defined` — a symptom of code that had already been fixed on disk and
 on the server. Ten minutes went into re-checking a file that was already correct.
 When a symptom outlives its cause, suspect a cache before suspecting the fix.
+
+## Two annunciator layout bugs, and why both were structural
+
+2026-08-26. Scott: *"They shouldn't wrap like this, so they should all be the
+same size... you also notice that open list ends up underneath the button in
+some cases."*
+
+**Ragged wrap.** The lamp grid used `repeat(auto-fit, minmax(8.5rem, 1fr))`,
+which packs as many caps as fit and strands the remainder — twelve lamps came out
+as eleven and an orphan. auto-fit is right for content that flows; an annunciator
+is a rectangular block of identical caps, so the column count is now fixed and
+steps **6 / 4 / 3 / 2** as the panel narrows. Measured after: 12 caps, one
+distinct size (265x86), zero orphans.
+
+**The link falling out of the cap.** `.lampwrap` is the grid cell and stretches
+to the tallest row; the `<button>` inside did not, so a cap with a one-line label
+was shorter than its cell — and `.lampgo`, pinned to the *wrapper's* bottom edge,
+landed below the button it belongs to. Giving the button `height:100%` fixes both
+complaints at once: the link is back inside the cap, and every cap is the height
+of the tallest label.
+
+**A link cannot live inside a `<button>`** — that is why it is a sibling pinned
+over the cap rather than a child, and why its position depends on the wrapper
+matching the button exactly.
+
+**The panel uses container queries, not media queries.** A dashboard widget is
+resized by dragging, so window width says nothing about how wide the panel is;
+`container-type: inline-size` on `.sp` makes the breakpoints respond to the tile.
+Verified by setting the panel width directly: 1600 -> 6 cols, 900 -> 4, 560 -> 3,
+380 -> 2.
