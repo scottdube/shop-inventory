@@ -2902,6 +2902,41 @@ open-circuit: at ~25 V, cut the barrel plug off and wire the brick straight to
 the pigtail. The replacement arrives with its own adapter, so the cut one just
 goes back in the box.
 
+## Swapping the label printer costs one UniFi change, because the queue binds to an address
+
+2026-08-26, replacing the failed QL-810W. The whole swap was a DHCP reservation
+edit and nothing else — no CUPS change, no plugin change, no template change.
+
+**The reason is the device URI:**
+
+```
+device for QL810W: ipp://192.168.30.252/ipp/print
+```
+
+**No Bonjour name, no UUID, no serial.** The queue is bound to an *address*, so a
+different physical printer answering on 192.168.30.252 is indistinguishable to
+everything upstream: the queue name `QL810W`, the generated PPD, the
+`cups_label` plugin's `QUEUE` setting and every label template all carried over
+untouched. Had the URI been the DNS-SD form (`ipp://Brother%20QL-810W._ipp._tcp.local/`)
+this would have broken on the new unit's Bonjour registration and looked like a
+printer fault.
+
+**Keep it IP-bound.** It is the less fashionable choice and it is the one that
+makes hardware swappable.
+
+The sequence that matters, since two steps are easy to get backwards:
+
+1. Power the old printer down first — never two clients claiming .252
+2. Join the new one to WiFi; it appears in UniFi as **`BRW` + 12 hex digits**
+3. **Clear .252 off the old client before assigning it to the new one**
+4. Assign the fixed IP
+5. **Power-cycle the printer** — the reservation does not apply until the client
+   re-DHCPs, and skipping this looks exactly like the reservation failing
+
+Also cleaned up here: a stray auto-created queue `_192_168_30_252` pointing at
+the same URI had been sitting alongside `QL810W` since setup. Harmless until the
+day something picks the wrong one. Removed with `lpadmin -x`.
+
 ## Depleting a stock item to zero DELETES it — notes and tracking go too
 
 2026-08-24. Asked to deplete the QL-810W's stock item ahead of the warranty
