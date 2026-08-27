@@ -5533,29 +5533,40 @@ already hold it.
    ids, not vendor part numbers. The `SKU` column is doing a job it was never
    meant to do, which is why no order-number search ever finds them.
 
-**Do NOT read one id as one order.** First pass grouped on the full id and got
-38 "orders" for 42 parts, which is absurd on its face. The two digits before
-the account suffix step by 1-2 within a cluster
+**One id IS one order. A tidy-looking pattern nearly cost us that.** The first
+pass grouped on the full id, got 38 "orders" for 42 parts, called that absurd,
+and went looking for structure. It found some: the two digits before the account
+suffix step by 1-2 within a cluster
 (`...04 / ...08 / ...10 / ...12 / ...14 / ...16 / ...18` all share the stem
-`8211821285`) — that is an item index inside a parent order. Stripping the
-trailing six digits collapses 38 ids to **13 candidate parent orders**, which
-is a plausible number of AliExpress purchases.
+`8211821285`), which reads exactly like an item index inside a parent order.
+Stripping the trailing six digits collapsed 38 ids to 13 "parent orders" — a
+much more plausible-looking number, written up here as the likely answer.
 
-**That last step is inferred from digit patterns and nothing else.** No column
-in the database labels any of these as order-vs-item. The AliExpress account's
-own order list would settle it in one look — but AliExpress is **signed out**
-in the agent Chrome (preflight does not test it, and the guardrail forbids
-logging in), so it stays a hypothesis. Confirm the stem/child split before
-building anything on it.
+**It was wrong.** Scott logged the agent Chrome into AliExpress and the order
+list settles it: every one of those ids appears as its own order, with its own
+`Ref. Number`, its own seller, its own date and its own total. `8211821285045753`
+(WISINVI, fuses), `...085753` (Shop1105225628, X2 caps), `...105753` (Xiazhi,
+varistors), `...125753` (LUOMEI, inductors), `...145753`, `...165753`,
+`...185753` are **seven separate orders placed the same day, Jun 20 2026**, not
+one order with seven lines. AliExpress splits a single checkout into one order
+per seller and gives each its own reference. So 38 ids = **38 real orders**, and
+the "absurd" first answer was the correct one.
+
+**The lesson is the reusable part.** The digit pattern was real — the ids in a
+cluster genuinely do share a stem and step by 2. The inference drawn from it was
+invented. A pattern that *could* mean a hierarchy is not evidence of one, and
+"13 is a more believable number than 38" is not evidence of anything at all.
+Both readings were available offline; only the vendor account could decide
+between them, and the check took one page load once the session existed.
 
 **Why this changes the standing decision.** The open items
 `aliexpress-still-open-3rd-sighting` and `seeed-orders-no-po` were filed as the
 same shape of problem: importer-sourced parts with no cost history, recoverable
-only from the vendor account. For Seeed that is still true. **For AliExpress it
-is not** — ~13 orders and every unit price are already in the database and can
-be reconstructed offline. The remaining unknown is per-line **quantity**, which
-is stored nowhere; summing qty-1 prices gives $206.22, and that is a floor, not
-an order value.
+only from the vendor account. For Seeed that is still true. For AliExpress the
+*identifiers* are all in hand offline — but per-line **quantity** is stored
+nowhere in InvenTree, and the order page is the only place it exists (the
+inductor order reads `$2.75 x5`). So reconstruction still needs the account
+open; it just needs it for quantities, not for order numbers.
 
 **Creating those POs would not double-count stock** (the PO-0019 / Haas fear).
 Stock arrives from *receiving*, not from a PO existing, and the standing rule
@@ -5564,3 +5575,99 @@ do already hold stock — part 494 qty 48, part 488 qty 18, part 718 qty 9 — b
 that stock came in through the importer and is untouched by adding a Placed PO
 above it. The real reason not to do it unattended is that the stem/child split
 is unconfirmed, not that it is dangerous.
+
+## The AliExpress unit prices are LIST prices — every one is ~10.9% high
+
+Measured 2026-08-26 against the live order list, once Scott logged the agent
+Chrome in. Six samples, and the rule is exact in all six:
+
+**InvenTree stores `listed unit price ÷ pieces in the pack`.** That half is
+right and worth keeping — it is the per-piece price, which is what the stock
+system wants:
+
+| item | AliExpress line | pack | InvenTree price break |
+|---|---|---|---|
+| 392-series fuses | `$2.70` | 50 PCS | `$0.054` |
+| X2 safety caps | `$0.69` | 10pcs | `$0.069` |
+| 10D561K varistors | `$1.44` | 10pcs | `$0.144` |
+| cleaning brush | `$4.26` | 5PCS | `$0.852` |
+| RELIFE UV solder mask | `$8.96` | 6pcs | `$1.49333` |
+| 15MH inductor | `$2.75` | single | `$2.75` |
+
+**But the listed price is not what was paid.** The order's own `Total:` line is
+consistently lower, and by a near-constant factor:
+
+    $4.26  -> $3.80   0.8920
+    $8.96  -> $7.98   0.8906
+    $1.44  -> $1.28   0.8889
+    $13.75 -> $12.25  0.8909   (inductor, $2.75 x5)
+
+That is a ~10.9% checkout discount applied to every one of them, and it is
+missing from every stored price. So the AliExpress cost basis in this instance
+is uniformly about 11% too high. Not catastrophic, but it is a systematic bias
+rather than noise, and it will quietly inflate any build cost that draws on
+these parts.
+
+**Take the price from the order's `Total:`, divided by pack, not from the item
+line.** Same shape as the standing Amazon rule (never use the email's
+`Grand Total:`) but the failure runs the other way: on Amazon the headline is
+too *low* because points are applied invisibly; here the item line is too *high*
+because the discount is applied invisibly.
+
+**One sample does not fit and is NOT explained.** Order `8211821285085753`
+(X2 caps) reads `$0.69 x2` against `Total:$8.56`. Every other order reconciles
+to within the discount factor; this one is off by ~$7. Do not force it into the
+rule — it may be shipping, a multi-item order the text scrape flattened, or a
+combined charge. Read that order's detail page before trusting any number
+derived from it.
+
+## TO-ORDER-ALI was already acted on — the two Aug 23 orders ARE its two lines
+
+The AliExpress shopping-list placeholder pk=60 has exactly two lines, and both
+have now been bought. This is the double-count risk PO-0019 was cancelled to
+avoid, and it is live right now:
+
+| TO-ORDER-ALI line | real order placed Aug 23 2026 |
+|---|---|
+| pk=156 HLK-5M05B, SKU `8211821285145753/5 PCS HLK-5M05B`, qty 1 | `8213410090415753` — Shenzhen Hi-Link, `5 PCS HLK-5M05B`, `$16.96 x1` |
+| pk=157 15MH inductor, SKU `8211821285125753/15MH 4A 0.6 Wire`, qty 5 | `8213410090395753` — LUOMEI, `15MH 4A 0.6 Wire`, `$2.69 x2` |
+
+Note the SKUs on those lines point at the JUNE orders the parts were first
+bought from — the shopping list was built by cloning the previous purchase, so
+the SKU is provenance, not the order being placed. Note also the quantity
+changed: the list asked for 5 inductors, the order bought 2.
+
+So `8213410090395753` / `8213410090415753` — the pair that has been surfacing in
+the sweep since 2026-08-24 and has now been re-derived four separate times — are
+not unexplained orphan orders. They are the fulfilment of TO-ORDER-ALI. Turning
+them into real POs means **also** retiring or reducing those two placeholder
+lines in the same operation, or the shortfall gets ordered a second time.
+
+## Target dates: 3 of 67 POs, and 0 of 166 LINES
+
+Counted 2026-08-26, whole instance:
+
+    PO.target_date   set 3   null 64   (of 67)
+    LINE.target_date set 0   null 166  (of 166)
+
+The only three POs carrying a target date are **PO-0137, PO-0143 and PO-0144** —
+the three currently-open Amazon orders, all created by the sweep in the last two
+days, after the delivery-date capture rule went in. Every older PO has none,
+including all 20 Placed/Complete orders the importers built and both TO-ORDER
+placeholders.
+
+**The line-level number is the one to notice.** Not a single line item in the
+instance has a target date, including on the three POs that have one at the
+header. InvenTree's overdue logic reads the line date first and falls back to
+the order's, so a per-line date is what a partially-shipped order needs — and
+PO-0137 is exactly that case: one line delivered Aug 25, the other due Aug 27,
+with a single header date of 2026-08-27 covering both. The header date is
+right for the outstanding line and wrong for the delivered one, and nothing
+records which.
+
+This is the measured version of the older note *"An open order is not a fault —
+and nothing here knows when anything is due"*. It is not a data-loss bug:
+the dates were never captured, because the sweep only started reading
+"Arriving <date>" off the order page recently. Backfilling is possible for
+Amazon (the order-details page still carries delivery status for past orders)
+and impossible for most of the rest.
