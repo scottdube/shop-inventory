@@ -5671,3 +5671,33 @@ the dates were never captured, because the sweep only started reading
 "Arriving <date>" off the order page recently. Backfilling is possible for
 Amazon (the order-details page still carries delivery status for past orders)
 and impossible for most of the rest.
+
+
+## Settling a POSSIBLE RETURN: the marker is an answer, not a label
+
+2026-08-26. Six of the thirteen `POSSIBLE RETURN` parts were settled by Scott —
+*"these have been returned and credit received"* — in two batches of three.
+
+`POSSIBLE RETURN — an order containing this was refunded; verify` is a QUESTION
+sitting in the description field. Answered, it becomes **`RETURNED to vendor,
+credit received (Amazon <order>), confirmed by Scott <date>`** — a prefix, like
+every other tombstone here, so the panel's refund lamp (which keys on the
+`POSSIBLE RETURN` prefix) clears the settled ones and keeps asking about the
+rest. 13 → 10 → 7.
+
+The part goes **inactive**: a returned item is not something this shop owns or
+can reach for. The record survives for its purchase history, because the money
+did move and that happened.
+
+**The one with stock needed care.** #322, the ALKISTA UV lamp, held 1. Its row
+was set to `quantity=0` by a queryset update rather than through a stock
+adjustment, deliberately: an adjustment to zero DELETES the row and its notes on
+this install, and that note is the only account of where the item went. At zero
+it fails `IN_STOCK_FILTER` and leaves every count and gauge on the panel, while
+the story stays readable.
+
+**Settled so far, and what remains:** returned — #190, #284, #285, #322, #340,
+#397. Still to verify — #144 and #363 (both order 113-9661356-3317862), #264 and
+#265 (113-3718431-0520246), #267, #353, #453. All seven have zero stock, so
+nothing on a shelf depends on the answer; what depends on it is whether the
+catalogue keeps offering things this shop does not own.
