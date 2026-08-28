@@ -1826,20 +1826,30 @@ a *place*, so the bin gets made when there is something to put in it.
       names — but wait to be asked rather than pre-creating empty builds, for
       the same reason BO-0017 has no kit bin.
 
-## Vendor coverage gap — Banggood
+## The Amazon sweep has holes — and that is worse than a missing vendor
 
-Scott, 2026-08-28, on the 775 motors: *"These motors either came from Banggood
-or AliExpress."* AliExpress is a supplier here with 43 parts. **Banggood is not
-in this system at all** — no company record, so no sweep has ever looked for it.
+Chased the wrong gap first. On the 775 motors Scott recalled *"Banggood or
+AliExpress"*, so this was queued as an unknown-vendor blind spot. Then he
+searched his own order history and found them: **Amazon, ASIN B08NTK8JXZ, brand
+Puly, purchased 2024-01-07.** The Amazon-format FNSKU on the carton was right and
+the recollection was wrong.
 
-- [ ] Did Banggood purchases actually happen? If yes, every one is invisible by
-      construction — the sweep only finds senders it knows. Search the mail by
-      SHAPE (order confirmations, shipping notices) and subtract the known
-      senders, rather than adding Banggood and re-running.
-- [ ] The 775 box carries `X002PW3B7B`, an Amazon-format FNSKU, which contradicts
-      the recollection. Left unresolved on part #1139 rather than picked: Chinese
-      sellers reuse one barcode format across channels, so an Amazon-shaped code
-      on the carton is weaker evidence than it looks.
+**Amazon is the most heavily swept vendor here — 396 supplier parts.** A
+two-year-old order for a $27 item produced no PO and no supplier part until it
+was entered by hand on 2026-08-28. That is not a channel nobody looks at; it is a
+hole in the channel everyone assumes is covered.
+
+- [ ] **Why did the sweep miss a 2024-01-07 Amazon order?** Is there a date
+      horizon, a category filter, an order-type exclusion, or did it simply never
+      backfill that far? Answer this before adding more vendors — coverage of a
+      swept vendor is worth more than breadth across new ones.
+- [ ] **How many more like it?** Two invisible Amazon purchases surfaced today
+      alone (these motors, and the X27 steppers from 2023-07-19). Both were found
+      because a physical box appeared on the bench, which is not a search
+      strategy. The count of parts with a purchase history but no supplier part
+      is the cheap proxy — run it.
+- [ ] Banggood still has no company record. Keep the question, drop the priority:
+      it was a guess, and the guess was wrong.
 
 ## Bench work still parked
 
