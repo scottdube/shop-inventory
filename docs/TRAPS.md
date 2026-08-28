@@ -6113,3 +6113,118 @@ had Scott re-authenticating a session that was already fine. An unattended
 check needs a third state, and `UNKNOWN` has to be cheap to report and must
 never page anyone.
 
+---
+
+## A harvester's own validity guard silently zeroed a queue (2026-08-28)
+
+`harvest_lakeshore_images.py` had been reporting **0 images attached** while
+looking, in every respect, like it ran: 16 parts found, 16 pages fetched, 16
+images located and downloaded. Every single one was then thrown away by this
+line:
+
+```python
+MIN_PX = 60
+...
+return w >= MIN_PX and h >= MIN_PX
+```
+
+Lakeshore's product renders are **150 x 20..27**. An end mill is a long thin
+object; it photographs as a strip. The guard was written to reject spacer GIFs
+and sprite sheets and instead rejected the entire vendor.
+
+**What settled it was looking at the pictures.** Four of the rejected thumbs
+were injected into a browser page at 900 px wide and screenshotted: a ball
+nose, a blue-coated 4-flute long, an uncoated 4-flute standard, and a 3-flute
+standard — correct photos of the correct products. Guard relaxed to
+`MIN_W=100`, `MIN_H=12`; **7 images attached on the next run**, and the
+filenames independently corroborate the parts ("ballnose" onto the ball end
+mills, "3flstdunc" onto the 3-flute).
+
+Two things to carry forward:
+
+1. **A dimension guard has to know what the object looks like.** Square minima
+   encode an assumption — "products are roughly square" — that is false for
+   cutting tools, wire, extrusion, rail, tubing, and anything else the shop
+   buys by the foot. Guard on *degenerate* (a 1-px axis, a 300-byte file), not
+   on *unfamiliar*.
+2. **A silent-zero is worse than a crash.** The run reported "attached: 0
+   failed: 6, STOPPING: 3 consecutive failures" and moved on. Nothing in that
+   text says *the images were fine and I discarded them*. When a queue reports
+   zero, the next question is always whether it found nothing or rejected
+   everything — those are opposite problems and they print almost identically.
+
+The same file also claimed a full-size render at `/images/products/<f>` next to
+the `/thumb/` one. That path is a **404 on 4 of 4 samples**; the thumb is all
+Lakeshore serves. The fetch of the non-existent original was pure cost, once
+per part, and its failure was being logged as an image failure.
+
+---
+
+## Amazon 404 is delisting, not bot-blocking — and order history cannot rescue it (2026-08-28)
+
+`harvest_amazon_images.py` reported `page fetch failed — HTTPError` for **17 of
+20** ASINs. Against this project's history — a task file with a whole section on
+Amazon IP reputation, and two prior runs that wrongly wrote the queue off as
+bot-blocked — the obvious reading was that the Mini had been challenged again.
+
+It had not. `except Exception ... type(e).__name__` had swallowed the status
+code. Measured with the code restored, across three URL forms each:
+
+* **404**, 2296 bytes, "Dogs of Amazon" page — no captcha, no robot wording, no
+  `<title>` gate. Identical for `/dp/`, `/gp/product/` and `/dp/<a>/ref=nosim`.
+* The 3 ASINs that worked returned 1.8–2.1 MB with a `hiRes` URL, from the same
+  IP, in the same run.
+
+A defended host does not serve 2 MB product pages to the request immediately
+after the one it blocked. **These listings are simply gone.** 404 is permanent,
+costs no reputation, and must not count toward the challenge-stop counter — it
+now prints `404 DELISTED` and is excluded from it.
+
+**The follow-up mattered more than the diagnosis.** Amazon order history is
+logged in and does find every one of these orders by ASIN
+(`/your-orders/search?search=<ASIN>`), so it looked like the way to recover the
+photos. It is not: five different delisted ASINs all render
+`m.media-amazon.com/images/I/01RmK+J4pJL._SS80_.gif` — **the same image id**.
+
+That signature is now familiar: identical bytes across different products means
+a placeholder, exactly as with the AliExpress `Sf5a31ce...` delisting image on
+2026-08-27. Had the harvester keyed on "order history has an img tag", it would
+have hung the same grey rectangle on seventeen unrelated parts and reported a
+successful night. **Empty slot beats wrong photo**, and sameness across
+products is the cheapest test for a placeholder there is.
+
+---
+
+## Storefront search that answers, but not about your part (2026-08-28)
+
+Tormach returns HTTP **450** to the Mini, which reads as fingerprinting, and
+CLAUDE.md's standing rule is right: drive a browser rather than retune curl. So
+the browser was driven — and the queue still has to be abandoned, for a
+completely different reason that the 450 was hiding.
+
+* `tormach.com` is a **JS-rendered storefront**. Server HTML contains product
+  cards with no `<img>` and no `href`; only the live rendered page has them. A
+  same-origin `fetch()` from an authenticated tab does not help.
+* Worse, **`catalogsearch` does not resolve part numbers**. Searching `39044`
+  (1100MX Enclosure Kit) returns four 1100MX *machine packages*, the cheapest
+  $29,594. Searching `34444` (15L Slant-PRO Lathe) returns a single result:
+  *USB Bulkhead Port Assembly*.
+
+A harvester that takes the first search result — the obvious implementation —
+would have attached a photo of a $29k mill to an enclosure kit, and a USB port
+to a lathe, with a 100% "success" rate and no error anywhere. The exact-PN match
+that would have caught it finds **0 of 5**.
+
+**The general shape:** a vendor search that always returns *something* is more
+dangerous than one that errors. 450/403/404 announce themselves. A confident
+wrong answer does not, and image queues have no natural verification step —
+nobody looks at the pictures until they are at the bench holding the wrong tool.
+Require the result to prove it is the right product (exact SKU/PN in the card),
+and skip when it cannot.
+
+Precise Bits fails the same way one step earlier: all 7 stored links are
+`precisebits.com/?s=<SKU>`, a WordPress search parameter **the site ignores**.
+Every one returns the home page, 200 OK, 13 marketing images, zero results — so
+a naive og:image or first-image harvester would have decorated seven different
+cutting tools with the PreciseBits logo.
+
