@@ -1826,6 +1826,21 @@ a *place*, so the bin gets made when there is something to put in it.
       names — but wait to be asked rather than pre-creating empty builds, for
       the same reason BO-0017 has no kit bin.
 
+## Vendor coverage gap — Banggood
+
+Scott, 2026-08-28, on the 775 motors: *"These motors either came from Banggood
+or AliExpress."* AliExpress is a supplier here with 43 parts. **Banggood is not
+in this system at all** — no company record, so no sweep has ever looked for it.
+
+- [ ] Did Banggood purchases actually happen? If yes, every one is invisible by
+      construction — the sweep only finds senders it knows. Search the mail by
+      SHAPE (order confirmations, shipping notices) and subtract the known
+      senders, rather than adding Banggood and re-running.
+- [ ] The 775 box carries `X002PW3B7B`, an Amazon-format FNSKU, which contradicts
+      the recollection. Left unresolved on part #1139 rather than picked: Chinese
+      sellers reuse one barcode format across channels, so an Amazon-shaped code
+      on the carton is weaker evidence than it looks.
+
 ## Bench work still parked
 
 - [ ] **Find the 2x RKJXT1F42001 nav switches** (stock #9). Either in the mobile
