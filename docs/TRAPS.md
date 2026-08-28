@@ -6228,3 +6228,26 @@ Every one returns the home page, 200 OK, 13 marketing images, zero results — s
 a naive og:image or first-image harvester would have decorated seven different
 cutting tools with the PreciseBits logo.
 
+---
+
+## A policy note that enumerates its instances goes stale silently (2026-08-28)
+
+`vendor_registry.json`'s `not_actually_swept` reason for AliExpress ended with
+*"orders 8213410090395753/-415753 have no PO"*. Two more AliExpress orders
+arrived 2026-08-28 08:39, so the sentence was still true about the pair it named
+and wrong about the situation — four orders are parked, not two, and the note
+reads as though the ones it lists are the whole set.
+
+Nothing catches this. The string is free text printed straight through by
+`vendor_triage.py`; no test compares it to the instance, and the stale half is
+the *specific*, checkable-looking half, which is exactly the part a reader
+trusts. That entry's own `_comment` already demands the label "tell the truth
+even while the policy is undecided" — enumeration is how it stops doing that,
+one order at a time.
+
+Fixed by deleting the enumeration: the reason now says *"no AliExpress order has
+a PO"*, which is a standing claim the policy itself guarantees. **A reason string
+should state the rule and point at the open decision; the instances belong in
+the query that finds them.** Same shape as the stale queue-A backlog figures in
+the task file — a number written down once, describing a set that keeps moving.
+
