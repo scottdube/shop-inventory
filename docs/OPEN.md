@@ -1881,11 +1881,16 @@ invisible; homelessness is a report.
       bound. `[ESTIMATE]`, no stocktake date.
 - [ ] **SAE bearing-ball assortment** (#1142) — 600 pc, six inch sizes.
       `[ESTIMATE]`, no stocktake date.
-- [ ] **XFFCSEC 150 pc 5x20 glass fuses**, 15 values 0.25-20 A — still on the
-      bench, uncatalogued. Unlike the other two this one has an obvious
-      electronics home near A3-R7C3 (mains-side protection), and it covers the
-      10 A the PWM controllers (#1138) take, so those boards gain an in-house
-      spares source.
+- [x] ~~XFFCSEC 150 pc 5x20 glass fuses~~ — filed 2026-08-28 into **L2-D2**
+      (#1143), one part not fifteen, `[ESTIMATE]`, no stocktake date.
+- [ ] **The rest of L2-D2 is uncatalogued.** Scott: *"I have more kits in D2, so
+      we're gonna have to deal with those later."* The drawer's description says
+      so explicitly, because a row count that understates a drawer is worse than
+      no description — an empty search result for L2-D2 must not read as an
+      empty drawer.
+- [ ] Kit boxes are now split across **L2-D2 and L2-D4**, and L2-D4 was already
+      described as the assortment-kit-box drawer. Worth settling which is the
+      real one before more kits land in whichever is nearer.
 
 ## Bench work still parked
 
