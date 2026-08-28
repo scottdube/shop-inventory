@@ -1804,6 +1804,21 @@ raster error rather than pointing at it.
 
 ## Bench work still parked
 
+- [ ] **Find the 2x RKJXT1F42001 nav switches** (stock #9). Either in the mobile
+      cart or already fitted into the G1000 panel of BO-0006 Cessna Flight
+      Simulator. **The two answers differ in kind**: in the cart they are stock
+      (2 on hand, available to another build); in the panel they are consumed
+      (quantity 0). Reading 2 in stock when they are soldered in is how a build
+      gets planned around parts that do not exist.
+- [ ] **Tapmatic No.90X** (stock #586, $2,005) — Mill Cart as a spindle
+      accessory, or TC-D1 with the tap wrenches? Left unfiled rather than
+      guessed.
+- [ ] **Two BT30 pull-stud rows** (#11, #14) — where studs live is a policy call,
+      not a tidy-up: CLAUDE.md's rule is that the HOLDER decides the knob.
+- [ ] **Four zero-quantity pull-stud rows** (#587-#590), two apparent duplicate
+      pairs. Read the notes BEFORE merging — this install deletes a stock row's
+      notes when it hits zero.
+
 - [ ] File the two bus caps — B3-R5C4 recommended (761 µF and 737 µF, both
       ~0.8% loss, 0.21 Ω ESR; tested 2026-08-23).
 - [ ] Measure the heatsink TO-220 hole spacing, then file to B3-R5C3.
