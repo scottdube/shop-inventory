@@ -6275,3 +6275,26 @@ row would have read as never-counted forever.
 
 Order to use: every `.save()`-based write FIRST, then the `.update()`s, then
 re-read and verify.
+
+
+## On a salvaged board, the rating is the LOWEST part, not the biggest one
+
+The two reversing PWM motor controllers (#1138) carry no model number and no
+printed rating anywhere. Identified from the silicon, three parts each imply a
+different supply ceiling:
+
+    STP75NF75 MOSFETs      75 V   <- the part everyone reads
+    bulk electrolytic      50 V
+    L7812CV regulator      35 V   <- the one that actually binds
+
+The FETs are what catch the eye, and they are the most misleading number on the
+board. The housekeeping regulator sits directly across the supply, so at 48 V it
+dies first and probably takes the LM324 with it while the FETs sit unbothered.
+
+Same shape on the current side: the fuse says 10 A, the FETs would pass eight
+times that, and the star heatsinks are small. 10 A is a thermal figure, not a
+silicon one, and fitting a bigger fuse buys nothing but smoke.
+
+**Rule: when a board has no printed rating, read EVERY part that touches the
+supply rail and take the minimum.** Reading only the power devices is how a
+board gets destroyed by a number that was true about one component.
