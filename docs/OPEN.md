@@ -1811,9 +1811,20 @@ a *place*, so the bin gets made when there is something to put in it.
 
 - [ ] Define the G1000's scope. Created so the work has somewhere to hang; what
       it actually covers is Scott's call.
-- [ ] Are there other sub-builds hiding inside BO-0006? The G1000 was invisible
-      until a filing question surfaced it. Radio stack, yoke, throttle quadrant,
-      instrument panel — each has the same "answerable on its own" test.
+- [ ] Other sub-builds are hiding inside BO-0006 — Scott, 2026-08-27: *"probably
+      plenty, its what happens when you try to rebuild history."* **Do not plan
+      an audit for these.** The G1000 was not found by reading BO-0006; it was
+      found because a physical item needed filing and had nowhere to point. A
+      retroactive catalogue cannot enumerate the structure it is missing, by
+      definition — you only learn a sub-build was missing when something asks to
+      belong to it.
+
+      So the discovery mechanism is the drawer walk, not a review, and the walk
+      is quietly doing two jobs. What that costs is a *prompt*: when a part's
+      home is "the X part of project Y" and Y has no X, that is the signal.
+      Radio stack, yoke, throttle quadrant, instrument panel are the likely
+      names — but wait to be asked rather than pre-creating empty builds, for
+      the same reason BO-0017 has no kit bin.
 
 ## Bench work still parked
 
