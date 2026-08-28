@@ -1869,6 +1869,24 @@ found it.
 - [ ] Banggood still has no company record. Keep the question, drop the
       priority: it was a guess, and the guess was wrong.
 
+## Homeless by design — L1-D2
+
+Parked 2026-08-28 at Scott's "L1D2 for now". Both carry **no default_location**
+deliberately: `default_location` is where a spare goes home, never a staging
+area, so leaving it empty keeps them visible as homeless. A wrong home is
+invisible; homelessness is a report.
+
+- [ ] **2020 T-nut assortment** (#1141) — hardware, wrong wall for electronics.
+      Its 120 is a pack figure and the box is visibly open, so it is an upper
+      bound. `[ESTIMATE]`, no stocktake date.
+- [ ] **SAE bearing-ball assortment** (#1142) — 600 pc, six inch sizes.
+      `[ESTIMATE]`, no stocktake date.
+- [ ] **XFFCSEC 150 pc 5x20 glass fuses**, 15 values 0.25-20 A — still on the
+      bench, uncatalogued. Unlike the other two this one has an obvious
+      electronics home near A3-R7C3 (mains-side protection), and it covers the
+      10 A the PWM controllers (#1138) take, so those boards gain an in-house
+      spares source.
+
 ## Bench work still parked
 
 - [ ] **Find the 2x RKJXT1F42001 nav switches** (stock #9). Either in the mobile
