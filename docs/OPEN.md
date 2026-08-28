@@ -1843,8 +1843,10 @@ a *place*, so the bin gets made when there is something to put in it.
       pairs. Read the notes BEFORE merging — this install deletes a stock row's
       notes when it hits zero.
 
-- [ ] File the two bus caps — B3-R5C4 recommended (761 µF and 737 µF, both
-      ~0.8% loss, 0.21 Ω ESR; tested 2026-08-23).
+- [x] ~~File the two bus caps~~ — done 2026-08-28 into **A3-R7C5**, not the
+      large B3-R5C4 first proposed. Scott: they fit a smaller drawer. Kept out
+      of the A3-R8 capacitor row deliberately: that row is 25-50 V signal parts
+      picked up bare-handed, and these are 400 V.
 - [ ] Measure the heatsink TO-220 hole spacing, then file to B3-R5C3.
 - [ ] RB-26 … RB-28 — never opened. (RB-18 … RB-24 walked 2026-08-25; see the table at the top of this file.)
 - [ ] Verify the acrylic is **cast, not extruded** (part #1083, L1-D3). The
