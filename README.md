@@ -8,6 +8,9 @@ agent doing the tedious parts overnight.
 Built over one long weekend in August 2026. Roughly 780 parts, 470 locations,
 and every workflow below was exercised on real parts before it was called done.
 
+*Shared as a worked example — see [Why this is public](#why-this-is-public) at
+the end if you are here from the club.*
+
 ## The problem
 
 A two-site home shop (electronics bench + CNC machine shop at one site, a
@@ -497,3 +500,56 @@ drifts: this catalogue already holds "Nyloc Nut 1/4-20, galvanized" and
 "Medium-Strength Steel Nylon-Insert Locknut, Grade 5", the same idea written two
 ways, and the matcher pays for it on every run. The composed name stays editable,
 because a funnel that cannot be overridden lies about the odd one out.
+
+
+## Why this is public
+
+This repository is tagged **`vhotsmcomp`**, the topic the Hands On Technology
+Small Computers group uses to find each other's projects. It is here as a
+**worked example, not a product**. Nothing in it is packaged for reuse — there
+is no installer, and the location codes and site names are specific to one
+shop. Copy the parts that fit and ignore the rest.
+
+The parts most likely to transfer are the ones that cost the most to learn:
+
+- **Locations are addresses, never contents** — the single decision everything
+  else rests on
+- **A pack is a supplier fact, not a part** — get this wrong and the pack price
+  gets booked against every piece
+- **Never invent a count** — a quantity nobody counted is how a stock system
+  starts lying
+- `docs/TRAPS.md` — every entry there was paid for once already, several of
+  them by a full day
+
+If you run InvenTree too, the traps file is probably worth more to you than the
+architecture.
+
+### The harder idea: sharing inventories
+
+The reason to want several members running something like this is not tidiness,
+it is the question *"does anyone already have one of these?"* — asked before
+somebody orders five from AliExpress and waits three weeks.
+
+Nothing is built for that yet. What follows is what would have to be true for it
+to work, written down so the next person does not have to rediscover it:
+
+**Share a list, not a database.** A full export publishes what you own and
+roughly what you paid. Most people will not do that, and adoption is the whole
+game. The version people actually use is a curated *"parts I would lend or give
+away"* list. Quantities and bin locations stay home.
+
+**Date every entry.** A shared list that says someone has five of something they
+used last month sends a member driving across town for nothing. Stale data is
+worse than no data, because it is trusted. The "as of" date belongs in front of
+the reader, not in a footnote.
+
+**Record the site, not just the owner.** Parts do not travel with people. Some
+of us keep stock at two addresses and move between them seasonally, so "X has
+one" is true and useless if the part is a thousand miles away this month. A
+schema without a location field will be quietly wrong for half the year.
+
+**Check the club's own tools first.** The HOT Reference Library already exists
+to help members find *persons, places and things*, and already records things
+like which members have which 3D printers. Parts are the same shape of problem.
+Extending something members already open beats a second system that has to earn
+its own audience.
