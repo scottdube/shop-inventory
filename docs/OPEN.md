@@ -1802,11 +1802,24 @@ raster error rather than pointing at it.
       overnight job's "last SUCCESSFUL read, not last run".
 - [ ] All labelling work is blocked until this is settled. See `LABELLING.md`.
 
+## Sim project structure
+
+**BO-0017 Sim G1000** created 2026-08-27 as a sub-build of BO-0006, mirroring
+BO-0015 Sim Rudder Pedals. **No kit bin yet** — BO-0015 has #588 because its
+parts were gathered; nothing has been gathered for the G1000. A location here is
+a *place*, so the bin gets made when there is something to put in it.
+
+- [ ] Define the G1000's scope. Created so the work has somewhere to hang; what
+      it actually covers is Scott's call.
+- [ ] Are there other sub-builds hiding inside BO-0006? The G1000 was invisible
+      until a filing question surfaced it. Radio stack, yoke, throttle quadrant,
+      instrument panel — each has the same "answerable on its own" test.
+
 ## Bench work still parked
 
 - [ ] **Find the 2x RKJXT1F42001 nav switches** (stock #9). Either in the mobile
-      cart or already fitted into the G1000 panel of BO-0006 Cessna Flight
-      Simulator. **The two answers differ in kind**: in the cart they are stock
+      cart or already fitted into the G1000 panel — now **BO-0017 Sim G1000**,
+      a sub-build of BO-0006. **The two answers differ in kind**: in the cart they are stock
       (2 on hand, available to another build); in the panel they are consumed
       (quantity 0). Reading 2 in stock when they are soldered in is how a build
       gets planned around parts that do not exist.
