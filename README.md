@@ -548,8 +548,20 @@ of us keep stock at two addresses and move between them seasonally, so "X has
 one" is true and useless if the part is a thousand miles away this month. A
 schema without a location field will be quietly wrong for half the year.
 
-**Check the club's own tools first.** The HOT Reference Library already exists
-to help members find *persons, places and things*, and already records things
-like which members have which 3D printers. Parts are the same shape of problem.
-Extending something members already open beats a second system that has to earn
-its own audience.
+**Look at what the club already built.** The HOT Reference Library was made to
+help members find *persons, places and things*, and already records things like
+which members have which 3D printers — parts are the same shape of problem, and
+somebody already thought this through once. It looked dormant when I went to
+check (unreachable in August 2026, source last updated in 2023), so this is not
+"go and extend it today". But a shared parts list is exactly the kind of reason
+a thing like that comes back, and reviving something members already know beats
+launching a second system that has to earn its own audience from scratch.
+
+**And whatever gets built has to outlive one person's interest.** The pattern to
+avoid is the one that keeps happening: a useful service on a single member's
+home hardware, behind a home internet connection, maintained by whoever built
+it. It works beautifully and then a router gets replaced, or somebody gets busy,
+and it quietly stops. If a shared inventory lives in repositories that members
+already own — discovered through a topic, hosted by nobody — there is nothing to
+go dark. That is a weaker system in every respect except the one that decides
+whether it still exists in three years.
