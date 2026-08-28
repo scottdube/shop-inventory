@@ -1883,11 +1883,21 @@ invisible; homelessness is a report.
       `[ESTIMATE]`, no stocktake date.
 - [x] ~~XFFCSEC 150 pc 5x20 glass fuses~~ — filed 2026-08-28 into **L2-D2**
       (#1143), one part not fifteen, `[ESTIMATE]`, no stocktake date.
-- [ ] **The rest of L2-D2 is uncatalogued.** Scott: *"I have more kits in D2, so
-      we're gonna have to deal with those later."* The drawer's description says
-      so explicitly, because a row count that understates a drawer is worse than
-      no description — an empty search result for L2-D2 must not read as an
-      empty drawer.
+- [ ] **The rest of L2-D2 is uncatalogued — roughly 10 items.** Scott showed the
+      open drawer 2026-08-28: *"I don't wanna get into it right now, but just to
+      give you an idea."* Contents are written into the location description so
+      the knowledge is not stuck in a photo. **It is a themed drawer — wire
+      termination and connectors** — not the "assortment kit boxes" first
+      assumed, which matters for where future terminations should land.
+
+      Seen: copper lugs; BaaLA 520 pc butt splices; InstallGear 180 pc; ferrule
+      assortment; loose heat shrink; innhom 532 pc heat shrink; a box labelled
+      "NO"; the fuse kit (#1143, done); a bagged connector; pin headers; PA2.0 /
+      XH 2.54 / PH 2.0 connector kits. One compartment empty.
+
+      Note when it is worked: heat shrink already exists as parts #504-#508 at
+      zero stock, and JST XH parts #875/#893/#894 live in a *kit* location — so
+      several of these will be merges, not new records.
 - [ ] Kit boxes are now split across **L2-D2 and L2-D4**, and L2-D4 was already
       described as the assortment-kit-box drawer. Worth settling which is the
       real one before more kits land in whichever is nearer.
