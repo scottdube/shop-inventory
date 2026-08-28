@@ -1839,17 +1839,35 @@ two-year-old order for a $27 item produced no PO and no supplier part until it
 was entered by hand on 2026-08-28. That is not a channel nobody looks at; it is a
 hole in the channel everyone assumes is covered.
 
-- [ ] **Why did the sweep miss a 2024-01-07 Amazon order?** Is there a date
-      horizon, a category filter, an order-type exclusion, or did it simply never
-      backfill that far? Answer this before adding more vendors — coverage of a
-      swept vendor is worth more than breadth across new ones.
-- [ ] **How many more like it?** Two invisible Amazon purchases surfaced today
-      alone (these motors, and the X27 steppers from 2023-07-19). Both were found
-      because a physical box appeared on the bench, which is not a search
-      strategy. The count of parts with a purchase history but no supplier part
-      is the cheap proxy — run it.
-- [ ] Banggood still has no company record. Keep the question, drop the priority:
-      it was a guess, and the guess was wrong.
+**MEASURED 2026-08-28** with `scripts/import_gap.py`, of the 507 parts carrying a
+seeded purchase-history block:
+
+    no PO line     475   94%   the money never became an order
+    no stock row   365   72%   bought, never recorded on hand
+    all three       25    5%   invisible unless a box turns up  ($467 lifetime)
+
+**The import creates a part and stops.** No purchase order, no stock row. So the
+catalogue says a thing exists and nothing says we own one — which is exactly how
+the X27 steppers read zero for three years with seven of them in a box.
+
+**And the 775s are a worse mode than any of those.** They were not in the 507:
+no part, no history block, nothing. The 2024-01-07 order was never imported at
+all.
+
+**That second mode cannot be measured from inside this system.** We can count
+parts with no stock; we cannot count orders never seen, because the only record
+of them is in the mail. The sole way one surfaces is a box on the bench — which
+is structurally why Scott had to go looking, and why no query here would have
+found it.
+
+- [ ] **Make the import create stock and a PO, not just a part.** 365 rows say
+      it should have been doing this all along. Backfill is a separate question
+      from stopping the bleeding.
+- [ ] **Reconcile against the order source, not against InvenTree.** Enumerate
+      Amazon orders from the mail and subtract what has a supplier part. That is
+      the only query that can find mode two, and it has to run from outside.
+- [ ] Banggood still has no company record. Keep the question, drop the
+      priority: it was a guess, and the guess was wrong.
 
 ## Bench work still parked
 
