@@ -6298,3 +6298,41 @@ silicon one, and fitting a bigger fuse buys nothing but smoke.
 **Rule: when a board has no printed rating, read EVERY part that touches the
 supply rail and take the minimum.** Reading only the power devices is how a
 board gets destroyed by a number that was true about one component.
+
+
+## The importer seeds one product as two parts — three times now
+
+Same shape each time: one part record created from the **purchase-history**
+block, another from the **listing text**, same product, same order, both left at
+zero stock so neither looks obviously wrong.
+
+    #26  / #153   BTS7960 43A H-bridge          merged
+    #57  / #152   IR slotted speed sensor       merged 2026-08-28
+    #29  / #428   ALEDECO PWM controller        STILL OPEN
+
+Three is a pattern, not a coincidence. The duplicates are hard to spot precisely
+because both rows read zero — nothing contradicts anything, there is just twice
+as much catalogue as there is shelf.
+
+Cheap detector: parts sharing a `last ordered` date whose names are near-
+duplicates. Better: fix the importer so purchase history and listing text
+converge on one record instead of racing to create two.
+
+## An inferred location is a guess wearing a fact's clothes
+
+Part #57 carried `Placed in B3-R3C1 (ICs) — INFERRED from the drawer label;
+verify.` Nobody verified it for two years. It is a slotted optical sensor on a
+carrier board with an LM393 and a header — Scott, 2026-08-28: *"I don't really
+see these as an IC. I see these more as a module."*
+
+An IC is a chip you solder down. The inference put a module in the drawer you
+would open looking for a chip, and the honest `verify` flag did not save it,
+because a flag nobody queries is a flag nobody reads.
+
+The B3-R4 sensor row shows the organising principle that should have applied:
+B3-R4C4 holds *"A1324LUA-T bare ICs + KY-024 breakout modules"* — same bin, both
+packages, sorted by **what it senses** rather than what shape it arrived in.
+
+Rule: an inferred placement is not a placement. Either verify it at the time or
+leave the part homeless, because homeless is visible on a report and a wrong
+home is not.
