@@ -6251,3 +6251,27 @@ should state the rule and point at the open decision; the instances belong in
 the query that finds them.** Same shape as the stale queue-A backlog figures in
 the task file — a number written down once, describing a set that keeps moving.
 
+
+
+## `.save()` after a queryset `.update()` silently reverts it
+
+Filing the X27 steppers, `stocktake_date` came back `None` from a write that
+reported success:
+
+    s = StockItem.objects.create(...)
+    StockItem.objects.filter(pk=s.pk).update(stocktake_date=TODAY)   # writes it
+    s.metadata = {...}
+    s.save()                        # writes the WHOLE row from `s`, which
+                                    # still has stocktake_date=None
+
+`.update()` goes straight to SQL and does not touch the in-memory instance, so
+the later `.save()` writes the stale field back over it. Neither call errors.
+
+This is the same shape as the `.save()`-writes-nothing trap already in this
+file, arriving from the opposite direction: there a save did nothing, here a
+save did too much. The rule that catches both is the one already written down —
+**re-read the row and assert**. The assert is what found this; without it the
+row would have read as never-counted forever.
+
+Order to use: every `.save()`-based write FIRST, then the `.update()`s, then
+re-read and verify.
