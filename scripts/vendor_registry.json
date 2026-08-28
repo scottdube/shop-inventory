@@ -22,7 +22,7 @@
   ],
   "not_actually_swept": {
    "_comment": "Domains that stay in 'known' (skip: the VENDOR question is settled or queued, do not re-ask it) but whose orders section 3 does NOT sweep, so nothing imports them. The old blanket 'already swept' label here produced the same journal contradiction four runs in a row (procedure-gap-aliexpress). The label must tell the truth even while the policy is undecided.",
-   "aliexpress.com": "known, NOT swept: platform-vendor policy is Scott's open decision (procedure-gap-aliexpress); no AliExpress order has a PO",
+   "aliexpress.com": "known, NOT swept YET: the POLICY is ruled (Scott 2026-08-28 - one PO per order number under Company #10; PO-0146..0149 prove the shape end to end). What is still missing is the task-file half: Section 3's itemised-vendor list in inventree-daytime-sweep/SKILL.md does not name AliExpress, so no sweep looks for it. Apply /private/tmp/aliexpress_section3_patch.md, then DELETE this entry and drop aliexpress.com from not_actually_swept.",
    "seeed.cc": "known, NOT swept: order emails carry numbers only, no line items (decision seeed-orders-no-po)",
    "jlcpcb.com": "known, NOT swept: no email-minable line items; parts entered by hand",
    "lcsc.com": "known, NOT swept: no email-minable line items",
