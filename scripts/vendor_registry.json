@@ -22,7 +22,7 @@
   ],
   "not_actually_swept": {
    "_comment": "Domains that stay in 'known' (skip: the VENDOR question is settled or queued, do not re-ask it) but whose orders section 3 does NOT sweep, so nothing imports them. The old blanket 'already swept' label here produced the same journal contradiction four runs in a row (procedure-gap-aliexpress). The label must tell the truth even while the policy is undecided.",
-   "aliexpress.com": "known, NOT swept: platform-vendor policy is Scott's open decision (procedure-gap-aliexpress); orders 8213410090395753/-415753 have no PO",
+   "aliexpress.com": "known, NOT swept: platform-vendor policy is Scott's open decision (procedure-gap-aliexpress); no AliExpress order has a PO",
    "seeed.cc": "known, NOT swept: order emails carry numbers only, no line items (decision seeed-orders-no-po)",
    "jlcpcb.com": "known, NOT swept: no email-minable line items; parts entered by hand",
    "lcsc.com": "known, NOT swept: no email-minable line items",
