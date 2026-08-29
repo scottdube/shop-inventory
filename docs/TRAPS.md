@@ -6488,3 +6488,34 @@ resolution that makes bare paths safe exists only for `run`:
 
 Fixing `push` to resolve like `run` would be the better repair; until then the
 asymmetry is the thing to remember, because nothing warns you.
+
+
+## Marking a PO Complete does not receive it — the parts just never appear
+
+Scott, 2026-08-29, on PO-0144: *"I marked the po complete but now dont see the
+parts anywhere what is the process I should have used?"*
+
+**COMPLETE IS A STATUS. RECEIVING IS AN ACTION.** They are separate, and only
+receiving creates stock. Both lines still read `received=0` with no destination
+while the order sat at Complete, so the nozzles were physically on the bench and
+nowhere in the system.
+
+Nothing errors. The order looks finished, the status is green, and the only
+symptom is stock that is not there — which is the same silent shape as every
+other failure in this file.
+
+**The sequence:**
+
+1. PO detail → **Line Items** tab
+2. Tick the lines → **Receive selected items**
+3. That dialog sets destination, quantity and status, creates the StockItems and
+   increments `received`
+4. When every line is fully received the order closes **itself**
+
+Marking Complete by hand is for an order that will never arrive, not for one
+that just did. If you have already done it, receiving still works — the status
+does not block it.
+
+**And check the price while receiving.** `receive_line_item()` ignores
+`pack_quantity` and can book a whole pack's price against a single piece. Assert
+`qty x unit == line extended total` before trusting either figure.
