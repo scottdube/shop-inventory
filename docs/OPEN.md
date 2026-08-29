@@ -1934,8 +1934,11 @@ two PayPal receipts. **No stock rows yet — no container.**
 
 - [ ] **Any container** for the BO-0017 kit and six stock rows follow. BO-0015
       uses a Sterilite 6qt on WS2-S4.
-- [ ] **Four boards missing** of the ten paid for — probably a second complete
-      NXi set, plus the GMA1347 faceplate, which IS still wanted.
+- [ ] **COUNT THE STACK.** FSD sold *designs*; JLCPCB made the boards. Order
+      `W202406142358683` was **10 pcs of the NXi shield**, so there is probably a
+      pile, not a single set. Nothing should be ordered until it is counted.
+- [ ] **Was the GMA1347 faceplate ever fabbed?** Design already paid for, so it
+      is a JLCPCB upload, not a repurchase.
 - [ ] **#1156 GMA1347 Control v2.2 and #1157 G1000 Control v2.3 have no target.**
       They are build #1's retrofit and Scott is not going back to it. Current
       products with an active community, so selling or giving them on is a real
