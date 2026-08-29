@@ -1934,9 +1934,12 @@ two PayPal receipts. **No stock rows yet — no container.**
 
 - [ ] **Any container** for the BO-0017 kit and six stock rows follow. BO-0015
       uses a Sterilite 6qt on WS2-S4.
-- [ ] **COUNT THE STACK.** FSD sold *designs*; JLCPCB made the boards. Order
-      `W202406142358683` was **10 pcs of the NXi shield**, so there is probably a
-      pile, not a single set. Nothing should be ordered until it is counted.
+- [x] ~~Shields counted~~ — 10 fabbed at JLCPCB, 7 unbuilt + 1 built + 2 sold.
+- [ ] **Find ~5 FSD boards** — 10 bought as physical PCBs, 5 on the bench.
+      Scott thinks the wire shelves. A search, not a purchase.
+- [ ] **Do we own the panel Gerbers?** Only the SHIELD was fabbed from Scott's
+      own files. Panels were bought finished, so more of them may only be
+      obtainable from FSD.
 - [ ] **Was the GMA1347 faceplate ever fabbed?** Design already paid for, so it
       is a JLCPCB upload, not a repurchase.
 - [ ] **#1156 GMA1347 Control v2.2 and #1157 G1000 Control v2.3 have no target.**
