@@ -1947,10 +1947,11 @@ two PayPal receipts. **No stock rows yet — no container.**
 - [x] ~~Design files~~ — retrieved 2026-08-29, attached to part #1153. 195MB
       ZIP: Gerbers, 69 STLs, laser files, 3 instruction PDFs. Folder is named
       **FSD G1000 v2.3**, matching the boards.
-- [ ] **Re-download the GMA1347 files.** The 2024 emailed link returns
-      "Invalid download link." — the TOKEN is stale, not the entitlement (the
-      two keys are different generations, so the store regenerated permissions).
-      My Account → Downloads mints a fresh one. Then attach to the part.
+- [ ] **Claim the GMA1347 download back.** Checked 2026-08-29: the account's
+      Downloads page lists ONLY FSD G1000 v2. The GMA1347 entitlement was
+      REMOVED — no fresh link can be minted. Paid $8.99, order #9581, PayPal
+      15K42283TC508724N, and FSD's own email says "Expires: Never". Support
+      ticket or Dave at shop@flightsimdiy.com.
 - [ ] **Check the FSD account for the current version.** Perpetual downloads are
       usually updated in place, so the 2024 entitlement may now hand over a
       NEWER revision than the v2.3 boards on the shelf. FSD publishes no version
