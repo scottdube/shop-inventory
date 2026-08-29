@@ -2047,3 +2047,26 @@ drawers are physically blank. Tape is finite; ask before running four.
 
 **B0-R2..R6 remain empty** (20 large drawers) and A0 is a whole untouched
 cabinet of 24. Cable expansion has somewhere to go.
+
+## Tormach passive probe is WIRELESS now — learned 2026-08-29
+
+Scott, on the 5-pin DIN cable found at the bench: *"that was from the Tormach
+passive probe before I converted it to wireless."*
+
+Nothing in InvenTree recorded the conversion, and nothing would have re-derived
+it — the probe kit (#567) still read as a stock item with no hint that its
+interface had changed. Now written onto stock #177 and onto the cable's own row.
+
+**The cable is kept, not scrapped, and kept WITH the probe** (Machine Shop,
+part #1161). It is the fallback if the wireless conversion is reverted or the
+wireless side fails, and a probe you cannot plug in is a probe you do not have.
+
+**It is deliberately NOT in the B0-R1 cable row.** That row is for
+general-purpose cables that serve whatever needs them. A dedicated instrument
+cable belongs with its instrument — separating them is how the instrument goes
+dead quietly.
+
+**Still unknown, worth capturing when convenient:** what the wireless conversion
+actually is (vendor kit or shop-built), and whether it has its own spares or
+batteries that should be stocked. A wireless probe has a failure mode a wired
+one does not.
