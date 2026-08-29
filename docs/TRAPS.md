@@ -6543,3 +6543,43 @@ answer "does this already exist" — that question needs all of them.
 
 Same family as the substring-marker trap: the tool quietly answers a narrower
 question than the one asked.
+
+
+## Renaming a location with queryset `.update()` leaves `pathstring` stale
+
+Renaming the superseded-FSD kit with
+`StockLocation.objects.filter(pk=592).update(name=NEW)` changed `name` and left
+`pathstring` reading the OLD name. The assert on `name` passed; the label and
+every breadcrumb kept showing the old text.
+
+`pathstring` is a denormalised field rebuilt by `save()`, and a queryset
+`.update()` goes straight to SQL without it. Nothing errors, and the row looks
+right if you only check the field you set.
+
+**Rename a location with `obj.save()`, not `.update()`** — the opposite of the
+rule everywhere else in this catalogue, where `.update()` is the safe path
+around the silent-save bug. The reason they differ: the silent-save trap is
+about a field not being written, this one is about a *derived* field not being
+recomputed.
+
+Fix for an already-stale row: fetch it and call `.save()` with no changes.
+
+Same family as the other write traps here: **assert the consequence, not the
+assignment.** `name` was correct and the thing that mattered was not.
+
+## A label that truncates can drop the only word that matters
+
+The kit was named `Kit - FSD G1000 Original (superseded)`. The 62 x 25 mm
+location label renders about 21 characters and printed:
+
+    Kit - FSD G1000 Origi...
+
+Which reads as the good stuff. The word that stops somebody fitting a dead
+board into a live build was the one that fell off the end.
+
+Renamed to `Kit - SUPERSEDED FSD G1000`, which truncates to
+`Kit - SUPERSEDED FSD ...` and still carries the warning.
+
+**Put the warning in the first 20 characters, not the last.** And look at a
+rendered label before printing — LABELLING.md already says so, and this is what
+it is for.
