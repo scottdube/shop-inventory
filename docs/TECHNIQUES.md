@@ -520,3 +520,23 @@ exists to dig out of.
 **The rule:** an assortment kit is for a capability you do not have. A
 single-size pack is for a shortage you have measured. Four kits deep, every
 metric shortage is the second kind.
+
+**Correction, same day — "duplication" was too strong.** Scott: *"none of them
+are the same. They're not all the same head types. There's some socket heads,
+there's some button heads."* He is right, and it changes the model: an M2 x 16
+socket cap is NOT the M2 x 16 button head sitting one box over. Head height,
+drive tool and clearance all differ, and behind a faceplate that decides
+whether the part fits.
+
+So a kit is only duplication when it repeats a size **in a head you already
+have**. The buy-the-size rule survives — but the size you buy now has two
+axes, and **the head has to be chosen deliberately, not accepted from
+whatever the pack happens to be.**
+
+**This forced a fix to the kit locations.** They were named for the brand, so a
+search for `M2 x 8` returned three boxes with no way to tell they held three
+different screws. Head type is now the FIRST thing in every location name
+(`Socket cap - NINDEJIN`, `Button hex - HPGJLEE`) and is repeated against every
+individual size in the description, so `M2 x 8 socket cap` resolves to exactly
+one box. Head-first also survives label truncation, which eats the end of the
+string.
