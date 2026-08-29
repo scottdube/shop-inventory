@@ -6378,3 +6378,68 @@ Rules:
   them, to write a more detailed line by hand, trades a cheap automatic check
   for an expensive manual one — and the detail is worthless if the premise is
   wrong.
+
+## A vendor's 404 page is not proof of a 404 — the instrument decides the answer
+
+2026-08-29, queue A. `harvest_amazon_images.py` on the Mini stopped itself after
+three challenge-shaped 3781-char pages. Fine — that guard works. The mistake was
+what I reached for next: an **in-page same-origin `fetch()`** to
+`amazon.com/dp/<ASIN>` from a logged-in tab, on the theory that it would carry
+the session and settle liveness for all 18 backlog ASINs in one call.
+
+It returned a 2296-byte "Page Not Found" for **all 18** — including
+`B08NTK8JXZ`, whose real product page I had loaded successfully in that same tab
+about ninety seconds earlier, 2.2 MB with a `hiRes` URL. Amazon serves the
+Dogs-of-Amazon page to XHR regardless of whether the product exists.
+
+Had I trusted it, I would have written "all 18 delisted" into the journal, and
+the next run would have read that as settled state — the exact
+out-journalling-a-verified-section failure this project has already paid for
+once.
+
+Re-tested all 18 by **real navigation**: 17 genuinely dead, 1 live. So the
+08-28 run's delisted finding was right, but it had been established with
+`urllib` — the *same class* of instrument that just produced a false positive.
+It was right by luck of the draw, not by evidence, until a browser confirmed it.
+
+- **`fetch`/XHR and `urllib` are the same instrument** for this purpose. Two of
+  them agreeing is one experiment run twice.
+- Real navigation is the only instrument shown to distinguish a dead ASIN from a
+  defended one. Use it before writing "delisted" anywhere.
+- Corollary, measured the same night: the Mini's plain-curl path to
+  `amazon.com/dp/` is **defended again**, which contradicts the task file's
+  section headed "SUPERSEDED 2026-08-24 — the Mini is no longer bot-challenged".
+  The CDN (`m.media-amazon.com`) is still open from the Mini. Browser for the
+  URL, Mini for the bytes — the shape the file describes as the old way.
+
+## A photo filed under a different part number is a wrong photo
+
+Same run. Three near-misses, all of which look like a hit if you check only
+whether an image came back:
+
+- **DigiKey**, `ILS-TB250-50` — `og:image` is `MFG_ILS TA180 40.jpg`. A
+  different part in the same C&K series.
+- **Mouser**, `MPXV6115VC6U` — `og:image` is `482a-01.JPG`, a Freescale **case
+  outline** shared by every part in that package.
+- A DigiKey detail URL built by hand from the part number,
+  `/products/detail/c-k/ILSTB25050/1140102`, resolved to an **onsemi
+  MJD2955T4G**. Distributor detail URLs carry an opaque id; never construct one.
+  Let the keyword search redirect and read where it lands.
+
+The cheap test that catches all three: **look at the image's own filename.** When
+it names the exact MPN (`RKJXT1F42001.jpg`, `M5x9.5_50_1.png`) the match is
+provable. When it names a package, a series, or nothing, the slot stays empty.
+
+Two smaller findings from the same queue:
+
+- Shopify **content-negotiates**: a `.png` URL hands back `.webp` unless the
+  `Accept` header refuses it. `/products/<handle>.js` is the clean way in — it
+  gives `featured_image` per product, and CNC Kitchen's filenames carry the
+  insert size, which is what made 11 of those matches provable.
+- eBay item pages keep rendering after a listing **ends**, which is a gift: the
+  item id on file is the listing Scott actually bought from, so `s-l1600.jpg`
+  off an ended listing is a photo of the exact item, better than any current
+  catalogue shot.
+- Mouser **hotlink-blocks the Mini** on `mouser.com/images` (13 897 bytes of
+  `text/html`, with or without a `Referer`). Pull those bytes through the
+  browser instead.
