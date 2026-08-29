@@ -1935,12 +1935,12 @@ two PayPal receipts. **No stock rows yet — no container.**
 - [ ] **Any container** for the BO-0017 kit and six stock rows follow. BO-0015
       uses a Sterilite 6qt on WS2-S4.
 - [x] ~~Shields counted~~ — 10 fabbed at JLCPCB, 7 unbuilt + 1 built + 2 sold.
-- [ ] **One board missing, not five** — the second G1000 Control Board v2.3.
-      The earlier count forgot that the BUILT display contains boards. And it is
-      an orphan anyway (Peter's shield replaces it), so this is tidiness.
-- [ ] **"Build #3" is really display two of one cockpit.** A G1000 suite is
-      PFD + MFD sharing one GMA1347. The bench panels are the second display,
-      not a second unit.
+- [x] ~~Missing boards~~ — NOTHING MISSING, Scott counted 2026-08-29. Three
+      receipt-derived counts in docs/G1000.md were wrong first. Receipts give
+      provenance, not quantity; count the pile.
+- [ ] **Next build is the PFD (left)** — Peter's shield plus the left/right/
+      softkey daughter boards already on the bench. MFD and GMA1347 are built.
+      Six spare shields remain after it.
 - [x] ~~Do we own the panel Gerbers~~ — YES, FSD downloads, "Expires: Never".
       Anything can be re-fabbed.
 - [ ] **Check the FSD account for the current version.** Perpetual downloads are
