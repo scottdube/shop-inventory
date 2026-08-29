@@ -6443,3 +6443,48 @@ Two smaller findings from the same queue:
 - Mouser **hotlink-blocks the Mini** on `mouser.com/images` (13 897 bytes of
   `text/html`, with or without a `Referer`). Pull those bytes through the
   browser instead.
+
+## `itq push` has NO repo resolution — only `run` does (2026-08-29)
+
+The two-`scripts/` trap above establishes that `itq run scripts/foo.py` resolves
+a bare relative path against `~/code/shop-inventory` "always, regardless of the
+shell's cwd". True — and the reason it is safe to type a bare path.
+
+**That guarantee is implemented in the `run` branch alone** (`itq:46-57`).
+`push` is three lines with no resolution at all (`itq:100-104`) — it hands `$1`
+straight to `scp`, so it is plain cwd-relative:
+
+```
+$ cd ~/code/sln-ha-config
+$ itq push scripts/vendor_registry.json /tmp/vendor_registry.json
+scp: stat local "scripts/vendor_registry.json": No such file or directory
+```
+
+**Why it bites rather than merely failing:** the habit `run` teaches is "bare
+relative paths are safe, cwd does not matter." Carry that to `push` and it is
+wrong — but only *sometimes*, because from inside `~/code/shop-inventory` the
+cwd-relative path resolves to the same file. It works every time you happen to
+be in the repo and fails the first time you are not. Here it failed from
+`sln-ha-config`, mid-way through a two-command sequence, which read as "the
+patch didn't apply" when in fact step one had fully succeeded and only the push
+had not.
+
+**The daytime-sweep task file propagates the wrong belief.** Its section-4 note
+reads:
+
+> `itq push scripts/vendor_registry.json /tmp/vendor_registry.json` (run from
+> `~/code/shop-inventory`; itq resolves bare relative paths against that repo)
+
+The parenthetical is a true statement about `run` attached to a `push` command,
+where it does not hold. The "run from `~/code/shop-inventory`" half is the only
+load-bearing part, and it reads as an aside rather than a requirement.
+
+**Use an absolute path for `push`, `pull` and `png` local operands** — the
+resolution that makes bare paths safe exists only for `run`:
+
+```
+~/code/scripts/itq push ~/code/shop-inventory/scripts/vendor_registry.json /tmp/vendor_registry.json
+```
+
+Fixing `push` to resolve like `run` would be the better repair; until then the
+asymmetry is the thing to remember, because nothing warns you.
