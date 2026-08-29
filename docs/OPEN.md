@@ -1902,24 +1902,30 @@ invisible; homelessness is a report.
       described as the assortment-kit-box drawer. Worth settling which is the
       real one before more kits land in whichever is nearer.
 
-## Vacuum table gasket — requirement known, answer not
+## Vacuum table gasket — ANSWERED, and the answer was already on the shelf
 
-Scott, 2026-08-29: the uxcell solid NBR cord (#1149) was bought for **vacuum
-table gasketing and rejected as too rigid**. Recorded on the part with what
-eliminated it, so it is not re-bought.
+The uxcell solid NBR cord (#1149) was bought for vacuum table gasketing and
+rejected as **too rigid**. From that failure the requirement was written down:
+soft closed-cell sponge, low compression force, not solid rubber, not open-cell.
 
-The requirement is now defined by that failure: a vacuum table seals under
-atmospheric pressure only — about 14 psi spread over the whole area, very little
-force at any one point — so the gasket must **conform to a workpiece that is
-never flat**. It needs closed-cell foam or sponge cord, soft and low
-compression-force. Solid rubber of any hardness is ruled out; open-cell foam is
-wrong the other way, because it leaks through itself.
+**Scott had already bought exactly that a year earlier.** Canal Rubber, ordered
+2025-07-31, never used, now catalogued:
 
-- [ ] Source a soft closed-cell/sponge cord if the vacuum table is still live.
-      Silicone sponge or closed-cell neoprene. **Do not buy solid cord again.**
-- [ ] No vacuum-table build order exists. #1097 vacuum gauge sits in RB-17 and
-      the MPXV6115VC6U vacuum sensor is for the same area — that is at least two
-      parts pointing at a project with no record, the same shape as the G1000.
+- **#1150** closed-cell neoprene sponge cord, 1/8 in, 100 ft, $24.84
+- **#1151** closed-cell neoprene sponge cord, 3/16 in, 100 ft, $37.26
+
+Nothing connected the requirement to the answer because the purchase had never
+reached the catalogue. That is the import gap costing real time, not just tidiness.
+
+**Reorder path recorded on both parts and on the supplier**, at Scott's
+insistence: Canal Rubber, 329 Canal St NY, 212-226-7339, contact Marty, **no
+online cart** — they cut to length and take a card by phone. Their published web
+prices are explicitly not current. **A Canal Rubber purchase can never be found
+by a mail sweep**, because there is no confirmation email to find; the catalogue
+record is the only record there will be.
+
+- [ ] Vacuum table project is on hold and has no build order — Scott: "don't
+      need one yet." When it starts, the gasket question is closed.
 
 ## Bench work still parked
 
