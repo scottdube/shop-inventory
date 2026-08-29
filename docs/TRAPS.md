@@ -6519,3 +6519,27 @@ does not block it.
 **And check the price while receiving.** `receive_line_item()` ignores
 `pack_quantity` and can book a whole pack's price against a single piece. Assert
 `qty x unit == line extended total` before trusting either figure.
+
+
+## A truncated query is not a search — three misses in one day
+
+Every one of these was a confident "not in the catalogue" produced by a script
+that printed only the first N rows:
+
+    [:6]   on a part search      -> missed #272 and #255, and a duplicate
+                                    micro-HDMI part was created
+    [:14]  on the supplier list  -> concluded DigiKey did not exist. It does,
+                                    with 2 parts
+    [:5]   on a category listing -> reported "none" for a populated set
+
+The slice is there to keep console output readable, which is a real need — and
+it silently converts "here are the first few" into "here is everything" at the
+call site where the conclusion gets drawn.
+
+**Print the total before the rows, always.** `f"{qs.count()} matches"` then the
+slice. A count that does not match the number of lines on screen is visible;
+a missing row is not. Better still, do not slice a search whose purpose is to
+answer "does this already exist" — that question needs all of them.
+
+Same family as the substring-marker trap: the tool quietly answers a narrower
+question than the one asked.
