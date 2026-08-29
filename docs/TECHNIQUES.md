@@ -458,3 +458,44 @@ agreed with a caliper reading taken independently — 7.28 mm ID, which is a 1/4
 SAE flat washer at 7.14 mm and not an M6 at 6.60 mm. Two unrelated properties
 pointing the same way is worth far more than either alone; either could be
 explained away, both together cannot.
+
+## Assortment kits: the box is a location, a size is a part only once counted
+
+Four screw kits surfaced in one afternoon, none catalogued, and a correct query
+had already answered "no M2 screws" while 4,252 of them sat in a drawer. The
+scheme that fixed it, approved by Scott 2026-08-29:
+
+**1. Each kit is a StockLocation**, nested under the drawer it lives in
+(`L1-D2/NINDEJIN M2/M2.5 kit`). Its description lists every size the lid claims,
+marked `LID CLAIMS - NOT COUNTED`.
+
+**2. A size becomes a Part only when somebody has counted that bin**, with a
+tallied stock row located in the kit. Nothing else gets a part.
+
+**3. Sizes graduate through use.** Draw from a bin for a job, count what is
+left, and that size becomes a part. The data gets accurate exactly where the
+shop actually shops.
+
+**Why not the alternatives.** Exploding all four kits is ~100 parts and needs
+counts nobody has — inventing them is the failure this whole scheme exists to
+prevent. Creating parts at quantity zero for uncounted sizes is worse than
+nothing: a zero reads as *we have none*, which is the confident false negative
+that nearly triggered a needless order.
+
+### SPELL EVERY SIZE OUT IN FULL, or the search silently fails
+
+The first version wrote contents as `M2 x 3, 4, 5, 6, 8, 10, 12`. Searching
+`M2 x 5` then found **nothing** — only the first size in each list is literally
+present, so every other size is invisible to a substring search. The scheme
+looked like it worked because the counted parts still resolved.
+
+Write `M2 x 3, M2 x 4, M2 x 5, ...`. Verbose, and the whole point.
+
+**Test it by looping over every size on every lid** and asserting each resolves
+to a box — 40/40 here. A description that reads correctly to a human can still
+be unsearchable, and only the loop tells you which.
+
+**What the scheme deliberately will not do:** give a number for an uncounted
+size. The answer is *"the NINDEJIN kit in L1-D2 says it has some"*, which is
+true and enough to walk to the drawer. Replacing a confident no with an honest
+probably is the entire gain.
