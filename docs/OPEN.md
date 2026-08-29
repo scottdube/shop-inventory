@@ -1927,6 +1927,24 @@ record is the only record there will be.
 - [ ] Vacuum table project is on hold and has no build order — Scott: "don't
       need one yet." When it starts, the gasket question is closed.
 
+## G1000 / BO-0017 — see docs/G1000.md
+
+Six bare PCBs catalogued 2026-08-29 (#1152-#1157) with provenance recovered from
+two PayPal receipts. **No stock rows yet — no container.**
+
+- [ ] **Any container** for the BO-0017 kit and six stock rows follow. BO-0015
+      uses a Sterilite 6qt on WS2-S4.
+- [ ] **Four boards missing** of the ten paid for — probably a second complete
+      NXi set, plus the GMA1347 faceplate, which IS still wanted.
+- [ ] **#1156 GMA1347 Control v2.2 and #1157 G1000 Control v2.3 have no target.**
+      They are build #1's retrofit and Scott is not going back to it. Current
+      products with an active community, so selling or giving them on is a real
+      option beside keeping or binning.
+- [ ] **Shopping for build #3:** 2x MEGA 2560 PRO (#74) and 2x 74HC4067
+      (#21/#436), all at zero stock. LM2596 is covered — 15 at A3-R7C2.
+- [ ] #21 and #436 look like the same 4067 breakout twice — fourth duplicate
+      pair of that shape found today.
+
 ## Bench work still parked
 
 - [ ] **Find the 2x RKJXT1F42001 nav switches** (stock #9). Either in the mobile
