@@ -1944,6 +1944,13 @@ two PayPal receipts. **No stock rows yet — no container.**
       Six spare shields remain after it.
 - [x] ~~Do we own the panel Gerbers~~ — YES, FSD downloads, "Expires: Never".
       Anything can be re-fabbed.
+- [x] ~~Design files~~ — retrieved 2026-08-29, attached to part #1153. 195MB
+      ZIP: Gerbers, 69 STLs, laser files, 3 instruction PDFs. Folder is named
+      **FSD G1000 v2.3**, matching the boards.
+- [ ] **The GMA1347 download 404s** despite "Expires: Never". Paid for; chase it
+      via the FSD account Downloads page or Dave. One of two perpetual links had
+      already rotted before anyone checked — which is why the surviving one is
+      now stored locally rather than linked.
 - [ ] **Check the FSD account for the current version.** Perpetual downloads are
       usually updated in place, so the 2024 entitlement may now hand over a
       NEWER revision than the v2.3 boards on the shelf. FSD publishes no version
