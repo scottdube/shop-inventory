@@ -1932,8 +1932,9 @@ record is the only record there will be.
 Six bare PCBs catalogued 2026-08-29 (#1152-#1157) with provenance recovered from
 two PayPal receipts. **No stock rows yet — no container.**
 
-- [ ] **Any container** for the BO-0017 kit and six stock rows follow. BO-0015
-      uses a Sterilite 6qt on WS2-S4.
+- [x] ~~Container~~ — done 2026-08-29. Working set on the mobile cart at MC-T3
+      with the Cessna parts; spares in a new bin, WS2-S4/Sim G1000 Spares, on
+      the wire shelves. Seven stock rows placed.
 - [x] ~~Shields counted~~ — 10 fabbed at JLCPCB, 7 unbuilt + 1 built + 2 sold.
 - [x] ~~Missing boards~~ — NOTHING MISSING, Scott counted 2026-08-29. Three
       receipt-derived counts in docs/G1000.md were wrong first. Receipts give
