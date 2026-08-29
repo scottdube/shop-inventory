@@ -1902,6 +1902,25 @@ invisible; homelessness is a report.
       described as the assortment-kit-box drawer. Worth settling which is the
       real one before more kits land in whichever is nearer.
 
+## Vacuum table gasket — requirement known, answer not
+
+Scott, 2026-08-29: the uxcell solid NBR cord (#1149) was bought for **vacuum
+table gasketing and rejected as too rigid**. Recorded on the part with what
+eliminated it, so it is not re-bought.
+
+The requirement is now defined by that failure: a vacuum table seals under
+atmospheric pressure only — about 14 psi spread over the whole area, very little
+force at any one point — so the gasket must **conform to a workpiece that is
+never flat**. It needs closed-cell foam or sponge cord, soft and low
+compression-force. Solid rubber of any hardness is ruled out; open-cell foam is
+wrong the other way, because it leaks through itself.
+
+- [ ] Source a soft closed-cell/sponge cord if the vacuum table is still live.
+      Silicone sponge or closed-cell neoprene. **Do not buy solid cord again.**
+- [ ] No vacuum-table build order exists. #1097 vacuum gauge sits in RB-17 and
+      the MPXV6115VC6U vacuum sensor is for the same area — that is at least two
+      parts pointing at a project with no record, the same shape as the G1000.
+
 ## Bench work still parked
 
 - [ ] **Find the 2x RKJXT1F42001 nav switches** (stock #9). Either in the mobile
