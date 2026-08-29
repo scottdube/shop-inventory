@@ -6583,3 +6583,24 @@ Renamed to `Kit - SUPERSEDED FSD G1000`, which truncates to
 **Put the warning in the first 20 characters, not the last.** And look at a
 rendered label before printing — LABELLING.md already says so, and this is what
 it is for.
+
+## Not everything on a shelf was bought, so not everything has a receipt
+
+Tracking down the provenance of Peter Eier's G1000 shield started with a
+mailbox search for the purchase. There wasn't one. Two searches and a web
+search later, the files turned out to be sitting in Google Drive the whole
+time, complete, in a folder named `Littlehelpers G1000 shield`.
+
+The word that misled was Scott's own, in a 2024 email to FSD: *"I just ordered
+your G1000 PCBs and then **ordered** littlehelpers shield."* What he ordered
+was the **fab run at JLCPCB** — the design itself came free, apparently over
+Discord.
+
+**A community design leaves no vendor account, no order number, and no
+download page.** Every recovery path that worked for FSD is unavailable, which
+inverts the risk: the local copy is not a backup, it is the master.
+
+**Search the disk before the mailbox.** `mdfind` answered in one call what
+three mailbox and web searches could not, because the artifact is a file, not
+a transaction. Receipts prove purchases; Spotlight proves possession, and
+possession is the question.
