@@ -6604,3 +6604,24 @@ inverts the risk: the local copy is not a backup, it is the master.
 three mailbox and web searches could not, because the artifact is a file, not
 a transaction. Receipts prove purchases; Spotlight proves possession, and
 possession is the question.
+
+## "Not in stock" from a correct query still means "not in the database"
+
+The G1000 fastener check searched wide, printed totals before rows, and
+reported truthfully that **no M2 screw existed**. Scott then put two M2
+assortment kits on the bench — a binifiMux 920 pc and an HPGJLEE 1200 pc,
+neither catalogued.
+
+The query was not the problem. Every lesson already written here about
+truncated and over-specific searches was applied, and the answer was still
+wrong, because **the shop is the territory and InvenTree is the map.**
+
+**So say which one you checked.** "No M2 screws are catalogued" is true and
+useful. "There is not one M2 screw in the shop" claims something the database
+cannot know. The difference matters most when the answer drives a purchase:
+the first invites a look on the bench, the second sends money out the door.
+
+Assortment kits are the worst case for this. They are bought once, live in a
+drawer for years, and their contents are named on a card rather than in any
+part record — so they are simultaneously the most likely thing to already own
+and the least likely thing to be catalogued.
