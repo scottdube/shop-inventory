@@ -2017,3 +2017,33 @@ Recorded as [Jet Mill/Drill Automated Head Mover](http://192.168.50.10:8001/web/
 Wants: the machine itself in the equipment documentation, and enough of the
 head mover written down — motor, drive ratio, sprockets, control — that the
 next repair does not start from a photograph.
+
+## Cable consolidation — B0-R1 started 2026-08-29, DELIBERATELY UNFINISHED
+
+Scott: *"R1 sounds good, hold off for now on the rest but don't lose track of
+it."* So this is parked, not dropped.
+
+**Done:** `B0-R1C1` HDMI / `C2` USB / `C3` video-display-other / `C4` power &
+misc, all described. The micro-HDMI adapter (#1145, stock #731) moved out of
+B3-R5C1 into `B0-R1C1` and its `default_location` follows.
+
+**NOT done — the sweep.** Assembled cables are still findable in four places,
+which is the problem B0-R1 exists to end:
+
+| Item | Currently | Belongs |
+|---|---|---|
+| IR Emitter Cable IR-TX1-M, dual head | `B3-R4C6` | `B0-R1C4` |
+| IR Emitter Cable, Logitech Harmony, single head | `B3-R4C6` | `B0-R1C4` |
+| Adafruit STEMMA QT / Qwiic Cable, JST SH 4-pin | `B3-R3C5` | `B0-R1C3` or leave |
+| SMA Female to U.FL/IPEX Pigtail | `A3-R6C6` | `B0-R1C3` or leave |
+| Ribbon Cable jumper wires x4 | `MC-T1` | LEAVE — mobile cart working set |
+
+**Not free to do**, which is why it is parked: every one of these currently fits
+where it is, so the move buys consistency and costs handling. Worth doing when
+the next cable arrives and the row has to be walked anyway.
+
+**Also pending:** labels for `B0-R1C1..C4` — created but never printed, so the
+drawers are physically blank. Tape is finite; ask before running four.
+
+**B0-R2..R6 remain empty** (20 large drawers) and A0 is a whole untouched
+cabinet of 24. Cable expansion has somewhere to go.
