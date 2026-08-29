@@ -6336,3 +6336,45 @@ packages, sorted by **what it senses** rather than what shape it arrived in.
 Rule: an inferred placement is not a placement. Either verify it at the time or
 leave the part homeless, because homeless is visible on a report and a wrong
 home is not.
+
+## "No PO" is not "not bought" — ask the stock before crying missed purchase
+
+2026-08-28, the 22:40 sweep. `po_check.py` returned `absent` for eBay order
+09-14960-44072 (a 3000W induction heater ZVS kit) under all three spellings of
+the reference. I queued it as a **missed purchase** that had slipped past weeks
+of sweeps. Scott: *"the ebay order is definitely in stock, it was exploded to
+the component parts."*
+
+He was right. Part #100 reads qty=0 only because it was **exploded**, and its
+eight children are all on the shelf at qty=1 — #1099 WMY-TECH ZVS module (the
+seller was `szwmy-tech`), #1100 work coil, #1101 pump, #1102 adapter, #1103
+tubing, #1104 R48-3000e3 rectifier, #1105 breaker, #1106 ammeter. Nothing was
+missing from inventory. What was missing was only the **cost history**.
+
+The same turn produced a second, worse one. I queued "MFC Machining & Design
+Services" as an *unknown vendor* off a Shop Pay instalment. Company #31 already
+existed, `is_supplier=True`, with **PO-0140** — and PO-0140's own notes said, in
+so many words, that the $94.98 Affirm figure is one instalment of four and not a
+price. A previous run had already found it, priced it, and written the warning
+down. I re-surfaced it as news.
+
+**Both had the same root cause: I asked the PO table a question and then stopped
+asking.** One `part_find` and one `Company` lookup would have killed both items
+before they reached the queue. `vendor_triage.py` grew an idempotency check on
+2026-08-27 for exactly this failure — and I bypassed it by hand-writing the
+`decide.py --add` lines instead of letting the classifier emit them.
+
+Rules:
+
+- **Before calling anything a missed purchase, look for the STOCK.** A parent at
+  qty=0 with children at qty>0 is an explode, not an absence. `po_check absent`
+  + stock present = a cost-history gap, which is a small thing, not a lost order.
+- **Before calling any vendor unknown, look for the COMPANY.** The sender domain
+  is a payment platform far more often than it is a vendor, and the registry is
+  not the only place a vendor can already be known.
+- **Read the existing PO's notes.** Previous runs leave the answer there
+  deliberately. PO-0140 had already answered the exact question I asked.
+- A decision item costs Scott real attention. Bypassing the tool that dedupes
+  them, to write a more detailed line by hand, trades a cheap automatic check
+  for an expensive manual one — and the detail is worthless if the premise is
+  wrong.
