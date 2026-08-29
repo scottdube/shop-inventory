@@ -499,3 +499,24 @@ be unsearchable, and only the loop tells you which.
 size. The answer is *"the NINDEJIN kit in L1-D2 says it has some"*, which is
 true and enough to walk to the drawer. Replacing a confident no with an honest
 probably is the entire gain.
+
+### When short one size, buy that size — not another assortment kit
+
+Scott, 2026-08-29, needing M2 x 5: *"six fifty to seven fifty for fifty, or you
+can buy a whole assortment again, another kit for ten bucks. I don't know what
+the right thing to do is."*
+
+**Buy the 50-pack.** Per-piece price is not value. The kit's extra 1,250 pieces
+are M2 x 8 / 12 / 16 / 20 already sitting in four other boxes in the same
+drawer, so the marginal gain over the single-size pack is roughly nothing, and
+it costs a drawer slot in the constraint that actually binds this shop.
+
+**The database argument points the same way**, which is what makes it a rule
+rather than a preference. A single-size pack arrives as **one part with a real
+count** — it makes the system more truthful. A kit arrives as another location
+full of lid-claims nobody has counted, which is the state this whole convention
+exists to dig out of.
+
+**The rule:** an assortment kit is for a capability you do not have. A
+single-size pack is for a shortage you have measured. Four kits deep, every
+metric shortage is the second kind.
