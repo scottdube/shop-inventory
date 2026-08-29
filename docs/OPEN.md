@@ -1937,9 +1937,13 @@ two PayPal receipts. **No stock rows yet — no container.**
 - [x] ~~Shields counted~~ — 10 fabbed at JLCPCB, 7 unbuilt + 1 built + 2 sold.
 - [ ] **Find ~5 FSD boards** — 10 bought as physical PCBs, 5 on the bench.
       Scott thinks the wire shelves. A search, not a purchase.
-- [ ] **Do we own the panel Gerbers?** Only the SHIELD was fabbed from Scott's
-      own files. Panels were bought finished, so more of them may only be
-      obtainable from FSD.
+- [x] ~~Do we own the panel Gerbers~~ — YES, FSD downloads, "Expires: Never".
+      Anything can be re-fabbed.
+- [ ] **Check the FSD account for the current version.** Perpetual downloads are
+      usually updated in place, so the 2024 entitlement may now hand over a
+      NEWER revision than the v2.3 boards on the shelf. FSD publishes no version
+      numbers publicly. Free to check, and it decides whether the shelf stock is
+      already superseded.
 - [ ] **Was the GMA1347 faceplate ever fabbed?** Design already paid for, so it
       is a JLCPCB upload, not a repurchase.
 - [ ] **#1156 GMA1347 Control v2.2 and #1157 G1000 Control v2.3 have no target.**
