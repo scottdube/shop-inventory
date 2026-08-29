@@ -6625,3 +6625,18 @@ Assortment kits are the worst case for this. They are bought once, live in a
 drawer for years, and their contents are named on a card rather than in any
 part record — so they are simultaneously the most likely thing to already own
 and the least likely thing to be catalogued.
+
+## Do not describe where a drawer is — the label already says
+
+Told Scott the cable went in "the top-left drawer" of B0. That was inferred
+from a grid in the database, not observed, and the cabinets are photographed at
+an angle that makes R and C read the opposite way round. The claim could not be
+checked and did not need to exist.
+
+**Every bin-wall drawer carries a printed QR + text label with its own code.**
+So the useful answer is the code — `B0-R1C1` — and nothing else. Adding a
+physical position converts a verifiable fact into an unverifiable one, and if
+the position is wrong it overrides the correct code in the reader's head.
+
+Same rule as the counting one, in a different coat: say the thing the evidence
+supports. The database knows codes and contents; it does not know left.
