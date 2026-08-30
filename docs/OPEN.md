@@ -2066,7 +2066,20 @@ general-purpose cables that serve whatever needs them. A dedicated instrument
 cable belongs with its instrument — separating them is how the instrument goes
 dead quietly.
 
-**Still unknown, worth capturing when convenient:** what the wireless conversion
-actually is (vendor kit or shop-built), and whether it has its own spares or
-batteries that should be stocked. A wireless probe has a failure mode a wired
-one does not.
+**The battery question was already answered, five days before I asked it.**
+Stock #92, `LiPo Battery 3.7V 750mAh 902040`, is recorded 2026-08-25 as
+`belongs_to` the probe kit — structurally installed, not merely noted, with
+`location: None` as the correct state for a fitted part. Scott, 2026-08-29:
+*"there's a lipo recently replaced and the part was actually cycled thru
+InvenTree."* Correct, and it is the model for how a consumable inside a tool
+should be recorded.
+
+**Search the database before raising an open question.** The battery, the DIN
+cable in the standing desk (#786) and the 6-20P plug were all handled the same
+careful way in August, and the note on each says so.
+
+**OPEN — count the pins on the probe cable.** Part #1161 is named `5-pin DIN`
+on the strength of pins counted IN A PHOTOGRAPH, which is the exact inference
+this project has a trap about. #786 is a SEVEN-pin DIN, so the two counts are
+live in the same shop. Verify by eye and rename #1161 if it is wrong; the label
+is already printed and would need reprinting.
