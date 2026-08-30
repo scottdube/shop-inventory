@@ -6640,3 +6640,79 @@ the position is wrong it overrides the correct code in the reader's head.
 
 Same rule as the counting one, in a different coat: say the thing the evidence
 supports. The database knows codes and contents; it does not know left.
+
+## A non-empty search result is not evidence the SKU exists
+
+Tormach's store fuzzy-matches the digits and **never returns an empty result
+set**. Searching `39044` (our 1100MX Enclosure Kit) returns four products —
+39041, 33044, 39644, 39598 — and not one of them is 39044. Searching `34058`
+(our ER20 Collet Chuck) returns seven, none of them 34058.
+
+Every one of those pages renders perfectly, with a photo and a price. So a
+harvester that takes the first hit would have put a $379 magnetic encoder on
+the enclosure kit **and reported success**, because it checked the result count
+and not the identity.
+
+**Match the SKU literally in the result text before taking anything off the
+page.** The same shape has now bitten three vendors in different clothes:
+Lakeshore returns its Page-Not-Found chrome with a 200, DigiKey served an
+onsemi part for a hand-built C&K URL, and Tormach returns confident neighbours.
+The common cure is the same one: verify by CONTENT, never by status code and
+never by "the page loaded".
+
+## A photo shared across the parts it should distinguish is a wrong photo
+
+Lakeshore Carbide's catalogue goes four levels deep and only the leaf pages
+carry images, so it looks like a workable image source. It is not. On the
+single page `/14drillmills.aspx`, "1/4 Drill Mill 4 Flute 90 Deg" and "1/4
+Drill Mill 4 Flute **120** Deg" are served the *same file*
+(`Thumb_drill mill 4fl 4.gif`), and the two 2-flute entries likewise share
+`Thumb_drill mill 2fl.gif`. The image is flute-count clipart: it does not
+encode the point angle, let alone the diameter.
+
+Diameter and angle are exactly what tell our nine Lakeshore parts apart, so
+that image carries none of the information a bench photo exists to carry.
+**An empty image slot beats a photo that is right about the family and wrong
+about the part** — the same call already made for a shared Freescale CASE
+outline and a DigiKey series photo.
+
+## `python3` on this laptop has no working CA bundle
+
+The overnight job's documented fallback for a host that blocks the Mini is
+"fetch the bytes on the laptop". That fallback has been broken for **every**
+host, silently, and the Mini path working most nights is why nobody noticed.
+
+`ssl.get_default_verify_paths()` here reports
+
+    cafile='/Users/runner/work/python-portable-darwin_arm/.../cert.pem'
+
+— a path from the machine this portable Python was *built* on, which does not
+exist on this Mac. So the default trust store is empty and every https fetch
+dies with `CERTIFICATE_VERIFY_FAILED`.
+
+**The control is what identifies it.** A vendor URL failing looks like a vendor
+block; the same failure on a URL the Mini had fetched successfully seconds
+earlier can only be the client. Fix is one line, and `scripts/fetch_local.py`
+now carries it:
+
+    ssl.create_default_context(cafile=certifi.where())
+
+Verification stays on. Turning it off to collect a product thumbnail trades a
+real security property for a nice-to-have.
+
+## Mouser fingerprints the client — it is not blocking an IP
+
+The 2026-08-29 run concluded Mouser "hotlink-blocks the Mini's IP" after the
+Mini got 13897 bytes of `text/html` from `mouser.com/images`, and handed the
+next run the job of pulling those bytes through the browser instead.
+
+With the laptop's TLS repaired, the **laptop** gets 13897 bytes of `text/html`
+from the same URL — byte for byte the same response. Two hosts on two networks
+cannot both be the blocked IP. It is client fingerprinting, so no amount of
+Referer, User-Agent or Accept tuning will land those bytes; only a real browser
+will. That is the standing `CLAUDE.md` rule, arrived at again the expensive way.
+
+Worth knowing before spending calls on it: the browser *can* fetch it
+(`credentials:'include'`, 200), but Mouser content-negotiates and returns
+**webp under a `.jpg` URL** at 150x171 — a 2.2 KB thumbnail. Small enough that
+reassembling it through chunked base64 is not obviously worth the round trips.
