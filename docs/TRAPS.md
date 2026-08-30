@@ -6716,3 +6716,44 @@ Worth knowing before spending calls on it: the browser *can* fetch it
 (`credentials:'include'`, 200), but Mouser content-negotiates and returns
 **webp under a `.jpg` URL** at 150x171 — a 2.2 KB thumbnail. Small enough that
 reassembling it through chunked base64 is not obviously worth the round trips.
+
+## Check the FAR-SIDE GATEWAY before blaming the host
+
+The existing rule here is: if port 22 goes dark, try another port before
+concluding the machine is down, because other ports answering means a flow-level
+block rather than a dead box. That rule is right and it is not enough.
+
+2026-08-30, mid-session, `itq` died with `scp: Connection closed`. Then:
+
+| Target | Result |
+|---|---|
+| Mini `192.168.50.10:22` | timeout |
+| Mini `192.168.50.10:8001` | no answer |
+| Mini, ICMP | 100% loss |
+| **LRD gateway `192.168.50.1`** | **100% loss** |
+| Local gateway `192.168.30.1` | 3.6 ms |
+| Internet `1.1.1.1` | 7.3 ms |
+
+Every port on the Mini being dark looks exactly like a dead Mini. **Pinging the
+gateway at the far end is what separates the two**, and it costs one command: a
+dead host cannot take its own gateway down with it, so a dark gateway means the
+whole path is dark and the host is not implicated at all.
+
+**The order that actually works:**
+
+1. Another port on the same host — answering means a flow-level block (the IPS
+   signature), and the host is fine.
+2. **The far-side gateway** — dark means the TUNNEL is down, and nothing about
+   the host has been established.
+3. Local gateway and internet — proves the near side is healthy, so the fault is
+   the link or the far site.
+4. Only after all three does "the Mini is down" become a supported claim.
+
+Distinguishing marks worth memorising: the IPS block leaves **other ports
+answering**. A tunnel drop takes **ICMP and every port at once, across the whole
+far subnet**. They are not subtle once the gateway is in the test.
+
+This matters most because the two faults have opposite remedies — one is a
+firewall exclusion at SLN, the other needs somebody or something at LRD — and
+guessing wrong sends you to the wrong site. `docs/UNATTENDED-RUNS.md` already
+teaches this shape for overnight runs: check the cheap wide thing first.
