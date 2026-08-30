@@ -2081,10 +2081,14 @@ careful way in August, and the note on each says so.
 **OPEN — a PCB-production probe build has been discussed but does not exist in
 InvenTree.** Scott, 2026-08-29: *"there has been discussion of building another
 probe to be used for circuit board production, this cable will be helpful."*
-There are 17 build orders and every other planned build has one, so this is the
-gap. It would need a part and a BO-0018, and it gives the DIN cable a real
-destination instead of a fallback role. **Offered, not created — waiting on
-Scott.**
+**ASKED AND ANSWERED — no project, 2026-08-29.** Scott: *"there is no project at
+this point."* It is a conversation, not a build. **Do not re-offer this every
+time the DIN cable surfaces** — a BO created before the thing is real is an
+empty shell that makes the board look busier than the shop is.
+
+**Revisit when a part is actually bought for it**, which is the point a build
+stops being discussion. Until then the cable's earmark note carries the intent,
+and that is the right weight for it.
 
 **OPEN — count the pins on the probe cable.** Part #1161 is named `5-pin DIN`
 on the strength of pins counted IN A PHOTOGRAPH, which is the exact inference
