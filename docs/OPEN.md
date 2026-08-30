@@ -2090,7 +2090,18 @@ empty shell that makes the board look busier than the shop is.
 stops being discussion. Until then the cable's earmark note carries the intent,
 and that is the right weight for it.
 
-**OPEN — count the pins on the probe cable.** Part #1161 is named `5-pin DIN`
+**CLOSED — FIVE pins, counted by Scott 2026-08-29.** The name stands and no
+reprint is owed. Worth keeping the entry: it was written from pins counted in a
+photograph and happened to be right, which is luck, not method — #786 in this
+same shop is a seven-pin DIN, so the coin could have landed either way.
+
+**Decided: `SUPERSEDED by wireless` STAYS in the name.** It is true of the
+1100MX, the earmark for the possible PCB probe lives in the stock notes, and
+spending a label to soften an accurate warning is the wrong trade. The original
+worry — that a reader might bin it on the label alone — is thin when the cable
+sits in the Machine Shop beside the probe it belongs to.
+
+**(historic wording of this item)** Part #1161 is named `5-pin DIN`
 on the strength of pins counted IN A PHOTOGRAPH, which is the exact inference
 this project has a trap about. #786 is a SEVEN-pin DIN, so the two counts are
 live in the same shop. Verify by eye and rename #1161 if it is wrong; the label
