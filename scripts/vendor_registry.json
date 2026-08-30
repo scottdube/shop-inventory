@@ -66,6 +66,12 @@
     "instacart.com"
    ]
   },
+  "recreation": {
+   "why": "Consumer/recreational retail, same class as food. Rule 2: clearly consumer goes OUT silently. Added 2026-08-30 — globalgolf marketing blasts carry the word 'Order' in the subject ('Every Order SHIPS FREE'), so the order-shape regex flags every promo as a purchase event with no order number. Suppressing the domain is right because NOTHING this vendor sells is a shop part; do not instead widen the not_an_order prefixes, which would mask real orders from other vendors.",
+   "domains": [
+    "globalgolf.com"
+   ]
+  },
   "medical": {
    "why": "Rule 3: medical/pharmacy/personal-care are OUT and MUST NOT BE TRANSCRIBED. Log the order id only, never the detail. Note wexhealth mail is benefits-card traffic and is not always even Scott's.",
    "redact": true,
