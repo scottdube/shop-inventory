@@ -6757,3 +6757,29 @@ This matters most because the two faults have opposite remedies — one is a
 firewall exclusion at SLN, the other needs somebody or something at LRD — and
 guessing wrong sends you to the wrong site. `docs/UNATTENDED-RUNS.md` already
 teaches this shape for overnight runs: check the cheap wide thing first.
+
+## A sound argument on an unstated premise
+
+The ex-probe DIN cable was filed to the Machine Shop "with the probe", defended
+in writing: a dedicated instrument cable separated from its instrument is how
+the instrument goes dead. That reasoning is correct and it was applied to a
+premise nobody had supplied — that this was the probe's working cable. Scott,
+2026-08-30: *"the probe lives at the 1100MX, but this has nothing to do with
+this. We're putting this into stock for use on a project later on."*
+
+It is a spare. The probe runs wireless and needs nothing from it.
+
+**This failure mode is harder to catch than a wrong argument**, because the
+reasoning survives inspection and the assumption is never said out loud where it
+could be checked. Two written commits reasoned carefully from it.
+
+**The tell was available and ignored:** the conclusion broke a rule already in
+CLAUDE.md — `default_location` is where a SPARE GOES HOME, never a project bin,
+never a staging area, and never where a machine happens to live. **When a
+conclusion violates a standing rule, suspect the premise before arguing the rule
+should bend.**
+
+Practical version: before filing something *with* another thing, state why in
+one sentence that names the relationship — "this is the working cable OF that
+probe". If nobody has actually said that sentence, ask, rather than build a
+paragraph on top of it.

@@ -2057,14 +2057,30 @@ Nothing in InvenTree recorded the conversion, and nothing would have re-derived
 it — the probe kit (#567) still read as a stock item with no hint that its
 interface had changed. Now written onto stock #177 and onto the cable's own row.
 
-**The cable is kept, not scrapped, and kept WITH the probe** (Machine Shop,
-part #1161). It is the fallback if the wireless conversion is reverted or the
-wireless side fails, and a probe you cannot plug in is a probe you do not have.
+**CORRECTED 2026-08-30 — it is spare stock, and it IS in the cable row.** Scott:
+*"this is a spare cable... the probe lives at the 1100MX, but this has nothing to
+do with this. We're putting this into stock for use on a project later on, an
+unnamed project so far."*
 
-**It is deliberately NOT in the B0-R1 cable row.** That row is for
-general-purpose cables that serve whatever needs them. A dedicated instrument
-cable belongs with its instrument — separating them is how the instrument goes
-dead quietly.
+Filed to **B0-R1C4** (part #1161), renamed `Cable, 5-pin DIN to threaded barrel,
+~6 ft (ex-Tormach probe)`, recategorised to Electronics/Connectors to match the
+other DIN cable (#786), and relabelled.
+
+**What went wrong is worth keeping.** The original filing came with a confident
+argument — an instrument cable must stay with its instrument, separating them is
+how the instrument goes dead. The argument was sound. **The premise was
+invented:** nobody had said this was the probe's working cable. The probe runs
+wireless and needs nothing from it. A good argument on an assumed premise is
+harder to catch than a bad argument, because the reasoning survives inspection
+and the assumption never gets stated out loud to be checked.
+
+It also broke a rule already written down: `default_location` is where a SPARE
+GOES HOME, never where a machine happens to live. "Machine Shop" is a place a
+mill is, not a home for a cable.
+
+The name failed the same way — `Tormach Passive Probe` and `SUPERSEDED by
+wireless` both described where it came FROM rather than what it IS, and a spare
+gets found by its connectors. Provenance moved to the description.
 
 **The battery question was already answered, five days before I asked it.**
 Stock #92, `LiPo Battery 3.7V 750mAh 902040`, is recorded 2026-08-25 as
