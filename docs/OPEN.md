@@ -2078,8 +2078,18 @@ should be recorded.
 cable in the standing desk (#786) and the 6-20P plug were all handled the same
 careful way in August, and the note on each says so.
 
+**OPEN — a PCB-production probe build has been discussed but does not exist in
+InvenTree.** Scott, 2026-08-29: *"there has been discussion of building another
+probe to be used for circuit board production, this cable will be helpful."*
+There are 17 build orders and every other planned build has one, so this is the
+gap. It would need a part and a BO-0018, and it gives the DIN cable a real
+destination instead of a fallback role. **Offered, not created — waiting on
+Scott.**
+
 **OPEN — count the pins on the probe cable.** Part #1161 is named `5-pin DIN`
 on the strength of pins counted IN A PHOTOGRAPH, which is the exact inference
 this project has a trap about. #786 is a SEVEN-pin DIN, so the two counts are
 live in the same shop. Verify by eye and rename #1161 if it is wrong; the label
-is already printed and would need reprinting.
+is already printed and would need reprinting. **Bundle it with the SUPERSEDED
+rename** — the name is true of the 1100MX but misleading now the cable has a
+build waiting for it, and both fixes want the same single reprint.
