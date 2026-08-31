@@ -208,14 +208,15 @@ for p in Part.objects.all().only("id", "name"):
         unclassified.append((p, lo + fi))
 
 print("ON HAND")
-print("  pull studs (loose — a stud fitted to a holder is NOT available):")
+print("  pull studs — UNUSED ONLY. A stud fitted to a holder is spent, not stock.")
+print("  (Scott, 2026-08-31: \"what matters is how many we have unused\")")
 for p, kind, lo, fi in sorted(stud_parts, key=lambda r: -r[2]):
     tag = "TSC" if kind == STUD_TSC else "standard"
     extra = f"   (+{fi:g} fitted)" if fi else ""
     print(f"      {lo:5g}  {tag:9s} [{p.pk}] {p.name[:46]}{extra}")
-print(f"      {loose[STUD_TSC]:5g}  TSC total loose"
+print(f"      {loose[STUD_TSC]:5g}  TSC UNUSED"
       + (f"   ({fitted[STUD_TSC]:g} fitted, not counted)" if fitted[STUD_TSC] else ""))
-print(f"      {loose[STUD_STD]:5g}  standard total loose"
+print(f"      {loose[STUD_STD]:5g}  standard UNUSED"
       + (f"   ({fitted[STUD_STD]:g} fitted, not counted)" if fitted[STUD_STD] else ""))
 
 print("\n  BT30 holders:")
@@ -272,7 +273,7 @@ if n:
           "(drilled) knob:")
     print("    - it is the passage a welding wire runs up to push out a stuck shank")
     print("    - it vents the blind bore, which is why MR-16 dropped the hold-down")
-    print(f"  {loose[STUD_TSC]:g} TSC knob(s) are loose.")
+    print(f"  {loose[STUD_TSC]:g} TSC knob(s) unused.")
 
     # This used to say the database could not answer which holders were fitted.
     # As of 2026-08-31 it can: Scott walked the rack and the fitted knobs are
