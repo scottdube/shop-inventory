@@ -273,7 +273,33 @@ if n:
     print("    - it is the passage a welding wire runs up to push out a stuck shank")
     print("    - it vents the blind bore, which is why MR-16 dropped the hold-down")
     print(f"  {loose[STUD_TSC]:g} TSC knob(s) are loose.")
-    print("  ?? NOTHING RECORDS which holders have knobs fitted. This cannot be "
-          "answered from the database — look at them.")
+
+    # This used to say the database could not answer which holders were fitted.
+    # As of 2026-08-31 it can: Scott walked the rack and the fitted knobs are
+    # recorded with belongs_to. So report it, and — the point of the whole
+    # section — name any shrink-fit holder carrying NO knob.
+    bare = []
+    for hp, kind, _ in holder_parts:
+        if kind != HOLDER_SHRINK:
+            continue
+        for h in StockItem.objects.filter(part=hp):
+            fitted_here = sum(
+                float(x.quantity) for x in StockItem.objects.filter(belongs_to=h)
+                if classify(x.part.name) == STUD_TSC)
+            shortfall = float(h.quantity) - fitted_here
+            mark = "OK " if shortfall <= 0 else "!! "
+            print(f"    {mark} {h.quantity:g}x {hp.name[:44]:<44} "
+                  f"{fitted_here:g} TSC knob(s) fitted")
+            if shortfall > 0:
+                bare.append((hp.name, shortfall))
+    if bare:
+        print("\n  !! SHRINK-FIT HOLDER(S) WITH NO TSC KNOB RECORDED:")
+        for name, k in bare:
+            print(f"       {k:g}x {name}")
+        print("     Fit one before use, or record it if it is already fitted.")
+        print("     A solid knob in a shrink-fit holder is only discovered when a")
+        print("     shank is stuck and there is no passage for the wire.")
+    else:
+        print("  OK  every shrink-fit holder has a TSC knob recorded against it.")
 else:
     print("  none on hand")
