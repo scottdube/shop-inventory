@@ -163,31 +163,60 @@ PACKS = {
 }
 
 loose = {STUD_TSC: 0.0, STUD_STD: 0.0}
+fitted = {STUD_TSC: 0.0, STUD_STD: 0.0}
 holders = {HOLDER_SHRINK: 0.0, HOLDER_STD: 0.0}
 unclassified = []
 stud_parts, holder_parts = [], []
+
+
+def split_qty(part):
+    """Loose vs fitted, because a stud in a holder cannot be put in another one.
+
+    The header used to promise "studs fitted to holders read zero" while the
+    count summed EVERY row for the part. That promise held only while fitted
+    studs were deleted or zeroed. The moment 4 fitted TSC knobs were recorded
+    as a real row (2026-08-31) the total silently went back to 10, and the
+    check would have under-ordered by exactly the number in service.
+
+    A stud counts as fitted when it is installed via belongs_to, which is this
+    shop's convention for a part inside another part - see the LiPo in the
+    passive probe. Rows merely PARKED at the toolholder rack are NOT assumed
+    fitted: location is where a thing sits, not what it is committed to.
+    """
+    lo = fi = 0.0
+    for i in StockItem.objects.filter(part=part):
+        if i.belongs_to_id is not None:
+            fi += float(i.quantity)
+        else:
+            lo += float(i.quantity)
+    return lo, fi
+
 
 for p in Part.objects.all().only("id", "name"):
     kind = classify(p.name)
     if kind is None:
         continue
-    qty = sum(float(i.quantity) for i in StockItem.objects.filter(part=p))
+    lo, fi = split_qty(p)
     if kind in loose:
-        loose[kind] += qty
-        stud_parts.append((p, kind, qty))
+        loose[kind] += lo
+        fitted[kind] += fi
+        stud_parts.append((p, kind, lo, fi))
     elif kind in holders:
-        holders[kind] += qty
-        holder_parts.append((p, kind, qty))
+        holders[kind] += lo + fi
+        holder_parts.append((p, kind, lo + fi))
     else:
-        unclassified.append((p, qty))
+        unclassified.append((p, lo + fi))
 
 print("ON HAND")
-print("  pull studs (loose — studs fitted to holders read zero):")
-for p, kind, qty in sorted(stud_parts, key=lambda r: -r[2]):
+print("  pull studs (loose — a stud fitted to a holder is NOT available):")
+for p, kind, lo, fi in sorted(stud_parts, key=lambda r: -r[2]):
     tag = "TSC" if kind == STUD_TSC else "standard"
-    print(f"      {qty:5g}  {tag:9s} [{p.pk}] {p.name[:46]}")
-print(f"      {loose[STUD_TSC]:5g}  TSC total")
-print(f"      {loose[STUD_STD]:5g}  standard total")
+    extra = f"   (+{fi:g} fitted)" if fi else ""
+    print(f"      {lo:5g}  {tag:9s} [{p.pk}] {p.name[:46]}{extra}")
+print(f"      {loose[STUD_TSC]:5g}  TSC total loose"
+      + (f"   ({fitted[STUD_TSC]:g} fitted, not counted)" if fitted[STUD_TSC] else ""))
+print(f"      {loose[STUD_STD]:5g}  standard total loose"
+      + (f"   ({fitted[STUD_STD]:g} fitted, not counted)" if fitted[STUD_STD] else ""))
 
 print("\n  BT30 holders:")
 for p, kind, qty in sorted(holder_parts, key=lambda r: (r[1], -r[2])):
