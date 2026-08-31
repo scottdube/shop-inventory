@@ -6819,3 +6819,117 @@ a fabricated outage.
 
 See also the McMaster sections above; this is a different failure with an
 identical symptom, which is precisely why the symptom cannot be trusted alone.
+
+## A redirect is not a lookup — AliExpress manufactures a product page for any number (2026-08-31)
+
+The existing rule "a non-empty search result is not evidence the SKU exists" was
+written about *search*. AliExpress does the same damage through a **redirect**,
+which is worse, because a redirect feels like a resolution rather than a guess.
+
+`aliexpress.com/item/<id>.html` gateway-adapts to `aliexpress.us/item/<other
+id>.html`. Measured while signed in — "Hi, Scott" present in the body, so these
+are clean negatives and not a block:
+
+| probed | landed on |
+|---|---|
+| `100837932055753` (our pk 727 SKU) | `aliexpress.us/item/2352637745741001` |
+| `99999999999999` (**fabricated**) | `aliexpress.us/item/2351799813685247` |
+
+A number invented on the spot resolves to a real, rendering product page. The
+adaptation is a mechanical transform of the digits, not a database lookup, so
+**the page you land on is not evidence that your item exists, let alone that it
+is yours.** A harvester following the redirect would have hung an arbitrary
+product's photo on all four of our AliExpress parts and reported four successes.
+
+It is not even uniformly wrong, which removes the last easy tell: our pk 726
+SKU *did* return a genuine "Page Not Found".
+
+Root cause of the whole pool: those stored SKUs (`8123957119315753`,
+`100837932055753`, `91301677995753`, `90294522855753` — note the shared `5753`
+tail) are **order-line ids, not product ids** — the same class as Amazon's
+`X00`-prefixed internal SKUs, which also always 404 on `/dp/`. A SKU that came
+off an order line is not addressable in a catalogue. Check the shape before
+building a URL out of it.
+
+## Shopify's `/products.json` is the honest way to read a vendor catalogue (2026-08-31)
+
+Not a trap — the cure for several of them, and it is cheap. Any Shopify store
+exposes:
+
+    https://<domain>/products.json?limit=250&page=N
+
+which returns the **whole catalogue** as JSON: handle, title, variants with
+SKUs, and each product's own declared images. That removes the step that has
+produced every wrong photo this queue has ever made — *choosing which search hit
+to take*. You match a SKU literally against a list instead of trusting a
+storefront's fuzzy matcher.
+
+It found four CNC Kitchen parts and one MFC part in a single run, and CNC
+Kitchen puts the size in the image **filename** (`M2.5x4_100_1.png`,
+`M3x5x4_100_1.png`), so each match is provable rather than plausible — that is
+what proves pk 859 (VORON M3x5x4) is not pk 858 (M3x5.7), which matters because
+footprint is part identity.
+
+`/products/<handle>` in a site's URLs is the tell that it is Shopify. `mfcmd.com`
+was found that way. Three cautions, all paid for tonight:
+
+- **Two products can share a name.** CNC Kitchen lists "Heat Set Insert SET XXL"
+  twice — ours is the 760-piece `TC-Set-XXL`, not the 680-piece 13-size imperial
+  kit. A title-substring matcher takes the wrong one.
+- **`images[0]` is not necessarily usable.** MFC's featured image is a `.heic`,
+  which fails the magic-byte check outright; the good PNGs were 2nd and 3rd in
+  the list. A harvester that takes the featured image reports a failure on a
+  product that *does* have photos — the mirror of the usual failure, and probably
+  why that part sat imageless for weeks.
+- **A 404 on page 1 means NOT SHOPIFY.** `probe_shopify.py` originally fell
+  through and printed "SHOPIFY, 0 products" for `canalrubber.com`, which is a
+  confident wrong label of exactly the kind this file is full of. Fixed to exit.
+
+## The browser can VERIFY an image it cannot DELIVER (2026-08-31)
+
+The standing rule — a fingerprinting vendor needs a real browser, not retuned
+curl — has an unstated second half that only shows up when you try to finish the
+job: **getting the bytes back out.**
+
+For Mouser pk 108 the browser did everything right. It found the real photo one
+directory over from where every previous run had looked:
+
+- `/images/alps/**images**/RKJXT1F42001.jpg` → webp under a `.jpg` URL,
+  150x171, 2242 B — *below* `assign_urls.py`'s 4000-byte floor, so even a
+  success here reads as a failure. Part of why this looked dead.
+- `/images/alps/**lrg**/RKJXT1F42001.jpg` → a genuine 247x282 JPEG, 8212 B.
+
+and Mouser's 404s on that path are honest 1245-byte pages, so the probe gives
+trustworthy negatives. The Mini still gets **byte-identical 13897 bytes of
+`text/html` with `status=200` on both paths**, so the fingerprinting is
+path-independent and no header tuning will move it.
+
+Then it dead-ends: **reading the image back as base64 through the tool channel
+is BLOCKED**, and fetching the whole string in one go is truncated. So for a
+fingerprinting vendor the browser is a *measuring instrument, not a transport*.
+It can tell you an image exists and how big it is; it cannot hand it over.
+Attaching pk 108 needs a host that can fetch Mouser directly, and neither the
+Mini nor this laptop can. Do not spend another run rediscovering this.
+
+## "No image available" is an ABSENCE, not a block — and it has decoy images (2026-08-31)
+
+MSC pk 927 (Tapmatic No.90X, SKU `00447474`) looked like another blocked vendor.
+It is not blocked at all. The product page loads fine and is unambiguously the
+right item — title `Tapmatic - NO.90X 1/2-1-1/8" 4JT TAPMATIC TAPPING UNIT`.
+
+MSC simply **has no photo for it**: the product image is literally
+`cdn.mscdirect.com/global/images/ProductImages/noimageavailable.gif`, and
+`og:image` is a truncated empty base path.
+
+The trap is what *else* is on that page. The only images over 150px are
+category-attribute icons (`CategoryAttributes/C182017B-22.jpg` and friends), so
+a "take the largest image" or "take the first big image" harvester comes away
+with a category icon and reports success. **Filter `noimageavailable`, and treat
+a clean absence as a closed question** — it needs recording once so no future run
+re-walks it, and it is not a thing to retry.
+
+Same shape, different vendor: Canal Rubber (pk 1150/1151) is not Shopify, has no
+per-SKU pages at all, and our "SKUs" there are descriptive strings
+(`Closed Cell Neoprene Sponge Cord 1/8 in`). Even a found photo would be one
+generic cord shared across both diameters — and diameter is the *only* thing
+separating those two parts. The Lakeshore rule applies: an empty slot beats it.
