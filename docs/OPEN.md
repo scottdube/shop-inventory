@@ -2124,3 +2124,27 @@ live in the same shop. Verify by eye and rename #1161 if it is wrong; the label
 is already printed and would need reprinting. **Bundle it with the SUPERSEDED
 rename** — the name is true of the 1100MX but misleading now the cable has a
 build waiting for it, and both fixes want the same single reprint.
+
+## Pull studs — filed 2026-08-31, Unfiled nearly empty
+
+Scott's actual goal, stated after the fact and worth leading with next time:
+*"my real goal was to move them from unfiled to tool rack for the installed
+parts and tool chest for the unused."*
+
+| | Where | Rows |
+|---|---|---|
+| **Unused** | `Tool Chest`, no drawer | 10 Haas standard, 6 TSC, 1 Shars M12x45 |
+| **Installed** | `Toolholder Rack` | 4 TSC via `belongs_to` the shrink-fit holders; the spent Shars/Tormach rows at zero |
+
+`stud_check` reports **11 standard and 6 TSC unused**, matching Scott's bench
+count exactly.
+
+**`Unfiled - Machine Shop` is down from 8 rows to 2** — the RKJXT1F42001
+navigation switch (#9) and the Tapmatic No.90X tapping head (#586). Its own
+description says it should trend toward empty, and it is.
+
+**The fitted studs carry BOTH `belongs_to` and a location.** `belongs_to` is
+what makes them read as spent rather than available; the location is what makes
+them show up when you look at the rack. The LiPo precedent left location null,
+which is correct for a part sealed inside a device — a stud in a holder on a
+rack is visible and worth finding, so it gets both.
