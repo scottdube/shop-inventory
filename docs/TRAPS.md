@@ -6783,3 +6783,39 @@ Practical version: before filing something *with* another thing, state why in
 one sentence that names the relationship — "this is the working cable OF that
 probe". If nobody has actually said that sentence, ask, rather than build a
 paragraph on top of it.
+
+## `getBoundingClientRect()` is in PAGE pixels; the click wants SCREENSHOT pixels
+
+2026-08-30 22:47, running the McMaster preflight. Read the login link's position
+straight out of the page:
+
+    document.querySelector('#LoginUsrCtrlWebPart_LoginLnk').getBoundingClientRect()
+    -> centre (1679, 23)
+
+Clicked (1679, 23). Nothing happened. The screenshot frame for that tab is
+**1558 px wide**, so x=1679 was off the right edge — the click went nowhere and
+`VSTR_USR_NM` stayed empty.
+
+**And an empty key is exactly what "signed out" looks like.** A missed click and
+a signed-out session are the same reading. Had the run stopped there it would
+have scored `mcmaster=OUT` and pushed a false alarm on a purely mechanical
+mistake — a *fourth* false McMaster OUT, with a cause unrelated to every earlier
+one.
+
+The page viewport and the screenshot are two coordinate systems and the browser
+tools scale between them. A number from JavaScript is in the first; `computer`
+wants the second.
+
+**Fix: never feed `getBoundingClientRect()` into a click.** Use `find` to get a
+`ref_N` and click the ref — refs carry the mapping. Coordinates are for things
+you located *in a screenshot you are looking at*.
+
+**The general form, and the reason this is filed here rather than shrugged off:**
+a negative result from an instrument you did not verify is not a measurement.
+Before reporting "X is absent", confirm the probe could have detected X at all.
+The click was verifiable in one step — the second attempt rendered a login panel,
+proving *that* click landed — and that step is what separated a real reading from
+a fabricated outage.
+
+See also the McMaster sections above; this is a different failure with an
+identical symptom, which is precisely why the symptom cannot be trusted alone.
