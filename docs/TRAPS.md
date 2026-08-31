@@ -6933,3 +6933,25 @@ per-SKU pages at all, and our "SKUs" there are descriptive strings
 (`Closed Cell Neoprene Sponge Cord 1/8 in`). Even a found photo would be one
 generic cord shared across both diameters — and diameter is the *only* thing
 separating those two parts. The Lakeshore rule applies: an empty slot beats it.
+
+## An alarm that has never fired is not evidence it works
+
+`stud_check.py` gained a warning for a shrink-fit holder carrying no TSC knob —
+the failure you discover with a hot holder in your hand and no passage for the
+removal wire. On real data it printed `OK` for all four holders, which proves
+only that the OK branch runs.
+
+**So the alarm was tested by injecting the fault**: detach one stud inside a
+`transaction.atomic()`, assert the warning fires, then roll back. Kept as
+`scripts/test_stud_alarm.py`. It also asserts the data matches baseline
+afterwards, because a test that leaves the shop's records dirty is worse than no
+test.
+
+This is the [[instrument-panel-principle]] applied to a script rather than a
+dashboard. Normal should look uniform so abnormal breaks the pattern — and the
+only way to know abnormal *does* break the pattern is to make it abnormal on
+purpose, once, somewhere safe.
+
+**Rollback-in-a-transaction is the safe way to test against live data** on this
+install: no fixture, no copy of the database, no risk of a half-applied fault
+surviving. Assert the restore, do not assume it.
