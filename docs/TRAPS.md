@@ -6955,3 +6955,41 @@ purpose, once, somewhere safe.
 **Rollback-in-a-transaction is the safe way to test against live data** on this
 install: no fixture, no copy of the database, no risk of a half-applied fault
 surviving. Assert the restore, do not assume it.
+
+## Two kinds of unfiled, and only one of them is visible
+
+Scott, 2026-08-31: *"why are the ZVS kit parts ending up as unfiled?"* They were
+not unfiled. They had **no location at all**, which is worse, and the difference
+is the whole lesson.
+
+**`Unfiled - Machine Shop` is a PLACE.** It appears when you browse, its
+description says it should trend toward empty, and it does — 8 rows to 2 that
+same afternoon, because somebody looked at it.
+
+**`location = NULL` is not a place.** It appears in no location's contents.
+Nothing lists it, nothing browses it, nothing prompts anyone. **41 rows** had
+accumulated across 11 categories and no one had ever seen them as a group.
+
+A row with no location answers **YES** to *"do I have one?"* and **NO** to
+*"where is it?"* — the worst pair of answers a stock system can give, and
+strictly worse than not being catalogued at all, because it stops the next
+person searching.
+
+**Two sources, both instructive:**
+
+**The McMaster importer, 29 rows.** `route_loc()` returns `None` for a
+description it cannot classify, and the row is created anyway. It is not silent
+— it prints `(no location)  29` in its routing summary. **A report is not a
+mechanism.** The number was on screen and scrolled past, and nothing carried it
+forward to the next session.
+
+**Ad-hoc session scripts, 8 rows** (the ZVS kit). Catalogue the part now, decide
+the physical home later. "Later" had no hook, so it never came.
+
+**The fix is `scripts/orphan_stock.py`**, which exits non-zero when anything is
+nowhere. Same shape as the shrink-fit stud alarm: a condition nobody would
+naturally look at needs something that looks on its own.
+
+**When the home is genuinely undecided, park it somewhere VISIBLE** — an
+`Unfiled - <area>` location — rather than leaving location null. A visible
+waiting room gets emptied. A null does not exist to be emptied.
