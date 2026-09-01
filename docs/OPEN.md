@@ -2148,3 +2148,39 @@ what makes them read as spent rather than available; the location is what makes
 them show up when you look at the rack. The LiPo precedent left location null,
 which is correct for a part sealed inside a device — a stud in a holder on a
 rack is visible and worth finding, so it gets both.
+
+## Standing checks — added 2026-08-31/09-01, none of them clean yet
+
+Four rules that existed as prose and were never enforced now have scripts. Each
+one found real breakage the moment it ran:
+
+| Check | Now says | What it means |
+|---|---|---|
+| `pack_audit.py` | **31** supplier parts contradict their own SKU | receiving any of them books a whole pack price against one piece |
+| `orphan_stock.py` | **32** rows have no location at all | owned, catalogued, findable by nobody |
+| `import_coverage.py` | parts predate the first PO for 4+ suppliers | old orders became parts, never POs |
+| `test_stud_alarm.py` | passes | the bare-holder alarm actually fires |
+
+**None of these are urgent and all of them are real.** The 31 pack mismatches
+are the most valuable to work: each one is a wrong price and a wrong count
+waiting for the next receipt.
+
+## Not mine to fix — the panel's UNFILED lamp
+
+The annunciator reads **2** where the truth is **34**. It counts rows in
+locations *named* `Unfiled - *` and cannot see `location IS NULL`. The generator
+lives in the overnight-import project, not this repo. The fix is to count both:
+
+    StockItem.objects.filter(location__isnull=True, belongs_to__isnull=True)
+      + rows in any location whose name starts with "Unfiled"
+
+The `belongs_to__isnull=True` exclusion is required — an installed part (a stud
+in a holder, a LiPo in a probe) legitimately has no location.
+
+## The roller chain's missing 36 inches
+
+Bought as 120 in (10 ft, 320 links) on 2022-02-07; **84 in on the bench.** So 36
+in / 96 links are in something, and nothing records what. The kit also shipped a
+chain breaker and **5 connecting links**, neither catalogued — and without a
+master link a chain cannot be closed into a loop, so those matter more than
+their price suggests.
