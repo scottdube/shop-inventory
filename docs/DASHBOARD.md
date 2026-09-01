@@ -360,3 +360,37 @@ that would have destroyed data and which is not a number at all.
 
 So the tile cannot just count numeric retractions. And the root of all five was
 the same: **a check that did not name what it queried.** See `TRAPS.md`.
+
+## The UNFILED lamp under-reports by an order of magnitude
+
+Measured 2026-08-31: the lamp read **2**. The true count of stock with no home
+was **34**.
+
+    VISIBLE    rows in a location named "Unfiled - *"      2
+    INVISIBLE  rows with location IS NULL                 32
+
+The lamp counts rows sitting in an `Unfiled - *` location. A row with
+`location = NULL` is in no location at all, so it is invisible to any query that
+starts from a location — including this one.
+
+**This is the same bug the shop itself had**, found the same afternoon when
+Scott asked why the ZVS kit parts kept "ending up as unfiled". They were not
+unfiled; they were nowhere. See TRAPS.md, *Two kinds of unfiled*.
+
+**Why it matters more on a panel than in a query.** A lamp reading 2 is
+read as *nearly done* — it is the shape of a job almost finished. Reading 34
+would be read as a backlog needing a session. The instrument does not merely
+omit; it actively tells the opposite story, which is the failure the whole
+dark-cockpit rejection was about: **an instrument that under-reports is worse
+than one that is absent**, because an absent gauge prompts a look and a wrong
+one ends the enquiry.
+
+**The fix** is to count both halves:
+
+    StockItem.objects.filter(location__isnull=True, belongs_to__isnull=True)
+      +  rows in any location whose name starts with "Unfiled"
+
+The `belongs_to__isnull=True` exclusion matters — an installed part (a stud in a
+holder, a LiPo in a probe) legitimately has no location and must not be counted
+as homeless. `scripts/orphan_stock.py` implements exactly this and exits
+non-zero when anything is nowhere.
