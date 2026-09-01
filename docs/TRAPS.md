@@ -6993,3 +6993,118 @@ naturally look at needs something that looks on its own.
 **When the home is genuinely undecided, park it somewhere VISIBLE** — an
 `Unfiled - <area>` location — rather than leaving location null. A visible
 waiting room gets emptied. A null does not exist to be emptied.
+
+## A uniform result needs a control; a mixed one already has its own (2026-09-01)
+
+Queue A fetched sixteen Amazon ASINs from the Mini and got **404 on all
+sixteen**, every body exactly 2296 bytes. The standing rule says an Amazon 404
+is delisting, not a block — so the mechanical reading was "sixteen listings are
+gone, queue closed".
+
+That reading would have been right, but it was not yet *earned*, and the
+difference matters. The 2026-08-28 measurement that established the rule was
+**17 of 20**: three ASINs served 2 MB pages from the same IP in the same run,
+and those three ARE the control. They are what proves the 404s were about the
+listings and not about us. A 16-of-16 result contains no control at all, and
+sixteen unrelated products — a Mitutoyo micrometer, a SainSmart UNO R3, a
+Zigbee sensor listed in 2023 — do not plausibly vanish on the same night.
+
+So the control was run explicitly: `B08NTK8JXZ`, live and used to bracket the
+08-31 sweep, on all three URL forms, in the same process seconds later.
+**200, ~2.0 MB, ASIN present, three times.** Then a second, independent
+instrument: the signed-in browser renders `Page Not Found` for `B00E5WJSHK`.
+Two instruments agree, and only now is the queue closed with evidence.
+
+**The rule to carry:** when a batch result is uniform, it carries no internal
+evidence about the instrument, so add a control. When it is mixed, the
+successes are the control and you already have one. This is the cheap version
+of the "two runs of the same failing method are one experiment" rule — a
+control costs one extra fetch and converts a plausible conclusion into a
+measured one.
+
+Also worth keeping: the 404 body triggered a naive `"automated access"` /
+`"not a robot"` substring check that the harvester used as a bot-wording flag.
+It fires on Amazon's ordinary Dogs-of-Amazon page. **A block-detector keyed on
+boilerplate reports blocks that are not there** — the flag was noise, and the
+control, not the wording, is what settled it.
+
+## Defended page, undefended media path — now on a second vendor (2026-09-01)
+
+`digilent.com` returns **403 to the Mini** for the reference page stored on
+part 845 (OpenScope MZ). Per CLAUDE.md the browser was driven instead: it hit a
+Cloudflare *"Just a moment..."* interstitial that **cleared on its own** — no
+challenge was presented and none was solved — and rendered the real page.
+
+The image URL read off that page was then fetched **by script, from the Mini**,
+on the same host that had just 403'd: `image/png`, 1374 KB, attached.
+
+That is exactly the Amazon shape — `amazon.com/dp/` defended, `m.media-amazon.com`
+wide open — and it is now confirmed on a second, unrelated vendor. So:
+
+**"Host X blocks the Mini" is never a fact about a host. Re-test per PATH.**
+The interesting corollary is that the browser's real job here is not fetching;
+it is *deciding the URL*. Once a human-verified page has named the file, a
+one-hop script fetch is both cheaper and more likely to work than trying to
+carry bytes back through the tool channel — which for Mouser is outright
+blocked (2026-08-31).
+
+## An og:image harvester "succeeds" on a picture of text (2026-09-01)
+
+`img_from_link.py` was written to skip the step that has produced every wrong
+photo in this project — *finding* the product page — by using `Part.link`,
+which is the page, recorded at creation. It works. It also immediately produced
+two confident wrong answers.
+
+Parts 795 (Standing Desk Controller) and 836 (Rat GDO) have `github.com` links.
+GitHub serves an `og:image` for every repository: an **auto-generated social
+card** — avatar, repo name, description, grey background. Both came back as
+healthy 120 KB PNGs that passed the magic-byte sniff and the size floor, and
+both passed the title/name token check on a *single* weak token (`desk`,
+`rat`).
+
+Nothing in the pipeline could tell that the picture was of **text**. Discarded
+by hand; nothing was written.
+
+Two things to carry forward:
+
+1. **A single shared token is not a match.** `desk` matching `deskhack` is a
+   coincidence with a plausible shape. Require either a multi-token overlap or
+   an identifier (SKU, MPN, product slug) present in the URL or the page.
+2. **Some hosts have no product photo to give, by construction.** github.com,
+   and any site whose og:image is templated per-URL rather than per-product,
+   should be on a deny-list for image harvesting — the fetch will always
+   succeed and the result will always be wrong.
+
+The same session's *good* result shows the contrast: part 845 was accepted
+because the image path itself carried the product slug
+(`.../openscope-mz/openscope_mz_1.png`) on the part's own stored page. The
+identifier was in the URL, not in a shared adjective.
+
+## Queue A's vendor-SKU pool is exhausted — the rest needs a camera (2026-09-01)
+
+`scripts/img_link_buckets.py` was written to answer a question the image queue
+had never asked: of the imageless parts, **how many have any URL handle at
+all?** Queue A had always been driven off `SupplierPart.SKU`, which describes
+only a fraction of them.
+
+Of **494** imageless parts:
+
+| handle | count |
+|---|---|
+| has a SupplierPart | 73 |
+| has a `Part.link` | 18 (12 McMaster, 5 github, 1 digilent) |
+| **neither** | **415** |
+
+And all 73 supplier rows are now closed or blocked with evidence: Amazon 28,
+McMaster 12, Lakeshore 9, Precise Bits 7, Tormach 5, AliExpress 4, Mouser 2,
+Canal Rubber 2, JLCPCB 2, DigiKey 1, MSC 1 — which sums exactly to 73.
+
+**So queue A as designed is finished.** Not blocked, not rate-limited,
+not "try again tomorrow" — *finished*. The remaining 415 came off the drawer
+walk and were never bought from a page with a photo on it.
+
+This is worth writing down because of how it would otherwise present: a nightly
+job reporting 0–1 images with a list of vendor excuses looks identical to a job
+that is quietly broken. The count that distinguishes them is 415, and nothing
+was computing it. **When a queue's yield collapses, measure the size of the
+reachable pool before debugging the method.**
