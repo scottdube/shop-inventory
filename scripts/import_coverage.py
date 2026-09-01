@@ -1,30 +1,35 @@
 #!/usr/bin/env python3
-"""How far back the imported purchase history actually reaches, per supplier.
+"""How far back the purchase history reaches — as POs, and as PARTS.
 
-Written 2026-09-01 after a #35 roller chain was catalogued with "NO PURCHASE
-RECORD — no PO line anywhere mentions roller chain". Scott found it in the
-Amazon order history in seconds: bought 2022-02-07, 10 ft, $27.99.
+Written 2026-09-01, then immediately corrected, and the correction is the point.
 
-The claim was wrong in a specific and repeatable way. There WAS no PO — and
-there could not have been, because the Amazon import only reaches back to
-2025-07-22. The chain predates the import by three and a half years.
+A #35 roller chain was catalogued "NO PURCHASE RECORD". Scott found it on Amazon
+in seconds: B083JVS632, 2022-02-07. The first explanation offered was that the
+Amazon import only reaches 2025-07-22 — thirteen months — so the chain simply
+predated it.
 
-    Amazon         39 POs   earliest 2025-07-22   <- 13 months
-    McMaster-Carr  18 POs   earliest 2021-01-25   <- 5 years
+**That was wrong, and Scott said so: "we definitely would go further back than
+thirteen months in Amazon."** He was right. The Amazon import reaches back to
+2012. What reaches back thirteen months is PURCHASE ORDER CREATION. The importer
+made PARTS for old orders and POs only for recent ones:
 
-The two importers were written at different times with different reach, and
-nothing recorded that. So a part bought from Amazon in 2023 looks identical to
-a part never bought at all, and the database cannot tell you which it is.
+    Amazon PurchaseOrders   earliest 2025-07-22    13 months
+    Amazon-sourced PARTS    earliest 2012-03-01    14 years
+    Amazon parts dated 2022                        70 of them
 
-**Before writing "no purchase record", run this.** If the part predates that
-supplier's earliest PO, the honest sentence is "no purchase record IN INVENTREE;
-the import does not reach that far", and the next move is the vendor's own order
-history, not a shrug.
+So the chain is a SELECTIVE MISS, not a coverage boundary. The era is well
+covered and this one item is absent. Why is not established — a plausible but
+UNVERIFIED guess is that the importer filtered by Amazon department and a
+motorcycle chain sits under Automotive rather than Industrial & Scientific.
 
-Same shape as two other traps this shop has paid for:
-  - "no M2 screws" was true of the database and false of the shop
-  - "location IS NULL" rows were invisible to a lamp that counted locations
-Each time the query was correct and the CLAIM was too broad.
+The lesson is the one being repeated all week, now at a third level. Measuring
+PurchaseOrder.issue_date and saying "the import is 13 months deep" claims more
+than the query saw: it was a fact about the PO table stated as a fact about the
+import. Same error as "no M2 screws" (true of the database, false of the shop)
+and "unfiled = 2" (true of locations, false of stock) — and this time it was
+made in the very commit that wrote those up.
+
+So this script reports BOTH floors, because either one alone misleads.
 
     itq run scripts/import_coverage.py
     itq run scripts/import_coverage.py --before 2022-02-07
@@ -59,8 +64,37 @@ for sup, dates in sorted(by_sup.items(), key=lambda kv: -len(kv[1])):
     print(f"{sup[:34]:34} {len(dates):>4}  {lo!s:>11}  {hi!s:>11}   "
           f"{(hi - lo).days // 30} months")
 
-print("\nThe earliest PO for a supplier is a FLOOR, not a start date. Anything "
-      "\nbought before it is invisible here and must be looked up at the vendor.")
+# The PO floor alone is misleading: parts were imported for orders that never
+# got a PO, so a supplier can look 13 months deep and be 14 years deep.
+import re as _re  # noqa: E402
+from company.models import SupplierPart  # noqa: E402
+
+_date = _re.compile(r"(20[0-2]\d-\d{2}-\d{2})")
+part_floor = {}
+for sp in SupplierPart.objects.select_related("part", "supplier"):
+    if not sp.part or not sp.supplier:
+        continue
+    hay = f"{sp.part.description or ''} {sp.part.notes or ''}"
+    ds = _date.findall(hay)
+    if ds:
+        lo = min(ds)
+        k = sp.supplier.name
+        if k not in part_floor or lo < part_floor[k]:
+            part_floor[k] = lo
+
+print("\nPART-DERIVED floor — dates found in part records, including orders that "
+      "\nnever became a PO. THIS is how far the import actually reached:\n")
+for sup in sorted(set(list(by_sup) + list(part_floor))):
+    po_lo = min(by_sup[sup]) if by_sup.get(sup) else None
+    pt_lo = part_floor.get(sup)
+    gap = ""
+    if po_lo and pt_lo and str(pt_lo) < str(po_lo):
+        gap = "   <-- parts predate the first PO by years"
+    print(f"  {sup[:32]:32} PO {str(po_lo or '-'):>10}   parts {str(pt_lo or '-'):>10}{gap}")
+
+print("\nNeither floor is a start date. A part ABSENT from a well-covered era is a "
+      "\nMISS, not a boundary — check the vendor's own order history before "
+      "\nconcluding anything about how the item arrived.")
 
 if a.before:
     want = datetime.date.fromisoformat(a.before)

@@ -7132,34 +7132,48 @@ Related: the same drawer's parts arrived on a line whose **pack_quantity was 1
 when the SKU said `5 PCS`** — see the pack-quantity trap. One delivery, two
 different ways for the record to be wrong about the same goods.
 
-## "No purchase record" is a claim about the IMPORT, not about the purchase
+## "No purchase record" — and the correction, which is the real lesson
 
-The #35 roller chain was catalogued 2026-09-01 with *"NO PURCHASE RECORD. No PO
-line anywhere mentions roller chain, so where this came from is not known."*
-Scott found it in the Amazon order history in seconds: **B083JVS632, bought
-2022-02-07, 10 ft, $27.99**, which also revealed the 84 in on the bench is a
-REMNANT with 36 in already spent.
+The #35 roller chain was catalogued 2026-09-01 with *"NO PURCHASE RECORD."*
+Scott found it on Amazon in seconds: **B083JVS632, 2022-02-07, 10 ft** — which
+also turned the 84 in on the bench from a stock figure into a REMNANT with 36 in
+already spent somewhere unrecorded.
 
-The query was right and the claim was too broad, for the third time in two days.
+**First explanation, offered confidently and WRONG:** the Amazon import only
+reaches 2025-07-22, so the chain predated it. Scott: *"I don't think that's
+true. We definitely would go further back than thirteen months in Amazon."*
 
-**Only ONE supplier's import goes deep:**
+He was right. Measured properly:
 
-    McMaster-Carr  18 POs   earliest 2021-01-25   54 months
-    Amazon         39 POs   earliest 2025-07-22   13 months
-    everything else                               months or a single order
+    Amazon PurchaseOrders   earliest 2025-07-22    13 months
+    Amazon-sourced PARTS    earliest 2012-03-01    14 YEARS
+    Amazon parts dated 2022                        70 of them
 
-**Amazon is this shop's highest-volume vendor and its history reaches back
-thirteen months.** Anything bought there before July 2025 is indistinguishable,
-in InvenTree, from something never bought at all. The chain predates the import
-by three and a half years.
+The importer created PARTS for old orders and POs only for recent ones. So the
+era is well covered and **the chain is a SELECTIVE MISS, not a boundary.** Why
+is still unestablished; a plausible, unverified guess is a department filter,
+since a motorcycle chain sits under Automotive rather than Industrial &
+Scientific.
 
-**So run `scripts/import_coverage.py --before <date>` before ever writing "no
-purchase record".** If the part predates that supplier's floor, the honest
-sentence is *"no purchase record in InvenTree; the import does not reach that
-far"* — and the next move is the vendor's own order page, not a shrug.
+**The lesson is not about imports. It is that the same error was made THREE
+times in two days, the third time inside the commit that documented the first
+two:**
 
-**The recurring shape, now three times:** "no M2 screws" was true of the database
-and false of the shop. "Unfiled = 2" was true of locations and false of stock.
-"No purchase record" is true of the PO table and false of the purchase. Each time
-the search was competent and the sentence claimed more than the search could
-see. **Name the thing you actually searched, in the sentence.**
+| Claimed | Actually searched |
+|---|---|
+| "no M2 screws in the shop" | the part table |
+| "unfiled = 2" | locations named Unfiled |
+| "the import is 13 months deep" | `PurchaseOrder.issue_date` |
+
+Every query was competent. Every sentence claimed a wider thing than the query
+could see, and each wrong sentence was *more useful-sounding* than the correct
+one, which is exactly why it got written.
+
+**The rule: name the thing you actually searched, in the sentence.** "No PO
+line mentions roller chain" is true, checkable and invites the next move. "No
+purchase record" is none of those.
+
+`scripts/import_coverage.py` now reports both floors, because either alone
+misleads — and it flags the suppliers whose parts predate their first PO, which
+is the signature of exactly this confusion.
+
