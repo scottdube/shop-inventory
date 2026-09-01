@@ -7177,3 +7177,46 @@ purchase record" is none of those.
 misleads — and it flags the suppliers whose parts predate their first PO, which
 is the signature of exactly this confusion.
 
+## The McMaster preflight was wired to nothing (2026-09-01, CLOSED)
+
+**Ten sessions were spent hardening a check whose answer changed no behaviour.
+Nobody asked what depended on it until Scott lost patience.**
+
+The check tried to decide whether Chrome was signed in to mcmaster.com. Six
+signals were tried and every one produced a *measured* false reading, because
+McMaster's SPA never fetches account state at page load: `VSTR_USR_NM` persists
+after logout **and** stays empty 21+ s after a real login; the masthead is a
+cached shell that renders `Log in` either way; `/order-history/` serves a
+714-char pre-auth shell; and `/api/user` and every sibling route return 200 with
+the SPA shell, as does any unknown path. Contributing cause: `document.hasFocus()`
+is `false` in the agent tab on every read, and the single correct read in the
+whole episode happened while Scott was looking at Chrome.
+
+**None of that mattered.** Trace what the answer gated:
+
+| supposedly gated | actually needs |
+|---|---|
+| McMaster order sweeping | **Gmail** confirmations — itemised, canonical catalogue number, honest prices. No site session, ever. |
+| McMaster product images (12 parts) | a session — but product-detail scraping is **out of scope by standing rule** regardless of auth state |
+
+So a live session unlocked no work and a dead one blocked none. A *correct*
+test would have gated nothing too. The check was deleted from both task files
+rather than repaired.
+
+**What it cost while it stood.** The degrade rule read "McMaster out → skip
+McMaster order sweeping", so an irrelevant mcmaster.com reading switched off a
+Gmail-based sweep — the 08-29 and 08-31 runs both logged "McMaster order
+sweeping skipped". It also reported 12 parts as *blocked* in eight consecutive
+morning briefs when they were *out of scope*, and it generated two standing
+decision-queue items about its own contradictory documentation.
+
+**The rule, and it generalises past this vendor: before hardening a canary, ask
+what its answer changes.** If nothing branches on it, delete it — a canary wired
+to nothing is a pure false-alarm generator, and every hour spent making it
+accurate is spent making a better-calibrated irrelevance.
+
+Second-order: the same failure hid inside the *reporting*. Every brief faithfully
+relayed "McMaster still unharvested" because the journal said so, and a
+faithfully-relayed blocker that does not exist is still a false alarm. Scott is
+the one who noticed, from the outside, that the story never changed.
+
