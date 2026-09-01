@@ -7131,3 +7131,35 @@ a wishlist has no supplier reference and no dates.
 Related: the same drawer's parts arrived on a line whose **pack_quantity was 1
 when the SKU said `5 PCS`** — see the pack-quantity trap. One delivery, two
 different ways for the record to be wrong about the same goods.
+
+## "No purchase record" is a claim about the IMPORT, not about the purchase
+
+The #35 roller chain was catalogued 2026-09-01 with *"NO PURCHASE RECORD. No PO
+line anywhere mentions roller chain, so where this came from is not known."*
+Scott found it in the Amazon order history in seconds: **B083JVS632, bought
+2022-02-07, 10 ft, $27.99**, which also revealed the 84 in on the bench is a
+REMNANT with 36 in already spent.
+
+The query was right and the claim was too broad, for the third time in two days.
+
+**Only ONE supplier's import goes deep:**
+
+    McMaster-Carr  18 POs   earliest 2021-01-25   54 months
+    Amazon         39 POs   earliest 2025-07-22   13 months
+    everything else                               months or a single order
+
+**Amazon is this shop's highest-volume vendor and its history reaches back
+thirteen months.** Anything bought there before July 2025 is indistinguishable,
+in InvenTree, from something never bought at all. The chain predates the import
+by three and a half years.
+
+**So run `scripts/import_coverage.py --before <date>` before ever writing "no
+purchase record".** If the part predates that supplier's floor, the honest
+sentence is *"no purchase record in InvenTree; the import does not reach that
+far"* — and the next move is the vendor's own order page, not a shrug.
+
+**The recurring shape, now three times:** "no M2 screws" was true of the database
+and false of the shop. "Unfiled = 2" was true of locations and false of stock.
+"No purchase record" is true of the PO table and false of the purchase. Each time
+the search was competent and the sentence claimed more than the search could
+see. **Name the thing you actually searched, in the sentence.**
