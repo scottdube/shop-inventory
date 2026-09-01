@@ -7108,3 +7108,26 @@ job reporting 0–1 images with a list of vendor excuses looks identical to a jo
 that is quietly broken. The count that distinguishes them is 415, and nothing
 was computing it. **When a queue's yield collapses, measure the size of the
 reachable pool before debugging the method.**
+
+## A shopping list is not an order, and a note can quietly promote one
+
+`A3-R7C3`'s description said *"five more chokes inbound on TO-ORDER-ALI."*
+Two arrived, and the gap looked like a short shipment worth chasing a seller
+about.
+
+It was not. **TO-ORDER-ALI is a shopping list** — status 10, described in its own
+record as *"AliExpress shopping list - not placed."* It holds 5 chokes because
+that is what somebody wanted. The real order, **PO-0147**, was for **2**, and 2
+arrived. Nothing was missing.
+
+The word "inbound" did the damage. It is true of an order and false of a wish,
+and once written into a location description it outlives whoever knew the
+difference.
+
+**Check the PO status before treating a shortfall as a delivery problem.** Status
+20 is placed; status 10 may be a list nobody has acted on. The cheap tell is that
+a wishlist has no supplier reference and no dates.
+
+Related: the same drawer's parts arrived on a line whose **pack_quantity was 1
+when the SKU said `5 PCS`** — see the pack-quantity trap. One delivery, two
+different ways for the record to be wrong about the same goods.
