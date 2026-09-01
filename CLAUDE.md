@@ -51,6 +51,25 @@ new function.
   booked against every piece — 19 storage bins read $208.62 instead of $20.86.
   If a part NAME says "10 pack" while its quantity counts pieces, the name is
   the bug.
+
+  **RUN THE CHECK BEFORE RECEIVING — the rule alone has never worked:**
+
+  ```
+  itq run scripts/pack_audit.py --po PO-0146
+  ```
+
+  Measured 2026-09-01: **688 of 706 supplier parts carried `pack_quantity = 1`**.
+  Scott: *"we seem to have this problem every time we buy something that comes in
+  a multipack."* He was right, and the cause is not misinterpretation — nothing
+  ever asks the question. Importers build supplier parts from order lines that
+  read "1 x <seller's title>" whether that is one screw or a bag of fifty, so
+  InvenTree's default of 1 sticks and the pack size stays buried in the title.
+  It surfaces only when goods land and the price per piece is absurd.
+
+  **An assortment is not a multipack.** A 480-piece capacitor kit of 24 values is
+  ONE unit, not 480 interchangeable pieces; `pack_audit.py` separates the two, and
+  if a kit's contents must be findable it becomes a LOCATION (see TECHNIQUES.md),
+  never a pack.
 - **`default_location` is where a spare goes home** — never a project bin, never
   a staging area.
 - **Check for a duplicate before creating a part.** Two importers have already
