@@ -7220,3 +7220,73 @@ relayed "McMaster still unharvested" because the journal said so, and a
 faithfully-relayed blocker that does not exist is still a false alarm. Scott is
 the one who noticed, from the outside, that the story never changed.
 
+## A closure is a statement about a SET, not a promise about the future (2026-09-02)
+
+Queues A and D were both closed on 2026-09-01 with good evidence. Queue D's
+keyword backfill reached its 37 deliberate tombstones. Queue A's Amazon pool was
+closed by measuring 16 remaining ASINs, finding 16 delisted, and — correctly —
+running a known-live control in the same process so that the suspiciously uniform
+result could not be an instrument fault.
+
+Both closures were true. **Both were also out of date within 24 hours**, because
+the 09-01 16:46 run created parts 1166–1168 from three new Amazon POs. Those
+ASINs are live: they were never in the set of 16.
+
+The 09-01 journal ended "NEXT RUN: do not re-walk queue A vendors", and read
+literally that would have skipped exactly the parts the task file says outrank
+everything else in the queue — items on **open** POs, where the whole point is
+that the photo is on the part before the box lands. The instruction was right
+about not re-walking the *closed* pool and silent about new arrivals, which is
+how a correct instruction produces a wrong result.
+
+**The rule: re-measure the population, then apply the closure to it.** A closure
+names which members of a set were disposed of and why; it cannot speak for
+members that did not exist yet. Cheap to obey — `qa_qd_reopen_0902.py` re-derives
+both counts in one read-only pass, and that pass is what found the three parts.
+
+Note the asymmetry worth keeping: queue D had *not* reopened (0 active parts with
+empty keywords), because part creation writes keywords inline. Queue A reopened
+because nothing attaches an image at creation. The queue that reopens is the one
+with no create-time hook, and that is predictable in advance.
+
+## Queue B had been finished for weeks and nobody checked (2026-09-02)
+
+The overnight task file's queue B — "finish the tooling cost mining" — names two
+remaining senders and says to page back through their order mail. Measured
+against Gmail and InvenTree together, **every order it names is already captured
+and there is no third thing to find.**
+
+The section was wrong in both directions at once, which is why it survived:
+
+| Task file says | Actually |
+|---|---|
+| 3000070065 / 3000069852 / 3000069522, MSC 251613620 "imported" | true, but as cost-mined parts 121–130 — **no PO exists for any of them** |
+| 2024-02-01, 2024-02-28 "not imported" | both ARE — PO-0026 (6/6 priced), PO-0025 (5/5 priced) |
+| 2024-01-11 "not imported" | a **DIRECTPAY payment line**, $40,689.53 against quote QT123040 — rule 7 says it must *never* become a part |
+| "and others", "page back" | there are no others; the older mail is quotes, shipment notices and backorder notices |
+
+Anyone spot-checking would have found a half-truth and stopped. The half that
+read as *pending work* was the false half.
+
+**Two traps generalise from this.**
+
+*A vendor's orders can be captured two different ways, and checking one way
+returns a confident false negative.* Tormach has 8 itemised confirmations: 2 are
+POs, 3 are cost-mined parts with price breaks and stock rows but no PO at all,
+3 are payment lines that must stay absent. A sweep that asks only "does a PO
+exist?" reports the middle three as missing and would import them a second time.
+`po_check.py` answers the PO question honestly and is not, by itself, an answer
+to "is this order captured?" — same shape as the roller-chain miss above.
+
+*"Not imported" and "must never be imported" look identical in a backlog.* Three
+of Tormach's confirmations are DIRECTPAY lines totalling $70,532.98 — the machine
+itself, paid against quotes. They are permanently absent by rule, but a queue
+listing them as un-imported invites a future run to "finish the job" and book a
+$40,689.53 payment as a part cost. Deliberate absences need to be recorded as
+decisions with their reason, not left looking like a gap.
+
+While confirming the above: the pack trap was handled correctly on Tormach SKU
+35724, a 10-pack of coolant nozzles — `pack_quantity=10`, stock 10 pieces at
+$4.50 each rather than one at $44.95. Worth naming because it is the first
+observed case of that rule working on its own in an old import.
+
