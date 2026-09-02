@@ -7290,3 +7290,45 @@ While confirming the above: the pack trap was handled correctly on Tormach SKU
 $4.50 each rather than one at $44.95. Worth naming because it is the first
 observed case of that rule working on its own in an old import.
 
+## Gmail's `subject:order` does not match "Ordered:" (2026-09-02)
+
+The daytime sweep's queue C ran its prescribed query — the itemised-vendor
+`from:` list, constrained by `after:` **and** a subject filter — and came back
+with nine threads, **none of them an order confirmation.** Shipment notices,
+delay notices, pharmacy. A quiet window.
+
+It was not a quiet window. Amazon order `113-0934611-9763450` had been placed
+the previous evening and had a confirmation sitting in the inbox the whole time.
+
+**Gmail's `subject:` matches whole words.** The subject line is
+
+    Ordered: 1 Automotive item
+
+and `subject:order` does not match `Ordered`. Nor does `subject:confirmation`,
+`subject:receipt`, `subject:purchase` or `subject:shipped` — Amazon's
+confirmation subject contains none of them. The filter was not too narrow by a
+little; for Amazon it excluded **the entire class of mail queue C exists to
+find**, and did so silently, because an over-narrow query and an empty window
+produce byte-identical output.
+
+The order surfaced only because the preflight visit to `order-history` had
+already listed it, and `po_check.py` was run over every order number on that
+page rather than over the Gmail hits. That was luck in shape, not design: the
+preflight is a *session canary*, and it happened to also be a second, honest
+census of the window.
+
+**What to do.** For Amazon, the `after:` date is the constraint; drop the
+subject filter, or use `subject:"Ordered"` explicitly alongside the others. The
+task file's advice to "constrain by subject **or** date" is sound — the failure
+was taking both and letting the subject half silently veto the date half.
+
+**The generalisable trap is worse than the Gmail detail.** This is the same
+shape as *"a check that can't tell 'no' from 'couldn't look'"* and *"a truncated
+query is not a search"*, and it is the third instance: **a filter that excludes
+the target returns success.** There is no error, no zero-result warning, nothing
+to spot-check. The only defence is a second source that was built for a
+different purpose — here, the order-history page — and the sweep should keep
+cross-checking Gmail against it rather than treating either as authoritative
+alone. A vendor sweep that trusts one query is a sweep that reports quiet
+windows it never actually looked at.
+
