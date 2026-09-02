@@ -26,6 +26,13 @@ Its guarantee window runs from delivery on **2026-08-26**. The first one died at
 28 jobs and five days, so a failure in the next few months is a claim, not a
 purchase. Do not let that window pass unnoticed the way the first failure did.
 
+**Liveness checked 2026-09-02** (`lpstat -W completed -o QL810W`): jobs 36–75,
+**40 jobs since put-away on 2026-08-26**, most recent 2026-09-01 17:46, queue
+idle. The replacement is therefore already past the 28-job point at which unit #1
+died. This check is the whole watch — the first failure hid for four days because
+nobody read the completed list, and "the queue is accepting" is a claim about
+CUPS, not about the printer.
+
 ## B2-R3, the 1/4-20 row, has outgrown itself — reorder it
 
 Scott 2026-08-26: *"I think we're gonna have to redo that entire row... park
