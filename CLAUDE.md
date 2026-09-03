@@ -70,6 +70,17 @@ new function.
   ONE unit, not 480 interchangeable pieces; `pack_audit.py` separates the two, and
   if a kit's contents must be findable it becomes a LOCATION (see TECHNIQUES.md),
   never a pack.
+
+  **The pack is stored TWICE and only `pack_quantity_native` is read at receive
+  time.** `clean()` derives it from the text field and `save()` calls `clean()`,
+  so a queryset `.update(pack_quantity='5')` changes what every screen shows and
+  nothing that counts — five supplier parts were in that state on 2026-09-03.
+  **Write pack sizes through `.save()`, never `.update()`**, which is the one
+  place the usual advice on this install is reversed. `pack_audit.py` now
+  compares the two fields to each other; `fix_pack_native.py` repairs them.
+  Corrected the same day: `receive_line_item` does **not** ignore the pack — it
+  multiplies by native and divides the price to match, so a line whose supplier
+  part is correct needs no hand repair. See `docs/TRAPS.md`.
 - **`default_location` is where a spare goes home** — never a project bin, never
   a staging area.
 - **Check for a duplicate before creating a part.** Two importers have already

@@ -30,6 +30,7 @@ import argparse
 import os
 import re
 import sys
+from decimal import Decimal, InvalidOperation
 
 import django
 
@@ -95,6 +96,27 @@ else:
 ASSORTMENT = re.compile(
     r"\b(?:assort\w*|kit\b|\bvalues?\b|variety|mixed|selection|set\b)", re.I)
 
+# THE EXACT CHECK, which needs no regex and has no false positives.
+# SupplierPart stores the pack TWICE: `pack_quantity` is text a human types and
+# every screen shows, `pack_quantity_native` is the Decimal receiving actually
+# multiplies by. Only clean() derives the second from the first, and save()
+# calls clean() -- but a queryset .update(pack_quantity='5') does not. The text
+# then reads 5, native stays 1, and receiving silently drops the pack.
+#
+# Five supplier parts were in that state on 2026-09-03, and this audit could not
+# see any of them: it compared the SKU STRING against native, and a name like
+# "Copper Clad Laminate PCB 150 x 100 x 0.8mm" states no piece count to compare.
+# Comparing the two pack fields to EACH OTHER catches it exactly.
+divergent = []
+for sp in sps:
+    try:
+        txt = Decimal(str(sp.pack_quantity).strip() or "1")
+    except (InvalidOperation, ValueError, TypeError):
+        divergent.append((sp, None))
+        continue
+    if txt != sp.pack_quantity_native:
+        divergent.append((sp, txt))
+
 strong_bad, weak_bad, agree, kits = [], [], [], []
 for sp in sps:
     hay = f"{sp.SKU or ''} | {sp.part.name if sp.part else ''} | {sp.note or ''}"
@@ -113,8 +135,20 @@ for sp in sps:
         weak_bad.append((sp, max(w), pq))
 
 print(f"PACK AUDIT — {scope}")
+print(f"  pack text disagrees with pack native     : {len(divergent)}  <-- worst kind")
 print(f"  SKU says a pack AND pack_quantity agrees : {len(agree)}")
 print(f"  SKU says a pack AND pack_quantity is 1   : {len(strong_bad)}  <-- fix these")
+
+if divergent:
+    print("\nSPLIT-BRAIN PACK — the record already knows the pack size and "
+          "receiving will still ignore it:")
+    for sp, txt in divergent:
+        shown = "UNPARSEABLE" if txt is None else f"{txt.normalize():g}"
+        print(f"   text {str(sp.pack_quantity)[:10]:>10} / native "
+              f"{sp.pack_quantity_native.normalize():g}   -> should be {shown}")
+        print(f"        {(sp.part.name if sp.part else '')[:72]}")
+    print("  Repair with scripts/fix_pack_native.py, which writes through save() "
+          "so clean() runs.")
 
 if strong_bad:
     print("\nHIGH CONFIDENCE — the SKU states a piece count:")
@@ -137,10 +171,15 @@ if a.all and weak_bad:
     for sp, n, pq in sorted(weak_bad, key=lambda r: -r[1])[:20]:
         print(f"   says {n:>5} / pq {pq:g}  {(sp.part.name if sp.part else '')[:62]}")
 
+if divergent and not strong_bad:
+    print(f"\n!! {len(divergent)} supplier part(s) will drop their pack on receive even "
+          f"though the record\n   states it. Fix before receiving anything against them.")
+    sys.exit(1)
+
 if strong_bad:
     print(f"\n!! Receiving any of these books the WHOLE PACK PRICE against ONE piece,")
     print(f"   and the shelf then under-reports by a factor of the pack size. Set")
     print(f"   pack_quantity on the SUPPLIER part — never rename the part to say")
     print(f"   'pack of N', which makes the quantity column lie instead.")
     sys.exit(1)
-print("\n  OK  no supplier part contradicts its own SKU about pack size.")
+print("\n  OK  no supplier part contradicts its own SKU or its own native pack value.")

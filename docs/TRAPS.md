@@ -7439,3 +7439,75 @@ input; it is an untested branch, and it belongs with *"an alarm that has never
 fired is not evidence it works."* Verified both directions here before
 believing it: Omnifixo 40098 now prints `ALREADY QUEUED — no decision`, and a
 synthetic novel order still emits its `decide.py` line.
+
+## CORRECTED — `receive_line_item` does NOT ignore pack_quantity. The pack is stored TWICE and only one copy counts
+
+**2026-09-03**, receiving PO-0150..PO-0157. The rule on file said the receive
+call drops `pack_quantity`, and the PO-0139 precedent therefore rewrote a line
+from packs into pieces by hand before receiving it. Applying that today would
+have **double-counted every multipack**, because the premise is wrong.
+
+Read on the Mini rather than recalled:
+
+```python
+stock_quantity = supplier_part.base_quantity(quantity)          # x pack native
+purchase_price = line.purchase_price / supplier_part.base_quantity(1)
+line.received += quantity                                       # in LINE units
+```
+
+The receive quantity is in **packs**, the stock row lands in **pieces**, and the
+price is divided by the same factor. PO-0150 received one pack and produced
+3 buttons at $4.996667 — correct, with no line repair at all.
+
+**So what actually happened on 2026-08-26?** `SupplierPart` stores the pack in
+two fields:
+
+| field | what it is | who reads it |
+|---|---|---|
+| `pack_quantity` | **text**, what a human types | every screen, and `pack_audit.py` |
+| `pack_quantity_native` | **Decimal**, derived | `base_quantity()`, i.e. receiving |
+
+`clean()` is the only place the second is derived from the first, and `save()`
+calls `clean()` — but **a queryset `.update(pack_quantity='5')` does not.** The
+text then says 5, the native stays 1, and receiving silently books one piece at
+the whole pack's price. That is exactly what SP 688 looked like: `pack_quantity`
+`'5'`, `pack_quantity_native` `1`. The pack had never reached the field that
+counts.
+
+**This is the shop's own `.save()` vs `.update()` rule firing BACKWARDS.**
+Everywhere else on this install `.save()` is the untrustworthy one and the
+queryset `.update()` is the fix. Here it is the reverse: `.update()` is what
+skips the derivation, and `.save()` is the only correct path, because the
+validation logic is doing real work rather than getting in the way. **Before
+reaching for `.update()` to dodge a silent save, check whether `clean()` derives
+anything** — if it does, `.update()` is not a workaround, it is the bug.
+
+**Five supplier parts were in this split-brain state**, found by comparing the
+two fields to each other and repaired through `save()`:
+
+| SP | text | native was | part |
+|---|---|---|---|
+| 123 | 10 | 1 | FR-4 copper clad 4 x 2.7 in |
+| 688 | 5 | 1 | Copper clad 150 x 100 x 0.8 mm |
+| 689 | 4 | 1 | Acrylic sheet 12 x 12 in |
+| 693 | 59 | 1 | Chip Quik solder wire |
+| 700 | 66 | 2 | Yotache foam weatherstrip |
+
+Three of them already had **hand-repaired stock rows** — 5 boards at $1.90,
+59 sticks at $0.97 — which is the tell: somebody fixed the symptom on the shelf
+and the cause stayed armed for the next receipt.
+
+**`pack_audit.py` could not have caught any of them, and now can.** It compared
+the SKU *string* against native, so it only ever fired on names that state a
+piece count; "Copper Clad Laminate PCB 150 x 100 x 0.8mm" states none. Comparing
+the two pack fields **to each other** needs no regex, has no false positives,
+and is now the first section of the report and part of its exit code.
+`scripts/fix_pack_native.py` does the repair.
+
+**The generalisable shape: a value stored twice has a direction of truth, and
+writing the readable copy is not writing the value.** Same family as
+`pathstring` going stale after a `.update(name=)` — a derived field that no
+longer derives. The difference is that a stale `pathstring` is visible the
+moment somebody looks at the tree, whereas this one is invisible until goods
+land and the price per piece is absurd. Assert on the *derived* field, never on
+the one you typed.
