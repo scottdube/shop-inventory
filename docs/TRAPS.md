@@ -7332,3 +7332,62 @@ cross-checking Gmail against it rather than treating either as authoritative
 alone. A vendor sweep that trusts one query is a sweep that reports quiet
 windows it never actually looked at.
 
+
+
+## A status code guessed instead of imported: `status=10` is not "Placed"
+
+2026-09-03, overnight enrich. The run's opening measurement asked which
+imageless parts sit on open purchase orders — the one queue-A rule that still
+produces work now that the vendor-SKU pool is exhausted. It printed:
+
+    --- imageless parts on OPEN (Placed) purchase orders ---
+    count: 0
+
+and that was wrong. **InvenTree's `PurchaseOrderStatus` is `PENDING = 10`,
+`PLACED = 20`**, so the filter `order__status=10` selected the two Pending POs
+and none of the thirteen Placed ones. The correct answer is 1: part 1171, the
+DASBET brake-line flaring tool kit, on PO-0157. That single part was the *only*
+piece of queue-A work available all night, and the bad query hid exactly it.
+
+**Why it is worth writing down.** The failure is not the wrong constant; it is
+that the wrong constant produced a *clean-looking result*. `count: 0` is what a
+finished queue looks like. Had the run stopped there it would have journalled
+"queue A: nothing on open POs" — true-sounding, checkable-looking, and false —
+and the report would have read as a quiet night rather than a missed one.
+
+This is the fourth entry in the same family, after *"a check that can't tell
+'no' from 'couldn't look'"*, *"a truncated query is not a search"*, and *"a
+filter that excludes the target returns success."* **A wrong question answered
+confidently is indistinguishable from a right question answered honestly.**
+Every one of these cost a window, and every one printed a plausible number.
+
+**The fix that generalises, and it is not "remember the codes".** Import the
+enum and let it name itself, and print the whole distribution next to the
+answer:
+
+```python
+from order.status_codes import PurchaseOrderStatus
+
+OPEN = [PurchaseOrderStatus.PENDING.value, PurchaseOrderStatus.PLACED.value]
+for st in PurchaseOrderStatus.values():
+    n = PurchaseOrder.objects.filter(status=st).count()
+    if n:
+        print(f"  status {st} {PurchaseOrderStatus.label(st)} : {n}")
+```
+
+The histogram is what catches it. `13 Placed, 2 Pending, 60 Complete` next to
+`open POs: 0` is a visible contradiction; `open POs: 0` alone is not. A count
+with no denominator beside it cannot be sanity-checked, by a person or by the
+run that produced it — so a measurement script should always print what it
+*excluded*, not only what it found. `scripts/state_0903b.py` is the corrected
+shape.
+
+**A related near-miss the same night, worth recording because the defence
+worked.** The queue-C sweep used `subject:order OR subject:invoice OR
+subject:confirmation`, which the Gmail-whole-word trap above says can silently
+veto the whole Amazon class. It returned nothing new — but the run had already
+read the Amazon order-history page in the preflight and confirmed the newest
+order was Sept 1 and already PO-0157. Two instruments, built for different
+purposes, agreeing. That cross-check is the only thing separating "swept and
+clean" from "looked with a broken filter", and it is cheap: the preflight visit
+is already happening.
