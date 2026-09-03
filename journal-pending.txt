@@ -1,0 +1,41 @@
+# Pending journal entries — written when the Mini was UNREACHABLE.
+#
+# The daytime/overnight tasks journal to the Mini via `itq run scripts/journal.py`.
+# When the LRD tunnel is down that is impossible, and the run vanishes from the
+# record (see docs/TRAPS.md, "A tunnel drop erases the run from the journal").
+# This file is the stopgap: append the lines here, flush them on the next run
+# that can reach the Mini, then delete the flushed block.
+#
+# Format: one block per run, ISO timestamp first.
+
+2026-09-03 16:46 EDT — daytime sweep (16:40 slot)
+  start:     NOT JOURNALLED — Mini unreachable
+  preflight: amazon=OK shop=OK walmart=OK
+             (observed in Chrome; NOT recorded via preflight_state.py, which
+             lives on the Mini — so no transition/NOTIFY evaluation happened
+             and the stored baseline is now stale by one reading)
+  queue C:   SKIPPED — sweep_date_read.py / po_check.py / PO creation all
+             require the Mini.
+  queue D:   SKIPPED — vendor_triage.py runs on the Mini.
+  decisions: NOT QUEUED — decide.py runs on the Mini. One decision is owed:
+             "offline journal spool | infra | buffer journal lines locally when
+             the tunnel is down and flush on the next reachable run"
+  end:       [!!] PARTIAL — LRD tunnel down since at least 16:46; preflight
+             clean, all InvenTree work blocked.
+
+  Diagnosis (documented order, docs/TRAPS.md 2026-08-30):
+    192.168.50.1  (LRD gateway) ICMP 100% loss   <- tunnel down
+    192.168.50.10 ICMP 100% loss; tcp 22/8001/5900/80 all TIMEOUT
+    192.168.30.1  (local gw)    3/3 OK
+    1.1.1.1 / 8.8.8.8           3/3 OK, tcp 443 OPEN
+    DNS inventory.internal -> 192.168.50.10 (resolving fine)
+    route to 192.168.50.10 -> default gw 192.168.30.1 (no site-to-site route)
+  Re-probed ~10 min later: unchanged. Not a blip.
+
+  Unswept while blocked (will be picked up automatically once the tunnel is
+  back, since queue C sweeps from last-po-sweep minus 1 day — listed here only
+  so nothing looks lost):
+    Amazon 113-4088575-5438644  2026-09-03  $8.69  Bridgold 5pcs PCF8574AP
+  Shop.app also showed a Sep 3 Rustic Edge order (#6407, apparel) and an Amazon
+  item in transit; the apparel order was already triaged and declined by the
+  08:51 run today — no action.
