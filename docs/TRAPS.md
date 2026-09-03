@@ -7391,3 +7391,51 @@ order was Sept 1 and already PO-0157. Two instruments, built for different
 purposes, agreeing. That cross-check is the only thing separating "swept and
 clean" from "looked with a broken filter", and it is cheap: the preflight visit
 is already happening.
+
+## A guard that cannot fire for the one case it guards (2026-09-03)
+
+Daytime sweep, 08:46. `vendor_triage.py` has had an idempotency check since
+2026-08-27: before emitting a decision it asks InvenTree whether the order
+already has a PO, and drops it if so. The trap at *"`vendor_triage` emits a
+decision for an order that already has a PO"* is that check's origin story.
+
+**It has never once fired for a real emission, and it cannot.** The check tests
+for a PO. The classifier only ever emits from the `unknown` bucket. An unknown
+vendor **by rule never gets a PO** — that is the whole policy. So the guard's
+condition is false by construction exactly when the guard is asked to act, and
+the same order is re-queued on every run inside its window, forever.
+
+The cost was visible for four days and nobody read it as a defect: Omnifixo
+order 40098 reached the queue on 08-30 and again on 09-01, the 09-02 run
+suppressed a third copy only because it hand-grepped the queue first, and this
+run would have written the fourth. The 47-item queue was inflated by its own
+tooling, which also means **queue length stopped being evidence of anything.**
+
+**The fix is to ask the question you actually mean.** The real question is not
+"does this order have a PO" but *"has a human already been asked about this
+order"* — and the queue file, not InvenTree, is where that is written down.
+`open_queue_orders()` now reads the OPEN `- [ ]` items and suppresses any
+candidate whose order number appears in one.
+
+Rejected: widening the PO check to treat "no PO but seen before" as imported.
+That conflates *we decided not to import this* with *we have not looked at this
+yet*, and would have hidden genuinely new orders — trading a noisy failure for
+a silent one, which is the wrong direction every time.
+
+Two details that make it safe. **Only OPEN items suppress** — a closed item is a
+settled question, and a fresh order from that vendor deserves to be asked again.
+**Tokens must contain a digit**, or the token set fills with prose ("vendor",
+"unknown") and a future order number that happens to be a word gets silently
+dropped. It degrades loudly like `PO_REFS`: an unreadable queue prints a warning
+and disables the check rather than passing everything through in silence.
+
+**The generalisable shape.** This is the sibling of *"a check that can't tell
+'no' from 'couldn't look'"*, but a worse variant, because that check was
+answering the wrong way and this one was structurally incapable of answering at
+all. Both looked healthy from outside — no error, no warning, plausible output.
+**Before trusting a guard, find the case it is supposed to catch and confirm it
+actually catches it.** A guard that has never fired is not evidence of a clean
+input; it is an untested branch, and it belongs with *"an alarm that has never
+fired is not evidence it works."* Verified both directions here before
+believing it: Omnifixo 40098 now prints `ALREADY QUEUED — no decision`, and a
+synthetic novel order still emits its `decide.py` line.
