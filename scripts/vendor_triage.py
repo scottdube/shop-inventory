@@ -144,6 +144,45 @@ def already_imported(order):
         return None
     return PO_REFS.get(re.sub(r"[^A-Za-z0-9]", "", order).lower())
 
+
+QUEUE_PATH = "/Volumes/4TB_Removable/inventree/pending_decisions.md"
+
+
+def open_queue_orders():
+    """Normalized order numbers carried by OPEN decision items.
+
+    The PO check above can never fire for the UNKNOWN bucket, because an unknown
+    vendor by rule never gets a PO — so before this existed the same order was
+    re-emitted on every run inside its window, forever. Measured 2026-09-02:
+    omnifixo 40098 reached the queue twice and a third line was suppressed only
+    because a run hand-grepped first. Same degrade-loudly contract as PO_REFS.
+    """
+    try:
+        text = open(QUEUE_PATH).read()
+    except OSError as exc:  # noqa: BLE001
+        print(f"!! decision queue unreadable from here ({type(exc).__name__}) — "
+              "queue-dedupe check SKIPPED; already-queued orders may re-surface. "
+              "Run via itq so the check works.\n")
+        return None
+    # Only OPEN items suppress. A closed "- [x]" item is a settled question, and
+    # a fresh order from that vendor deserves to be asked again.
+    # Every token must contain a digit — the same rule the order-number regex
+    # uses. Without it the set fills with prose ("vendor", "unknown") and a
+    # future order number that happens to be a word would be silently dropped.
+    return {re.sub(r"[^A-Za-z0-9]", "", tok).lower()
+            for line in text.splitlines() if line.lstrip().startswith("- [ ]")
+            for tok in re.findall(r"[A-Za-z0-9][A-Za-z0-9-]{3,}", line)
+            if any(c.isdigit() for c in tok)}
+
+
+QUEUE_ORDERS = open_queue_orders()
+
+
+def already_queued(order):
+    if QUEUE_ORDERS is None or not order:
+        return False
+    return re.sub(r"[^A-Za-z0-9]", "", order).lower() in QUEUE_ORDERS
+
 print(f"{len(rows)} candidates\n")
 for b in ("known", "suppress"):
     byreason = {}
@@ -190,6 +229,10 @@ for b in ("platform", "mixed", "unknown"):
         if po:
             print(f"     {r.get('date','')[:10]}  {r['_domain']:28s} "
                   f"order {r['_order_no']} ALREADY IMPORTED as {po} — no decision")
+            continue
+        if already_queued(r["_order_no"]):
+            print(f"     {r.get('date','')[:10]}  {r['_domain']:28s} "
+                  f"order {r['_order_no']} ALREADY QUEUED — no decision")
             continue
         actionable.append((b, r))
         via = "" if r["_order_event"] else "  [via ship notice]"
