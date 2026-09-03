@@ -7511,3 +7511,44 @@ longer derives. The difference is that a stale `pathstring` is visible the
 moment somebody looks at the tree, whereas this one is invisible until goods
 land and the price per piece is absurd. Assert on the *derived* field, never on
 the one you typed.
+
+## `vendor_triage` has no bucket for the two skip rules that live only in prose
+
+Daytime sweep, 2026-09-03 12:40. The shape-based discovery search returned ten
+candidates and `vendor_triage.py` classified them correctly by its own lights:
+one known-not-swept (JLCPCB), six suppressed (three carriers, one medical, two
+subscriptions), three unknown. Of the three unknown it dropped OMNIFIXO order
+40098 as `ALREADY QUEUED` — the idempotency work is holding — and emitted
+`--add` lines for the other two.
+
+**Both emitted lines were orders section 3 already tells the sweep to skip.**
+
+- `shop.affirm.com`, 2026-08-31, *"Thanks for your payment!"* — a Shop Pay
+  installment against MFC order `MFCMD1086`, which is **already imported as
+  PO-0140**. Section 3: *"Skip apparel, memberships, and payment lines
+  (DIRECTPAY, deposits)."*
+- `rusticedgeco.com` order `#6407`, 2026-09-03, three made-to-order printed
+  shirts, $89.13 — apparel, same sentence.
+
+**Why the idempotency check did not save the first one.** That check matches a
+candidate's *order number* against `supplier_reference`. The Affirm email
+carries no order number at all — it names the merchant in prose and nothing
+else — so there is no key to match on, and PO-0140 sitting right there in the
+instance is invisible to it. The check is not broken; it is simply unreachable
+for a whole class of message. Shop.app shows **2 payments remaining** on this
+plan, so that is two more guaranteed decisions, the same recurring shape as the
+queued `suppress-invoicecloud-cdd-autopay` and `suppress-intuit-quickbooks-autopay`
+items.
+
+**The generalisable shape: a rule that exists only as prose in the task file is
+invisible to the script the task file runs.** `vendor_triage.py` has buckets for
+carrier, medical, subscription, platform and mixed-use — each corresponding to
+something the registry knows. Apparel and payment-line correspond to nothing;
+they are enforced by whoever happens to be reading section 3 at the time. So the
+classifier keeps promoting them to decisions, a human keeps declining them, and
+the queue absorbs the difference. Either the rule moves into the registry as a
+bucket, or it stays a standing tax on the reader.
+
+Neither was queued as a purchase this run. One combined registry-hygiene
+decision (`suppress-affirm-and-apparel`) asks for both domains to go on the
+suppress list, in the same edit as the two AutoPay items already waiting.
