@@ -7552,3 +7552,44 @@ bucket, or it stays a standing tax on the reader.
 Neither was queued as a purchase this run. One combined registry-hygiene
 decision (`suppress-affirm-and-apparel`) asks for both domains to go on the
 suppress list, in the same edit as the two AutoPay items already waiting.
+
+## A tunnel drop erases the run from the journal — including the fact that it ran
+
+2026-09-03 16:46. `itq` died twice with `scp: Connection closed`. The documented
+far-gateway test (above, 2026-08-30) reproduced its signature exactly: LRD
+gateway `192.168.50.1` 100% loss, Mini dark on 22/8001/5900/80 *and* ICMP, near
+gateway 3/3, `1.1.1.1` 3/3, `inventory.internal` still resolving to
+192.168.50.10. Route to the far subnet falls through to the **default** gateway —
+no site-to-site route present at all, which is the router-to-router tunnel being
+down rather than anything on this laptop. Diagnosis took two scripts and no
+guessing, because the order was already written down.
+
+**What was not written down is the second-order effect.** Section 1 of the
+daytime-sweep task says *journal first, always* — and `journal.py` lives on the
+Mini. When the tunnel is down the journal is unreachable, so:
+
+- there is no `--start` line, no `--end` line, and no `preflight:` line;
+- the **next** run's `journal.py --check` reports the last *successful* run as
+  the previous one, with no indication a run happened in between and failed;
+- so the outage is invisible in the one file the next session actually reads.
+
+This is the same failure the gap check was built to catch — *"the job ran" and
+"the job worked" are different claims* — except one level up: here the job could
+not even record the claim. A run that cannot journal is a run that did not
+happen, as far as the record is concerned.
+
+**The preflight canary survives the outage and should still run.** It is browser
+work on this laptop and needs nothing from LRD. On this run all three sites came
+back signed in (Amazon "Hello, Scott" + 129 orders, Shop.app as Scott Dube,
+Walmart "Hi, Scott D"), which is worth knowing precisely *because* the 02:05 job
+is otherwise heading into a dark night — the sessions are not what will break it.
+What could not run is `preflight_state.py`, so that clean reading went nowhere
+and the NOTIFY-on-transition logic was unavailable; the next reachable run will
+score the transition against a stale baseline.
+
+**The gap worth closing:** nothing buffers a journal entry locally when the Mini
+is unreachable. An offline spool that the next successful run flushes would keep
+the record continuous and cost almost nothing — there is no such convention
+today, and `scripts/` has no offline-journal anything. Queued as a decision
+rather than built here, since inventing a journal format mid-outage is how two
+formats end up in the file.
