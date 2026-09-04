@@ -7825,3 +7825,71 @@ Recorded as `rusticedgeco-suppressed-as-apparel` on the decision queue so the
 half that WAS done is visible and reversible in one line. A registry suppression
 nobody can audit is how a real order gets silently binned — the same reason every
 bucket in that file names its own `why`.
+
+## CORRECTED — the tunnel was down on THIS LAPTOP, and nobody looked (2026-09-04)
+
+Second blocked run in two days. 12:49, `itq` died twice with `scp: Connection
+closed`, far gateway and Mini dark on 22/8001/5900, no route to
+`192.168.50.0/24`. Identical signature to yesterday, so it was heading for the
+identical write-up — *"the router-to-router tunnel is down rather than anything
+on this laptop"* (2026-09-03, above).
+
+**That attribution was wrong, and it was never tested.** One read-only call
+settles it:
+
+```
+scutil --nc list
+```
+
+```
+* (Disconnected)  ... "WireGuard-Server-LRD-Scott-s-Macbook"
+* (Disconnected)  ... "WireGuard-Server-SLN-Scott-Macbook"
+```
+
+The LRD link is a **WireGuard client on the MacBook**, not a router-to-router
+tunnel. It was simply disconnected — as was SLN. A disconnected client explains
+every symptom on its own: no tunnel interface, so no route, so every far-side
+address times out uniformly, gateway and host alike. The far side was never
+tested at all, by either run.
+
+**Why yesterday's reasoning felt airtight and wasn't.** "No route to the far
+subnet, and the near side is healthy" *is* sound — but it concludes only *there
+is no path*. Turning that into *the tunnel between the routers has failed*
+smuggles in an unstated premise: that the path is a router-to-router one that
+this laptop merely uses. It isn't; this laptop **is** one end of it. The
+documented procedure walks outward — near gateway, far gateway, host — and
+never examines the local end, so the one component that was actually down sat
+in the blind spot at step zero. Compare *"A sound argument on an unstated
+premise"* (2026-08-30), which is the same shape.
+
+**The documented diagnosis could not be run by the thing that needs it.** The
+far-gateway procedure is written around `ping`, and the unattended gate denies
+`ping`, `netstat`, and every compound shape. A blocked scheduled run therefore
+cannot execute its own written diagnosis — it must rebuild it from stdlib
+sockets first, which is three or four calls of scaffolding before the first
+fact. Both blocked runs paid that cost independently.
+
+**Fix, and it is deliberately not on the Mini:** `scripts/lrd_reach.py`, run
+locally —
+
+```
+python3 ~/code/shop-inventory/scripts/lrd_reach.py
+```
+
+Every other script in `scripts/` runs on the Mini; shipping a reachability
+probe over the link under test would be circular, which is why none of the 300+
+existing scripts could answer this. It asks the questions in the deliberately
+counter-intuitive order — control first (a uniform wall of timeouts is the
+signature of a broken *prober*; cf. *"A uniform result needs a control"*), then
+the local client, then the route, then the far side — and prints a verdict that
+distinguishes the three cases that look identical from a timeout: local client
+down, transport down beyond this laptop, and the port-22-only IPS signature.
+
+**The operational point for a blocked run:** the fix is Scott clicking Connect
+in the WireGuard menu bar. That is the thirty-second repair the canary exists
+to buy, and for two runs it was mis-aimed at hardware 1,500 miles away.
+
+Unchanged from yesterday and confirmed again: the preflight canary survives the
+outage and should still run — all three sessions were signed in — and the run
+still cannot journal, so this outage is again invisible to the next
+`journal.py --check`. The offline-spool gap remains open and unbuilt.
