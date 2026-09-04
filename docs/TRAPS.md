@@ -2746,6 +2746,31 @@ markdown. So the split is:
 
 `#1084` (the FR-301 filter set) is the worked example.
 
+### `Part.keywords` is capped at 250 too, and it is the easier one to blow
+
+Same limit, same hard failure, and it bites more often because keyword lists are
+written to be generous. The 22:40 sweep on 2026-09-03 threw
+`ValidationError: {'keywords': ['Ensure this value has at most 250 characters
+(it has 277)']}` creating the PCF8574AP part — 277 characters of perfectly
+reasonable synonyms.
+
+Two things make this worth writing down rather than shrugging at:
+
+- **It is a hard error, not a truncation.** `Part.save()` calls `full_clean()`,
+  so an over-long keyword string aborts the whole create. Nothing partial was
+  written *only* because the part was the first write in that script. Put part
+  creation first and the failure stays clean; put it after a PO and the run
+  leaves a PO pointing at nothing.
+- **Nothing warns you while composing.** The description limit is felt right
+  away because prose is obviously long; a comma list of twenty short synonyms
+  reads short and measures 277. Count it, or expect the exception.
+
+What got cut to fit, in priority order: manufacturer alternates
+("Texas Instruments" — NXP alone carries it), the redundant unpunctuated
+spelling ("DIP16" beside "DIP-16"), and bare voltages ("2.5V, 5V") that match
+nothing a person would actually search for. The part number, the bus name, and
+the plain-English function are what survive a trim.
+
 ## A merge pass cleaned one of a matched pair and left the twin
 
 The 1.3mm desoldering nozzle existed **twice**, both active, both zero stock:
