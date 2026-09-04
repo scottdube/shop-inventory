@@ -1,19 +1,19 @@
-"""What actually lives in the two competing IC trees, so the sweep files PCF8574AP
-where its neighbours already are rather than inventing a third convention."""
-import os
-import sys
+"""DEAD — superseded 2026-09-03 by `part_find.py --category <pathstring>`.
 
-import django
+Kept as a marker because this script is the one that caused the damage, and the
+next person to need "list a category" will look for exactly this filename.
 
-sys.path.insert(0, os.getcwd())
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "InvenTree.settings")
-django.setup()
+What it did wrong: it printed `pk`, `name` and `created` for each part in a
+category, and NOT `active` or stock. Ten of the 22 parts in the top-level `ICs`
+tree are inactive merge tombstones. Without the active column they read as live
+records, so NE555, ADUM1201 and PC817 each looked like a live cross-tree
+duplicate. All three had been merged weeks before — #16 is literally named
+"[merged 16]" and I read straight past it. That produced a three-option
+taxonomy decision on Scott's queue, several rounds of chat, and no work.
 
-from part.models import Part, PartCategory  # noqa: E402
+Use the stable tool, which always prints active and stock and hides tombstones:
 
-for pk in (9, 11, 12, 10, 113, 135, 26):
-    c = PartCategory.objects.get(pk=pk)
-    print("=" * 72)
-    print(f"{c.pk}  {c.pathstring}")
-    for p in Part.objects.filter(category=c).order_by("pk"):
-        print(f"   #{p.pk:<5d} {p.name[:70]}   created={p.creation_date}")
+    itq run scripts/part_find.py --category ICs
+    itq run scripts/part_find.py --category ICs --all     # show tombstones too
+"""
+raise SystemExit(__doc__)

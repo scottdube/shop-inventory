@@ -2771,6 +2771,47 @@ spelling ("DIP16" beside "DIP-16"), and bare voltages ("2.5V, 5V") that match
 nothing a person would actually search for. The part number, the bus name, and
 the plain-English function are what survive a trim.
 
+## An inactive part with 0 stock is a RECEIPT, not a problem
+
+A merge in this system leaves the loser in place: `active=False`, stock moved
+off, suppliers gone, sometimes renamed `[merged NN]`. So the visible shape of a
+**solved** duplicate is identical to the visible shape of an **unsolved** one —
+two rows with the same chip name — unless you look at `active` and stock.
+
+Cost of learning this, 2026-09-03: a category listing that printed `pk`, `name`
+and `created` but not `active`. NE555, ADUM1201 and PC817 each appeared twice
+across the two IC trees, so I reported three live duplicates, wrote a
+three-option taxonomy decision onto Scott's queue, and defended it over several
+rounds. Then measured:
+
+```
+NE555     #16  active=False  stock=0   ← "[merged 16]", the name said so
+ADUM1201  #191 active=False  stock=0
+PC817     #299 active=False  stock=0
+```
+
+All three merges were already done. Each chip had exactly one live record with
+one stock row. **Zero findings, and the whole exchange was waste.**
+
+Two fixes, both landed:
+
+- `part_find.py` now takes `--category <pathstring>`, always prints `active` and
+  `stock`, and **hides inactive parts** unless given `--all`, reporting the
+  count it hid. There is now no reason to write a one-off category lister — and
+  writing one is what went wrong, because the stable tool already printed
+  `active` and the ad-hoc copy did not. `cat_probe_0903_2240.py` is a stub
+  pointing here.
+- **Measure the claim before queueing it.** The decision item asserted a data
+  problem that one cheap query disproved. A queue item that says "X is broken"
+  costs Scott real attention, so the measurement that would falsify it is owed
+  *first* — this is just "measure, don't model" applied to reporting rather than
+  to design. Reserve the queue for questions that survive being checked.
+
+Corollary for counting: **live counts must filter `active=True`.** The top-level
+`ICs` tree reads "22 parts" and holds 12; the other 10 are tombstones. Any
+backlog or coverage figure that skips this filter is inflated, which is the same
+mechanism that made the queue-D keyword backlog look unfinished.
+
 ## A merge pass cleaned one of a matched pair and left the twin
 
 The 1.3mm desoldering nozzle existed **twice**, both active, both zero stock:
