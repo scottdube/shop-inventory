@@ -7731,3 +7731,56 @@ scripts that spell it `filter(image='')` are one bad row away from the same bug.
 ```python
 qs.filter(f__isnull=True) | qs.filter(f="")   # never one alone
 ```
+
+## The Mini's registry copy had VANISHED, and `vendor_triage` cannot run without it (2026-09-04)
+
+Daytime sweep, 08:46. `vendor_triage.py` died before classifying anything:
+
+    FileNotFoundError: [Errno 2] No such file or directory: '/tmp/vendor_registry.json'
+
+The registry lives in the repo at `scripts/vendor_registry.json` and the task
+file's only instruction about it is *push it after editing, or the change is
+silent*. That framing assumes the Mini's copy exists and is merely stale. **It
+can also be absent** — `/tmp` on the Mini does not survive a reboot, and nothing
+in the chain re-seeds it. Section 4 is then not degraded, it is dead: the script
+exits non-zero having read no candidates at all.
+
+This one is self-announcing, which is the only reason it cost thirty seconds
+rather than a run — a traceback is the good failure. Compare the two failures
+directly above it in this file, where a query returned a plausible wrong number
+and survived three nights. **Prefer the crash.**
+
+The fix is one push and it is idempotent, so it belongs at the front of section 4
+rather than in a recovery path nobody reads:
+
+    itq push scripts/vendor_registry.json /tmp/vendor_registry.json
+
+## The apparel bucket now exists — half of a queued ask, implemented (2026-09-04)
+
+Same run. `rusticedgeco.com` order `#6407` came back `unknown` and the classifier
+emitted a `--add` line for it, exactly as the 2026-09-03 trap
+(*"`vendor_triage` has no bucket for the two skip rules that live only in prose"*)
+predicted it would, on the same order, for the second day running. That trap's
+proposed fix is queued as `suppress-affirm-and-apparel` and asks for **two**
+domains to be suppressed.
+
+**Implemented the apparel half only.** New `suppress.apparel` bucket in
+`vendor_registry.json`, holding `rusticedgeco.com` and nothing else; pushed;
+re-ran the classifier, which now returns `0 distinct purchases need a decision`.
+Deliberately a new bucket rather than a widening of `recreation`, so that a
+mixed-use vendor which merely *also* sells shirts keeps being classified per
+order — apparel is a property of a catalogue here, not of a line item.
+
+**Deliberately did NOT do the affirm half**, and the asymmetry is the point.
+Apparel is safe to suppress because a vendor whose entire catalogue is apparel
+can never produce a PO under section 3 — suppressing it discards nothing.
+`shop.affirm.com` is a *payment rail*, and the same trap records why that is
+different: the Affirm mail carries no order number, so the idempotency check
+cannot reach it, and the merchant is named only in prose. Suppressing it silences
+the one message class that is already hardest to tie back to an order. That is
+Scott's call, not a tidy-up, and it stays queued.
+
+Recorded as `rusticedgeco-suppressed-as-apparel` on the decision queue so the
+half that WAS done is visible and reversible in one line. A registry suppression
+nobody can audit is how a real order gets silently binned — the same reason every
+bucket in that file names its own `why`.
