@@ -74,6 +74,12 @@
     "globalgolf.com"
    ]
   },
+  "apparel": {
+   "why": "Section 3 of the sweep skips apparel outright, so a vendor that sells NOTHING BUT apparel can never produce a PO — surfacing it only spends a decision line per run on a question whose answer is already written down. Added 2026-09-04 after Rustic Edge Co order #6407 (made-to-order printed shirts, 'your shirt goes to print tonight') arrived as an unknown vendor. Suppress the DOMAIN only when the whole catalogue is apparel; a mixed-use vendor that also sells shirts must stay classified per order, which is why this is a new bucket and not a widening of 'recreation'.",
+   "domains": [
+    "rusticedgeco.com"
+   ]
+  },
   "medical": {
    "why": "Rule 3: medical/pharmacy/personal-care are OUT and MUST NOT BE TRANSCRIBED. Log the order id only, never the detail. Note wexhealth mail is benefits-card traffic and is not always even Scott's.",
    "redact": true,
