@@ -7618,3 +7618,116 @@ the record continuous and cost almost nothing — there is no such convention
 today, and `scripts/` has no offline-journal anything. Queued as a decision
 rather than built here, since inventing a journal format mid-outage is how two
 formats end up in the file.
+
+## `Part.keywords` is NULL-able, so `filter(keywords='')` closed a queue it never measured (2026-09-04)
+
+`Part.keywords` on this install is `null=True, blank=True`. Measured tonight
+across all 1158 parts:
+
+    keywords = ''        ->  0
+    keywords IS NULL     -> 38
+
+**Nothing is the empty string. Every empty keywords field is NULL.** Django's
+`filter(keywords='')` does not match NULL, so that query returns **0 by
+construction** — it cannot return anything else, on any database state, ever.
+
+Queue D was closed on exactly that query. The 2026-09-01, 09-02 and 09-03 runs
+each reported "0 of ~1074 active parts have an empty keywords field", and the
+09-03 journal called it *"the third consecutive independent measurement"* and
+used it to argue the overnight job has no primary queue left. It was not three
+measurements. It was one broken instrument read three times, and repetition made
+a query that could not fail *feel* settled — the same mechanism the task file
+warns about for blocked-vendor conclusions ("two runs of the same failing method
+are not two confirmations").
+
+**How it surfaced:** tonight's state script happened to print two things next to
+each other that cannot both be true —
+
+    empty keywords        : 0          <- active.filter(keywords='')
+    pk 1172 ... kw=n                   <- bool(p.keywords) is False
+
+Not cleverness; adjacency. The per-part dump used `bool()`, which is NULL-blind
+in the right way, while the count used `=''`, which is NULL-blind in the wrong
+one. Two spellings of "empty" in one script disagreed out loud.
+
+**The conclusion was nearly right anyway, which is the dangerous part.** The
+true count of active parts with empty keywords was 1, not 0 (pk 1172, a
+current-sense resistor created 2026-09-03; filled this run). Had the backfill
+genuinely been unfinished, this query would have reported it finished every
+night with equal confidence and nobody would have looked. A wrong instrument
+that happens to agree with reality teaches you to trust it.
+
+**The fix, and it is the same fix as `status=10`:** never spell a field test by
+guessing which empty it is. Ask the field:
+
+```python
+f = Part._meta.get_field("keywords")   # null=True  -> '' alone is not enough
+empty = qs.filter(keywords__isnull=True) | qs.filter(keywords="")
+```
+
+`scripts/kw_null_probe_0904.py` prints the field's own `null=`/`blank=` flags
+beside both counts, so the next run can see *why* the number is what it is
+rather than taking it. This is the fifth logged instance of a wrong question
+answered confidently (see also *A status code guessed instead of imported*, *A
+correct reading turned into a confident wrong answer*, *"No filter matches" was
+true of the query, not of the rows*, and *A truncated query is not a search*).
+The shared shape: the query was **well-formed and returned cleanly**, so nothing
+looked broken — only the semantics were wrong, and a clean return is exactly
+what a wrong question looks like.
+
+**37 of the 38 NULLs are inactive tombstones** (MERGED/DUPLICATE/REFUNDED/NOT
+INVENTORY/RETIRED) and must stay empty, so the corrected count of *active* parts
+needing keywords is now genuinely 0. Queue D is still closed — but it is closed
+on a measurement now, which it was not before.
+
+### It is not one field. 19 of them are like this
+
+`keywords` was not special — nullability is a property of the field, so the same
+trap is armed anywhere a report asks "how many are missing X". Swept the whole
+install with `scripts/null_blank_audit_0904.py` (read-only; every text and file
+field on Part, SupplierPart, Company, PurchaseOrder, StockItem, StockLocation),
+printing both counts side by side. **19 fields would under-report under an
+`=''` test:**
+
+| Field | NULL rows invisible to `=''` |
+|---|---|
+| `Part.revision` | 1155 |
+| `Part.link` | 1059 |
+| `StockItem.packaging` | 743 |
+| `SupplierPart.notes` | 711 |
+| `SupplierPart.packaging` | 711 |
+| `StockItem.serial` | 672 |
+| `SupplierPart.description` | 659 |
+| `Part.IPN` | 633 |
+| `StockLocation.custom_icon` | 549 |
+| `Part.notes` | 144 |
+| `SupplierPart.link` | 101 |
+| `PurchaseOrder.order_currency` | 81 |
+| `StockItem.notes` | 75 |
+| `SupplierPart.note` | 66 |
+| `Part.keywords` | 37 |
+| `Company.email` | 33 |
+| `Company.notes` | 25 |
+| `PurchaseOrder.notes` | 8 |
+| `StockItem.batch` | 1 |
+
+**The MIXED ones are the more dangerous half.** `Part.notes` (3 empty-string, 144
+NULL), `Part.IPN` (14 / 633), `Part.revision` (3 / 1155) and `StockItem`'s
+`notes`/`packaging`/`serial`/`batch` hold *both* spellings of empty. A uniform-NULL
+field at least fails loudly — the count comes back a suspicious 0. A mixed field
+returns a plausible non-zero number that is simply too small, and nothing about
+it looks wrong. `Part.IPN` would report 14 missing IPNs when the real answer is
+647.
+
+**Checked and currently clean: `Part.image`.** It is nullable, but has 0 NULLs
+today (496 empties, all `''`), so queue A's backlog counts — including every
+"N parts with no image" figure in this file — are correct. That is luck about
+what has been written so far, not a guarantee: one NULL write and the backlog
+starts silently shrinking. `image_backlog.py` already uses the safe idiom;
+scripts that spell it `filter(image='')` are one bad row away from the same bug.
+
+**Standing idiom, for any "missing X" count on this install:**
+
+```python
+qs.filter(f__isnull=True) | qs.filter(f="")   # never one alone
+```
