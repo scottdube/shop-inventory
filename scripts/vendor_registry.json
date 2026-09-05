@@ -43,9 +43,11 @@
    ]
   },
   "subscription": {
-   "why": "Recurring software/services. Rule 7: memberships and subscriptions are not parts.",
+   "why": "Recurring software/services. Rule 7: memberships and subscriptions are not parts. Added 2026-09-05: email.monarch.com, a personal-finance app whose activity digests ('You have 2 new updates in Monarch') the order-shape regex reads as a purchase event with no order number — the same false-positive mechanism as the globalgolf promos, and the same fix. Suppressing the domain is right because Monarch sells software and can never produce a shop part; do NOT instead widen the not_an_order prefixes, which would mask real orders from other vendors.",
    "domains": [
     "anthropic.com",
+    "monarch.com",
+    "email.monarch.com",
     "apple.com",
     "parallelsnetwork.com",
     "adobe.com",
