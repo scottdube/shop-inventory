@@ -42,14 +42,26 @@ from company.models import SupplierPart  # noqa: E402
 from order.models import PurchaseOrder  # noqa: E402
 
 # HIGH confidence: these phrasings mean count-of-pieces and nothing else.
+#
+# The look-behind excludes a preceding LETTER as well as a digit or dot, and
+# that is not cosmetic — without it the audit read pack counts out of the middle
+# of identifiers (2026-09-05):
+#
+#   B01983R7PK          -> "7PK"   claimed a 7-pack of an Arducam Nano
+#   XIAO ESP32C6 Pack   -> "6 Pack" claimed a 6-pack of a single XIAO board
+#
+# Both are letter-then-digit tokens: an Amazon ASIN and a chip name. `(?<![\d.])`
+# happily matched inside them, and the audit's own output truncated the title
+# just short of the evidence, so the verdict looked as solid as the 29 real ones
+# beside it. A pack count must start at a token boundary.
 STRONG = [
-    re.compile(r"(?<![\d.])(\d{1,5})\s*(?:pcs|pieces)\b", re.I),
+    re.compile(r"(?<![\d.A-Za-z])(\d{1,5})\s*(?:pcs|pieces)\b", re.I),
     re.compile(r"\bpack\s*of\s*(\d{1,5})\b", re.I),
-    re.compile(r"(?<![\d.])(\d{1,5})\s*-?\s*(?:pack|pk)\b", re.I),
-    re.compile(r"(?<![\d.])(\d{1,5})\s*(?:pc)\b", re.I),
+    re.compile(r"(?<![\d.A-Za-z])(\d{1,5})\s*-?\s*(?:pack|pk)\b", re.I),
+    re.compile(r"(?<![\d.A-Za-z])(\d{1,5})\s*(?:pc)\b", re.I),
 ]
 # WEAK: "set", "kit", "lot" — often a count, often an assortment sold as one unit.
-WEAK = [re.compile(r"(?<![\d.])(\d{1,5})\s*(?:set|lot|bag)\b", re.I)]
+WEAK = [re.compile(r"(?<![\d.A-Za-z])(\d{1,5})\s*(?:set|lot|bag)\b", re.I)]
 
 # A number touching a unit is a DIMENSION, never a pack count. This is the
 # lesson from the first draft, which flagged a 2000x microscope and a

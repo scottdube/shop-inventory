@@ -7893,3 +7893,64 @@ Unchanged from yesterday and confirmed again: the preflight canary survives the
 outage and should still run — all three sessions were signed in — and the run
 still cannot journal, so this outage is again invisible to the next
 `journal.py --check`. The offline-spool gap remains open and unbuilt.
+
+## A verdict printed without its evidence is not checkable (2026-09-05)
+
+`pack_audit.py` flagged **31** supplier parts as "SKU says a pack, but
+`pack_quantity` is 1". Twenty-nine were real. Two were the regex reading a digit
+out of the middle of an identifier:
+
+    part 383   B01983R7PK           -> "7PK"    an Amazon ASIN, not a 7-pack
+    part 232   XIAO ESP32C6 Pack    -> "6 Pack" a chip name, not a 6-pack
+
+The bug itself is one character of look-behind — `(?<![\d.])` excluded a
+preceding digit but not a preceding **letter**, so `R7PK` and `C6 Pack` both
+matched. Widening it to `(?<![\d.A-Za-z])` drops both and breaks none of the 29
+true positives, because a real pack count always starts at a token boundary.
+
+**That is the small lesson. The one worth the entry is how the two hid.**
+
+`pack_audit.py` prints, per flag, `says 7 / pack_quantity 1` above a part name
+**truncated to 72 characters**. For part 383 the ASIN is in the SKU line and the
+matched text `7PK` appears nowhere in the printed name at all; for part 232 the
+title is cut off before a reader can see that `6` belongs to `ESP32C6`. So both
+false positives rendered as *exactly* the same three lines as the 29 correct
+ones. Nothing in the tool's own output could distinguish them — not because the
+evidence was ambiguous, but because **the tool printed its conclusion and threw
+the evidence away.**
+
+Writing all 31 would therefore have been a defensible-looking act: a purpose-
+built audit said so, and the audit exits non-zero to gate a receive, which reads
+as authority. The two bad ones were caught only by writing
+`pack_evidence_0905.py`, which prints the full SKU, full name, note, existing
+stock, *which pattern fired* and *the matched span with its surrounding
+characters*. That took ten minutes and turned 31 verdicts into 31 decidable
+facts.
+
+**The rule: a check that gates a write must print what it matched, not only what
+it concluded.** Truncation is not cosmetic in a tool whose whole job is to
+notice a substring — it is the deletion of the only thing that makes the output
+falsifiable. Where a tool cannot be made to print evidence, dump the evidence
+separately before acting on it.
+
+This is the sixth entry in the family that began with *"a check that can't tell
+'no' from 'couldn't look'"*, and it is a new variant. The previous five were all
+a **wrong question answered confidently** — `status=10 is not Placed`,
+`filter(keywords='')` returning 0 by construction, a Gmail filter that excluded
+its own target. This one asks the *right* question and gets the right answer 29
+times out of 31; what fails is that the output cannot be audited, so a run has
+no way to find the two. **Correct-most-of-the-time plus unfalsifiable output is
+worse than an obvious error**, because it earns the trust that carries the
+mistakes through.
+
+Fixed the same night: look-behind widened in `pack_audit.py` (with the two
+ASIN/chip-name examples in a comment, so nobody narrows it back), 29 packs
+written and verified by re-read via `pack_fix_0905.py`, and the audit now
+reports 0 unresolved with agreements up from 4 to 33.
+
+**Also measured, and it is the reason this was safe to do unattended:**
+`openpo_packs_0905.py` checked all 10 lines on the 9 open purchase orders first
+and found **0** exposed. CLAUDE.md's rule is "run the check before receiving",
+so the question that decides urgency is never "how many are wrong" but "how many
+are wrong on a box that has not landed yet". Those are different numbers — 31
+and 0 — and only the second one can hurt stock.
