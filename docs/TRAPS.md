@@ -7980,3 +7980,33 @@ when a SKU says "pack" while `pack_quantity` says 1.
 **The general shape, worth more than the specific bug:** when you bypass a
 framework's method because it is wrong about one thing, enumerate everything
 else that method did. The reason to use it was never the part you noticed.
+
+## A two-email confirmation splits into two decisions
+
+`vendor_triage.py` classified one Geeksoutfit purchase as **two** distinct
+decisions on 2026-09-05. Both messages came from `support@geeksoutfit.com`,
+seven seconds apart, for the same checkout:
+
+    "Your order is confirmed"              -> key: order GK281233
+    "Congrats! You finished your order!"   -> key: no-order-no-2026-09-05
+
+The second carries no order number — the marketing-flavoured half of a
+two-email confirmation almost never does — so it falls to the no-number dedupe
+key, which by design includes the date so that two same-subject orders on
+different days stay separate. That fix (2026-08-27) was aimed at **under-merging
+being wrong**; this is the same key **over-splitting**, and the two failures
+pull in opposite directions. Nothing here is a regression of that fix. The
+honest summary is that a message with no order number cannot be deduped against
+one that has an order number, because there is nothing to compare.
+
+It cost nothing this time only because reading the itemised body settled the
+vendor outright — five printed T-shirts, so `geeksoutfit.com` went into the
+`apparel` suppression bucket and the domain will never be surfaced again. That
+is the durable fix and it is why the bucket exists.
+
+**The rule: read the itemised body before you queue an unknown vendor.** The
+classifier can only see sender, subject, date and snippet, and on that evidence
+a T-shirt shop and a machine-tool supplier are indistinguishable. One body read
+turned two recurring decision lines into one registry entry. A decision queue
+already 52 deep is not paid for by more classification — it is paid for by
+questions that never get asked twice.
