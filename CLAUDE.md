@@ -52,11 +52,23 @@ new function.
   If a part NAME says "10 pack" while its quantity counts pieces, the name is
   the bug.
 
-  **RUN THE CHECK BEFORE RECEIVING — the rule alone has never worked:**
+  **RECEIVE WITH THE SCRIPT — it does both halves:**
 
   ```
-  itq run scripts/pack_audit.py --po PO-0146
+  itq run scripts/receive_po.py PO-0146 --to RB-14           # dry run
+  itq run scripts/receive_po.py PO-0146 --to RB-14 --commit
   ```
+
+  It honours `pack_quantity`, merges into the existing row, refuses to run when a
+  SKU says "pack" and `pack_quantity` says 1 — and **closes the order**.
+
+  **Both halves matter and each was got wrong once, on the same day.**
+  InvenTree's own `receive_line_item()` ignores `pack_quantity` and books the
+  whole pack price against one piece. Hand-rolling it avoided that and lost the
+  other half: setting `line.received` satisfies the LINE and leaves the ORDER at
+  PLACED, so a fully-received order ages into OVERDUE. Scott found three sitting
+  like that on the purchasing screen. **Receiving a line is not closing an
+  order.**
 
   Measured 2026-09-01: **688 of 706 supplier parts carried `pack_quantity = 1`**.
   Scott: *"we seem to have this problem every time we buy something that comes in

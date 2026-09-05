@@ -7954,3 +7954,29 @@ and found **0** exposed. CLAUDE.md's rule is "run the check before receiving",
 so the question that decides urgency is never "how many are wrong" but "how many
 are wrong on a box that has not landed yet". Those are different numbers — 31
 and 0 — and only the second one can hurt stock.
+
+## Receiving a line is not closing an order
+
+Three POs showed OVERDUE on the purchasing screen while fully received. Scott:
+*"the other two are here and marked here, but now are showing overdue POs, even
+though I believe the POs were closed."*
+
+They were not closed. Their LINES were.
+
+`line.received = line.quantity` satisfies the line and does nothing to the
+order, which stays at status 20 PLACED. Past its target date it then reads as
+outstanding forever. A fourth, PO-0146, was sitting the same way and had not
+been noticed yet.
+
+**Why the hand-rolled receive existed at all:** InvenTree's `receive_line_item()`
+ignores `pack_quantity` and books the whole pack price against one piece — the
+19-bins-at-$208.62 failure, which nearly repeated the same day with a 5-pack of
+Hi-Links at $16.96. Avoiding that trap created this one. **Each half of the job
+was got wrong once, on the same day, by fixing the other half.**
+
+`scripts/receive_po.py` now does both, dry-run by default, and refuses to run
+when a SKU says "pack" while `pack_quantity` says 1.
+
+**The general shape, worth more than the specific bug:** when you bypass a
+framework's method because it is wrong about one thing, enumerate everything
+else that method did. The reason to use it was never the part you noticed.
