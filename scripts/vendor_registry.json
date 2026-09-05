@@ -77,9 +77,10 @@
    ]
   },
   "apparel": {
-   "why": "Section 3 of the sweep skips apparel outright, so a vendor that sells NOTHING BUT apparel can never produce a PO — surfacing it only spends a decision line per run on a question whose answer is already written down. Added 2026-09-04 after Rustic Edge Co order #6407 (made-to-order printed shirts, 'your shirt goes to print tonight') arrived as an unknown vendor. Suppress the DOMAIN only when the whole catalogue is apparel; a mixed-use vendor that also sells shirts must stay classified per order, which is why this is a new bucket and not a widening of 'recreation'.",
+   "why": "Section 3 of the sweep skips apparel outright, so a vendor that sells NOTHING BUT apparel can never produce a PO — surfacing it only spends a decision line per run on a question whose answer is already written down. Added 2026-09-04 after Rustic Edge Co order #6407 (made-to-order printed shirts, 'your shirt goes to print tonight') arrived as an unknown vendor. Suppress the DOMAIN only when the whole catalogue is apparel; a mixed-use vendor that also sells shirts must stay classified per order, which is why this is a new bucket and not a widening of 'recreation'. geeksoutfit.com added 2026-09-05 on the same test: order GK281233 was five printed T-shirts, $103.95, every line a shirt with a GEEKTS/GEEKUH SKU and a colour/size variant. Read the itemised body before suppressing a domain — the classifier had it as a plain unknown vendor and would have spent a decision line per run forever.",
    "domains": [
-    "rusticedgeco.com"
+    "rusticedgeco.com",
+    "geeksoutfit.com"
    ]
   },
   "medical": {
