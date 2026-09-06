@@ -628,3 +628,23 @@ the script that protects everything had just been edited.
 
 **It still cannot cover the job never running.** That is what the digest's
 verdict-age check is for, and it is the failure this install has actually had.
+
+### No package? The grade is stamped on the head
+
+A loose fastener with no bag is not an unknown fastener. Metric hex heads carry
+their grade on the head, and it is a better source than packaging — the bag goes
+in the bin and the stamp stays on the part for its whole life.
+
+    A2-70    austenitic stainless, 18-8/304 family. 70 = 700 MPa tensile
+    A4-80    316 stainless, molybdenum, marine
+    8.8      carbon steel, 800 MPa tensile — STRONGER than A2-70
+    10.9     alloy steel, 1040 MPa
+    12.9     alloy steel, 1220 MPa, usually socket head
+
+**Stainless is not an upgrade.** B1-R5C3 holds both an **A2-70 stainless** M8 and
+a **Class 8.8 zinc-plated** M8. The stainless is the weaker of the two — 700 MPa
+against 800 — and the corrosion resistance is what it buys. Swapping one for the
+other because "stainless is better" gets it backwards on strength.
+
+Recorded 2026-09-06 when 17 M8 x 25 stainless arrived with no packaging at all
+and the head marking settled a grade that had been logged as unknown.
