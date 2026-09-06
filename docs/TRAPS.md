@@ -8298,3 +8298,42 @@ say where things went, rather than being waved through.
 
 **Do not build the override.** A guard that fires rarely and correctly is not a
 usability problem; the cost was a one-time backlog, not a recurring tax.
+
+## The label said 934 and the matcher heard nothing
+
+A bag of 92 M8 hex nuts was counted against M8 x 60 socket head cap screws. The
+photo read perfectly:
+
+    PART DESCRIPTION: M8 934-8
+    PART #: HN4800800-100M1
+
+**DIN 934 IS the hex nut standard.** The matcher ranked a screw first and put
+the nut fourth. Earlier the same day, three bags reading `7380` — the button
+head standard — were mis-filed the same way.
+
+**The scoring was never the problem.** `match_reading` already carries a −5
+penalty for nut-versus-screw, added after two earlier incidents. It never fired
+because the penalty is gated on `lk`, the kinds read off the label, and `_kinds()`
+knows only WORDS. The word "nut" does not appear anywhere on that bag. `lk` came
+back empty, the whole kind block was skipped, and four M8 things scored
+identically on thread alone.
+
+**So the fix was vocabulary, not logic:** `_DIN_KIND` maps standard numbers to
+the same tags the word list already emits — 934 nut, 985 nyloc, 912 socket, 7380
+button, 933/931 hexhead, 125 washer, and so on. `_kinds()` unions the two. The
+penalty then does the rest, and it does more than reorder:
+
+    before   1. Socket Head Cap Screw M8x60   <- tapped
+             4. Steel Hex Nut M8              <- correct
+    after    1. Steel Hex Nut M8              <- ONLY candidate
+
+The screws now score below zero and never reach the phone.
+
+**Deliberately narrow.** Only standards worth acting on are in the table, so a
+lot number or a quantity cannot masquerade as a form — `QTY: 100` and `Line 3 on
+your packing list` both yield nothing, and that is tested. A wrong entry here
+would be worse than a missing one: it manufactures agreement out of a number.
+
+`scripts/test_din_matcher.py` runs the REAL `match_reading` against the exact
+reading that caused the mis-file, so a regression fails the test rather than a
+drawer.
