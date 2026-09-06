@@ -2184,7 +2184,20 @@ lives in the overnight-import project, not this repo. The fix is to count both:
 The `belongs_to__isnull=True` exclusion is required — an installed part (a stud
 in a holder, a LiPo in a probe) legitimately has no location.
 
-## The roller chain's missing 36 inches
+## The roller chain's missing 36 inches — probably the head mover
+
+**Likely answered 2026-09-06.** The Jet mill/drill head mover is a photographed
+CHAIN DRIVE whose drive sprocket is ANSI 35, bought 2022-02-01; the chain was
+bought 2022-02-07. Scott confirmed the sprocket was fitted to that build.
+
+**To settle it: measure the chain loop on the head mover.** Near 36 in / 96
+pitches closes it. Anything else and the 36 in is elsewhere.
+
+Held as an inference on purpose — part #1126 already carries a correction where
+four thrust bearings were claimed for this same build on a date cluster and
+actually went into a vise rebuild.
+
+### original entry
 
 Bought as 120 in (10 ft, 320 links) on 2022-02-07; **84 in on the bench.** So 36
 in / 96 links are in something, and nothing records what. The kit also shipped a
