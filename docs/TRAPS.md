@@ -8215,3 +8215,37 @@ correct matches.** Nothing on the card distinguishes "this is confident" from
 "this is the least bad of a poor lot", so the ranking's uncertainty never reaches
 the person holding the bag. Same shape as the instrument-panel rule: an
 instrument that under-reports is worse than one that is absent.
+
+## McMaster ships the MAKER'S bag, and the maker's number matches nothing
+
+Scott, 2026-09-06, frustrated after two mis-files: *"I have the bag from
+McMaster Carr... we're not resolving it to a McMaster part number."*
+
+**He was right and my first reading was wrong.** I saw `BHS7X04006-100M1` and
+`BRIKKSEN` on the label and said the bag was not McMaster. Then he photographed
+the back: a yellow **"Line 3 on your packing list"** sticker — McMaster's own.
+
+**McMaster resells Brikksen and ships the manufacturer's packaging with a
+McMaster line sticker on it.** So the bag carries a number the catalogue has
+never seen, while the part it belongs to is filed under McMaster's `92095A188`.
+
+**The yellow sticker is usable evidence, not decoration.** Line 3 of PO-0121
+(2023-08-21) is `92095A188`, M4 x 0.70 x 6mm, qty 100 — matching `M4X6 QTY 100`
+on the bag. Three independent confirmations for one filing.
+
+**Three defects, all in the identify path:**
+
+1. `M4X20` tokenised whole and matched nothing — fixed by `_SIZE_PAIR`.
+2. **The index read only `name` and `description`.** A photo showing McMaster's
+   own `92095A188` could not match the part whose IPN IS `92095A188`. Now
+   indexes IPN, SKU and MPN.
+3. **An exact identifier scored 1.60 while a fuzzy name match scored 2.63**,
+   because `sum(idf)/sqrt(len)` punishes a hit on a part with a long name. Exact
+   identifiers now short-circuit at 999 and skip the fuzzy pass entirely. A part
+   number is not a hint.
+
+**STILL OPEN: the manufacturer numbers are not recorded.** `BHS7X04006-100M1`
+returns nothing, so the bag's OWN number still cannot be scanned. One
+`ManufacturerPart` row per bag would make every McMaster fastener resolve
+exactly and end this class of mistake — but the numbers have to be READ off the
+bags, not decoded from a pattern.
