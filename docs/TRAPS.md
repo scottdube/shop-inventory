@@ -8168,3 +8168,50 @@ overdue POs, so it is legible in an inbox list without opening the mail.
 
 **Still outstanding: the immediate failure email from the backup job itself.**
 The weekly heartbeat bounds the damage at seven days, which is a lot of nights.
+
+## BinScan picked the wrong part because "M4X20" tokenised to nothing
+
+Scott, 2026-09-06: *"somehow I am picking the wrong items when adding to these
+bins"*, then *"I had the same thing happen in r2c2 where I somehow selected
+labels."* Two bags of button-head screws filed against a **Brother label roll**
+and a **Miscellaneous Hardware** catch-all.
+
+**He was not mis-tapping. He tapped the TOP candidate and the top candidate was
+wrong.** From BinScan's own log:
+
+    10:12  label read "PART DESCRIPTION: M4X6 7380-1 A2 FT"
+           1st  #922  Brother DK-22205 Label Roll        3.804   <- filed
+    10:27  label read "PART DESCRIPTION: M4X20 7380-1 A2 FT"
+           1st  #944  Miscellaneous Hardware             3.959   <- filed
+
+**Root cause.** `_tokens()` splits on `[a-z0-9]+`, so **`M4X20` survives as one
+token** — a string that appears nowhere in the catalogue, which writes the same
+fact as `M4 x 0.70 mm Thread, 20mm Long`. Measured:
+
+    q = "M4X20"      -> NO MATCHES AT ALL
+    q = "M4 x 20mm"  -> the right screw, first
+
+So the single most identifying thing on the bag contributed **zero**, and the
+score fell back on noise words — *part*, *description*, *pack*. The scoring then
+damps by `sqrt(len(tokens))`, which **rewards short generic names**, and
+"Brother DK-22205 Label Roll" is short. The catch-all wins precisely because it
+says little.
+
+**Fix:** `_SIZE_PAIR` expands `m4x20` into `m4`, `20` and `20mm` — the last being
+how the catalogue actually writes it. Applied in `_tokens()`, so query and index
+both get it.
+
+Replaying the two failing label reads afterwards puts the correct screw first
+every time, by a clear margin:
+
+    "...M4X6 7380-1 A2 FT"   -> #993 Button Head  2.38  (2nd: 1.74)
+    "...M4X20 7380-1 A2 FT"  -> #975 Button Head  2.63  (2nd: 1.69)
+    "...M4X25 7380-1 A2 FT"  -> #974 Button Head  2.63  (2nd: 2.01)
+
+**THE DEEPER FAULT IS UNFIXED: a bad match looks exactly like a good one.** The
+successful identifies that morning scored 5.012; the two failures scored 3.804
+and 3.959; and two CORRECT ones scored 3.678 and 3.719. **The failures outscored
+correct matches.** Nothing on the card distinguishes "this is confident" from
+"this is the least bad of a poor lot", so the ranking's uncertainty never reaches
+the person holding the bag. Same shape as the instrument-panel rule: an
+instrument that under-reports is worse than one that is absent.
