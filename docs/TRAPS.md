@@ -8249,3 +8249,43 @@ returns nothing, so the bag's OWN number still cannot be scanned. One
 `ManufacturerPart` row per bag would make every McMaster fastener resolve
 exactly and end this class of mistake — but the numbers have to be READ off the
 bags, not decoded from a pattern.
+
+## A correct guard with no way past it is still a blocker
+
+Scott, 2026-09-06: *"r1c2 and r1c5 will not let me mark them empty as they
+previously had a label indicating something in there. I have since combined
+them with other drawers... but it doesn't allow for that."*
+
+Both drawers had **zero stock rows**. What blocked them was their own
+description — `M3 .5 x25` and `M3 .5 x40`, legacy label text — and BinScan's
+`/api/empty` guard:
+
+> *"the drawer's own description names something. Check by eye — a description
+> is often the only place the contents were written down."*
+
+**The guard is right.** "No rows" is not evidence of emptiness, and on this
+cabinet the legacy labels were the only record for months. It should not be
+weakened.
+
+**But it has no override**, so a human who HAS checked by eye has nowhere to go.
+A guard that cannot be satisfied is not a guard, it is a wall — and the person
+in front of it starts looking for ways round the system rather than through it.
+
+**The resolution is to satisfy the guard's INTENT rather than bypass it: forward
+the contents instead of erasing them.**
+
+    B1-R1C2  "M3 .5 x25"  ->  VERIFIED EMPTY ... COMBINED INTO B1-R1C1,
+                              where those screws now are (97 on record)
+
+The information the guard exists to protect is not lost — it moved with the
+screws, and the new description says where. That is strictly better than either
+outcome the app offered: refusing, or wiping the only record.
+
+**R1C5 is the honest half.** Its M3 x 40 screws are recorded at B1 CABINET
+LEVEL, not against any drawer, so which drawer they went into is genuinely
+unknown. The description says that rather than inventing a destination.
+
+**Wanted in BinScan:** a "contents moved to ___" action on the empty path, which
+takes a destination and writes exactly this. It turns the wall into a door
+without dropping the protection, and the destination is the thing a person
+standing at the drawer actually knows.
