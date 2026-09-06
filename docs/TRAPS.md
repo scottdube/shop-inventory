@@ -8285,7 +8285,16 @@ outcome the app offered: refusing, or wiping the only record.
 LEVEL, not against any drawer, so which drawer they went into is genuinely
 unknown. The description says that rather than inventing a destination.
 
-**Wanted in BinScan:** a "contents moved to ___" action on the empty path, which
-takes a destination and writes exactly this. It turns the wall into a door
-without dropping the protection, and the destination is the thing a person
-standing at the drawer actually knows.
+**DECIDED: leave the guard exactly as it is.** Scott, 2026-09-06: *"it's fine to
+leave as is, because once we get this initial pass done that should be the last
+of that — until we're actually trying to combine drawers, in which case the way
+you have it set up is correct."*
+
+A "contents moved to ___" action was considered and **rejected**. The friction
+is concentrated in the one-off first pass over a cabinet that was labelled by
+hand and never catalogued. After that, hitting this guard means somebody really
+is combining drawers — and that is precisely the moment you want to be made to
+say where things went, rather than being waved through.
+
+**Do not build the override.** A guard that fires rarely and correctly is not a
+usability problem; the cost was a one-time backlog, not a recurring tax.
