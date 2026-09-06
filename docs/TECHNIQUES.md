@@ -583,3 +583,48 @@ front of and finish".
   so abnormal breaks a uniform shape — the instrument-panel principle.
 - **It reports 310 never-counted AND 131 worth counting.** The big number is
   true and unusable; the small one is the job.
+
+### The digest is HTML now, and every item links back
+
+Scott, 2026-09-06: *"it lacks formatting and any links back to the items it
+raises. It's really one big blob of text."* Correct — a digest naming a part
+with no way to reach it makes you go and search for what it just told you about.
+
+**Restructured from "print as you go" to gather-then-render**, which is what
+lets one pass emit both a plain-text body and an HTML alternative
+(`EmailMultiAlternatives`). The text version is not a fallback nobody sees — it
+is what lands in any client with images or HTML off, so it stays readable on its
+own.
+
+**Every part, PO and location is a link** to `site_url` — 21 of them in the
+current issue. This shop already has a rule that a bare pk is unlookupable and
+things should be cited by link; an email is exactly where that bites.
+
+**Email HTML is not web HTML.** Rules followed here, all learned from clients
+rather than from taste: inline styles only (no stylesheet survives Gmail),
+tables for layout, **no flex or grid** (Outlook's Word renderer drops them),
+explicit colours on every element, and total size under Gmail's 102 KB clip
+threshold — this one is 11 KB.
+
+**Checked before sending, not after:** tag balance, that all 21 links are
+absolute and well-formed, that no flex/grid crept in, and the byte size. A
+broken table in an email cannot be corrected once sent, which makes it closer to
+a printed label than to a web page.
+
+## The backup job now emails on failure
+
+`~/.inventree/backup_inventree.py` sends on any non-zero exit. It reads SMTP
+settings out of InvenTree's `config.yaml` rather than keeping a second copy, and
+parses them with a regex because that interpreter has no `yaml` module.
+
+**Nothing in the alert may change the exit code.** Every path inside it is
+swallowed and logged, because an alert that masks the fault it reports is worse
+than no alert.
+
+**Tested by extracting the real function and running it**, not by
+reimplementing it — a bug in the live script fails the test. Then the success
+path was re-run for real (prerun mode, 719 MB in 14 s, exit 0, no mail) because
+the script that protects everything had just been edited.
+
+**It still cannot cover the job never running.** That is what the digest's
+verdict-age check is for, and it is the failure this install has actually had.
