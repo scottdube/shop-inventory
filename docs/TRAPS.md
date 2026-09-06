@@ -8010,3 +8010,48 @@ a T-shirt shop and a machine-tool supplier are indistinguishable. One body read
 turned two recurring decision lines into one registry entry. A decision queue
 already 52 deep is not paid for by more classification — it is paid for by
 questions that never get asked twice.
+
+## "Imported" means two different things, and the queue-B notes read as one
+
+Found 2026-09-06, closing queue B. The overnight task file recorded, as settled
+fact, which Tormach and MSC orders were already mined. Both entries were
+backwards, and the reason is that **"imported" was used to mean "has a
+PurchaseOrder" in one sentence and "exists as a priced Part" in the next.**
+
+What it claimed, and what the rows say:
+
+| Task file | Measured |
+|---|---|
+| Tormach 3000070065 / 3000069852 / 3000069522 **are** imported | No PO for any of the three. Their 8 SKUs exist as parts 121-128, priced. |
+| Tormach 2024-02-01 / 2024-02-28 are **not** | They *are* PO-0026 (3000048956) and PO-0025 (3000053997). |
+| MSC 251613620 **is** imported | No PO. Both its line items are parts 129/130, priced from the order. |
+| MSC "older ones are not" | The older 225102790 is the one with a PO (PO-0027), and MSC has sent exactly two order acknowledgements ever — there is nothing to page back to. |
+
+Every individual claim was *true under one of the two readings* and false under
+the other, which is why nobody caught it by re-reading. The file is not sloppy;
+it is ambiguous, and an ambiguous record read twice gives two answers.
+
+**The instrument that settled it was asking where a price can physically live.**
+`price_cover_0906.py` checks all three places — `SupplierPriceBreak`,
+`PurchaseOrderLineItem.purchase_price`, `StockItem.purchase_price` — and prints
+them side by side per part. That immediately separates "no PO" from "no price",
+which is the exact distinction the prose had collapsed. It also found the real
+remaining gap: **10 of 77 Tormach parts have no price in any of the three**, all
+of them accessories that arrived on the two machine bundles Tormach billed as
+single `DIRECTPAY` lines against quotes QT123040 and QT125789. No verbatim
+per-item cost exists in email for those, so they are blocked by never-invent-
+prices rather than by anything mineable, and they went to the decision queue.
+
+**The general shape:** when a status note and the database disagree, do not pick
+one — find the query whose answer cannot be phrased both ways. "Is it imported"
+has two answers. "Does this SKU exist, and does it carry a price, and from
+where" has one. Same family as the 09-04 `filter(keywords='')` defect: a
+question that cannot return the interesting answer feels like a finding.
+
+**Also: 13 of the 20 `orders@tormach.com` threads are shipping notices** subject
+"Tormach Order Confirmation and Upcoming Shipments", carrying no line items at
+all. Only the 7 subject "Your Tormach Inc. order confirmation" are itemised, and
+3 of those 7 are `DIRECTPAY` payment lines excluded by rule 7. A sender-level
+count of "20 order emails" therefore overstates the mineable pool by 3x — the
+same subject-vs-sender trap already documented for the marketing subdomains,
+arriving this time from the vendor's *own* order address.
