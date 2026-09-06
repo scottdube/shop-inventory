@@ -47,6 +47,8 @@ from stock.models import StockItem  # noqa: E402
 ap = argparse.ArgumentParser()
 ap.add_argument("--count-loc", help="force this week's counting location")
 ap.add_argument("--today", help="override the date, for testing")
+ap.add_argument("--backup-status", metavar="PATH",
+                help="override the backup verdict file (for testing the alarm)")
 ap.add_argument("--email", metavar="ADDR",
                 help="send the digest to this address instead of only printing it")
 a = ap.parse_args()
@@ -94,6 +96,31 @@ unclosed = [po for po in PurchaseOrder.objects.exclude(status__in=(30, 40, 50, 6
 row("received but not closed", len(unclosed), "  <<" if unclosed else "")
 for po in unclosed:
     out.append(f"      {po.reference}  {po.description[:44]}")
+
+# ---------------- 1b. is anything still protecting this? ------------------
+# A failure email cannot be sent by a job that never runs, and this exact
+# install once "failed with exit 126 every night, silently" (the backup
+# script's own header). So the digest checks the VERDICT FILE and its AGE:
+# a stale OK is the signature of a job that stopped running, and it looks
+# identical to a healthy one if you only read the word.
+backup_alarm = None
+BSTAT = a.backup_status or os.path.expanduser("~/.inventree/last_backup_status")
+try:
+    with open(BSTAT) as fh:
+        verdict = fh.read().strip()
+    age_h = (datetime.datetime.now()
+             - datetime.datetime.fromtimestamp(os.path.getmtime(BSTAT))).total_seconds() / 3600
+    stale = age_h > 30          # daily job; 30h allows a late run, not a missed day
+    bad = not verdict.startswith("OK")
+    backup_alarm = ("BACKUP STALE" if stale else "BACKUP FAILED" if bad else None)
+    row("backup verdict age (hours)", f"{age_h:.0f}",
+        "  << STALE — job may have stopped" if stale else "")
+    out.append(f"      {verdict}")
+    if bad:
+        out.append("      !! the verdict is NOT OK — read backup.log")
+except FileNotFoundError:
+    row("backup verdict", "MISSING", "  << no status file at all")
+    backup_alarm = "NO BACKUP STATUS"
 
 # ---------------- 2. one walk's worth of counting -------------------------
 head("THIS WEEK'S COUNT — one location, one walk")
@@ -198,6 +225,8 @@ if a.email:
     # Subject carries the headline so the inbox list is readable without opening
     # it. A digest whose subject is always the same word gets filed unread.
     heads = []
+    if backup_alarm:
+        heads.append(backup_alarm)     # first, because nothing else matters as much
     if low:
         outs = sum(1 for have, _, _ in low if have == 0)
         heads.append(f"{len(low)} below min" + (f" ({outs} OUT)" if outs else ""))
