@@ -8055,3 +8055,51 @@ all. Only the 7 subject "Your Tormach Inc. order confirmation" are itemised, and
 count of "20 order emails" therefore overstates the mineable pool by 3x — the
 same subject-vs-sender trap already documented for the marketing subdomains,
 arriving this time from the vendor's *own* order address.
+
+## config.yaml's `backup_dir` is empty and always will be
+
+Scott, 2026-09-06: *"I have not checked to make sure our backups are
+happening."* Reasonable question. The first check looked wrong in an alarming
+way:
+
+    /Volumes/4TB_Removable/inventree/data/backup   0 files, created 2026-08-15
+
+That is InvenTree's built-in `backup_dir` from config.yaml, and **nothing writes
+to it.** Backups are done by `~/.inventree/backup_inventree.py`, which writes to
+`/Volumes/4TB_Removable/inventree/backups` — a different path — plus Google
+Drive and the NAS.
+
+An empty directory named `backup`, referenced by the config file, is the most
+convincing possible evidence of a broken backup. It is now annotated in
+config.yaml so the next person checking gets the real path in the same breath.
+
+**The check that actually answers the question is `runs =` on the launchd job
+and the tail of its log**, not the presence of files in a configured directory.
+Both jobs had run 28 and 18 times with empty stderr, which is what said "these
+are working, look elsewhere".
+
+Same shape as the M2 screws and the UNFILED lamp, a third time: **the query was
+right and the thing queried was not what the question was about.**
+
+## Backup posture, verified 2026-09-06
+
+Good, and verified by reading the archives rather than trusting the log:
+
+| | |
+|---|---|
+| schedule | daily 03:17, plus a PRERUN copy at 01:55 before the overnight jobs |
+| local | 22 copies, `/Volumes/4TB_Removable/inventree/backups` |
+| NAS | 14 copies, `/Volumes/home/inventree` |
+| off-site | Google Drive, per the job log |
+| contents | `inventree.sqlite3` + `media/` + `config.yaml` + secret key, 2388 entries |
+| integrity | `gzip -t` passes on today's 686 MB archive |
+| repo | `shop-inventory` pushed to GitHub, 0 unpushed commits |
+
+**The prerun copy is the good idea here** — a snapshot taken BEFORE the
+overnight automation runs, so a bad night can be undone rather than backed up.
+
+**THE GAP: no restore has ever been tested.** Three copies of an archive nobody
+has ever unpacked into a working instance is a hope, not a backup. The archive
+carries the secret key, so a restore is possible in principle — but "in
+principle" is exactly what the shrink-fit stud alarm was before it was tested,
+and that alarm turned out to work only because someone made it fail on purpose.

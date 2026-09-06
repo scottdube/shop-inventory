@@ -47,6 +47,8 @@ from stock.models import StockItem  # noqa: E402
 ap = argparse.ArgumentParser()
 ap.add_argument("--count-loc", help="force this week's counting location")
 ap.add_argument("--today", help="override the date, for testing")
+ap.add_argument("--email", metavar="ADDR",
+                help="send the digest to this address instead of only printing it")
 a = ap.parse_args()
 
 TODAY = (datetime.date.fromisoformat(a.today) if a.today else datetime.date.today())
@@ -186,4 +188,26 @@ out.append("  digest able to see it at all.")
 out.append("")
 out.append("-- shop-inventory/scripts/digest.py")
 
-print("\n".join(out))
+text = "\n".join(out)
+print(text)
+
+if a.email:
+    from django.conf import settings
+    from django.core.mail import send_mail
+
+    # Subject carries the headline so the inbox list is readable without opening
+    # it. A digest whose subject is always the same word gets filed unread.
+    heads = []
+    if low:
+        outs = sum(1 for have, _, _ in low if have == 0)
+        heads.append(f"{len(low)} below min" + (f" ({outs} OUT)" if outs else ""))
+    if od:
+        heads.append(f"{len(od)} PO overdue")
+    if unclosed:
+        heads.append(f"{len(unclosed)} PO unclosed")
+    subject = f"Shop digest {TODAY} — " + ("; ".join(heads) if heads else "all clear")
+
+    n = send_mail(subject=subject, message=text,
+                  from_email=settings.DEFAULT_FROM_EMAIL,
+                  recipient_list=[a.email], fail_silently=False)
+    print(f"\n[emailed to {a.email}: send_mail returned {n}]")
