@@ -62,6 +62,16 @@ loc = None
 backup_alarm = None
 
 
+def q(x):
+    """Quantities, without six decimal places of nothing.
+
+    InvenTree stores quantities as Decimal, and Decimal PRESERVES SCALE - so
+    format(Decimal('1.000000'), 'g') is '1.000000', not '1'. Casting to float
+    first is what makes :g trim. Reads as 100, 0.5, 84 rather than 100.00000.
+    """
+    return f"{float(x):g}"
+
+
 def link(kind, pk, text):
     """A bare pk is unlookupable; give the reader something to click."""
     return (kind, pk, text)
@@ -75,7 +85,7 @@ low = sorted(((p_.total_stock, p_.minimum_stock, p_) for p_ in
               Part.objects.exclude(minimum_stock=0)
               if p_.total_stock < p_.minimum_stock), key=lambda r: r[0])
 rows_hand.append(("parts below minimum", len(low), bool(low),
-                  [(f"{h:g}/{w:g}" + ("  OUT" if h == 0 else ""),
+                  [(f"{q(h)}/{q(w)}" + ("  OUT" if h == 0 else ""),
                     link("part", pp.pk, pp.name)) for h, w, pp in low]))
 
 od = [po for po in PurchaseOrder.objects.filter(status=20)
@@ -169,7 +179,7 @@ if loc:
     t.append(f"  {loc.pathstring}")
     t.append(f"  {len(rows_count)} row(s) here have never been counted:")
     for si in rows_count[:15]:
-        t.append(f"      {si.quantity:>8g}  {si.part.name[:50]}")
+        t.append(f"      {q(si.quantity):>8}  {si.part.name[:50]}")
     if len(rows_count) > 15:
         t.append(f"      ... and {len(rows_count) - 15} more in the same place")
     t.append("")
@@ -234,7 +244,7 @@ if loc:
         z = "#fafafa" if i % 2 else "#fff"
         h.append(f'<tr style="background:{z}">'
                  f'<td style="padding:5px 10px;text-align:right;width:70px;'
-                 f'font-variant-numeric:tabular-nums;color:#666">{si.quantity:g}</td>'
+                 f'font-variant-numeric:tabular-nums;color:#666">{q(si.quantity)}</td>'
                  f'<td style="padding:5px 10px">{a_("part", si.part.pk, si.part.name)}</td></tr>')
     h.append('</table>')
     if len(rows_count) > 15:
