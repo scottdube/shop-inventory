@@ -8130,3 +8130,41 @@ locations (the Jet stand and its three subs) — which is what a coherent
 point-in-time snapshot should look like, and is itself a check.
 
 Scratch directory deleted afterwards.
+
+## A failure alert cannot be sent by a job that never runs
+
+Scott, 2026-09-06: *"is there an email alert if a backup fails?"* There was
+none. The backup script signals failure well but entirely passively — it exits
+non-zero when no off-site copy succeeded (on the sound principle that "the only
+copies are on the disk holding the original" is a failure), and it writes a
+verdict file. Both require somebody to look.
+
+The script's own header records why that is not enough:
+
+> *"The job failed with exit 126 every night, silently."*
+
+**The two failure modes need different alarms:**
+
+| Failure | Caught by |
+|---|---|
+| the job RAN and failed | a failure email from the job |
+| the job never ran at all | a HEARTBEAT from somewhere else |
+
+An email sent by the failing job cannot cover the second, which is the one that
+already happened here. So the weekly digest now reads the verdict file and
+checks **its age as well as its contents** — because a job that stops leaves its
+last `OK` in place forever, and a stale `OK` is indistinguishable from a healthy
+one if you only read the word.
+
+Tested by injecting all four states rather than trusting it:
+
+    healthy   6h    OK  ... off-site: gdrive, NAS
+    STALE     126h  OK  ...                        <-- verdict still says OK
+    FAILED    0h    FAIL ... off-site: NONE
+    MISSING         no status file at all
+
+A backup alarm also sorts FIRST in the subject line, ahead of low stock and
+overdue POs, so it is legible in an inbox list without opening the mail.
+
+**Still outstanding: the immediate failure email from the backup job itself.**
+The weekly heartbeat bounds the damage at seven days, which is a lot of nights.
