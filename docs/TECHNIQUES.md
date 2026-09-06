@@ -540,3 +540,46 @@ different screws. Head type is now the FIRST thing in every location name
 individual size in the description, so `M2 x 8 socket cap` resolves to exactly
 one box. Head-first also survives label truncation, which eats the end of the
 string.
+
+## The weekly digest, and why it took three tries to aim
+
+`scripts/digest.py` prints what needs a hand and ONE location's worth of
+counting. Built 2026-09-06 when Scott asked whether email could carry anything
+worth reading. It can: the first run found **both label rolls at zero** on a day
+25 labels had been printed.
+
+**It proposed the wrong job twice, and each wrong answer was instructive.**
+
+**Try 1 — `SLN/Machine Shop`, 46 rows.** The location with the most uncounted
+rows. Those rows are a Tormach 1100MX, a 15L lathe, operator consoles and
+printed manuals. Capital equipment is qty 1 and stays qty 1; counting it is
+theatre. **Fix: exclude the Equipment category, and require a real container
+rather than a room** — a location one level under a site is a room you cannot
+finish.
+
+**Try 2 — a 30-value resistor kit**, about 840 resistors. That is exactly the
+work rejected for the four screw kits days earlier, where the ruling was that a
+kit is one unit and its sizes GRADUATE into parts as they get used. Proposing it
+weekly would contradict a convention written the same week. **Fix: exclude
+anything under a `Kit -` location.**
+
+**Try 3 — `SLN/Bin Wall/B1`, the metric fastener cabinet.** Which is the B1/B2
+walk the McMaster import notes have been deferring since August. It found the
+shop's own outstanding job instead of inventing one.
+
+**The general lesson: a nag that proposes work nobody will do trains you to skip
+the message.** Both wrong answers were *correct queries* — most uncounted rows,
+in a real container — and both would have been deleted unread. The filter that
+matters is not "what is uncounted" but "what would a person actually stand in
+front of and finish".
+
+**Design choices worth keeping:**
+
+- **A location, not N items.** A trip out costs about the same whatever you do
+  when you arrive, so five items in five rooms is five trips.
+- **Trends, not lists,** for the slow-moving checks. Printing 27 orphan rows
+  every week teaches you to skip the section.
+- **Every section prints even when clean**, with the number in the same column,
+  so abnormal breaks a uniform shape — the instrument-panel principle.
+- **It reports 310 never-counted AND 131 worth counting.** The big number is
+  true and unusable; the small one is the job.
