@@ -8056,7 +8056,7 @@ count of "20 order emails" therefore overstates the mineable pool by 3x — the
 same subject-vs-sender trap already documented for the marketing subdomains,
 arriving this time from the vendor's *own* order address.
 
-## config.yaml's `backup_dir` is empty and always will be
+## config.yaml's `backup_dir` is empty, REQUIRED, and must not be deleted
 
 Scott, 2026-09-06: *"I have not checked to make sure our backups are
 happening."* Reasonable question. The first check looked wrong in an alarming
@@ -8068,6 +8068,17 @@ That is InvenTree's built-in `backup_dir` from config.yaml, and **nothing writes
 to it.** Backups are done by `~/.inventree/backup_inventree.py`, which writes to
 `/Volumes/4TB_Removable/inventree/backups` — a different path — plus Google
 Drive and the NAS.
+
+**BUT THE SETTING IS REQUIRED. DO NOT DELETE THE LINE.** Discovered by omitting
+it from a restore-rehearsal config, which refused to boot:
+
+    FileNotFoundError: INVENTREE_BACKUP_DIR not specified
+
+The first annotation written here said "NOT USED", which was true of writes and
+false of startup, and would have invited somebody to tidy the line away and
+break the server on its next restart. Corrected the same hour. **"Unused" and
+"never written to" are not the same claim** — the same over-broad-sentence error
+this file already documents three times.
 
 An empty directory named `backup`, referenced by the config file, is the most
 convincing possible evidence of a broken backup. It is now annotated in
@@ -8098,8 +8109,24 @@ Good, and verified by reading the archives rather than trusting the log:
 **The prerun copy is the good idea here** — a snapshot taken BEFORE the
 overnight automation runs, so a bad night can be undone rather than backed up.
 
-**THE GAP: no restore has ever been tested.** Three copies of an archive nobody
-has ever unpacked into a working instance is a hope, not a backup. The archive
-carries the secret key, so a restore is possible in principle — but "in
-principle" is exactly what the shrink-fit stud alarm was before it was tested,
-and that alarm turned out to work only because someone made it fail on purpose.
+**RESTORE REHEARSED 2026-09-06 — it passed.** Extracted the newest archive to a
+scratch directory, pointed a throwaway config at it, and opened it with Django.
+The live instance was never touched.
+
+    extract 686 MB          1.4 s
+    sqlite integrity_check  ok
+    Django opens it         parts 1159, stock 747, locations 564, POs 83
+    unapplied migrations    0 — a restore needs no `migrate` step
+    spot checks             Shrink-Fit Induction Machine; BO-0018 with 8 lines
+    attachments on disk     60 checked, 0 missing
+    part images on disk     60 checked, 0 missing
+
+**Checking the media files was the part worth doing.** A database row pointing
+at an attachment that did not come along in the tarball would restore silently
+and be discovered months later. It came along.
+
+**Row counts differed from live by exactly the day's work** — +2 parts, +4
+locations (the Jet stand and its three subs) — which is what a coherent
+point-in-time snapshot should look like, and is itself a check.
+
+Scratch directory deleted afterwards.
