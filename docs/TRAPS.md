@@ -8337,3 +8337,75 @@ would be worse than a missing one: it manufactures agreement out of a number.
 `scripts/test_din_matcher.py` runs the REAL `match_reading` against the exact
 reading that caused the mis-file, so a regression fails the test rather than a
 drawer.
+
+## A vendor search URL is a FALSE HANDLE, and one of them hands you the wrong photo
+
+Measured 2026-09-08, overnight run, with driven Chrome. This is the mechanism
+behind "queue A is exhausted" — a conclusion that kept getting re-derived,
+re-doubted and re-journalled because nobody had named *why*.
+
+**The shape.** 56 of the 714 stored supplier links are not product pages at all;
+they are searches — `lakeshorecarbide.com/search.aspx?find=<SKU>`,
+`tormach.com/catalogsearch/result/?q=<SKU>`, `precisebits.com/?s=<SKU>`,
+`digikey.com/en/products/result?keywords=<SKU>`, and the Shars and Haas links.
+`scripts/link_shape_0908.py` counts them. **22 imageless active parts have a
+search URL as their ONLY handle**, which is why every previous run's bucket
+count said those parts were reachable. They are not. A search URL resolves to
+zero products, to many, or — worst — to the wrong one.
+
+**The dangerous case is Tormach, and it is silent.** The catalogsearch page has
+a "No exact results found for: 'X'. The displayed items are the closest matches"
+banner, so the obvious guard is to check for that banner. **The banner cannot be
+trusted.** Two of the five Tormach SKUs showed NO banner and still had no exact
+match:
+
+    q=34444  part is "Tormach 15L Slant-PRO CNC Lathe"
+             -> 1 result: "USB Bulkhead Port Assembly"        no banner
+    q=39044  part is "1100MX Enclosure Kit"
+             -> 4 whole-mill CONFIGURATORS ($30k machines)    no banner
+    q=34058  part is "ER20 Collet Chuck"
+             -> drill gauge, ER32 collet, shim kit            banner shown
+
+A harvester that grabs the first product image off a search page would have put
+a photograph of a complete CNC mill onto an enclosure kit, and a USB port onto a
+lathe — confidently, with no error anywhere. At the bench that is worse than a
+blank image, because a blank prompts you to go look and a wrong photo does not.
+
+**Lakeshore fails the same way, less loudly.** A SKU query returns fuzzy hits
+(`10-SPTRMLB` → 2 results, `4L-SPTRMLB` → 6, `1/4-SPTRMLB` → 9), and none of the
+thread-mill products carries a product image at all. Of the 9 Lakeshore parts,
+4 resolve to a product page and those 4 share just TWO generic 279x55 line-art
+GIFs — `drill mill 4fl.gif` sits on three different tools (1/4" 90°, 1/8" 90°,
+1/2" 120°). Not attached: the drawing says only "4-flute drill mill", which the
+part name already says, and three identical thumbnails read as three copies of
+one part. On the decision queue as Scott's call, since it is cheap to reverse.
+
+**Rule: never derive `Part.image` from a search URL.** An image may only come
+from a page that names one product. If the only stored link is a search, the
+part is a camera job, not a scrape job — record it as such instead of leaving it
+in a queue that will keep looking workable and keep producing nothing.
+
+## The Amazon ASIN image pool is dead — re-confirmed with a calibrated control
+
+Same run. The standing `dead-asin-images` finding was checked again, deliberately
+with a DIFFERENT instrument than the one that produced it: same-origin `fetch`
+from a signed-in Chrome session, not curl.
+
+**20 of 20 ASINs returned HTTP 404**, including staples that feel like they must
+be live — a Mitutoyo 293-340-30 micrometer (B00MBHXWGY) and Tap Magic ProTap
+(B002JEXWK0). A 100% failure rate is exactly when to suspect the instrument
+rather than the data, so it was calibrated:
+
+    B00FLYWNYQ  Instant Pot Duo 6qt    200, hiRes present   <- control
+    B07FZ8S74R  Echo Dot 3rd Gen       200, hiRes present   <- control
+    B08N5WRWNW  Echo Dot 4th Gen       404                  <- also retired
+
+The method works. The listings really are gone. Note the third control: a famous,
+still-sold product line whose ASIN 404s anyway — **ASINs are retired routinely
+when a listing is restructured**, so "this product obviously still exists" is not
+evidence its ASIN resolves. Scott's ASINs came out of order history going back
+years; most of those listings are simply gone.
+
+**Do not re-run this sweep.** It has now been confirmed twice, by two instruments,
+and repeated automated hits on `/dp/` are the thing that costs the session its
+reputation. The 20 parts are camera jobs.
