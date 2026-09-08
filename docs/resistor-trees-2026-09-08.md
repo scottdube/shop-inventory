@@ -187,3 +187,93 @@ wins.
   all), and none is a variant parent.
 - `[2]` holds **0 stock rows**. `[69]` holds 34 rows, 924 pieces. A move
   relocates no physical stock.
+
+
+---
+
+## 5. What was done, after Scott's approval (2026-09-08)
+
+Approved: **collapse all of Passives** into `Electronics/Passives`, plus a
+routing guard. Executed by `scripts/collapse_passives.py --commit`, which dry
+runs by default, re-reads every write, and refuses to delete a category it
+cannot prove empty.
+
+**28 parts moved and confirmed:**
+
+| From | To | Parts |
+|---|---|---:|
+| `[2] Passives/Resistors` | `[69] Electronics/Passives/Resistors` | 8 |
+| `[2] Passives/Resistors` | `[112] …/Potentiometers` (#444, a pot) | 1 |
+| `[3] Passives/Capacitors` | `[51] Electronics/Passives/Capacitors` | 12 |
+| `[4] Passives/Potentiometers` | `[112] Electronics/Passives/Potentiometers` | 7 |
+
+**Two records retired in place**, both with a pointer in the description so the
+audit trail survives:
+
+- [#211 EAONE kit](http://inventory.internal/web/part/211) → `active=False`,
+  "an assortment kit is a LOCATION … 30 values counted in Kit - EAONE Resistor
+  30-value, 839 pcs". No quantity invented.
+- [#8 YOKIVE](http://inventory.internal/web/part/8) → merged into
+  [#178](http://inventory.internal/web/part/178), which took #8's shorter name
+  and kept its own IPN, supplier part, image and purchase history.
+
+**Four categories deleted:** `[2]`, `[3]`, `[4]`, then the `[1] Passives` root.
+
+**Verified after the write:** MPTT clean (no tree_id with >1 root, no stale
+pathstrings); `Electronics/Passives` now reads Resistors 38 live / 5 tombstones,
+Capacitors 84 / 9, Potentiometers 14 / 0; no part left uncategorised by the
+move.
+
+### The guard
+
+`structural=True` — the obvious lock — is refused by InvenTree on a category
+that holds parts, which is every remaining flat root. So the guard is a
+detector: `scripts/shadow_root_check.py`, for the nightly sweep. It reports
+every category name that exists both as a flat root and nested, which side is
+heavier, and anything newly filed into a shadowed root.
+
+**Fourteen shadow roots remain.** Passives was the only family where the nested
+tree held more; for eleven of the fourteen the flat root is heavier, so the
+direction must be decided per family:
+
+```
+[22] Modules (78)          vs Electronics/Modules (8)            FLAT
+[28] Consumables (73)      vs Shop/Consumables (12)              FLAT
+[18] Connectors (48)       vs Electronics/Connectors (9)         FLAT
+[13] Power (29)            vs Electronics/Power (10)             FLAT
+[33] Switches (27)         vs Electronics/…/Switches (9)         FLAT
+[21] Sensors (27)          vs Electronics/Sensors (13)           FLAT
+[20] Electromechanical(15) vs Electronics/Electromechanical (12) FLAT
+[9]  ICs (14)              vs Electronics/…/ICs (2)              FLAT
+[35] RF (12)               vs Electronics/RF (1)                 FLAT
+[25] Displays (11)         vs Electronics/Displays (1)           FLAT
+[6]  Semiconductors (11)   vs Electronics/Semiconductors (25)    NESTED
+[17] Fuses (9)             vs Electronics/Protection/Fuses (1)   FLAT
+[5]  Optoelectronics (7)   vs Electronics/Optoelectronics (18)   NESTED
+[14] Test Equipment (0)    vs Equipment/Test Equipment (7)       NESTED
+```
+
+`[14] Test Equipment` is empty — a free win whenever Scott wants it.
+
+## 6. Open, not done — needs eyes, not a query
+
+- **[#1 ALLECIN 25-value 1/2W kit](http://inventory.internal/web/part/1)** —
+  notes say a copy is owned at SLN *and* LRD; never exploded, no stock row.
+  The one genuine "owned but reads zero". Explode it into values in each site's
+  kit location, per its own notes.
+- **[#2 uxcell SMD 220R 1206](http://inventory.internal/web/part/2)** (200-pack,
+  ordered 2026-07-09) and
+  **[#459 E-Projects 4.7k 5%](http://inventory.internal/web/part/459)**
+  (25-pack, 2018-01-08) — orders exist, no stock rows. A purchase is not a
+  count, and #143 is the same uxcell product on a *refunded* order, so the
+  inference is exactly the one that goes wrong. Needs a drawer opened.
+- **[#295 GME ESR Capacitor Tester](http://inventory.internal/web/part/295)** —
+  a test instrument (1 on hand at MC-T2) filed under Capacitors. Moved with its
+  category to preserve the status quo; belongs in `Electronics/Test &
+  Measurement`. Not moved because it was outside what was approved.
+- **[#200 EC11 Rotary Encoder](http://inventory.internal/web/part/200)** — an
+  encoder filed under Potentiometers. Defensible, but worth a ruling.
+- **[#925](http://inventory.internal/web/part/925) /
+  [#926](http://inventory.internal/web/part/926)** (shop 3D prints) — the only
+  two uncategorised parts in the database. Pre-existing, not touched by this
+  work.
