@@ -4563,6 +4563,61 @@ two trees make absence and decomposition indistinguishable at a glance.
 
 **Check the category path on every zero before reporting it as a shortage.**
 
+### Measured 2026-09-08: the split is SIXTEEN roots, not one, and it is still growing
+
+The resistor pair is not a local mess. The database carries **30 root
+categories**, and a flat legacy root shadows an `Electronics/...` branch for
+most electronics families:
+
+| Flat root | live | Nested equivalent | live |
+|---|---:|---|---:|
+| `[9] ICs` | 12 | `Electronics/Semiconductors/ICs` | 2 |
+| `[18] Connectors` | 48 | `Electronics/Connectors` (subtree) | 9 |
+| `[21] Sensors` | 27 | `Electronics/Sensors` (subtree) | 13 |
+| `[22] Modules` | 78 | `Electronics/Modules` (subtree) | 8 |
+| `[33] Switches` | 27 | `Electronics/Electromechanical/Switches` | 9 |
+| `[13] Power` | 29 | `Electronics/Power` (subtree) | 10 |
+| `[1] Passives` | 19 | `Electronics/Passives` (subtree) | 121 |
+
+**The heavier side flips family by family.** Passives is the only one where the
+nested tree holds more, which is exactly why a rule inferred from resistors
+("nested wins") would scatter the other six. `cat_precedent_0830.py` asks the
+data instead; run it per family, not once.
+
+**And both trees are still taking new parts.** Two parts created minutes apart:
+
+```
+#1173  [Electronics/Interface]   PCF8574AP I/O expander
+#1174  [Modules/Interface]       USB to CAN FD Adapter, isolated
+```
+
+So this is not legacy residue draining away — nothing routes a new part, so
+whichever tree the session happened to be looking at wins. Consolidating the
+existing rows without fixing that just refills the loser.
+
+### The legacy zeroes are three different things, and only one is an error
+
+Walking `Passives/Resistors` on 2026-09-08, the nine rows split into:
+
+- **Decomposed, and correct at 0** — `#211` EAONE kit. Its 30 values live in
+  `SLN/Laser Area/L2/L2-D4/Kits/Kit - EAONE Resistor 30-value`, 839 pcs counted.
+  The kit is on hand *and* correctly counted; the count just sits on the
+  children. The residual defect is cosmetic: `#211` is still `active=True`,
+  where the same-shaped `#502` was retired properly with a pointer in its
+  description. **Retire the parent, do not invent a count for it.**
+- **Merge/refund receipts** — `#448` (duplicate of `#1`), `#143` (refunded).
+  Both already `active=False`. Nothing to do.
+- **A real gap** — `#1` ALLECIN 25-value 1/2W kit. Its own notes say a copy is
+  owned at **each** site and "when this kit is exploded, create ONE set of
+  values with stock in each site's kit location." It was never exploded and has
+  no stock row, so a genuinely-owned kit reads as zero. This is the one that
+  would cause a duplicate purchase.
+
+The lesson generalises past resistors: **a zero in the legacy tree needs its
+cause named before it is called an error.** Decomposition, tombstone and real
+gap look identical in a listing, and the remedies are opposite — retire it,
+leave it alone, or count it.
+
 ## `allocation_count()` counts the build you are asking about
 
 A coverage check for BO-0002 reported four lines SHORT — SSR, heat sink, tubing,

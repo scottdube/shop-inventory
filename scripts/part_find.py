@@ -38,6 +38,9 @@ from part.models import Part, PartCategory  # noqa: E402
 ap = argparse.ArgumentParser()
 ap.add_argument("terms", nargs="*", help="OR'd across name/description/IPN/keywords/SKU")
 ap.add_argument("--category", help="pathstring, e.g. Electronics/Semiconductors/ICs")
+ap.add_argument("--full", action="store_true",
+                help="also print created date and every stock row's location "
+                     "(needed when auditing where a category's stock actually is)")
 ap.add_argument("--all", action="store_true",
                 help="include inactive parts (hidden by default — they are usually "
                      "merge tombstones, not findings)")
@@ -84,6 +87,16 @@ for p in hits:
     print(f"      desc={(p.description or '')[:110]}")
     if sk:
         print(f"      suppliers={sk}")
+    if a.full:
+        created = p.creation_date.isoformat() if p.creation_date else "-"
+        dl = p.default_location.pathstring if p.default_location else "-"
+        print(f"      created={created}  default_location={dl}")
+        rows = list(p.stock_items.all())
+        if not rows:
+            print("      stock rows: NONE")
+        for si in rows:
+            loc = si.location.pathstring if si.location else "(no location)"
+            print(f"      stock: {si.quantity:g} @ {loc}  [stock/{si.pk}]")
 
 if hidden:
     print(f"\n{hidden} inactive part(s) hidden. These are almost always merge "
