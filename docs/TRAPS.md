@@ -6099,13 +6099,49 @@ scraped the href, po-checked it, believed `absent`, and created the PO would
 have produced a duplicate of PO-0142 — silently, since nothing downstream
 compares hyphen-insensitively either.
 
-**Until `po_check.py` normalizes: check Walmart numbers in BOTH forms.** One
-call takes both (`nargs="*"`), so it costs nothing:
-`itq run scripts/po_check.py 200015182176030 2000151-82176030`.
-
 The general shape, worth carrying to any vendor added later: *an idempotency
 key is only a key if every producer of it agrees on the format.* Here the
 producers disagree by one character and both are official.
+
+### FIXED 2026-09-09 (overnight enrich run)
+
+`po_check.py` now normalizes both sides with the identical idiom
+`vendor_triage.py` got on 08-27 — `re.sub(r"[^A-Za-z0-9]", "", s).lower()` —
+so the two scripts agree. Kept deliberately identical rather than factored into
+a shared helper: they run in different contexts (triage degrades loudly when
+Django is unreachable, po_check requires it), and the 08-27 fix drifting away
+from the 09-09 one is exactly the failure being closed. If one changes, change
+the other.
+
+Regression-tested live, both directions plus a control:
+
+```
+EXISTS  2000151-82176030 -> PO-0142 (…)
+EXISTS  200015182176030  -> PO-0142 (…)  ~norm
+absent  000-0000000-0000000
+```
+
+The `~norm` flag marks a match found only after normalizing, so the looser
+comparison is visible instead of silent. Normalized matching is a **strict
+superset** — every raw match still matches, so nothing that used to be found
+can stop being found. The control is the half worth keeping: a looser
+comparison's failure mode is a false `EXISTS`, which would suppress a real
+order, and only a number that must stay `absent` tests for it.
+
+**The old advice — "check Walmart numbers in BOTH forms" — is retired.** One
+form is now enough, and passing both is harmless.
+
+`po_check.py` also gained collision reporting: an order number resolving to
+more than one PO prints `!! matches N POs — possible duplicate import` rather
+than two `EXISTS` lines that read like success.
+
+**The latent bug never fired.** Fixing the check says nothing about whether a
+duplicate already exists, so that was measured separately the same night
+(`scripts/dupe_po_scan_0909.py`): all 84 POs grouped by normalized
+`supplier_reference` give 82 refs, 82 distinct, **zero groups >1** (2 POs carry
+a blank reference). This was risk, not damage. Worth separating the two
+questions on any fix of this shape — "can it happen again" and "did it already
+happen" have different answers and only one of them is fixed by a code change.
 
 Caught only because the two Walmart items already existed as parts (#1089,
 #1090) while their PO read absent — a contradiction visible only from checking
