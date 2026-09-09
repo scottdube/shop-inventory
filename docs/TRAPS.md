@@ -7489,6 +7489,28 @@ cross-checking Gmail against it rather than treating either as authoritative
 alone. A vendor sweep that trusts one query is a sweep that reports quiet
 windows it never actually looked at.
 
+**RECURRED 2026-09-09 16:40, one week later, identically.** Queue C ran the
+itemised-vendor `from:` list with `after:2026/09/08` **and** a subject filter
+containing `subject:order`. Five threads came back — two AliExpress nags for
+orders already imported, two Amazon "review it" prompts, one shipment notice —
+and **not** the confirmation for Amazon `113-7332958-8875426`, whose subject is
+`Ordered: 2 Electrical & Heating items`. Same vendor, same word, same silent
+veto. It became PO-0162 only because the preflight had already read the
+order-history page, exactly as on 09-02.
+
+So the write-up above did not prevent the recurrence, and it is worth being
+precise about why: **the remedy lives here and the query lives in SKILL.md.**
+The task file still says "Constrain by subject or date", which is what a session
+reads while composing the search; nothing in that path points at this section,
+and a trap you have to already know about in order to look it up is not a
+control. Two independent sessions a week apart both wrote a correct-looking
+query from the task file and both got a false quiet window.
+
+The order-history cross-check has now caught this **twice**, which promotes it
+from lucky second source to the actual mechanism queue C depends on. Treat it
+that way: for Amazon, the history page is the census and Gmail is the detail
+lookup, not the other way round. Queued as a task-file change on the decision
+queue (`gmail-subject-order-recurred-0909`).
 
 
 ## A status code guessed instead of imported: `status=10` is not "Placed"
