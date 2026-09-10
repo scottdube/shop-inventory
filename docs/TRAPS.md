@@ -8543,3 +8543,45 @@ years; most of those listings are simply gone.
 **Do not re-run this sweep.** It has now been confirmed twice, by two instruments,
 and repeated automated hits on `/dp/` are the thing that costs the session its
 reputation. The 20 parts are camera jobs.
+
+## Searching a purchase by its product name finds nothing — search the ORDER
+
+2026-09-10. Scott asked whether the shop had a Nordic PPK2. It was not in
+InvenTree, so the question became: was it ever bought? A full day of searching
+said no. The answer was yes, and the search was wrong in three separate ways.
+
+**1. The listing title is not the product name.** Amazon sells the PPK2 as
+
+    "Current Monitor Power Management Evaluation Board, NRF-PPK2 Nordic Semiconductor"
+
+The model is buried in the middle, hyphenated differently from the vendor's own
+`nRF-PPK2`, and the words a person would search — *power profiler* — do not
+appear at all. Every mail query (`PPK2`, `"Power Profiler"`, `PPK-2`,
+`nRF-PPK2`) returned nothing, correctly. **Order-confirmation subjects are also
+truncated**, so even the buried string never reached the index.
+
+**2. A remembered date is a lead, not a filter.** Scott said "this winter",
+then "april I think". Both were searched to exhaustion, both empty — the order
+was placed **2026-05-24**. Two honest recollections, two dead search windows.
+Bounding the search by the remembered date is what turned a five-minute lookup
+into a day.
+
+**3. The distributor prior was wrong too.** A PPK2 is normally a
+DigiKey/Mouser/Nordic part, so the search leaned that way. It was Amazon, from a
+third-party seller (MaguireStore). The one DigiKey order in the whole window was
+$41.71 of something else.
+
+**What actually worked:** Scott opened his Amazon order history and found it in
+seconds. Order 113-1305022-6114620.
+
+**Rule: when a search by product name comes back empty for a thing that is
+physically in the shop, stop searching by name.** Go to the order history and
+search by *date range and price*, or ask Scott to open it. Mail is indexed on
+the seller's marketing copy; order history is indexed on the purchase. Those are
+not the same corpus, and only one of them was written by someone trying to
+describe the product accurately.
+
+Corollary, and the reason this is filed here rather than in a script: the
+negative was never safe to report as "we don't own one". The instrument could
+not see the thing it was pointed at. See `name-what-you-searched` and
+`truncated-search-absence`.
