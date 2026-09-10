@@ -16,15 +16,39 @@ Plus two AliExpress numbers in the Gmail window, 8214467898875753 and
 the window only because AliExpress sent "how did it go?" review nags for
 orders imported days ago. Not new work.
 
-THE GMAIL SEARCH FOUND NONE OF THE THREE AMAZON ORDERS. A from:-scoped search
-over the twelve itemised vendors returned six threads, every one of them
-marketing (Shars IMTS booth, MSC clearance, DigiKey webinar, Seeed newsletter)
-plus the two AliExpress nags. All three orders imported here came off the
-ORDER HISTORY PAGE. This is the second consecutive run where that happened —
-see sweep_0909_1640.py, where Gmail failed to match `subject:order` against
-the literal subject "Ordered:". Standing lesson, now measured twice: the
-Amazon order history page is ground truth and the mail search is a
-convenience. A quiet mail search is not evidence that nothing was bought.
+THE GMAIL SEARCH FOUND NONE OF THE THREE AMAZON ORDERS, AND THE REASON IS NOT
+THE DOCUMENTED SUBJECT TRAP — IT WAS THIS RUN'S OWN QUERY. The vendor sweep
+was written as
+
+    after:2026/09/09 {from:tormach.com from:mscdirect.com from:shars.com
+    from:mouser.com from:pololu.com from:ebay.com from:haascnc.com
+    from:mcmaster.com from:digikey.com from:seeed.cc from:walmart.com
+    from:aliexpress.com}
+
+and `from:amazon.com` is simply NOT IN THE BRACE GROUP. Eleven of the twelve
+itemised vendors were searched and the twelfth — the one that accounts for
+most of the orders this queue ever imports — was silently absent. Six threads
+came back, all marketing plus the two AliExpress nags, and that empty result
+looked exactly like a quiet window.
+
+Run afterwards as a check, `from:amazon.com after:2026/09/09` returns all
+three confirmations immediately, with no subject filter needed. So this is a
+THIRD instance of the general shape in TRAPS.md — a filter that excludes the
+target returns success — but a NEW mechanism: not Gmail's word matching, an
+omission in a hand-written OR list. The previous two write-ups are about
+`subject:` vetoing the window; a session that had internalised those would
+still have made this mistake.
+
+All three orders came off the ORDER HISTORY PAGE, which is now the mechanism
+that has caught this on 09-02, 09-09 and 09-10 — three times, by three
+different failure modes. Treat it as the census, not the backstop.
+
+AMAZON THREADS SAME-SUBJECT ORDERS TOGETHER, exactly as the task file warns
+for Walmart. All three of these confirmations sit in ONE Gmail thread
+(1a08c9515ca6f238) under the identical subject "Ordered: 1 Electronics item".
+A sweep that counted threads would have seen one order here, not three. Read
+the order number out of each MESSAGE — the Walmart rule is not
+Walmart-specific.
 
 PRICES — ALL THREE READ FROM THE ORDER-DETAILS PAGE, and order
 113-2932029-5857069 is the exact shape the task file warns about:
