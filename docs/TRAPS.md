@@ -7512,6 +7512,76 @@ that way: for Amazon, the history page is the census and Gmail is the detail
 lookup, not the other way round. Queued as a task-file change on the decision
 queue (`gmail-subject-order-recurred-0909`).
 
+**THIRD INSTANCE 2026-09-10 16:40 — same outcome, DIFFERENT mechanism, and
+that is the point.** This run avoided the documented trap: it used no
+`subject:` filter at all, only `after:` plus a `from:` brace group. It still
+returned a false quiet window, because the brace group was
+
+    {from:tormach.com from:mscdirect.com from:shars.com from:mouser.com
+     from:pololu.com from:ebay.com from:haascnc.com from:mcmaster.com
+     from:digikey.com from:seeed.cc from:walmart.com from:aliexpress.com}
+
+and **`from:amazon.com` is not in it.** Eleven of the twelve itemised vendors
+were searched. The twelfth is the one that supplies most of what queue C ever
+imports. Six threads came back, all marketing, and it looked identical to a
+window in which nothing was bought. Run afterwards as a check,
+`from:amazon.com after:2026/09/09` returns all three confirmations at once
+with no subject filter needed.
+
+**A session that had read and internalised the two write-ups above would still
+have made this mistake**, because both of them are about `subject:` matching
+and this was a missing term in a hand-typed OR list. The generalisable trap —
+*a filter that excludes the target returns success* — is the durable part; the
+specific mechanism will keep changing. Do not read the remedy as "drop the
+subject filter". Read it as "no single query is evidence of a quiet window".
+
+The three orders became PO-0165/0166/0167 only because the preflight had
+already read the order-history page. That page has now caught this on 09-02,
+09-09 and 09-10, by three different failure modes. It is not a backstop; it is
+the census.
+
+**Cheap structural defence, if the hand-written list stays:** the vendor list
+lives in `scripts/vendor_registry.json` already. A sweep that builds its
+`from:` group FROM that file cannot omit a vendor by typing, and a vendor added
+to the registry joins the search automatically. Retyping the list into the
+query each run is the actual defect.
+
+
+## Amazon threads same-subject orders together, exactly like Walmart (2026-09-10)
+
+The task file warns that Walmart threads every order under the identical
+subject "Thanks for your delivery order, Scott", so Gmail merges unrelated
+orders and the order number must be read out of each MESSAGE. **That is not a
+Walmart quirk. Amazon does it too.**
+
+Measured 2026-09-10: three genuinely separate Amazon orders, placed at 14:29,
+14:32 and 16:27 EDT, all arrived under the subject `Ordered: 1 Electronics
+item` and Gmail merged all three into **one thread**, `1a08c9515ca6f238`:
+
+| Message time (UTC) | Order # | Grand Total |
+|---|---|---|
+| 18:29:35 | 113-6595171-3994627 | $6.54 |
+| 18:32:15 | 113-2932029-5857069 | $4.45 |
+| 20:27:43 | 113-9155135-6305031 | $37.64 |
+
+A sweep that counted threads, or that read only the newest message in each
+thread, would have found ONE order here and imported one PO. Two purchases
+would have gone missing with no error and no empty result to notice — the same
+silent-success shape as the section above.
+
+The cause is Amazon's 2026-07-16 subject change, already documented at the top
+of this file: subjects went from `Ordered: "<product title>..."` to
+`Ordered: 1 Electronics item`. The old format was unique per order and
+therefore never merged. **The change did not just blind subject searches, it
+made Amazon confirmations mergeable** — a second consequence that was not
+obvious at the time and that took two months to surface.
+
+**Rule, now vendor-independent: one thread is not one order, for any vendor.**
+Iterate messages, read the order number out of each body, and dedupe on the
+order number. The `messageFormat: PLAIN_TEXT` body carries `Order #` on its own
+line, which is what this run used to confirm all three reconciled against the
+order-history page.
+
 
 ## A status code guessed instead of imported: `status=10` is not "Placed"
 
