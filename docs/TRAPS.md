@@ -7909,6 +7909,27 @@ rather than in a recovery path nobody reads:
 
     itq push scripts/vendor_registry.json /tmp/vendor_registry.json
 
+### RECURRED, identically, six days later (2026-09-10)
+
+Daytime sweep, 08:46 — same clock position, same traceback, same one-push fix.
+Nothing had changed, because the fix above was written as a *recommendation to
+edit the task file* and the unattended gate denies writes under `~/.claude`, so
+no scheduled run can ever apply it. **A fix that only a human can apply, filed
+only in a traps doc, is not a fix — it is a note.** The six days between the two
+occurrences is exactly how long the note sat where no one had a reason to read
+it.
+
+Queued this time as `reseed-registry-at-top-of-section-4` so it is tracked
+somewhere Scott actually looks, rather than re-derived by whichever run next
+trips over it. The general shape is worth keeping: when the gate blocks the
+durable fix, the write-up alone will not survive — put the ask on the decision
+queue in the same turn.
+
+Cheap insurance until then, and it costs one call on a run that needs the
+registry anyway: **push the registry before calling `vendor_triage`, always,
+without checking whether it is there.** The push is idempotent and takes under a
+second; the check costs the same and can be wrong.
+
 ## The apparel bucket now exists — half of a queued ask, implemented (2026-09-04)
 
 Same run. `rusticedgeco.com` order `#6407` came back `unknown` and the classifier
