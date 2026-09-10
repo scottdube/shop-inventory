@@ -96,13 +96,15 @@
    ]
   },
   "payment_rail": {
-   "why": "PayPal/Stripe receipts prove a purchase happened but carry no vendor or line items, so they cannot become a PO. Kept here rather than in triage because the underlying vendor mail is the better source and usually arrives too. shop.affirm.com added 2026-09-05: Shop Pay instalment mail ('Thanks for your payment!', 'Your AutoPay is set for...') names the merchant only in the body, so the classifier read the RAIL as the vendor and emitted a decision line for 'new vendor shop.affirm.com'. The merchant in that case was MFC Machining & Design Services — already InvenTree Company #31 since 2026-08-24 — so the decision was a false positive for a vendor we have had for two weeks. It is self-replenishing: this one order has instalments due 2026-09-14 and later, and each would have surfaced again. Same failure mode as the shopifyemail platform note, and the reason section 3 skips payment lines outright.",
+   "why": "PayPal/Stripe receipts prove a purchase happened but carry no vendor or line items, so they cannot become a PO. Kept here rather than in triage because the underlying vendor mail is the better source and usually arrives too. klarna.com added 2026-09-10 on the same test that caught affirm: 'Built-in protection for your purchase' is BNPL lifecycle mail with no merchant and no order number, and the order-shape regex reads the word 'purchase' in the subject as a purchase event. Same class as affirm, same fix — suppress the rail, not the subject prefixes. Deliberately NOT extended to card-issuer alerts (barclaysus.com), which are a different shape: they NAME the merchant in the body and are the only channel that can see an in-person card purchase, so suppressing them would blind the sweep rather than de-noise it. That one is on the decision queue as card-issuer-alerts-are-a-discovery-channel. shop.affirm.com added 2026-09-05: Shop Pay instalment mail ('Thanks for your payment!', 'Your AutoPay is set for...') names the merchant only in the body, so the classifier read the RAIL as the vendor and emitted a decision line for 'new vendor shop.affirm.com'. The merchant in that case was MFC Machining & Design Services — already InvenTree Company #31 since 2026-08-24 — so the decision was a false positive for a vendor we have had for two weeks. It is self-replenishing: this one order has instalments due 2026-09-14 and later, and each would have surfaced again. Same failure mode as the shopifyemail platform note, and the reason section 3 skips payment lines outright.",
    "domains": [
     "paypal.com",
     "stripe.com",
     "venmo.com",
     "shop.affirm.com",
-    "affirm.com"
+    "affirm.com",
+    "klarna.com",
+    "hello.klarna.com"
    ]
   }
  },
