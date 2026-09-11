@@ -8685,3 +8685,42 @@ Corollary, and the reason this is filed here rather than in a script: the
 negative was never safe to report as "we don't own one". The instrument could
 not see the thing it was pointed at. See `name-what-you-searched` and
 `truncated-search-absence`.
+
+## An Amazon order has THREE numbers, and the rule only distinguishes two
+
+2026-09-11, overnight run. The standing pricing rule is built around one
+distinction: the **grand total** is cash-after-payment-methods (points and gift
+cards are applied invisibly), so it must never become an item price; the
+**item price** on the order-details page is the only sanctioned source. That
+rule is correct and it is not what this is about.
+
+Tonight's queue A put the PO line price beside the order-history card for the
+same order, and two of them disagreed in the direction that should be
+impossible — the line was *higher* than everything shown:
+
+| Order | Item(s) Subtotal | Discount | Grand total | Recorded on the PO |
+|---|---|---|---|---|
+| 113-9155135-6305031 | $44.99 | −$7.35 | $37.64 | **$44.99** |
+| 113-2932029-5857069 | $6.99 | −$2.54 | $4.45 | **$6.99** |
+
+Read read-only off both order-details pages; no price was changed. The 09-10
+16:53 run did exactly what the rule says — it recorded the item price — and the
+result overstates what the shop paid by 16% and 36%.
+
+**The gap: a promotional discount is a third kind of number.** It is neither a
+payment method (which is why the grand-total ban exists) nor part of the item
+price. It is a real reduction in what the item cost, applied on the listing. The
+rule has no sentence about it, so the run had nothing to be wrong about — which
+is why this is a trap and not a mistake.
+
+Arithmetic is the tell, and it is cheap: if `item price × qty > grand total` and
+no points or gift card are shown, a discount is sitting between them. A $7.35
+gap on a $44.99 part will not look wrong on any screen; it only shows up when
+somebody asks what a DisplayPort hub costs and gets an answer 16% too high, long
+after the receipt is gone.
+
+Not resolved here — which number belongs in `purchase_price` is Scott's call, it
+is on the decision queue as `amazon-promo-discount-vs-item-price`, and both POs
+are still PLACED so the fix stays cheap. Related: the grand-total rule in the
+overnight task file, and `A pack is a supplier fact` for the other way a
+per-piece price goes wrong.
