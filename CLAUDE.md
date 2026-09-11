@@ -11,6 +11,8 @@ it exists so each session starts where the last one ended.**
 | Printing labels | `docs/LABELLING.md` |
 | Working a long session | `docs/CONTEXT.md` |
 | Bagging / physical handling | `docs/TECHNIQUES.md` |
+| "do we own one?" / buying a tool | `scripts/trip.py where <terms>` — it may be at the other site |
+| Moving things between SLN and LRD | `docs/TECHNIQUES.md` — `trip.py` for tools, `florida.py` for consumables |
 
 ## How to run things
 
