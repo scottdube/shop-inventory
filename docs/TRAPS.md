@@ -7582,6 +7582,36 @@ order number. The `messageFormat: PLAIN_TEXT` body carries `Order #` on its own
 line, which is what this run used to confirm all three reconciled against the
 order-history page.
 
+### And a swept thread is not a finished thread (2026-09-10 22:40, same day)
+
+Six hours after the above was written, the SAME thread `1a08c9515ca6f238` grew
+a **fourth** message: order `113-8888047-4781028`, a $156.00 monitor,
+confirmation at 01:41 UTC (21:41 EDT), one hour before the 22:40 run.
+
+This is a distinct failure from the one above and it defeats the obvious fix.
+A sweep that had correctly iterated messages at 16:40 — and this one did, and
+imported all three — could still reasonably treat that thread as accounted for
+when it reappears in the next window. It is not. **A Gmail thread has no
+terminal state.** Marketing threads and order threads alike keep accreting, and
+under a generic subject the accretions are unrelated orders.
+
+So the dedupe key is the ORDER NUMBER and nothing else — not the thread id, not
+the thread id plus a high-water message count, and never "this thread was
+handled last run". Run every order number in the window through `po_check.py`,
+including ones from threads a previous run reports as fully imported. It takes
+one extra argument per number and it is the only check that cannot go stale.
+
+Tonight that came to eight numbers in two calls; seven already had POs, and the
+single absent one was the $156.00 order hiding in the swept thread.
+
+**Tally: the order-history page has now been the thing that produced the census
+on 09-02, 09-09, 09-10 16:40 and 09-10 22:40 — four consecutive runs, four
+different mechanisms** (whole-word `subject:`, whole-word `subject:` again, an
+omitted `from:` clause, and now a swept thread gaining a message). Each fix was
+correct and each was defeated by the next mechanism. Stop treating the page as
+the backstop. **It is the census; Gmail is the supplement**, and its real job is
+the vendors that do not have an order-history page here.
+
 
 ## A status code guessed instead of imported: `status=10` is not "Placed"
 
