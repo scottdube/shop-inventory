@@ -648,3 +648,65 @@ other because "stainless is better" gets it backwards on strength.
 
 Recorded 2026-09-06 when 17 M8 x 25 stainless arrived with no packaging at all
 and the head marking settled a grade that had been logged as unknown.
+
+## Commuting tools — the ones that go to Florida and come back
+
+2026-09-10. Scott: *"I'm trying to figure out how to keep track of tools that
+may want to go back and forth rather than buying 2 of everything."*
+
+**A tool at the wrong end is worse than a tool you do not own**, because you
+think you have it, and that belief is what eventually buys the second one. So
+the fact worth protecting is not *is it spoken for* but **where is it right
+now**, answerable from Florida in January without walking the SLN shop.
+
+`scripts/trip.py`. Deliberately NOT part of `florida.py`, which stays as it is:
+
+| | `florida.py` | `trip.py` |
+|---|---|---|
+| what | consumables | tools |
+| direction | one way — packed, used, gone | round trip, twice a year |
+| Scott on it | *"don't need as much attention"* | the reason this exists |
+
+    trip.py where <terms>       the buy-time check
+    trip.py list                what commutes, and which end it is at
+    trip.py mark <si> "why"     captures CURRENT location as the return address
+    trip.py pack SLN|LRD        what to collect, leaving that site
+    trip.py land <si> <loc>     record where it ACTUALLY went
+    trip.py land <si> home      the April return
+
+### The away home is learned on arrival, never assigned in advance
+
+`land` is the only thing that sets an away location, and it is meant to be run
+with the tool physically in your hand at the other end. **Do not pre-assign a
+tool to an LRD cabinet from New Hampshire** — that is allocation-by-plan, the
+same mistake that produced the two unlocated SHT31 rows in August, and it
+produces a record that says a tool is somewhere nobody put it.
+
+This is not a limitation to be designed around; as of 2026-09-10 the LRD bench
+wall exists as locations (UCab1-4, LCab1-4) and is **completely empty**. Scott:
+*"both ends, probably but we need to set all that up down there still."* So the
+first landings will be `LRD/Receiving` or a box, and that is the correct answer,
+not a placeholder. The cabinet comes later, as another `land`.
+
+### Why home lives on the stock row, not on Part.default_location
+
+`default_location` already means *where a spare goes home* and is edited for
+other reasons. The return address has to survive those edits, and it is a fact
+about **this physical object**, not about the part. So it is captured into
+`StockItem.metadata['commutes']['home']` when the tool is marked.
+
+The payoff: `default_location` stays pinned to the SLN drawer all year, so an
+empty MC-T2 reads *"in Florida"* and not *"lost"*.
+
+### `where` refuses to claim the shop has none
+
+A no-match prints what it searched and says so explicitly. It searched name,
+description, keywords and IPN **in InvenTree only** — a tool nobody catalogued
+is invisible to it. The PPK2 spent a day looking like it did not exist for
+exactly this reason; see `docs/TRAPS.md`.
+
+### Ambiguous location names are refused, not guessed
+
+`land 797 Receiving` matches both `SLN/Receiving` and `LRD/Receiving` — it
+prints both and exits. Getting this wrong writes "the tool is in Florida" while
+the tool is in New Hampshire, which is worse than no record.
