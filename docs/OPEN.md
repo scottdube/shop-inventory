@@ -2204,3 +2204,56 @@ in / 96 links are in something, and nothing records what. The kit also shipped a
 chain breaker and **5 connecting links**, neither catalogued — and without a
 master link a chain cannot be closed into a loop, so those matter more than
 their price suggests.
+
+## Backup: three things left open after the 2026-09-12 FAIL
+
+The FAIL itself is closed — both off-site legs were restored by hand that
+morning, and `docs/TRAPS.md` carries the diagnosis. What follows is what was
+NOT fixed.
+
+### 1. The nightly archive is a full 721 MB tar.gz, and it grows
+
+**This is the real problem; everything else here is a symptom.** A full
+compressed copy of database + media every night, currently 720.8 MB, growing
+roughly 1 MB/day. Both off-site legs have to move the whole thing every time.
+
+Raising the rclone timeout from 1800 s to 5400 s bought room and nothing more:
+the required sustained rate fell from 0.41 to 0.13 MB/s, but the numerator
+keeps climbing and the window does not. This fails again on a schedule nobody
+has calculated.
+
+The fix is incremental or deduplicating backup — restic and borg both do
+content-addressed dedup with a remote, and either would send deltas measured in
+MB. That is a design job, not a patch: it changes what "a backup" is here,
+changes the restore rehearsal, and needs its own verification that a restore
+still works. **Do not start it as a side quest during bench work.**
+
+Constraint worth carrying in: whatever replaces it must keep the property the
+current job has, that a verdict file answers *am I protected off-site* in one
+line a human can read.
+
+### 2. rclone's shared Google Drive client_id retires during 2026 — DATED
+
+    NOTICE: gdrive: This remote uses rclone's shared Google Drive client_id,
+    which is being retired and will stop working during 2026.
+
+Nothing has broken. When it does, the gdrive leg dies and the only remaining
+off-site path is the NAS — which is the leg that already failed once. **Both
+legs have a known failure mode and no third exists.**
+
+Needs Scott's Google account: https://rclone.org/drive/#making-your-own-client-id
+
+### 3. The NAS keychain hypothesis is untested
+
+`mount_smbfs` was rejected at 03:17 on 09-12 with the credential present and
+valid. The standing hypothesis is that the login keychain was locked or
+unreachable to the launchd job in the dark-wake window. **It has not been
+tested and must not be written down as the cause.**
+
+The test is one line, and it runs when the fault next fires rather than now:
+log `security show-keychain-info` immediately before the mount attempt. Locked
+and unlocked are distinguishable there.
+
+Diagnosis capacity was improved on 09-12 so the *gdrive* leg is no longer mute
+(`-v` added; its `--stats` flags had been decorative, since rclone emits stats
+at INFO and defaults to NOTICE). **The NAS leg has had no such treatment.**
