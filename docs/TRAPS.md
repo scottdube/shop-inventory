@@ -8742,3 +8742,60 @@ is on the decision queue as `amazon-promo-discount-vs-item-price`, and both POs
 are still PLACED so the fix stays cheap. Related: the grand-total rule in the
 overnight task file, and `A pack is a supplier fact` for the other way a
 per-piece price goes wrong.
+
+## The backup FAIL of 2026-09-12 — read the verdict as "this run", not "ever"
+
+The alarm was correct and the wording is a trap:
+
+    FAIL 2026-09-12_0317 NO OFF-SITE COPY - every copy is on the same disk
+    as the database
+
+That reads as a standing state — *there is no off-site copy anywhere*. It is
+not. It describes **this run**. The newest off-site copies were from
+**2026-09-11**, in both Google Drive and the NAS. Real exposure was ONE DAY of
+changes, not the whole database.
+
+**The backup itself never failed.** Same run: `snapshot ok - 1174 parts`,
+`archive: 719.9 MB`, written to the 4TB. Integrity was fine; only redundancy
+was missing. Do not respond to this verdict by re-running or distrusting the
+archive.
+
+Two independent legs failed the same night, which is why the verdict fired —
+by design, either one succeeding is enough:
+
+| leg | failure |
+|---|---|
+| Google Drive | `rclone copy ... timed out after 1800 seconds` |
+| NAS 192.168.1.200 | `mount_smbfs: server rejected the connection: Authentication error` |
+
+### gdrive was a sizing problem, not a fault
+
+The subprocess timeout was a hardcoded **1800 s** against an archive of
+**720.8 MB that grows ~1 MB/day**. That demands 0.41 MB/s sustained, and the
+requirement rises every single night. The record shows exactly the pattern a
+worn-out margin makes — passed 09-10 and 09-11, failed 09-09 and 09-12.
+
+Raised to 5400 s with `--retries 5 --low-level-retries 20` (see
+`scripts/backup_rclone_hardening.py`). At 5400 s the same archive needs
+0.13 MB/s. Still bounded, so a genuinely wedged upload cannot hang the job.
+
+**This buys room, it does not fix the cause.** A full 720 MB tar.gz every
+night over residential upstream gets worse forever. Incremental or dedup
+backup is the real answer and is a design job.
+
+### The NAS leg needs Scott, and only Scott
+
+`mount_smbfs` credentials come from the **login keychain**, written by mounting
+the share once in Finder. Port 445 is open and the host answers, so this is
+purely a credential problem — nothing in the script or the network. Nobody
+else can fix it, and no script should try to: this repo never handles
+passwords.
+
+### A dated future failure, found while diagnosing
+
+    NOTICE: gdrive: This remote uses rclone's shared Google Drive client_id,
+    which is being retired and will stop working during 2026.
+
+Nothing has broken yet. When it does, the gdrive leg dies silently and the
+only remaining off-site path is the NAS — which is the one that is already
+broken. Fix: create an own client_id per https://rclone.org/drive/#making-your-own-client-id
