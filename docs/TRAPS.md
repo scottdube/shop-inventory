@@ -8783,13 +8783,38 @@ Raised to 5400 s with `--retries 5 --low-level-retries 20` (see
 night over residential upstream gets worse forever. Incremental or dedup
 backup is the real answer and is a design job.
 
-### The NAS leg needs Scott, and only Scott
+### The NAS leg — WRONG DIAGNOSIS FIRST TIME, corrected same day
 
-`mount_smbfs` credentials come from the **login keychain**, written by mounting
-the share once in Finder. Port 445 is open and the host answers, so this is
-purely a credential problem — nothing in the script or the network. Nobody
-else can fix it, and no script should try to: this repo never handles
-passwords.
+I first wrote that this was "purely a credential problem" and that the keychain
+entry needed rewriting. **That was wrong, and Scott falsified it in one move:**
+*"I logged the nas in but when I ran your code block it already had the pw just
+needed to be told to connect."* The credential was present and valid the whole
+time — `acct=sdube`, `srvr=192.168.1.200`, `ptcl=smb` — and the share mounted
+without anyone typing a password.
+
+Two further facts kill the obvious follow-up theories:
+
+- **No reboot.** `uptime` says 138 days, boot 2026-04-26. Nothing reset a
+  keychain that was never restarted.
+- **It worked four consecutive prior nights** with the same keychain, same
+  script, same host, and the NAS holds copies through 09-11.
+
+So the fault is in the CONTEXT the 03:17 job runs in, not in the stored
+password. **Standing hypothesis, NOT established:** the login keychain was
+locked or unreachable to the launchd job at 03:17, so `mount_smbfs` fell back
+to no credentials and the NAS answered "Authentication error" — which from the
+log line alone is indistinguishable from a wrong password. That fits the
+intermittency and fits the dark-wake window the overnight chain runs in.
+
+**Test it when it next fires, rather than reasoning about it now:** have the job
+log `security show-keychain-info` immediately before the mount. Locked and
+unlocked are distinguishable there, and one line settles it. Until that runs,
+do not record a cause.
+
+The general lesson is the one this file keeps relearning: **an error string
+names the symptom, not the cause.** "Authentication error" was read as "the
+credential is wrong" because that is what the words say. The credential was
+fine.
 
 ### A dated future failure, found while diagnosing
 
