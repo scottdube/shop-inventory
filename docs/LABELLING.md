@@ -389,6 +389,45 @@ installed on this laptop; `qlmanage` is macOS built-in and needs nothing.
 
 ---
 
+## Did it actually print? — the check from the Mini
+
+Submitting is not printing. This printer's entire failure history is *accepting a
+job and doing nothing*, so `lp` returning a request id proves only that CUPS took
+it. Two readings, one either side, are what turn a submission into evidence.
+
+**Before — the error state LATCHES,** so a job sent into a sulking printer is a
+no-op that reads as a failure and sends you chasing the wrong thing. Clear, then
+send ONE:
+
+```
+lpstat -p QL810W     expect "is idle.  enabled since ..."
+lpstat -o            expect nothing pending
+lpoptions -p QL810W | tr ' ' '\n' | grep printer-state
+                     expect printer-state=3, printer-state-reasons=none
+```
+
+**After** — the job leaves the queue within seconds and the printer returns to
+`printer-state=3` / `reasons=none`. A job stuck at `printing` with an indented
+"The printer is not responding" line is the dead-printer signature; any
+`reasons` other than `none` is a latch. Both are in `TRAPS.md`.
+
+**`lpstat -W completed -o` lists NEWEST FIRST.** `tail` reads the *oldest* end of
+the history, so a job that completed seconds ago looks missing — the same mistake
+as the truncated 1-15 job list in `TRAPS.md`, in the other direction. Use `head`,
+or grep for the job id rather than eyeballing a window.
+
+**What this proves and what it does not.** A `completed` job on a driverless IPP
+queue means the printer accepted and acknowledged it — a genuine liveness signal
+about the *printer*, unlike "the queue is accepting", which is only a claim about
+CUPS. It is still not proof a label came out, and nothing readable from the Mini
+is. Walk over, or ask.
+
+Verified end to end 2026-09-08 on the bypass-fed replacement unit: job
+`QL810W-103`, the stock item label for the CAN terminators (part 1179) — idle
+beforehand, gone from the queue in ~10 s, idle with `reasons=none` after.
+
+---
+
 ## Do not print unless Scott asks
 
 **Standing instruction, 2026-08-26.** Create the part, file the stock, render the
