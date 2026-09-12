@@ -7986,6 +7986,24 @@ scripts that spell it `filter(image='')` are one bad row away from the same bug.
 qs.filter(f__isnull=True) | qs.filter(f="")   # never one alone
 ```
 
+**The INVERSE spelling is the one that still bites, and the idiom above does not
+cover it (2026-09-12).** Tonight's overnight run wrote
+`Part.objects.filter(active=True, image="").exclude(link="")` to list the parts
+that *have* a link, and it crashed on `None.lower()` a moment later. `exclude(f="")`
+removes only the empty strings and lets every NULL through, so the filter admits
+exactly the rows it was written to reject — `Part.link` is 1059 NULLs, the worst
+field on the table for it. A count that is too small fails quietly; this one fails
+loudly, but only because the next line happened to call a string method. Had it
+merely counted, it would have reported ~1059 link-bearing parts that have no link.
+
+The safe inverse is a truthiness test, not a field lookup — which is why the same
+run's other probe, written as `elif p.link:`, was right:
+
+```python
+qs.exclude(f__isnull=True).exclude(f="")   # both, or
+if not p.link: continue                    # truthy test in Python
+```
+
 ## The Mini's registry copy had VANISHED, and `vendor_triage` cannot run without it (2026-09-04)
 
 Daytime sweep, 08:46. `vendor_triage.py` died before classifying anything:
