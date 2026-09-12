@@ -2920,6 +2920,12 @@ and read the whole thing; a job list that stops exactly at a round number and
 exactly at the end of a session is a tell that you are looking at a page, not a
 history.
 
+**And it lists NEWEST FIRST** — so `tail` reads the *oldest* end and a job that
+completed seconds ago looks missing. Caught again 2026-09-08 from the other
+direction: `lpstat -W completed -o QL810W | tail -3` returned three jobs from
+August and no sign of the one just printed, which for a moment read as a failed
+print. `head`, or grep the job id. The verification recipe is in `LABELLING.md`.
+
 **The error log dates the failure far more tightly than the job list does.**
 `/var/log/cups/error_log` contains 26 error lines in its entire life and every
 one of them is Job 29, starting `24/Aug/2026:13:12:13`. Nothing failed before
