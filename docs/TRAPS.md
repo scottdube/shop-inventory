@@ -7074,6 +7074,29 @@ It can tell you an image exists and how big it is; it cannot hand it over.
 Attaching pk 108 needs a host that can fetch Mouser directly, and neither the
 Mini nor this laptop can. Do not spend another run rediscovering this.
 
+**2026-09-13: a run rediscovered it anyway, and that is the more useful half.**
+The 02:05 overnight run re-ran this whole experiment — same URL, same same-origin
+fetch, same result (200, `image/jpeg`, 8212 B, JPEG magic `255,216,255,224`, tab
+titled `247x282`) — because it read the DECISION QUEUE first and the queue item
+`mouser-pk108-needs-a-fetch-host` says *"nothing automated here can retrieve
+it"*. That phrasing reads as "the fetch fails", so re-testing the fetch with a
+different instrument looked like exactly the right move under the standing rule
+that two runs of one failing method are one experiment repeated. It isn't: this
+section already had the answer and says so in its own title. **The queue is not
+the record — TRAPS.md is. Read the trap before re-testing anything the queue
+calls blocked.**
+
+One genuinely new increment, and it closes the last escape route: the readback is
+not *truncated*, it is **filtered**. The channel returns the literal string
+`[BLOCKED: Base64 encoded data]` while returning the base64's LENGTH (10952) and
+individual byte values without complaint. So it is matching on the shape of the
+output, which means **chunking cannot work either** — every chunk is still
+base64. Re-encoding as hex would pass, and that is precisely why it must not be
+done: the filter exists to keep opaque blobs out of context, and changing the
+serialisation to beat it is evasion, not a different instrument. Browser-
+reachable-but-curl-blocked images are a permanent human-hand class, not a
+backlog.
+
 ## "No image available" is an ABSENCE, not a block — and it has decoy images (2026-08-31)
 
 MSC pk 927 (Tapmatic No.90X, SKU `00447474`) looked like another blocked vendor.
@@ -8830,3 +8853,57 @@ fine.
 Nothing has broken yet. When it does, the gdrive leg dies silently and the
 only remaining off-site path is the NAS — which is the one that is already
 broken. Fix: create an own client_id per https://rclone.org/drive/#making-your-own-client-id
+
+## The naming rule hides every pack count from the pack audit (2026-09-13)
+
+`pack_audit.py` reads a pack count out of a supplier part's **SKU, name and
+note**. Confirmed decision 1 — canonical naming — requires that the vendor's
+title, *and the pack count with it*, be **stripped from the name** and stored in
+`Part.description` as `orig: <title>`.
+
+So the two rules point opposite ways. Every correctly-named part parks its pack
+count in the one field the audit does not read, and the audit will keep missing
+each new multipack **by construction**, not by oversight. That is why the 09-05
+sweep could write 29 fixes and still leave a backlog: measured tonight across all
+722 supplier parts, **87 still read `pack_quantity_native = 1` while stating a
+count > 1, and all 87 state it only in `description`.**
+
+Genuinely clean, and worth recording as a closed class: **0 of 722 have
+`pack_quantity` disagreeing with `pack_quantity_native`.** The
+stored-twice defect from the pack trap is not present anywhere today.
+
+### A regex flag is not a defect, and the count in stock is what settles it
+
+154 raw flags reduce to 87 real candidates and then to 27 decidable ones. Three
+buckets, because they need *opposite* treatment and merging them would corrupt
+correct records:
+
+| bucket | n | meaning |
+|---|---|---|
+| KIT | 67 | one boxed set whose members differ — ER20 collet set 10pc, 18pc broach set. `pack_quantity` 1 is **correct**; writing 10 would claim ten interchangeable pieces that do not exist. |
+| PIECES | 23 | stock counted in individual units, 12 of them **exactly** the stated pack (3/3, 10/10, 20/20, 4/4, 400/400). The unit is the piece, so pack 1 is wrong. |
+| ONE UNIT | 4 | stock reads exactly 1 — one unopened bag, so the part *is* the bag and pack 1 may be right. |
+| NO STOCK | 60 | nothing counted; undecidable without a drawer. |
+
+**The discriminator is the stock count, not the title.** The vendor's prose
+cannot distinguish "4 identical adapters" from "a 4-piece set", but a drawer
+walk that counted pieces has already answered it — and that answer is in the
+database, free. An assortment keyword test (`set|kit|assortment|…`) does the
+first split; stock does the second.
+
+### The artifact check the 09-05 item asked for
+
+That run's own note warns that 2 of its 31 flags were regex artifacts — a digit
+out of an ASIN (`B01983R7PK` → "7PK") and out of a chip name (`ESP32C6 Pack` →
+"6 Pack") — and concludes an automated writer needs the evidence dump in the
+loop, not the audit's verdict. Done for all 23: every match is an explicit pack
+phrase (`3-pack`, `Pack of 2`, `100 pcs`, `10PCS`) out of `description`, and
+**zero came from a SKU**, so neither artifact shape recurs. A look-behind of
+`(?<![\d.])` is what kills the ASIN case; the `p[cs]s?` alternation never
+matches `PK`.
+
+Nothing was written. Urgency is nil **and measured**: 0 of the 9 supplier parts
+on the 6 open POs is flagged, so no receipt in flight is mis-priced — which is
+what makes waiting for a ruling free rather than risky. Scripts, all read-only:
+`pack_sweep_0913.py`, `pack_class_0913.py`, `pack_unit_0913.py`,
+`pack_evidence_0913.py`.
