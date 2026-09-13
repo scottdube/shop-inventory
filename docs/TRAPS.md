@@ -8907,3 +8907,39 @@ on the 6 open POs is flagged, so no receipt in flight is mis-priced — which is
 what makes waiting for a ruling free rather than risky. Scripts, all read-only:
 `pack_sweep_0913.py`, `pack_class_0913.py`, `pack_unit_0913.py`,
 `pack_evidence_0913.py`.
+
+## The Mini's vendor registry lives in /tmp, and /tmp does not keep things (2026-09-13)
+
+**Measured**, 08:52 this morning, daytime sweep: `vendor_triage.py` died on
+
+    FileNotFoundError: '/tmp/vendor_registry.json'
+
+`itq push scripts/vendor_registry.json /tmp/vendor_registry.json` fixed it and
+the classifier then ran clean on the same 4 candidates. Nothing else was wrong.
+
+The task file already warns to push the registry **after editing it**, so a
+stale copy is anticipated. What is not anticipated is that the file can vanish
+with nobody editing anything: `/tmp` on macOS is cleared on boot and swept by
+`periodic`, so the registry's lifetime is the Mini's uptime, not the project's.
+The push-after-edit rule reads as "push when you change it", which on its face
+means a run that changes nothing need not push — and that is exactly the run
+that finds the file gone.
+
+**What makes this worth a trap rather than a shrug:** the registry is the
+classifier's *only* input, and the classifier is the whole of section 4. Lose
+the file and unknown-vendor discovery produces nothing — the one job whose
+output is, by construction, things nobody knew to look for. A quiet section 4
+and a crashed section 4 read identically in a report that says "0 decisions".
+
+Loud today, and that is luck rather than design: the script opens the registry
+before it does anything else, so the traceback is the first thing out. Nothing
+guarantees the next caller fails that early.
+
+**Not established, do not write it down as fact:** how long the file had been
+missing, or whether any earlier run silently lost its section 4 to this. The
+Mini's uptime would bound it; I did not measure it, and a guess in this file is
+worth less than the blank.
+
+The fix is a decision, not an edit — push unconditionally at the top of section
+4 (one cheap call per run, no state to reason about), or move the registry out
+of `/tmp` to somewhere on the 4TB volume that survives a reboot. Queued.
