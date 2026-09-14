@@ -1,0 +1,20 @@
+[
+  {
+    "sender": "support@rusticedgeco.com",
+    "subject": "A shipment from order #6407 has been delivered",
+    "date": "2026-09-11",
+    "snippet": "Order #6407 Your order has been delivered. Your package should be with you now."
+  },
+  {
+    "sender": "todd@rusticedgeco.com",
+    "subject": "Some shirts didn't find their crew.",
+    "date": "2026-09-13",
+    "snippet": "20% off before they retire. No code, it comes off in your cart. Last call."
+  },
+  {
+    "sender": "Auto_Reply@mailer.wexhealth.com",
+    "subject": "Your WEX debit card purchase",
+    "date": "2026-09-12",
+    "snippet": "A debit card transaction has been processed."
+  }
+]
