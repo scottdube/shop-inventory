@@ -39,10 +39,32 @@ for item in a.add:
     added.append(line)
 
 if added:
-    marker = "\n## declined — never re-ask"
-    if marker in body:
-        body = body.replace(marker, "".join(added) + marker, 1)
+    # Insert into the OPEN section, marked by a sentinel that lives at its end.
+    #
+    # This used to insert before "\n## declined — never re-ask". That marker sits
+    # at the end of the 2026-08-18 "## done — executed interactively" section, so
+    # every item queued since then landed under a header reading *done* — 58 of
+    # them by 2026-09-14, plus 12 more under "## resolved by reading the order
+    # page" from the append-to-EOF fallback below, while "## open" claimed one
+    # item and "## held — awaiting Scott" sat empty. A reader trusting the
+    # headers saw one open decision; there were 70. An item nobody sees does not
+    # get answered — it gets re-measured and re-queued by the next run, which is
+    # most of how the backlog got that big.
+    #
+    # The sentinel is inside the open section, so correctness no longer depends
+    # on which header happens to precede "## declined".
+    sentinel = "<!-- new items are inserted above this line — see decide.py -->"
+    declined = "\n## declined — never re-ask"
+    if sentinel in body:
+        body = body.replace(sentinel, "".join(added) + sentinel, 1)
+    elif declined in body:
+        # Pre-2026-09-14 file shape. Kept so this script still works against an
+        # un-restructured copy, but it files items wherever that marker lands.
+        print("WARNING: no open-section sentinel; falling back to the "
+              "## declined marker, which may file these under a 'done' header")
+        body = body.replace(declined, "".join(added) + declined, 1)
     else:
+        print("WARNING: no marker found; appending at end of file")
         body += "".join(added)
 
 if a.sweep_date:

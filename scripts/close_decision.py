@@ -50,17 +50,40 @@ if len(hits) > 1:
 i = hits[0]
 today = datetime.now().strftime("%Y-%m-%d")
 before = lines[i]
-lines[i] = ("- [x] " + before[len("- [ ] "):].rstrip("\n")
-            + f" | CLOSED {today}: {a.resolution}\n")
+closed_line = ("- [x] " + before[len("- [ ] "):].rstrip("\n")
+               + f" | CLOSED {today}: {a.resolution}\n")
+
+# MOVE it to '## done', don't just tick it in place. The task file has always
+# specified both halves -- "EXECUTE them, then move the line to a ## done
+# section" -- and this script only ever did the first, so every close left a
+# [x] line sitting under the open header. Ticking without moving is how a
+# section stops describing its contents, which on 2026-09-14 was measured at
+# its full extent: 70 open items filed under headers reading 'done' and
+# 'resolved by reading the order page', while '## open' claimed one item.
+del lines[i]
+done_idx = next((k for k, ln in enumerate(lines)
+                 if ln.rstrip("\n").strip() == "## done"), None)
+if done_idx is None:
+    lines.append("\n## done\n")
+    done_idx = len(lines) - 1
+lines.insert(done_idx + 1, closed_line)
 
 with open(PATH, "w") as fh:
     fh.write("".join(lines))
 
 fresh = open(PATH).read()
-assert lines[i] in fresh, "close did not stick"
+assert closed_line in fresh, "close did not stick"
 assert not any(ln.startswith(open_prefix)
                for ln in fresh.splitlines()), "open line survived the close"
 
+# The move must land it under '## done', not merely somewhere in the file.
+fresh_lines = fresh.splitlines(keepends=True)
+pos = fresh_lines.index(closed_line)
+section = next((ln.strip() for ln in reversed(fresh_lines[:pos])
+                if ln.startswith("## ")), None)
+assert section == "## done", f"closed line landed under {section!r}, not '## done'"
+
 print(f"closed: {a.key}")
 print(f"  was:  {before[:110].rstrip()}")
-print(f"  now:  {lines[i][:110].rstrip()}")
+print(f"  now:  {closed_line[:110].rstrip()}")
+print("  moved to ## done")

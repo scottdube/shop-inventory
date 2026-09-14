@@ -8943,3 +8943,78 @@ worth less than the blank.
 The fix is a decision, not an edit — push unconditionally at the top of section
 4 (one cheap call per run, no state to reason about), or move the registry out
 of `/tmp` to somewhere on the 4TB volume that survives a reboot. Queued.
+
+## The decision queue's "open" section held ONE of its 71 open items (2026-09-14)
+
+**Symptom:** every overnight run dutifully queued decisions, and Scott kept
+seeing a queue that looked nearly empty. `pending_decisions.md` had **71**
+checkbox-open items. Exactly **one** of them was under the header
+`## open - needs Scott  (1 item)`.
+
+Where the other 70 were:
+
+| Header the item was filed under | open | closed |
+|---|---|---|
+| `## open - needs Scott  (1 item)` | 1 | 0 |
+| `## done — executed interactively 2026-08-18: …` | **58** | 16 |
+| `## resolved by reading the order page (Chrome), 2026-08-22` | **12** | 0 |
+| `## held — awaiting Scott` | **0** | 0 |
+
+Every item under `## resolved by reading the order page` was unresolved. The
+section actually named `## held — awaiting Scott` was empty.
+
+**Cause — one line of `decide.py`, not drift.** It inserted each new item
+immediately before the marker `"\n## declined — never re-ask"`. That marker sits
+at the *end* of the 2026-08-18 `## done — executed interactively` section, so
+every item queued since 2026-08-18 landed inside a section headed **done**. The
+12 older ones predate that logic and hit the append-to-EOF fallback, which files
+them under whatever header happens to be last in the file. Neither path ever
+looked at what the header *said*.
+
+Compounding it: `close_decision.py` ticked the checkbox but never **moved** the
+line, though the task file has always specified both halves ("EXECUTE them, then
+move the line to a `## done` section"). Ticking without moving is the same class
+of defect — a section that stops describing its contents.
+
+**Why it stayed invisible for 27 days.** This is not a formatting nit. The whole
+point of the queue is that Scott reads it; the task file says decisions must be
+*dropped to him*, never left in a file he has to go looking for. An item nobody
+sees does not get answered — it gets re-measured and re-queued by a later run in
+slightly different words. Three separate open items ask "retire queue A?"; two
+ask "strike queue B?". The backlog is partly *made of* its own invisibility, and
+the header count `(1 item)` is what made the file look like it was working.
+
+**Fix, all verified by re-read with the item text asserted unchanged:**
+
+- open items re-filed under a real `## open — needs Scott`, with an insertion
+  sentinel at its end (`dq_restructure_0914.py`)
+- `decide.py` inserts at that sentinel, so correctness no longer depends on
+  which header precedes `## declined`; it warns loudly on either fallback
+- `close_decision.py` now moves the closed line into `## done` **and asserts
+  which section it landed under** — the move is not trusted, it is checked
+- `dq_normalize_0914.py` relocated the 6 lines closed before that fix
+- **no count in the header.** The restructure first wrote `(70 items)` and was
+  wrong by seven within the same run, as `decide.py` added one and six closes
+  moved out. A count no writer maintains is this same trap in miniature — it is
+  what `(1 item)` was. `dq_shape_0914.py` counts from the file, on demand.
+
+**The general lesson:** a section header is an assertion about its contents, and
+nothing in a plain-text queue enforces it. When a writer picks its insertion
+point by a marker *somewhere else in the file*, the two drift silently and the
+file goes on looking tidy. Anchor an insert inside the section it belongs to,
+and have the writer assert where its line ended up.
+
+**Closed tonight, 7 of the 71, each falsified individually rather than by name
+match:** `new-vendor-cults3d-166803700` (executed — PO-0170, part #1190, commit
+`0f6572c`), and six McMaster-preflight items (`mcmaster-preflight-false-pass`,
+`skill-file-mcmaster-test-is-stale`, `mcmaster-preflight-cannot-report-OUT`,
+`mcmaster-out-notify-vs-standing-ruling`, `mcmaster-preflight-section2`,
+`mcmaster-out-notify-vs-memory`) — all moot since the 2026-09-01 deletion of
+that check, which answered each of them more strongly than they asked. The last
+place that could have re-seeded it, a `mcmaster=OUT` usage example in
+`preflight_state.py`'s docstring, is gone too; no code path there was ever
+McMaster-specific.
+
+**Not established:** whether any of the remaining 64 was acted on and merely
+never ticked. Those seven are the ones that could be falsified from the record;
+the rest were left open deliberately.

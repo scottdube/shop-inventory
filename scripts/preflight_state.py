@@ -12,8 +12,16 @@ Also records WHEN a vendor was last seen healthy, which is the "last successful
 read" the dashboard brief asks for — distinct from when the job last ran. Those
 two diverge exactly when something is wrong.
 
-  preflight_state.py --set amazon=OK --set mcmaster=OUT   # record, report changes
+  preflight_state.py --set amazon=OK --set walmart=OUT    # record, report changes
   preflight_state.py --report                             # show current state
+
+The example deliberately no longer reads `mcmaster=OUT`. The McMaster sign-in
+check was DELETED 2026-09-01 -- it gated no work (orders come from Gmail,
+product-detail scraping is out of scope regardless of auth state) and every
+signal it could read produced a measured false reading. Both task files now say
+do not test it and do not journal a `mcmaster=` value, so a usage example
+showing one is a re-seed waiting to happen. No code path here is McMaster-
+specific; this was the last mention.
 
 Prints NOTIFY: lines only for vendors whose state actually changed. A caller
 that sends a push for every line, and nothing when there are none, is correct.
