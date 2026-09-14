@@ -2257,3 +2257,36 @@ and unlocked are distinguishable there.
 Diagnosis capacity was improved on 09-12 so the *gdrive* leg is no longer mute
 (`-v` added; its `--stats` flags had been decorative, since rclone emits stats
 at INFO and defaults to NOTICE). **The NAS leg has had no such treatment.**
+
+## Does the Amazon import have a gap? — ONE MISS, NOT YET A PATTERN
+
+2026-09-14, wire-shelf stock-in. Scott produced a DC HOUSE mini linear
+actuator that was in InvenTree in **no form at all** — no part, no supplier
+SKU, nothing. His reaction: *"should have been in the amazon import."*
+
+It is now part #1199. Amazon ASIN B07ZJ4B272, purchased **2023-06-22**.
+
+**This is one data point and must not be written up as "the import is
+broken".** A single absent item is equally explained by a one-off, by the item
+arriving inside a multi-item order the import handled partially, or by a real
+systematic gap. Nothing so far distinguishes those.
+
+**What would actually settle it,** and is a deliberate later job rather than
+bench work: take the Amazon order history for a bounded window — 2023 is the
+obvious one, since that is when this was bought — enumerate every line, and
+subtract what InvenTree holds. The residue is the answer. That is the same
+"search by shape and subtract" method the unknown-vendor sweep uses, and it is
+the only way to measure absence; no amount of searching for things you already
+know about can find what was never recorded.
+
+Do it BEFORE concluding anything about import coverage, and note that
+`scripts/import_coverage.py` already reports a PO floor and a part-derived
+floor per supplier — start there rather than from scratch.
+
+**A trap met twice now while chasing exactly this.** Searching mail for the
+product name is nearly useless for finding a purchase. Amazon mail is indexed
+on what a vendor wants to sell: the search that turned up this actuator
+returned a MARKETING email titled "DC HOUSE 4 Inch Linear Actuator", which was
+briefly and wrongly reported as evidence of a SECOND, different actuator. It
+was a recommendation, not an order. The PPK2 hunt failed the same way. Go to
+the order history, not the mailbox.
