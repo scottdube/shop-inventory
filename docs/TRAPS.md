@@ -9092,3 +9092,56 @@ five-minute lookup into a full day on 2026-09-10. Its ASIN was recoverable in on
 page load from its own order-details page (`B0FCRK7RFK`, order
 `113-1305022-6114620`). `Part.link` set, image attached. That listing has no
 `hiRes` field, only `large` — the documented fallback, which earned its keep.
+
+## A price in a double-quoted journal line loses its dollars to `$1`..`$99` (2026-09-15)
+
+Measured 2026-09-15 08:50. This journal line was written:
+
+    itq run scripts/journal.py --line "... PO-0173, $12.99 ... Grand Total was
+    $1.46 after $11.53 rewards points ..."
+
+and this landed on disk:
+
+    ... PO-0173, .99 ... Grand Total was .46 after .53 rewards points ...
+
+**`$12`, `$1` and `$11` are positional parameters.** In the *local* shell's
+double quotes they expand to the empty string — the script is not being called
+with twelve arguments — and the digits before the decimal point are gone before
+`itq` is ever invoked. What survives is a number an order of magnitude or two
+wrong that still *looks* like a price, which is the part that matters: a
+silently truncated `$1.46` reads as a plausible `.46`, so nothing downstream
+trips.
+
+**It is not `itq`.** That was the first suspicion and it is wrong; `itq`'s
+`printf '%q'` arg quoting (`itq:65-68`) preserves `$` end-to-end. Measured both
+ways against the same script in the same minute:
+
+| quoting | arrives on the Mini as |
+|---|---|
+| `--line "price is $12.99 and $1.46"` | `price is .99 and .46` |
+| `--line 'price is $12.99 and $1.46'` | `price is $12.99 and $1.46` |
+
+**Use single quotes for any `itq run` argument containing a dollar amount.**
+The task files' own examples are all double-quoted — including the mandated
+verdict line, `journal.py --end "[OK] SUCCESS — …"`, which is prose a run is
+actively encouraged to put money into ("2 POs, $412 booked").
+
+**Damage is bounded and was checked, not assumed** (`dollar_damage_0915.py`,
+read-only). Of 1258 journal lines, the regex flagged 6; **five are false
+positives** — date ranges (`08-25..08-27`) and a pixel dimension (`150x20..27`)
+also match a bare `.dd`. Today's line is the only real casualty in the file's
+history, and it was corrected in place by a following line rather than edited,
+so the journal shows both what was written and what it should have said.
+
+**Why it has stayed rare, and where it would bite worst.** Prices almost never
+reach a shell here: PO notes, part notes and line prices are all written *inside*
+Python, where no shell parses them. The exposed surface is exactly the two
+hand-composed strings — `journal.py --line` and `journal.py --end` — and the
+`--end` one is the verdict line Scott is guaranteed to read. A verdict that
+reports `.99` where it means `$12.99` is the failure mode this whole convention
+exists to prevent.
+
+Generalises past money: **any `$` followed by digits** is at risk, so a
+double-quoted journal line naming a `$5` part, a `$100` threshold or a shell
+variable by name loses it the same way. A literal `$` in a run's own prose is
+rare enough that the single-quote rule is cheaper than remembering the cases.
