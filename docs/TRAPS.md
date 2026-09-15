@@ -9018,3 +9018,77 @@ McMaster-specific.
 **Not established:** whether any of the remaining 64 was acted on and merely
 never ticked. Those seven are the ones that could be falsified from the record;
 the rest were left open deliberately.
+
+## A queue closed "with evidence" reopens every time you buy something (2026-09-15)
+
+Queue A reported **zero eligible work for six consecutive nights**. It was wrong
+on at least the last two, and the cause is not a bug in any script — it is the
+shape of how the closure was written down.
+
+Two standing findings did the damage, both of them individually true:
+
+- *"The Amazon ASIN image pool is dead — re-confirmed with a calibrated
+  control"* (2026-09-10): 20 of 20 ASINs returned 404, controls proved the
+  instrument, conclusion **"do not re-run this sweep."**
+- *"All 73 supplier rows are now closed or blocked with evidence: Amazon 28,
+  McMaster 12, Lakeshore 9 …"* → **"queue A as designed is finished"**
+  (2026-09-01).
+
+**What was measured tonight.** Ten ASINs belonging to parts created 2026-09-13
+and 09-14, from orders placed *that week*:
+
+    10 of 10   HTTP 200, hiRes URL present, product title matches the part
+     2 of 2    404 — and both are `X00…`, which are ORDER-LINE ids, not product
+               ids (already its own trap), so they are not dead listings at all
+
+All ten fetched as real JPEGs from the Mini and are now attached and verified.
+
+**The mechanism, which is the part worth keeping: the ASIN pool is not dead, it
+dies with age.** Amazon retires listings as they are restructured, so a product
+image is reliably harvestable in the days after purchase and reliably gone years
+later. The 09-10 sweep sampled a pool of years-old ASINs and measured it
+correctly. The error was in the generalisation — it recorded a property of *that
+pool* as a property of *the ASIN as a source*.
+
+**And the 09-01 closure was a snapshot wearing the grammar of a permanent
+fact.** "Amazon 28 — closed with evidence" was true of the 28 parts that existed
+that night. Tonight the Amazon bucket holds 36. Nothing reopened; eight new parts
+simply arrived, each with a live listing, and a closure filed against a *vendor
+name* cannot see them. Parts 1192–1197 were created 09-13 at 12:51 — they
+existed, imageless, with live ASINs, while the 09-14 02:14 run reported the
+queue empty.
+
+**The general rule, and it is not about images.** *An enrichment queue with an
+inflow is never "finished" — it is only ever caught up.* Write closures against
+**the set of rows you actually examined**, never against a vendor, a category or
+a source type, because only the first form stays true when new rows arrive. The
+tell is grammatical: "queue A as designed is finished" makes a claim about the
+future that the evidence underneath it cannot support. "These 73 supplier rows,
+as of this date, are closed" says exactly as much as was measured.
+
+**How it hid for six nights.** A queue reporting zero is indistinguishable from a
+queue that is genuinely caught up, and the 09-01 entry supplied a ready-made,
+authoritative-sounding reason to believe the zero. That is the same failure mode
+already recorded one section over — *"when a queue's yield collapses, measure the
+size of the reachable pool before debugging the method"* — except that here the
+pool was never re-measured at all, because the file said there was no point.
+
+**So the standing instruction changes to:** measure the reachable pool **each
+run** and journal the number, including when it is zero. Tonight's measurement,
+for the record — imageless active parts created on/after 2026-09-01: **14**, of
+which 11 are camera jobs with no URL anywhere, 1 is Scott's own JLCPCB board,
+and 2 are the `X00…` order-line ids. So the reachable pool really was ~11 deep
+tonight: **below the 20-image floor by supply, not by method.** That distinction
+is only available because the number was computed.
+
+**The durable fix is upstream, and it is now on the decision queue:** harvest the
+image at **part-creation time**, inside queue C, while the listing is guaranteed
+live. Every night a part waits is a night its listing can be retired, and the
+backlog of 415 camera jobs is what waiting looks like at scale.
+
+**Also closed tonight, and it is the same disease:** part 1184, the Nordic PPK2,
+carried **no vendor handle at all** — the precise condition that turned a
+five-minute lookup into a full day on 2026-09-10. Its ASIN was recoverable in one
+page load from its own order-details page (`B0FCRK7RFK`, order
+`113-1305022-6114620`). `Part.link` set, image attached. That listing has no
+`hiRes` field, only `large` — the documented fallback, which earned its keep.
