@@ -84,7 +84,7 @@
    ]
   },
   "medical": {
-   "why": "Rule 3: medical/pharmacy/personal-care are OUT and MUST NOT BE TRANSCRIBED. Log the order id only, never the detail. Note wexhealth mail is benefits-card traffic and is not always even Scott's.",
+   "why": "Rule 3: medical/pharmacy/personal-care are OUT and MUST NOT BE TRANSCRIBED. Log the order id only, never the detail. Note wexhealth mail is benefits-card traffic and is not always even Scott's. baystatept.com added 2026-09-16 (12:40 sweep): the SAME $25.00 physical-therapy visit arrived twice, once as a wexhealth benefits-card alert — correctly suppressed — and once as the provider's own credit-card receipt, which was NOT, because this bucket listed pharmacy chains and the benefits rail but no CLINIC domains. The classifier emitted a decision line reading 'Credit Card Transaction Receipt from MVPT Physical Therapy-NH', i.e. it was about to write a medical detail into the decision queue, which is precisely what rule 3 forbids. Suppressing one rail does not suppress a medical event: the provider bills directly too, so a care episode reaches the mailbox by at least two independent paths and each needs its own entry. Not generalised to a keyword match on 'Therapy'/'Medical' in the subject — that would silently bin a real order from a vendor with an unlucky name, and a suppression nobody can audit is the failure this file's header warns about.",
    "redact": true,
    "domains": [
     "wexhealth.com",
@@ -92,7 +92,8 @@
     "amznpharma.com",
     "cvs.com",
     "walgreens.com",
-    "goodrx.com"
+    "goodrx.com",
+    "baystatept.com"
    ]
   },
   "payment_rail": {
