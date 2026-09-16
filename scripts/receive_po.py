@@ -46,7 +46,23 @@ ap.add_argument("--date", default=None, help="receive date, default today")
 a = ap.parse_args()
 
 po = PurchaseOrder.objects.get(reference=a.reference)
-dest = StockLocation.objects.get(name=a.to)
+# "Receiving" is the name of TWO locations (SLN and LRD), and .get(name=...)
+# raised MultipleObjectsReturned on it. Accept a pk or a full pathstring too,
+# and on ambiguity print the candidates instead of failing opaquely.
+if a.to.isdigit():
+    dest = StockLocation.objects.get(pk=int(a.to))
+else:
+    hits = list(StockLocation.objects.filter(name=a.to))
+    if len(hits) != 1:
+        hits = list(StockLocation.objects.filter(pathstring=a.to))
+    if len(hits) != 1:
+        cands = StockLocation.objects.filter(name=a.to)
+        print(f"{a.to!r} matches {cands.count()} locations - be specific "
+              f"(pass a pk or the full path):")
+        for h in cands:
+            print(f"    {h.pk}  {h.pathstring}")
+        sys.exit(1)
+    dest = hits[0]
 when = (datetime.date.fromisoformat(a.date) if a.date else datetime.date.today())
 
 print(f"{po.reference}  status={po.status}  {po.description[:60]}")
