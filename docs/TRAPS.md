@@ -9145,3 +9145,76 @@ Generalises past money: **any `$` followed by digits** is at risk, so a
 double-quoted journal line naming a `$5` part, a `$100` threshold or a shell
 variable by name loses it the same way. A literal `$` in a run's own prose is
 rare enough that the single-quote rule is cheaper than remembering the cases.
+
+## One wrong letter in a brand name is indistinguishable from "we never bought it" (2026-09-16)
+
+Part 765 was created 2026-08-17 from a bag label and named **`Airhso` Battery
+Spring Contact Plate**. Its only handle was the label's `X004T1PV1F`, an
+order-line id, so it sat imageless for a month inside the pool this file calls
+permanently unreachable.
+
+The brand is **`Alrhso`**. One letter — an `l` read as an `I`, which on the
+label's typeface are the same mark.
+
+**What makes it a trap rather than a typo is how the miss presents.** Searching
+Amazon order history for `Airhso` does not return nothing. It returns **eleven
+orders** — an air duster, an air blow gun, tire inflators, AirPods, an AirTag —
+because the search is token-fuzzy and `Air` is a real token in all of them. A
+run reading that page concludes *this was never bought here* and moves on. The
+correct spelling returns **two orders, both exact**, on the first line.
+
+So the failure is not that the search was unavailable; it is that the search
+**answered a question about a string that does not exist** and the answer looked
+like a finding about an object that does. The same shape as the `og:image`
+harvester that succeeds on a picture of text: a well-formed wrong answer.
+
+**Search descriptive words, not the brand.** `Battery Spring Contact Plate`
+found it in one query with no brand in it at all. The brand is the one token on
+a bag label most likely to be misread — small, unfamiliar, often a made-up
+string with no dictionary to correct it against — and it is the token with the
+least redundancy, because nothing else in the record can contradict it.
+
+Cross-check that survived and settled it: the part's notes recorded the label as
+*"size begins `12x1…`" (truncated)*, and the real listing title ends
+**`12x11mm, 12x28mm`**. A truncated fragment is not a source (see the MEANLIN
+gauge above) — but it is an excellent *confirmation* once a full source is in
+hand, which is the direction that reasoning is safe to run.
+
+## Amazon ORDER HISTORY search resolves an order-line id to a real ASIN (2026-09-16)
+
+Not a trap — the route out of one, and it reopens a class this file had closed.
+
+`X00…` handles (and AliExpress's `…5753` ids) are order-line ids and **404 on
+`/dp/` forever**. That has been read as *these parts are unreachable*. It is
+only a statement about the **catalogue**. Order history is a different index:
+
+    https://www.amazon.com/your-orders/search?search=<descriptive+words>
+
+Each result carries an `<a href="https://www.amazon.com/dp/<REAL ASIN>…">` on
+the product title. Part 765 went bag-label → order → real ASIN → `hiRes` →
+attached image in **three page loads**, through the already-sanctioned
+instruments (driven Chrome for the pages, Mini `curl` for the CDN).
+
+**Calibrate it before trusting a miss.** `search=qwzxvbnmlkjhgfd` returns
+*"No results found. Please try another search."* — so this is a real search and
+an empty result means something, unlike the vendor search pages that return the
+home page and 13 marketing images for any query. But a **non-empty** result
+means much less: the matcher is token-OR, so `fuse holder inline` returned 28
+orders of which none were a fuse holder. **Read the titles; a hit at the top is
+the evidence, not the count.**
+
+Scored honestly against the whole pool tonight: **1 of 10 recovered.** Five
+Amazon parts were searched under several wordings each and have no matching
+order at all — they are genuinely old stock whose purchase predates or falls
+outside searchable history, which is a *named* reason rather than "the queue is
+dead". Four AliExpress ids were not attempted.
+
+**And the recovery can contradict the record, which is the point of doing it.**
+Part 1146 claims *Yotache CR foam neoprene, 3/8 × 1/4 in, 2 strips of 33 ft*.
+The only two Yotache weatherstrip orders in history both read *"Thin Foam Seal
+Gasket Tape, 1/4 in wide × 1/16 in thick, 65 Ft (2 Strips of 33 Ft Each)"* —
+strip count and length match **exactly**, cross-section does not, and "thin
+foam" is not "CR neoprene". No image was attached and nothing was edited:
+hanging that listing's photo on the part would have dressed a mismatch as
+evidence, and **footprint is part identity**. It went on the decision queue as
+one caliper measurement.
