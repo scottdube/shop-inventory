@@ -9218,3 +9218,50 @@ foam" is not "CR neoprene". No image was attached and nothing was edited:
 hanging that listing's photo on the part would have dressed a mismatch as
 evidence, and **footprint is part identity**. It went on the decision queue as
 one caliper measurement.
+
+## Suppressing the benefits rail does not suppress the medical event (2026-09-16)
+
+The 12:40 sweep fed three purchase-shaped messages to `vendor_triage.py`. Two
+were **the same $25.00 physical-therapy visit**, arriving by two independent
+paths:
+
+| Sender | What it is | Classified |
+|---|---|---|
+| `Auto_Reply@mailer.wexhealth.com` | benefits-card transaction alert | **medical, suppressed** |
+| `raintree@baystatept.com` | the clinic's own card receipt | **unknown vendor** |
+
+The second one produced this decision line, and it was one `decide.py` call away
+from being written to the queue:
+
+    --add "new vendor baystatept.com … | Credit Card Transaction Receipt from
+     MVPT Physical Therapy-NH | first seen 2026-09-15 | not on any list"
+
+That is a medical detail — provider, service, date — transcribed into a file
+Scott reads, which is exactly what rule 3 forbids. Nothing malfunctioned: the
+`medical` bucket listed **pharmacy chains and the benefits rail, and no clinic
+domains at all**, so the bucket was never able to catch a provider billing
+directly.
+
+**The generalisable half:** a care episode reaches the mailbox by at least two
+routes — whoever pays and whoever treats — and suppressing one says nothing
+about the other. The same holds for any suppressed class reachable through a
+payment rail. A domain going quiet in triage is therefore *not* evidence the
+class is covered; it is evidence that **one** path is.
+
+Fixed by adding `baystatept.com` to `medical.domains`, verified by re-running
+the same candidates (suppress 1 → 2, unknown 2 → 1, no transcription). It is a
+**domain** entry on purpose. The tempting fix — suppress any subject matching
+`Therapy|Medical|Clinic` — would silently bin a real order from a vendor with an
+unlucky name, and this file's own header says a suppression nobody can audit is
+how a real order gets binned.
+
+**Also confirmed, in the other direction, by reading before acting.** The third
+candidate was a Barclays alert naming `HANNAFORD #8373`. `barclaysus.com` is
+**deliberately not suppressed** — the registry's `payment_rail` note says card
+alerts *name the merchant* and are the only channel that can see an in-person
+card purchase, and the question is already queued as
+`card-issuer-alerts-are-a-discovery-channel`. Its decision line was therefore
+dropped as a **duplicate of a live question, not** as noise. Checking the
+registry's stated reasoning before "fixing" it is what kept a documented
+discovery channel from being suppressed by a run that would have thought it was
+tidying up.
