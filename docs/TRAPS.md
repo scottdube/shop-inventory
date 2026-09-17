@@ -9265,3 +9265,192 @@ dropped as a **duplicate of a live question, not** as noise. Checking the
 registry's stated reasoning before "fixing" it is what kept a documented
 discovery channel from being suppressed by a run that would have thought it was
 tidying up.
+
+## "NO SOURCE" is a statement about the SCHEMA, not about the part (2026-09-17)
+
+The largest bucket in queue A is the one nobody looked at. Tonight's state probe
+sorted 476 imageless active parts by where an image could come from and put
+**398 in "NO SOURCE"** — no `Part.link`, no `SupplierPart`, no SKU, nothing to
+look up. Every run since has read that as *camera job* and moved on.
+
+It is false for a measurable subset, and the evidence was sitting in the field
+right next to the one being queried:
+
+    'pack: 200; via Amazon; last ordered 2026-07-09'
+    'pack: 1; via Amazon; last ordered 2025-11-05; appliance'
+    'pack: unknown; via eBay; last ordered 2024-06-29'
+
+**40 of the 398 record the vendor AND the purchase date in PROSE** in
+`description` — 35 Amazon, 5 eBay, 21 of them 2026. A structured query for a
+source finds nothing because the source is a sentence.
+
+Measured composition of the 398, so the remainder is a named quantity and not a
+shrug:
+
+| Class | Count | Reachable? |
+|---|---|---|
+| prose provenance line (`via <vendor>`) | 40 | **yes**, via order-history search |
+| split out of an assortment KIT | 127 | **no, and never** — see below |
+| neither | 231 | genuine camera jobs |
+
+The 127 kit splits are a different kind of unreachable, worth separating because
+it is permanent: an individual 470k resistor drawn from a 30-value EAONE kit has
+no listing of its own and never will, and *one photo of a through-hole resistor
+is every through-hole resistor*. There is no information in that image. Those
+are not a backlog; they are parts for which the field should stay empty.
+
+**Result: 25 images attached tonight, coverage 683 → 708 of 1198**, against six
+consecutive nights that had reported queue A as having zero to two eligible
+parts. Those reports were not wrong about what they measured — they measured
+parts with *handles*, created after a date. The pool they never counted was the
+one the closure had renamed.
+
+**The generalisable half:** a bucket named for the absence of a *field* is a
+claim about the data model, and it silently becomes a claim about the world the
+moment a route appears that does not need that field. When
+`AMAZON ORDER HISTORY search` (2026-09-16) made a vendor handle unnecessary,
+every "NO SOURCE" count in this file became an overestimate — and nothing
+recomputed, because the bucket's name still described its contents correctly.
+
+## The rarest token you TRUST — and why that is not the opposite of 09-16
+
+Same run, and it is the refinement that made the pool above actually convert.
+Order-history search is token-OR, so query shape controls everything. Visible in
+the size of the result set, same session, same minute:
+
+| Query | Orders scanned | Outcome |
+|---|---|---|
+| `MHCOZY` | **2** | right one first |
+| `Keszoox` | **2** | right one first |
+| `Songhe MEGA` | **2** | right one first |
+| `D-FLIFE speaker` | 8 | right one present |
+| `mini speaker 3W 8ohm JST` | 11 | **all noise** (bass shakers) |
+| `Makeronics solderless breadboard super kit jumper` | 11 | **a logic analyser** |
+| `Makeronics` | 8 | the breadboard |
+
+A descriptive phrase is many *common* tokens and token-OR makes a hit of each
+one; a brand is one *rare* token and the set collapses to the orders that
+contain it. Note the last two rows — the same part, and dropping words is what
+found it.
+
+This reads as the reverse of the 2026-09-16 rule (*"search descriptive words,
+not the brand"*), and **both are correct**, which is the part worth keeping:
+
+- There (part 765) the brand was **suspect** — `Airhso` misread off a bag label
+  for `Alrhso` — and leaning on it is precisely what had hidden the part.
+- Here the brand is **trusted**: it came from the vendor's own order title,
+  already stored in the part's `orig:` description.
+
+**So the rule is neither "brand" nor "words": prefer the rarest token whose
+PROVENANCE you trust.** The type of token was never the variable; where it came
+from is.
+
+### The confirmation that makes all of this safe is the DATE, not the title
+
+Every one of the 25 was accepted on **two independent tokens** — the listing
+title matching the part identity, *and* the order card's date equalling the
+`last ordered` date already written in the part's own description. Several
+matched on a third (`BAALA 520 PCS` vs `pack: 520`; `WGGE` 10-piece vs
+`pack: 10`; `ELEGOO` 4-pack vs `pack: 4`; Taiss `5PCS`/20-detent vs `pack: 5`).
+
+It is not ceremony. **pk 81 was rejected by the date and nothing else:**
+`ELEGOO prototype board` returned *"PATIKIL FR4 Single Side Copper Clad
+Laminate, 5 Pack"* dated **August 23 2026** against a recorded **2026-03-15** —
+a thoroughly plausible prototyping-board title, a different product from a
+different seller. The title alone passes it. A token-OR noise hit does not land
+on the exact recorded purchase date, so the date is the only cheap test that
+distinguishes *the right product* from *a product of the right kind*, which is
+the wrong-family-photo failure this file keeps paying for.
+
+Unrecovered after two passes, with the reason named rather than called dead: pk
+2, 10, 43, 63, 64, 68, 81 are generic-token items, and **the search returns page
+one only (~10 orders)** — a capped read, not the calibrated *"No results
+found"* absence. Pages beyond the first are untested and are the next lever.
+
+## Amazon's telemetry session id is shape-identical to an order number (2026-09-17)
+
+Caught by verification before it wrote anything, and only because the instrument
+changed mid-run.
+
+Harvesting the order-history census by **regex over the raw HTML** returns 12
+strings matching `\d{3}-\d{7}-\d{7}`. Ten are orders. The other two are not:
+
+| String | What it actually is |
+|---|---|
+| `142-0834375-8961113` | the **ubiquitous-events session id**, from `ue_fpf = '//fls-na.amazon.com/1/batch/1/OP/ATVPDKIKX0DER:142-0834375-8961113:…'` |
+| `000-0000000-8675309` | all-zeros prefix, present only inside blocked cookie data — not an order |
+
+The session id is **stable across page loads**, so it does not even look
+flickery, and `po_check` reports it `absent` forever. Worse, it presents as
+*decidable*: the first extraction pass attached a Roku Streaming Stick and a
+LEVOIT air purifier to it, scavenged from a neighbouring recommendations block,
+so it arrived looking exactly like a consumer order awaiting a skip ruling. A
+sweep that regexed this page and created POs for `absent` refs would have booked
+a phantom order against a telemetry token.
+
+**Why it never bit before:** earlier censuses read the **rendered page text**,
+which excludes `<script>` contents. Fetching raw HTML and regexing it changed
+what the corpus contains, and nothing announced that — the same shape as the
+09-10 lesson about instruments, in the other direction. *Changing the instrument
+changes the population, even when the query is unchanged.*
+
+**The defense is a filter, not a better extractor.** `a[href*="orderID="]`
+returns **zero** on the current page, so the regex really is the only handle
+there is: subtract the id captured by `OP/<marketplace>:<id>:` and reject a
+`000-0000000-` prefix. No live script path is exposed today — only
+`approved_audit_0910.py` carries that regex and it reads `pending_decisions.md`,
+a local file — so this is a standing procedure risk for future runs rather than
+a bug to fix.
+
+## The decision queue's 7 "APPROVED awaiting execution" are a READER bug (2026-09-17)
+
+`state_*.py` has printed `approved-awaiting-execution: 7` every night for a
+week. It is a false alarm, and it is the exact mirror of the 2026-09-14 trap
+above.
+
+All seven `- [x] APPROVED` lines sit under a header that is **telling the
+truth**:
+
+    ## done — executed interactively 2026-08-18: PO-0020..22 created;
+    PO-0004/0005 cancelled; copper-clad + 22AWG were already stubbed by the sweep
+
+The probe counts `"[x] APPROVED" in line` document-wide and never looks at which
+section the line is in. Verified independently against the DB tonight, by
+`supplier_reference` and hyphen-normalised (per the `po_check` raw-compare trap):
+PO-0020 USD 18.68, PO-0003 10 @ USD 1.00, PO-0002 USD 15.32, PO-0021 and PO-0022
+all exist Complete; PO-0005 and PO-0004 are status 40 Cancelled, not deleted; and
+`113-9803496-4392255` — the CBAZY 20AWG twin an approved line explicitly says was
+cancelled at Amazon — is correctly **absent**. Genuinely outstanding: **zero**.
+
+**Nothing was moved.** The lines are correctly filed; relocating them would have
+been make-work on a true record. What needs changing is the counter, which should
+count `[x] APPROVED` lines *outside* a done section — currently always 7, so it
+can never go to zero and can never signal a real one.
+
+09-14 was *a header that lied about its contents*. This is *a reader that
+ignored a header telling the truth*. Both produce a queue that misreports, and
+the second one costs more, because it manufactures work: it is what
+`approved_audit_0910.py` was written to answer, and it sent this run down the
+same path a week later.
+
+## A documented trap does not stop you repeating it (2026-09-17)
+
+The `journal-lines-eat-dollar-amounts` item, measured 2026-09-15, records that a
+dollar amount inside a **double-quoted** `itq` argument loses its leading digits
+— `$18.68` becomes `.68`, because `$18` is a positional parameter that expands
+to empty in the *local* shell before `itq` is invoked. Single quotes preserve it.
+The write-up states that day's line was *"the only real casualty in the file's
+history."*
+
+There are now two. **This run produced the second, 48 hours later, with the
+diagnosis sitting in its own decision queue** — a 02:10 journal line reporting
+`$18.68 / $1.00 / $15.32` landed as `.68 / .00 / .32`. It was re-derived from
+scratch (an argv probe, both quotings, same minute) before the queue item was
+found, which confirms the finding and wasted the measurement.
+
+The point is not the quoting. It is that **a trap whose only guard is a habit in
+a hand-composed string will recur at the rate the habit fails**, and reading the
+file does not change that rate. The fix is the one the queue item asks for — the
+task files' own `itq` examples, which every run copies — and that edit is denied
+to an unattended session by design. So the recurrence is not evidence that the
+guidance is unclear; it is evidence that the guard is in the wrong place.
