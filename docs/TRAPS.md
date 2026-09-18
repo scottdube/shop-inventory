@@ -9454,3 +9454,28 @@ file does not change that rate. The fix is the one the queue item asks for — t
 task files' own `itq` examples, which every run copies — and that edit is denied
 to an unattended session by design. So the recurrence is not evidence that the
 guidance is unclear; it is evidence that the guard is in the wrong place.
+
+## A new BOM line does not reach an already-open build order (2026-09-18)
+
+Adding 5 ft of 20 AWG 2-core cable to **BO-0007 Geo Aux Heat** meant creating a
+`BomItem` on the assembly part (`Geo Aux Heat`, pk 834) — that is where a build
+order's lines come from, and there is no such thing as a line that belongs to
+the build and not to the BOM.
+
+**Creating the `BomItem` did NOT create the `BuildLine`.** Measured the same
+minute: BO-0007 went to 13 BOM items while `BuildLine.objects.filter(build=b)`
+still returned 12, and the write script created `BuildLine` pk=117 itself. The
+build's lines are materialised when the build is created (`create_build_line_items()`)
+and an open PENDING build does not re-derive them when the BOM changes
+underneath it.
+
+Why it matters: the part list a build order *shows* is `BuildLine`, not `BomItem`.
+A script that stops at the `BomItem` reports success, the BOM is genuinely
+correct, and the build order screen shows nothing new — the same failure shape as
+*"receiving a line is not closing an order"*: one of two halves satisfied, and
+the half that was skipped is the one anybody actually looks at. **Always re-read
+the `BuildLine` count after touching the BOM of a part with an open build.**
+
+Not a substitute for a real check: this was verified on a PENDING build with zero
+allocations. What a BOM change does to a build already partly allocated, or to a
+COMPLETE one, was **not** tested.
