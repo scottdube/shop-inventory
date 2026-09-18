@@ -9480,6 +9480,14 @@ Not a substitute for a real check: this was verified on a PENDING build with zer
 allocations. What a BOM change does to a build already partly allocated, or to a
 COMPLETE one, was **not** tested.
 
+**Corrected the same day, on the other half of the run.** The BOM note first
+read *"STATED by Scott, not measured off the installation"* — a hedge nobody
+asked for. Scott: *"Measured, of it was guessing I would have said so."* Note
+rewritten to MEASURED. The evidence tiers in this repo grade figures **nobody
+stated**; running them over Scott's own spoken numbers stamps doubt on the most
+direct evidence in the building, and a marker applied that freely is the exact
+thing the tier-4 reasoning warns against.
+
 ## An Amazon Grand Total of $0.00 is the limiting case, not a free item (2026-09-18)
 
 The standing rule — never take a price from an Amazon email `Grand Total:` —
