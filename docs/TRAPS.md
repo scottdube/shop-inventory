@@ -9479,3 +9479,44 @@ the `BuildLine` count after touching the BOM of a part with an open build.**
 Not a substitute for a real check: this was verified on a PENDING build with zero
 allocations. What a BOM change does to a build already partly allocated, or to a
 COMPLETE one, was **not** tested.
+
+## An Amazon Grand Total of $0.00 is the limiting case, not a free item (2026-09-18)
+
+The standing rule — never take a price from an Amazon email `Grand Total:` —
+already existed and was already followed. This is the **extreme value** of it,
+recorded because $0.00 does not look like the other instances.
+
+Order `113-7781321-8645014`, a Ubiquiti UniFi nanoHD access point. The
+confirmation email and the order-history list both read `Grand Total: 0.0 USD`.
+The order-details page:
+
+| Line | Amount |
+|---|---|
+| Item(s) Subtotal | $61.99 |
+| Shipping & Handling | $0.00 |
+| Estimated tax | $0.00 |
+| Gift Card Amount | -$40.07 |
+| Rewards Points | -$21.92 |
+| **Grand Total** | **$0.00** |
+
+Booked $61.99 as PO-0175.
+
+**Why this one is worth its own entry.** The documented case (email $4.28,
+items $6.99 and $9.49) is a number that looks *plausible* and is merely wrong,
+so a careful reader might still catch it as low. $0.00 is different in kind:
+
+- It reads as a **fact about the item** ("free", "promotional", "replacement
+  unit") rather than as a fact about the payment, so it invites a story that
+  explains it away instead of a lookup.
+- It is the only value that books a **real asset at no cost**. A $12 error on a
+  $16 part distorts a price; a $0.00 booking says the shop owns a $62 access
+  point that cost nothing, and every later cost roll-up inherits that.
+- Two instruments stacked to reach it — a gift-card balance *and* points. Any
+  rule phrased around "rewards points" alone does not name this order.
+
+The generalisation, which is what should survive: **a total is what settled the
+order, not what the goods are worth.** Payment instruments (gift cards, points,
+store credit) subtract from the total and change nothing about the item's price.
+A genuine price reduction (Subscribe & Save, a coupon) is a different question
+and is still open as `amazon-promo-discount-vs-item-price` — do not answer that
+one by reaching for this entry.
