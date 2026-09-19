@@ -9528,3 +9528,47 @@ store credit) subtract from the total and change nothing about the item's price.
 A genuine price reduction (Subscribe & Save, a coupon) is a different question
 and is still open as `amazon-promo-discount-vs-item-price` — do not answer that
 one by reaching for this entry.
+
+## `Part.keywords` is 250 chars too, and the DRY RUN does not check it (2026-09-18)
+
+`Part.description` being capped at 250 is already written up above. **`keywords`
+has the same cap**, and that is the half that bites, because of *when* it fails.
+
+The import scripts here are built as dry-run-then-commit. The dry run does the
+expensive, fallible thinking — duplicate scan, price reconcile against the
+vendor page — and prints a clean result. Every field-length error, though, is
+raised by Django's `full_clean()` inside `part.save()`, which only the `--commit`
+pass reaches. Measured tonight on `po_0918_t400.py`: the dry run printed
+`reconcile: lines sum 118.00 vs email subtotal 118.00` and exited happily; the
+identical `--commit` run died on
+
+    ValidationError: {'keywords': ['Ensure this value has at most 250 characters (it has 255).']}
+
+**255 characters. Five over.** Nothing was written — the exception landed on the
+first `save()`, before the supplier part and before the PO — so this costs a
+retry, not data. That is luck about statement order, not a property of the
+design: the same failure on a *later* `save()` leaves a part with no supplier
+part and no PO, which is the shape of an orphan nobody goes looking for.
+
+The real lesson is not "keywords are 250". It is that **a dry run that validates
+less than the commit is not a dry run, it is a rehearsal of the easy half.** The
+whole reason to have one is to learn before writing whether the write will
+succeed, and a length cap is the cheapest possible thing to check.
+
+Both scripts now assert it *before* the `--commit` gate, so it fails in the dry
+run where it belongs, and print the count so a near-miss is visible:
+
+```python
+print(f"keywords: {len(KEYWORDS)} chars (limit 250)")
+assert len(KEYWORDS) <= 250, f"keywords too long: {len(KEYWORDS)}"
+assert len(NAME) <= 100, f"name too long: {len(NAME)}"
+```
+
+`name` is in there because it is the other free-text field these importers fill
+from a vendor title, and canonical names have been running long — the Mini DP
+adapter's name is 88 characters. It has not failed yet, which is exactly when to
+add the guard.
+
+Not generalised into a shared helper. Each importer is a standalone one-shot
+script by house style, and three lines copied is cheaper to read at the point of
+use than an import that hides what is being checked.
