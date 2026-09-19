@@ -9916,3 +9916,28 @@ here, and a category that is right 95% of the time looks identical to one that
 is right 100% of the time until you check a case you already know the answer
 to. This one was caught only because `shop.app/account` listed an order in the
 preflight that the mail search had not produced.
+
+### Re-parent a location through the instance, not the queryset
+
+`StockLocation.pathstring` is **denormalised** — it is rebuilt in `save()`, and
+`Model.objects.filter(...).update(parent=x)` never calls `save()`. MPTT's
+`lft`/`rght`/`level`/`tree_id` are in the same position: a raw `.update()`
+changes the FK and leaves the nested set describing the old shape.
+
+Observed 2026-09-19 moving B-02 from `WS2-S3` to `LW3-S1`: straight after the
+`.update()`, a **fresh** `.get()` still returned the old pathstring while the
+new parent's `get_children()` already listed B-02. A later read showed it
+correct with no intervening write. **Why it reconciled was never established** —
+a background task, a cached object and an ORM detail are all untested
+candidates, and none of them belong in this entry as the reason.
+
+The rule does not depend on that cause. Move a location with
+`obj.parent = new; obj.save()`, then `StockLocation.objects.rebuild()`, then
+check every location's pathstring against its parent's — not just the one you
+moved. `scripts/fix_b02_reparent.py` does exactly that and is reusable.
+
+**This is the one place the house `.update()` preference is reversed.** Elsewhere
+`.save()` has reported success and written nothing, so `.update()` is the safe
+fallback. For a tree model with a denormalised path it is the dangerous one —
+same shape as the `pack_quantity_native` trap, where the field that displays and
+the field that counts are not the same field.
