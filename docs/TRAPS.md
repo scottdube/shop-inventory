@@ -9751,3 +9751,37 @@ order says neither happened.
 Also: `add_tracking_entry()` wants a `StockHistoryCode` enum member, not the
 integer status — passing the int raises `AttributeError: 'int' object has no
 attribute 'value'`, and the write it was attached to had *already* succeeded.
+
+### A refund can land BEFORE the stock row is created
+
+Part #1181, the Monoprice MST hub. Measured 2026-09-19 in the mailbox, all
+three mails from `return@amazon.com` on order `113-2048573-8975434`:
+
+```
+2026-09-15 14:45  Return request confirmed   (reason: Changed Mind)
+2026-09-15 15:10  Dropoff confirmed          (Staples, in transit)
+2026-09-15 17:11  Advance refund issued      $18.46
+2026-09-16 14:08  <-- InvenTree creates stock item 808, qty 1, $18.46
+```
+
+The receive is driven by the **delivery**, and the delivery email is true —
+the hub did arrive on 2026-09-14. Nothing in that path asks whether the item
+is still in the building a day later. So the row is not wrong about the past;
+it is a day stale about the present, and it reads on screen exactly like a
+unit on the shelf.
+
+A whole-mailbox search for the ASIN returns four threads — those three plus a
+Monoprice marketing mail — so there is no second order to explain it away.
+
+**The existing warning was pointed the wrong way.** `An automated PO pipeline
+must leave everything in Placed until a human confirms delivery` guards against
+receiving too EARLY. This is the opposite shape: the delivery was real, the
+receive was correct at the moment it ran, and the refund overtook it. Confirming
+delivery would not have caught it. **Only watching for the refund does** — hence
+the `amazon-refund-watch` scheduled task and `scripts/refund_watch.py`.
+
+Also measured, and the reason the watcher keys on order numbers: the return
+mail for this hub is findable by `113-2048573-8975434` and by
+`from:return@amazon.com`, but the ORDER confirmations for the same ASIN are not
+findable by product name at all — Amazon's "Ordered: 1 Electronics item" mails
+carry neither. Same shape as the marketing-mail misread in `OPEN.md`.
