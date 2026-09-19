@@ -2350,3 +2350,31 @@ photo loose (→ `#252`) or did it come out of the blade-fuse kit box in `L2-D2`
 blade fuses, and `#346` has 120 of them in seven values (5 / 7.5 / 10 / 15 / 20
 / 25 / 30 A) sitting in `L2-D2`. **All three values are in that kit.** Nothing
 to buy for the fusing.
+
+## The Florida box, packed 2026-09-19 — three things not established
+
+[Raspberry Pi 3 Model B #1236] and its supply
+[Stontronics DSA-13PFC-05 #1237] are both in `FL-01`. Neither is earmarked —
+they are **packed**, which `florida.py list` reports under ALREADY IN A BOX. The
+metadata earmark was deliberately NOT written: `_items()` reads metadata first,
+so carrying both would report a packed item as merely earmarked.
+
+**1. The SD card has not been imaged, and it leaves the state with the board.**
+Scott: *"Card in, I know what's on it"* — a Pi-hole. Knowing what is on it is
+not having a copy of it. Blocklists, local DNS records and any DHCP
+reservations exist once, on a card that is now in a box going 1,500 miles in a
+vehicle. `dd` to a file is minutes. **This is the only item here with a
+deadline**, and the deadline is departure (~2026-10-12).
+
+**2. Is the micro-USB lead captive or detachable?** Only the brick was
+photographed. It decides whether a *cable* also has to go in the box. The
+official Pi supply has a captive lead specifically so nobody substitutes a
+charging cable; if this one is detachable, the wrong cable at the far end
+reproduces exactly the undervoltage symptoms the 5.1 V exists to prevent.
+
+**3. The mains plug pattern is unread.** Almost certainly US, and Florida is
+also US, so this changes nothing — recorded because "almost certainly" is not a
+reading and the record should not pretend otherwise.
+
+**Not open, deliberately:** the case is unidentified and stays that way. It is a
+case. Nothing downstream depends on it.
