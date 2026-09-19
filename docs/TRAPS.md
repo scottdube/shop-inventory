@@ -9873,3 +9873,46 @@ mail for this hub is findable by `113-2048573-8975434` and by
 `from:return@amazon.com`, but the ORDER confirmations for the same ASIN are not
 findable by product name at all — Amazon's "Ordered: 1 Electronics item" mails
 carry neither. Same shape as the marketing-mail misread in `OPEN.md`.
+
+### `category:purchases` drops order confirmations it does not like
+
+The daytime sweep's section 4 finds vendors nobody has registered by searching
+`category:purchases` and subtracting the known senders. That net has a hole in
+it, measured 2026-09-19 at the 12:40 run:
+
+| mail | in `category:purchases`? |
+|---|---|
+| Rustic Edge order **#6663 confirmed**, 2026-09-19 12:48Z | **no** |
+| Rustic Edge order **#6407 confirmed**, 2026-09-03 12:49Z | **no** |
+| Rustic Edge #6407 label created / out for delivery / delivered | yes, all three |
+| Amazon `auto-confirm@` "Ordered: 1 Electronics item" ×2 | yes |
+| eBay "Order confirmed: NVIDIA T400" | yes |
+
+So the category is not refusing the *sender* — it carries that sender's
+shipping notices happily — and it is not refusing order confirmations *as a
+class*, because it caught Amazon's and eBay's the same night. It drops these
+particular confirmations, and nothing observable says why.
+
+**Categorisation lag is eliminated**, which was the obvious explanation for
+#6663 at two hours old: #6407's confirmation is sixteen days old and still
+absent. Beyond that the cause is unestablished — do not write one down.
+
+Cost this time: **zero**. `rusticedgeco.com` has been in the registry's
+`apparel` suppress bucket since 2026-09-04 and section 3 skips apparel anyway,
+so the missed mail was mail we wanted to miss. That is luck, not design. The
+same mechanism hides a real parts vendor's order confirmation exactly as well,
+and section 4 is the *only* thing looking for vendors the registry has never
+heard of — a blind spot in the blind-spot detector.
+
+**The fix, and it is tested:** do not let `category:purchases` be the only net.
+A subject-shaped search over the same window finds what the category drops —
+`subject:confirmed` returns #6663 and #6407 — and it is the same constraint
+section 3 already applies to known senders. Run both and union the hits.
+
+The general shape, and it is worth more than this instance: **a discovery
+search filtered by someone else's classifier inherits that classifier's silent
+misses.** Gmail decides what `purchases` means, that decision is not visible
+here, and a category that is right 95% of the time looks identical to one that
+is right 100% of the time until you check a case you already know the answer
+to. This one was caught only because `shop.app/account` listed an order in the
+preflight that the mail search had not produced.
