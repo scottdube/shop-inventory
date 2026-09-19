@@ -747,6 +747,30 @@ overlapping text is still ink in the expected region. Truncate in the TEMPLATE
 (`|truncatechars:N`), and verify by rendering to PNG and LOOKING at it, not by
 measuring margins.
 
+### `truncatechars:75` is a character cap, and the label's real limit is LINES
+The part template truncates at 75 characters across three lines. A 69-character
+name — `PS-002 Power Adapter 24V 0.8A, 5.5x2.1 C+ (FULLPOWER SAW30-240-0800U)` —
+is under the cap, so nothing truncated, and it still rendered as `(FULLPOWER`
+with the model clipped off the bottom.
+
+The two limits are not the same limit. Three lines at 3.1mm Arial across 42mm
+is **about 25 characters per line only when the words happen to pack**; word
+wrap leaves the rest of each line empty, so a name of long words runs out of
+lines well before it runs out of characters. 75 characters is a ceiling that
+assumes perfect packing.
+
+Consequence for naming: put the fields that must survive FIRST and keep the
+name short enough to fit in two lines, rather than trusting the cap. The
+2026-09-19 wall-wart labels dropped brand and model out of the name for exactly
+this reason — they live in the description and keywords, where they are
+searchable, and on the brick's own sticker, which is in your hand by the time
+you want them. What stayed is what `power-supply-inventory.md` §6 says gets
+read at arm's length: ID, volts, amps, connector, polarity.
+
+Caught by looking at the rendered PNG, which is the only reason it was caught
+at all — the name fit its box, the QR was clean, and every automated check
+passed.
+
 ### "Labelled" is THREE states, and `labeled` only models two
 A 62mm label was printed for A3-R1C1 on 2026-08-21 because `labeled` read
 `None`. Scott: *"All of these labels are already printed for the wall
