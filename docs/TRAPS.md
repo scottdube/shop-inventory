@@ -9752,6 +9752,15 @@ Also: `add_tracking_entry()` wants a `StockHistoryCode` enum member, not the
 integer status — passing the int raises `AttributeError: 'int' object has no
 attribute 'value'`, and the write it was attached to had *already* succeeded.
 
+**Correction, same day: Quarantined is overloaded, so status alone cannot mean
+"going back".** It was already in use here for *suspect, untested, do not build
+with it* — stock 648, the 100 PSI transducer, has sat Quarantined awaiting a
+bench test since 2026-08-23. The first cut of `refund_watch.py` keyed on status
+75 and duly reported that transducer as a purchase waiting on an Amazon refund
+that will never come. Still use 75 for returns — nothing else both keeps the row
+and drops it out of available — but **write the reason in the notes, and match
+on the notes**, never on the status alone.
+
 ### A refund can land BEFORE the stock row is created
 
 Part #1181, the Monoprice MST hub. Measured 2026-09-19 in the mailbox, all
