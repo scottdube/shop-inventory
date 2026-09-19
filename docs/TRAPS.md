@@ -10021,3 +10021,42 @@ difference that would have surfaced mid-run with a jar of unusable plugs.
 
 **Being wrong in one direction is not a reason to over-correct in the other.**
 A refuted general claim refutes the general claim.
+
+## A multi-question form's answers can land in the wrong slots (2026-09-19)
+
+Asked four questions about the Raspberry Pi in one `AskUserQuestion` call —
+free-vs-allocated, SD card, **power supply**, location. The power-supply answer
+came back as **`"pihole dns"`**, which is plainly the answer to the *SD card*
+question. The answers had shifted relative to their questions.
+
+**What I did right, and it was the only thing that saved the record:** I did not
+try to make `"pihole dns"` mean something about a power supply. A model that
+insists every answer answers its own question will invent a reading — "dns
+appliance PSU", "a supply for a Pi-hole build" — and write it down as though
+Scott had said it. Instead I recorded on [#1236] that the PSU was **unresolved
+and why**, and asked again in chat with the label in hand.
+
+**What it cost:** nearly the whole point of the exercise. Scott said the Pi
+comes *with* a power supply. Had I silently accepted a garbled answer, #1236
+would carry a fabricated PSU spec, and the real supply —
+[Stontronics DSA-13PFC-05 #1237], 5.1 V 2.5 A micro-USB — would have gone into
+the Florida box uncatalogued or, worse, been left on the bench.
+
+**The rule: an answer that does not fit its question is CORRUPT DATA, not a
+surprising answer.** The tell is cheap to spot — the content belongs to a
+*different question in the same call*. When that happens:
+
+1. **Do not interpret it.** Do not average it, do not partially use it.
+2. **Do not silently re-map it either**, however obvious the shift looks. A
+   4-question shift is obvious; a 2-question one is a coin flip.
+3. **Write "unresolved" on the record, with the raw answer quoted**, so the next
+   person sees the garbling rather than inheriting a guess.
+4. **Re-ask, one question, in chat.**
+
+**And ask fewer questions per call.** Four at once is what made the shift
+possible and what made it hard to see. The two questions that were *independent
+of each other* (free stock, location) came back fine and were never in doubt;
+the two that were *about the same physical bundle* are the pair that crossed.
+
+Same family as "don't put an unestablished cause in the record": the failure is
+not getting a wrong answer, it is laundering a wrong answer into a stated fact.
