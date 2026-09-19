@@ -451,3 +451,38 @@ already defaults to render-only for the visual check this file demands. Treat
 that default as the END of the job rather than a step on the way to `--print`,
 and batch the labelling when it is called for — by which time names, counts and
 locations have stopped moving.
+
+---
+
+## A location label carries its PARENT, so a move makes the tape wrong
+
+**Paid for 2026-09-19.** B-02 moved from `WS2-S3` to `LW3-S1`. I told Scott no
+reprint was needed, reasoning that the `B-nn` id is global and travels with the
+physical bin — so the move is a re-parent, not a rename. Scott: *"actually need
+a new label for BO2. as well."*
+
+He was right. Template 9 prints **two** lines:
+
+    B-02        <- the global id. Travels. Unchanged by a move.
+    WS2-S3      <- the PARENT SHELF. This is precisely what a move changes.
+
+The premise was true and the conclusion did not follow from it. "The id is
+stable" says nothing about the rest of the tape.
+
+**The rule for any location move:**
+
+1. Re-parent in InvenTree (`obj.parent = new; obj.save()`; see `TRAPS.md`).
+2. **Reprint the location label.**
+3. **Peel the old tape before sticking the new one.**
+
+Step 3 is not tidiness. A bin carrying a confidently printed *wrong* address is
+worse than a bare bin: the bare one gets picked up by the next batch print, the
+wrong one reads as done forever and will never be offered again. Same reasoning
+as `mark_labeled.py`'s rule about handwritten labels.
+
+Set `metadata.labeled = False` on the moved location until the new tape is
+physically on it, and keep the superseded CUPS job id in `label_printed` — once
+two same-day labels are cut off the roll, the job id is the only thing that
+tells them apart.
+
+**This applies to every bin in the WS → laser-wall migration**, not just B-02.
