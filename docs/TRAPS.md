@@ -9761,6 +9761,26 @@ that will never come. Still use 75 for returns — nothing else both keeps the r
 and drops it out of available — but **write the reason in the notes, and match
 on the notes**, never on the status alone.
 
+### A state flag living in the narrative field will collide with the narrative
+
+`refund_watch.py` decided an order was settled by searching its PO notes for
+the words *refund issued*. Within the hour, a correction written to PO-0173
+contained the phrase **"refund issued (not yet)"** — and the watcher marked an
+open return as closed. It would have skipped the mail search for that order
+every run, silently, forever.
+
+The notes field is the right place for the REASON and the wrong place for the
+FLAG, and this install gives no other place to put either. The fix is a token
+no prose will produce by accident — `[REFUND-CONFIRMED]`, matched
+case-sensitively and literally — plus the rule that it is written only when the
+money is actually back.
+
+**The general shape:** any status you detect by grepping a field that humans
+also write sentences into is a bug with a delay on it. The failure is silent by
+construction — a false positive means work is *not* done, so nothing errors and
+nothing appears. Caught here only because the next run of the reader was in the
+same turn as the write.
+
 ### A refund can land BEFORE the stock row is created
 
 Part #1181, the Monoprice MST hub. Measured 2026-09-19 in the mailbox, all
