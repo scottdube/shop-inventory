@@ -9761,6 +9761,37 @@ that will never come. Still use 75 for returns — nothing else both keeps the r
 and drops it out of available — but **write the reason in the notes, and match
 on the notes**, never on the status alone.
 
+### "Returned to Amazon" gets written down as finished when it is an intention
+
+Three instances, all found on 2026-09-19:
+
+| PO | record said | actually |
+|---|---|---|
+| PO-0165 | "**RETURNED TO AMAZON 2026-09-16.** Scott: *returned to amazon*" | RMA not started as of 09-19; goods delivered 09-12 and still here |
+| PO-0173 | "received 1 of 1, then **RETURNED TO AMAZON**" | RMA started 09-19, three days later |
+| PO-0155 | "**RETURNED 2026-09-01.** Scott: *it's going back*" | dropped off 09-15, refunded the same day |
+
+Look at what Scott actually said in each: *"returned to amazon"*, *"it's going
+back"*. Those are statements of intent, in the middle of a conversation about
+what he is doing. The note-writer kept the quote — correctly — and lost the
+tense, and a heading in capitals then made an intention look like a settled
+fact for as long as anyone cared to read it.
+
+**A return is three states, not one**, and days pass between them:
+
+```
+RMA started  ->  goods dropped off  ->  refund issued
+```
+
+Only the third is money, and only the third closes anything. Write which one
+you have, with its date. `PO-0165`'s note also shows the cost of collapsing
+them: it concluded *"nothing was received … so there was no stock to reverse"*,
+which was true of the DATABASE and false of the building — the hub had been
+delivered four days earlier and nobody had booked it in, so **zero stock was
+read as never arrived**.
+
+None of these were wrong about what Scott meant. They were wrong about when.
+
 ### A state flag living in the narrative field will collide with the narrative
 
 `refund_watch.py` decided an order was settled by searching its PO notes for
