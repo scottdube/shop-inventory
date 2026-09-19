@@ -9941,3 +9941,32 @@ moved. `scripts/fix_b02_reparent.py` does exactly that and is reusable.
 fallback. For a tree model with a denormalised path it is the dangerous one —
 same shape as the `pack_quantity_native` trap, where the field that displays and
 the field that counts are not the same field.
+
+## Every printed pack figure checked on 2026-09-19 was wrong
+
+Three containers came off the bench in one session. Each carried a figure on
+the outside. Scott counted all three.
+
+| Item | Printed | Counted | |
+|---|---:|---:|---|
+| Cat5e keystone bag `#1234` | 25 | **15** | −40%, resealable bag, open |
+| Cat6 pass-through plug jar `#1235` | 100 | **95** | −5% |
+| ATC inline fuse holder `#252` | "3 Pack" (2016 order) | **1** | *and not from that order at all* |
+
+**The −5% one is the trap, not the −40% one.** A bag that says 25 and holds 15
+announces itself the moment anyone looks. A jar that says 100 and holds 95 does
+not: 95 is close enough to the printed figure that nobody re-checks it, and
+five plugs is exactly the shortfall that strands a job at the last drop.
+
+The fuse holder is a third failure mode and the worst of them. `#252` had one
+purchase in its history — a 3-pack from 2016 — and no stock row. A physical
+holder then turns up. **The obvious move is to write a row and consider the
+record closed, which silently asserts that the 2016 pack is what was just
+found.** It is not: this one came sealed in a bag with the Boat Command relay
+`#1233`. The three from 2016 are still unaccounted for, and that is now written
+on the part in bold because a bare stock row would have buried the question.
+
+So the rule, sharpened: **a printed pack size is a supplier fact about what
+left the factory.** The moment a container is opened it is an upper bound and
+nothing more. And a purchase history is not a provenance — the unit in your
+hand has to be tied to the order by something other than both existing.
