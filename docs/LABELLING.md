@@ -486,3 +486,16 @@ two same-day labels are cut off the roll, the job id is the only thing that
 tells them apart.
 
 **This applies to every bin in the WS → laser-wall migration**, not just B-02.
+
+## B-04 — created 2026-09-19, label NOT printed
+
+`SLN/Laser Area/LW3/LW3-S1/B-04`, ETHERNET TERMINATION. Split off B-03 the same
+day because the keystone bag and the plug jar would not fit in it.
+
+It has `metadata.labeled: False` and **no `label_printed` key at all** — the
+three-state convention, where an absent key means the tape has never been sent
+to the printer. Template 9 (Shop Location 62 mm) when Scott asks.
+
+Its line 2 will read `LW3-S1`, which is the parent-on-the-tape trap recorded
+above: B-04 was born on that shelf, so the tape is correct as long as the bin
+stays there.

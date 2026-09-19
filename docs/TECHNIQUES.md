@@ -751,3 +751,15 @@ which is not volume: `B3-R6C4`'s six rows include a KNACRO 30 A dual module and
 an MY2NJ with its socket, and a drawer elsewhere with six rows of SMD tape is
 empty by comparison. **A category match plus a size-class match is a shortlist,
 not an assignment** — the last step is a person looking in the drawer.
+
+**It happened twice in the same hour.** The Cat5e keystone bag and the Cat6
+plug jar were filed into `B-03`, the ETHERNET & PoE bin, on the reasoning that
+they are Ethernet hardware. Scott, at the bin: *"wont fit in b3."* Right
+category again, and a bag of 15 jacks plus a jar of 100 plugs is two rows and
+a lot of volume. They became `B-04`.
+
+So the working rule: **when a part is bulk — a bag, a jar, a reel, a boxed
+assortment — treat the destination as unconfirmed until somebody looks**, and
+say in the record that it is a proposal. Filing it and being told later costs a
+re-parent, a notes correction and a reprinted label, which is three writes for
+a question that costs one sentence.
