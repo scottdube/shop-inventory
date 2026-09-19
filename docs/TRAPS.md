@@ -10004,3 +10004,20 @@ cataloguing rather than purchasing.
 Related: [name-what-you-searched], [truncated-search-absence],
 [inactive-parts-are-merge-receipts] — all the same family, a negative from a
 database being spent as a finding.
+
+### The correction has its own trap: don't over-collapse it either
+
+When Scott said he had "multiple punchdown tools and crimpers for this stuff",
+the tempting move was to close every tool question at once. One did not close:
+**an ordinary RJ-45 crimper does not finish a pass-through plug** — it seats
+the contacts and leaves the conductors standing proud of the nose, and
+"crimpers" does not say whether any of them is a pass-through type with the
+integrated flush cutter.
+
+So `#1235` kept the specific version of the question alive while dropping the
+general one. It cost one more question — Scott: *"I have both"* — and the
+alternative was writing "tools on hand, nothing to check" over a real
+difference that would have surfaced mid-run with a jar of unusable plugs.
+
+**Being wrong in one direction is not a reason to over-correct in the other.**
+A refuted general claim refutes the general claim.
