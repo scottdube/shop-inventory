@@ -9569,6 +9569,96 @@ from a vendor title, and canonical names have been running long — the Mini DP
 adapter's name is 88 characters. It has not failed yet, which is exactly when to
 add the guard.
 
+## The reachable Amazon route cannot page, and the pageable one is not reachable (2026-09-19)
+
+The 09-17 run named "pages beyond the first are untested and are the obvious
+next lever" and left it there. 09-18 closed half of it: `/your-orders/orders`
+comes back a blocked cookie shell with zero `/dp/` anchors, so the year list
+cannot be reached by `fetch` at all. **Tonight closes the other half, and it is
+not the half anyone expected.**
+
+`/your-orders/search` *does* answer a same-origin `fetch` from an open Amazon
+tab — ~400 KB of real, server-rendered result page. It also **silently ignores
+both paging parameters**:
+
+    search=uxcell                     402651 bytes, 11 rows, newest Aug 2026
+    search=uxcell&timeFilter=year-2025 402733 bytes, 11 rows, newest Aug 2026
+    search=uxcell&startIndex=10       identical first AND last row
+    search=uxcell&startIndex=20       identical first AND last row
+
+So the two routes fail in opposite directions: **the route that answers cannot
+page, and the route that pages does not answer.** Those are two different walls,
+and neither is the other's workaround — which is precisely why "just page it"
+survived two runs as a plausible next step. An ignored query parameter returns
+HTTP 200 and a full, correct-looking page; there is no error anywhere to notice.
+
+This is the same shape as the already-recorded "a query that matches nothing
+returns the generic recency list": **Amazon's order pages answer a question you
+did not ask rather than refusing.** The defence is the same one that works
+everywhere else here — compare against a control. Two responses differing by
+82 bytes out of 402 KB are the same response.
+
+Consequence, named rather than called dead: **pk 43** (uxcell 2.54mm Female
+30-Pin Flat Cable IDC, recorded 2025-01-06) is now unreachable by every
+instrument this job has. Settling it needs a real browser *navigation* to the
+2025 year list, not a fetch.
+
+## Nine imageless parts are things no vendor ever sold (2026-09-19)
+
+Every run reports queue A against a denominator of imageless parts, and every
+run has quietly assumed that denominator is made of things that *have* a
+photograph somewhere. Bucketing all 442 imageless active parts tonight found
+nine that do not:
+
+* **5 whose only handle is a `github.com` link, all Scott's own repos** — 782
+  Shrink-Fit Induction Machine, 795 Standing Desk Controller, 801 Bench Power
+  Supply, 834 Geo Aux Heat, 836 Rat GDO. These had never been named by any run;
+  they had simply been counted.
+* **3 JLCPCB boards** (877 RatGDO v2.5.0, 909 Minisplit CN105 adapter, 1182 HoT
+  Info Orbs v1.1) and **1 Cults3D STL** (1190 Cessna magneto switch) — designs,
+  not purchases.
+
+No scraping method will ever fill these, because there is no vendor listing to
+scrape: nobody sold them. They are not blocked, not deferred and not a camera
+job in the ordinary sense — a KiCad render or a photo of the built thing is the
+only thing that could go in the slot.
+
+The lesson generalises past these nine. **"Coverage percentages need the
+reachable denominator" is already in this file** (written about stocktake), and
+queue A has been violating it nightly: a backlog figure that includes items with
+no possible source makes the queue look permanently unfinished, which is exactly
+the complaint behind the still-open `queue-a-target-unreachable` item. Before
+arguing about a target, check whether the denominator contains things that
+cannot be in the numerator.
+
+## MSC is readable and simply has no photo — three vendors, three verdicts (2026-09-19)
+
+Worth recording because the three failures look identical from a distance ("no
+image for this part") and need completely different responses:
+
+| Vendor | Page loads? | Right product? | Photo? | Verdict |
+|---|---|---|---|---|
+| Mouser | **no** — Akamai interstitial | — | — | defended |
+| DigiKey | yes | yes | **wrong variant** | never trust it |
+| MSC | yes | yes | **none exists** | vendor gap |
+
+MSC's `mscdirect.com/product/details/00447474` renders fully, the title confirms
+the part exactly (`Tapmatic NO.90X 1/2-1-1/8" 4JT`), and the product image is
+literally `cdn.mscdirect.com/global/images/ProductImages/noimageavailable.gif`.
+That is an **absence, not a block** — the same distinction already drawn for
+another vendor on 2026-08-31, and the reason it matters is the follow-up: a
+defended vendor might yield to a different instrument, a vendor gap never will.
+
+DigiKey is the dangerous row, and note *why*: the search URL resolved cleanly to
+a **single correct product page**, and the bad photo came from that correct
+page's own `og:image` — `MFG_ILS TA180 40.jpg` served on the `ILS TB250 50`
+detail page. The standing rule "never derive `Part.image` from a search URL"
+would have caught it by luck here, but a harvester guarding only against
+*ambiguous search results* would have sailed straight through. The guard that
+actually works is the one already used for Amazon order matching: **check the
+identifier in the artefact against the identifier you asked for**, and refuse on
+mismatch.
+
 Not generalised into a shared helper. Each importer is a standalone one-shot
 script by house style, and three lines copied is cheaper to read at the point of
 use than an import that hides what is being checked.
