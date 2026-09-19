@@ -710,3 +710,44 @@ exactly this reason; see `docs/TRAPS.md`.
 `land 797 Receiving` matches both `SLN/Receiving` and `LRD/Receiving` — it
 prints both and exits. Getting this wrong writes "the tool is in Florida" while
 the tool is in New Hampshire, which is worse than no record.
+
+## B3 is out of small drawers — new small electronics go to A3
+
+Measured 2026-09-19, whole bin wall, uncapped:
+
+| Cabinet | What it is | Empty drawers | Empty **small** |
+|---|---|---|---|
+| A1 | largely available | 64 | 64 |
+| A2 | imperial expansion for B2, divided drawers | 57 | 53 |
+| **A3** | Akro-Mils 10164, **all small** | 34 | **34** |
+| A0 / B0 | Akro-Mils 10124, **all large** | 24 / 18 | 0 |
+| B1 / B2 | metric / imperial fasteners | 23 / 25 | 15 / 15 |
+| **B3** | rows 1-4 small, 5-7 large | **1** | **0** |
+
+**B3 — the electronics cabinet — has zero empty small drawers**, and its one
+empty location is a kit sub-location, not a drawer. OPEN.md said "B3 is fully
+allocated" on 2026-08-24 and it is still true, now with a number behind it.
+
+So **A3 is where a new small electronics drawer comes from**, and it should be
+chosen by ROW rather than by the first free index: A3 mirrors B3's themes
+loosely, and putting a part next to its own kind is the only thing that makes a
+64-drawer cabinet navigable. The 40 A automotive relay went to `A3-R6C5`
+because `A3-R6C7` and `A3-R6C8` already hold the two smart relays — row 6 was
+already the relay row.
+
+**B1 and B2 have small drawers going spare and are the wrong answer.** They are
+the metric and imperial fastener cabinets. A few electronics have drifted into
+B2 already (instrument steppers, 775 motors); that is drift, and reading it as
+precedent is how a fastener cabinet stops being one.
+
+### And "the right drawer" is a claim about space, not just category
+
+The relay's obvious home was `B3-R6C4`, the relay drawer — right category,
+right size class, already holding a discrete power relay with its socket. Scott
+looked at it: *"no room in that drawer."* Six parts in it.
+
+Nothing in the database says a drawer is full. Fill is `COUNT(stock rows)`,
+which is not volume: `B3-R6C4`'s six rows include a KNACRO 30 A dual module and
+an MY2NJ with its socket, and a drawer elsewhere with six rows of SMD tape is
+empty by comparison. **A category match plus a size-class match is a shortlist,
+not an assignment** — the last step is a person looking in the drawer.
