@@ -9970,3 +9970,37 @@ So the rule, sharpened: **a printed pack size is a supplier fact about what
 left the factory.** The moment a container is opened it is an upper bound and
 nothing more. And a purchase history is not a provenance — the unit in your
 hand has to be tied to the order by something other than both existing.
+
+## I made a catalogue absence into a claim about the shop — twice, one hour apart
+
+Same session, same subject, and the second one went into the permanent record.
+
+**First:** I told Scott the catalogue had "zero patch cables, RJ45 plugs,
+keystones or an RJ45 crimper". He produced a bag of keystones. I corrected it
+in chat and moved on.
+
+**Second, an hour later:** I wrote `⚠ NOTHING IN THE SHOP TERMINATES THIS`
+into the notes of `#1234` and `#1235` — in bold, with a warning glyph, off the
+same kind of search. Scott: *"I have multiple punchdown tools and crimpers for
+this stuff."*
+
+**The search was never the problem.** Both times it was sound: nothing matching
+punchdown, 110 tool, keystone, wall plate, patch panel, krone or IDC is in
+InvenTree, whole catalogue, uncapped. The problem is the sentence built on top
+of it. *"The catalogue has no punchdown tool"* and *"the shop has no punchdown
+tool"* are different claims, and only the first was ever checked. The catalogue
+is a partial map of the shop, and its silence is not evidence.
+
+**Correcting the first one in chat did not prevent the second.** A chat
+correction expires with the session; the part note is what somebody reads in a
+year. **The fix has to land where the claim lives.** Both notes now carry the
+retraction inline, next to the search that was actually run.
+
+And the honest version points somewhere more useful than the wrong one did.
+"We need to buy a crimper" was false. **"The catalogue cannot answer *do we own
+a punchdown tool?* and will confidently say no"** is true, and it asks for
+cataloguing rather than purchasing.
+
+Related: [name-what-you-searched], [truncated-search-absence],
+[inactive-parts-are-merge-receipts] — all the same family, a negative from a
+database being spent as a finding.

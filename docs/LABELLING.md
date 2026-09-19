@@ -494,7 +494,9 @@ day because the keystone bag and the plug jar would not fit in it.
 
 It has `metadata.labeled: False` and **no `label_printed` key at all** — the
 three-state convention, where an absent key means the tape has never been sent
-to the printer. Template 9 (Shop Location 62 mm) when Scott asks.
+to the printer. **PRINTED 2026-09-19, job `QL810W-114`**, template 9, on Scott's explicit
+request ("b04 label only"). Rendered, pulled, and looked at first — it reads
+`B-04` / `LW3-S1` with the QR, which is correct.
 
 Its line 2 will read `LW3-S1`, which is the parent-on-the-tape trap recorded
 above: B-04 was born on that shelf, so the tape is correct as long as the bin
