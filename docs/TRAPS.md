@@ -9715,3 +9715,39 @@ it went, so the zero reads as a fact rather than a question (see `A zero with no
 note is a question; a zero with a note is a fact`). The refund for the returned
 unit is **not** confirmed — that is the open `returned-stock-still-on-hand`
 question, and nothing here settles it.
+
+### Stock status "Returned" still counts as AVAILABLE — "Quarantined" is the one that doesn't
+
+Booking the Monoprice MST hub (part #1181, stock 808) for an Amazon return on
+2026-09-19, the obviously-named status was **85 Returned**. Measured on this
+build:
+
+```
+StockStatusGroups.AVAILABLE_CODES = [10 OK, 50 Attention needed, 55 Damaged, 85 Returned]
+```
+
+**85 is in that list.** InvenTree means *returned to us* — a customer return
+back on the shelf — not *sent back to the vendor*. Setting it would have left
+the hub reading as one available unit while the box sat waiting for a UPS
+label, which is exactly the phantom stock `TRAPS` already warns about for
+refunds and returns.
+
+**Use 75 Quarantined** for goods held to go back. It is not in
+`AVAILABLE_CODES`, so `part.total_stock` drops to 0 immediately, **and the row
+survives** — which matters more than the availability, because depleting the
+row would delete it and its tracking notes (see `The depletion trap, for the
+fourth time`, the same morning). Quarantine is the only state that gets both.
+
+Sequence that works, and the reason each step is there:
+
+1. status → 75, so nothing counts it as on hand;
+2. notes on the **stock item, the part, and the PO** — the first dies with the
+   row, the other two are what is left afterwards;
+3. deplete **only when the refund is confirmed**, not when the box ships.
+
+Rejected: cancelling the PO. The goods arrived and the money left; a cancelled
+order says neither happened.
+
+Also: `add_tracking_entry()` wants a `StockHistoryCode` enum member, not the
+integer status — passing the int raises `AttributeError: 'int' object has no
+attribute 'value'`, and the write it was attached to had *already* succeeded.
