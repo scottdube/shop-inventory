@@ -9917,6 +9917,25 @@ is right 100% of the time until you check a case you already know the answer
 to. This one was caught only because `shop.app/account` listed an order in the
 preflight that the mail search had not produced.
 
+**Reproduced, and the fix priced, 2026-09-19 16:40.** Both searches were run
+side by side over the same window. The category search returned 4 hits; the
+subject-shaped search returned 4, of which **two were order confirmations the
+category did not carry** — Rustic Edge #6663 again, and
+`customercare@paypal.com` "Receipt for your payment to PayPal Credit". So the
+hole is reproducible nine hours later, on a second sender, and is not a
+one-off.
+
+The fix is not free: it cost **one false positive**, restaurant marketing from
+`rjgatorsfloridaseagrillbar@mg.owner.com` whose subject is *"Order your menu
+favorites…"*. No order number, nothing bought — it matched on the word
+*Order* alone, and `vendor_triage.py` still bucketed it `unknown, 1 order
+event` and emitted a decision line for it. **A subject-shaped net catches
+sales pitches as well as sales.** If the union is adopted it wants a companion
+constraint — require a digit-bearing order number, or drop senders already in
+a suppress bucket — or every "Order now!" blast becomes a decision item and
+the queue trains its own blindness. Filed as a rider on the open decision
+`section-4-category-purchases-has-a-hole`; the task file is unchanged.
+
 ### Re-parent a location through the instance, not the queryset
 
 `StockLocation.pathstring` is **denormalised** — it is rebuilt in `save()`, and
