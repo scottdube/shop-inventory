@@ -2290,3 +2290,29 @@ returned a MARKETING email titled "DC HOUSE 4 Inch Linear Actuator", which was
 briefly and wrongly reported as evidence of a SECOND, different actuator. It
 was a recommendation, not an order. The PPK2 hunt failed the same way. Go to
 the order history, not the mailbox.
+
+## Does a BOM change reach a build that is ALLOCATED or COMPLETE?
+
+Measured 2026-09-18 on BO-0007 (TRAPS.md, *"A new BOM line does not reach an
+already-open build order"*): creating a `BomItem` left the `BuildLine`
+uncreated, so the BOM was right and the build order screen showed nothing. The
+write script now creates both.
+
+**What was NOT tested, and is the part that could bite:** that build was PENDING
+with zero allocations, which is the easy case. Unknown for a build that is
+**partly allocated** (does adding a line disturb existing `BuildItem` rows, or
+just sit there un-allocated?) and for one that is **COMPLETE** (BO-0003, 0008,
+0013 — does a BOM edit silently rewrite the as-built record of something already
+finished?).
+
+The second matters more than it looks. Several of these build orders exist
+*purely* to claim what a finished project consumed. If editing the assembly's
+BOM reaches back into a COMPLETE build, then every future BOM correction quietly
+rewrites history on every build that ever used that part — and nothing on screen
+would say so.
+
+**How to settle it cheaply:** pick a COMPLETE build, record its `BuildLine` set
+and allocations, add a throwaway BOM line to its assembly, re-read, then delete
+the line and re-read again. Read-only until the deliberate add, and reversible.
+Do NOT infer the answer from the PENDING result — that is the case that already
+surprised us once.
