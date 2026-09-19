@@ -2316,3 +2316,37 @@ and allocations, add a throwaway BOM line to its assembly, re-read, then delete
 the line and re-read again. Read-only until the deliberate add, and reversible.
 Do NOT infer the answer from the PENDING result — that is the case that already
 surprised us once.
+
+## The inline fuse holder in the relay photo — WHICH record is it? (2026-09-19)
+
+Scott asked whether the fuse holder in the 2026-09-19 relay photo was
+catalogued with the relay or separately. **Neither — it was not catalogued at
+all.** [#1233] got a note pointing at a probable existing record and nothing
+more, deliberately: one holder in a photograph is identity, not a count, and
+creating a part before checking is how the catalogue got its duplicates.
+
+Checking properly turns up **three** candidates, not one:
+
+| | | stock | |
+|---|---|---|---|
+| `#252` | Water-resistant ATC Fuse Holder, 16 ga in-line (Larger) | **no row** | Amazon 2016-08-23, **3-pack** $7.99, `$2.663` each |
+| `#346` | Fuse Kit, ATO/ATC blade, 7 values, 120 pc + puller | 120 @ `L2-D2` | description: *"Kit as sold also lists **10 inline fuse holders**"* |
+| `#1203` | Fuse Holder, inline **5x20 mm glass**, screw barrel | 8 @ `L2-D2` | wrong family — glass cartridge, not blade |
+
+`#1203` is out on the evidence: it is a 5 × 20 mm glass-cartridge holder and the
+photographed one is a blade holder. That leaves two, **and they overlap**:
+`#252` is a 3-pack of ATC inline holders with no stock row, and `#346`'s kit is
+*described* as shipping ten inline holders of the same kind. If both are real
+the shop owns thirteen; if the kit's ten were what Scott has been using all
+along, `#252`'s three may never have been opened — or may be long gone.
+
+**One question settles it, and only Scott can answer it:** is the holder in the
+photo loose (→ `#252`) or did it come out of the blade-fuse kit box in `L2-D2`
+(→ `#346`)? Then a count.
+
+**Do not create a new part for it.** Whichever it is, the record exists.
+
+**Related and already answered:** the DP-001 build needs 20 A, 15 A and 3 A
+blade fuses, and `#346` has 120 of them in seven values (5 / 7.5 / 10 / 15 / 20
+/ 25 / 30 A) sitting in `L2-D2`. **All three values are in that kit.** Nothing
+to buy for the fusing.
