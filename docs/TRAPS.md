@@ -513,6 +513,12 @@ be modified". Create every line while the order is open, then receive, then
 complete. Walking `status` back to PLACED via queryset `.update()` unlocks an
 order that completed early.
 
+The lock is not limited to line items: **a COMPLETE order also refuses a plain
+`notes` edit**, and it does so with `ValidationError: {'reference': ['This order
+is locked and cannot be modified']}` — naming `reference`, a field you did not
+touch, because `save()` re-validates the whole row. Annotating a closed PO has
+to go through queryset `.update(notes=...)` (2026-09-19).
+
 ### The Amazon import has gaps
 A 460-piece JST XH2.54 kit (2023-07-31, $8.99, order ORDER-REDACTED) had
 no part, no supplier record, and no trace in the catalog. It surfaced only in
@@ -9662,3 +9668,50 @@ mismatch.
 Not generalised into a shared helper. Each importer is a standalone one-shot
 script by house style, and three lines copied is cheaper to read at the point of
 use than an import that hides what is being checked.
+
+## I received two POs without `receive_po.py`, and the docs said not to (2026-09-19)
+
+Scott handed over the morning-brief session with "po 172 and 173 received, 1 on
+the sim build and the other to be returned to amaz". Both are part #1198 (DP →
+Mini-HDMI cable, ASIN B0GZVWP2JF) — **the same cable ordered twice, two days
+apart**, which is itself worth keeping: neither PO looked like a duplicate from
+its own page, only side by side.
+
+I booked it with InvenTree's `receive_line_item()` directly. `CLAUDE.md` says,
+in bold, **receive with `scripts/receive_po.py`** — it honours `pack_quantity`,
+**merges into the existing row**, and closes the order. Nothing was harmed here
+(pack is genuinely 1, and both units were removed again immediately), but I
+transiently created **two stock rows for one part in one location**, which is a
+named invariant violation, and I got there by not re-reading the file that says
+so. Pack size is the expensive half of that helper and a cable is the one shape
+where its absence does not bite — so this passed on luck, not on judgement.
+
+**Rule: receiving goes through `receive_po.py`. If a receive needs something the
+script does not do, fix the script or say out loud why you are going around it.**
+
+### The depletion trap, for the fourth time
+
+Both units left immediately (one installed on the sim, one returned), so stock
+went to zero and **InvenTree deleted both rows and their tracking notes with
+them** — part #1198 ended with 0 reachable history entries, and the `notes=`
+text passed to `take_stock` described rows that no longer exist. The reason
+survived only because it was written onto the PART and the two POs afterward.
+
+This is documented **three times already** (`Counting a row to zero DELETES it`,
+`Depleting a stock item to zero DELETES it — notes and tracking go too`, `Taking
+stock to zero DELETES the row, explanation and all`), and the 2026-08-24 entry
+states the rule exactly: *anything you want to keep must live on the PART before
+you deplete it.* I did it after, and only because a verification step caught the
+loss. Fourth instance, same shape as `A documented trap does not stop you
+repeating it` (2026-09-17). What caught it both times was **checking the write,
+not remembering the trap** — the only defence that has ever actually worked
+here, and a better investment than a fourth copy of the entry.
+
+### What is on the record now
+
+`PO-0172` and `PO-0173` are both Complete, 1 of 1 received. On-hand for part
+#1198 is **0 by intention**, and each PO's notes say which unit it was and where
+it went, so the zero reads as a fact rather than a question (see `A zero with no
+note is a question; a zero with a note is a fact`). The refund for the returned
+unit is **not** confirmed — that is the open `returned-stock-still-on-hand`
+question, and nothing here settles it.
