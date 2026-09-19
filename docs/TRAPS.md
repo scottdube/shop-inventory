@@ -9801,6 +9801,10 @@ unit on the shelf.
 
 A whole-mailbox search for the ASIN returns four threads — those three plus a
 Monoprice marketing mail — so there is no second order to explain it away.
+**Confirmed by Scott the same day** ("they don't refund without the unit being
+dropped off"): the hub left the building on 2026-09-15. For four days the shop
+held a stock row for an item it did not own, at a location that says *anything
+here is IN THE BUILDING*.
 
 **The existing warning was pointed the wrong way.** `An automated PO pipeline
 must leave everything in Placed until a human confirms delivery` guards against
