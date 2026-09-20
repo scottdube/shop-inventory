@@ -10131,3 +10131,121 @@ get reopened a fourth time by someone reaching for the newer instrument:
   control is now on record: live `B0FH6L2HJR` renders a real `61y6eV3GixL` id in
   the **same DOM position on the same route** where dead `B07QD5JRSH` renders the
   placeholder. Same conclusion, two directions instead of one.
+
+## An RMA proves a return exists, not that it is the return you mean (2026-09-20)
+
+The refund watch searches the mailbox **by the order number the PO carries**,
+which is the right rule and is why this was visible at all. What it cannot do is
+notice that the RMA a person actually raised is against a *different* order.
+
+Measured 2026-09-20, both from `return@amazon.com`, six minutes apart:
+
+- `2026-09-19 13:54:11 UTC` — return request confirmed, order
+  **113-0032375-3000231**, ASIN `B0GZVWP2JF`, reason *Delivery Issue*, $12.99.
+- `2026-09-19 14:00:12 UTC` — return request confirmed, order
+  **113-9155135-6305031**, ASIN `B075754ZYC`, reason *Changed Mind*, $37.64
+  estimated after a $7.35 promo deduction off the $44.99 line.
+
+The second matches PO-0165 exactly. The first does **not** match PO-0173, the PO
+whose note says its RMA was started on 2026-09-19 and whose on-hand went to 0
+that morning — it matches **PO-0172**, the other order of the same cable, whose
+note says that unit *was consumed by the flight-sim build*. Order
+`111-2294439-2655441` (PO-0173) still has no return mail of any kind, searched
+`in:anywhere` including trash.
+
+**The duplicate-buy case is what makes this invisible.** Two POs, same ASIN, same
+$12.99, two days apart. Every field a watcher would match on — amount, ASIN,
+item name, date — agrees with *both* orders. Only the order number separates
+them, and the order number is the one field that disagreed.
+
+**Scott ruled it the same day** — *"the cables are identical so as a practical
+matter there is no diff"* — so the question is closed without ever being
+resolved, which is the right outcome: one cable goes back, one $12.99 refund
+comes in, and the shelf does not care which number it rides on.
+
+What the ruling required was a change to the **instrument**, not to the record.
+`supplier_reference` stays `111-2294439-2655441`, because that is genuinely what
+was ordered; bending it to suit a search would make the PO lie about its own
+purchase. Instead `refund_watch.py` now reads a second sentinel,
+**`[WATCH-ORDER] <number>`**, from the notes and prints it as an extra handle to
+search. PO-0173 carries one naming PO-0172's order. PO-0172 is deliberately NOT
+watched as well — two watchers on one refund is how a single return gets booked
+twice.
+
+**The rule: when an RMA's order number does not match the PO you were watching,
+check whether the SAME ASIN was bought twice before deciding which one is
+wrong.** And never write `[REFUND-CONFIRMED]` off an RMA — a return request is
+the first of three states, and this pair is still on state one.
+
+## Naming a sentinel is indistinguishable from setting it (2026-09-20)
+
+Written by the run whose entire job is to not do this, about twenty minutes after
+reading the task file's warning that an earlier watcher matched the words *refund
+issued* and fired on a note reading *"refund issued (not yet)"*.
+
+The `[WATCH-ORDER]` note above ended with a helpful sentence explaining what
+happens next: *"WHEN THE REFUND LANDS it settles THIS PO, and `[REFUND-CONFIRMED]`
+goes here."* The next `refund_watch.py` run printed:
+
+```
+[closed] PO-0173  refund confirmed, nothing to watch
+```
+
+No refund had been issued. The goods had not been dropped off. The order simply
+vanished from the watchlist, which is the one failure mode this whole task exists
+to prevent — and it would have stayed vanished, silently, because a closed item
+prints one line and is never looked at again.
+
+**The mechanism is that a flag and its own documentation live in the same field.**
+`REFUND_SEEN` greps the notes; prose *about* the token is textually identical to
+the token. Every safe-looking use — explaining it, quoting it in a correction,
+pasting an old note forward — sets the flag. The task file's guidance is "never
+write the token unless the money is actually back", and the gap is that
+*describing* the token did not feel like writing it.
+
+Fixing it also broke the append-only convention on purpose, which is worth
+recording: **a false sentinel cannot be appended away.** No amount of later text
+unsets a flag, so the phrase was rewritten in place — one substring, occurrence
+count asserted before and after, with an audit line in the notes saying the edit
+happened and why. That is the only in-place note edit on this PO.
+
+**The rule: write the token to assert it, never to talk about it.** Say "the
+confirmation sentinel" in prose. If you must quote it in a write-up, this file is
+the place — TRAPS.md is not grepped by the watcher.
+
+## Stock sitting in a kit bin reads as free stock (2026-09-20)
+
+Building the G1000 build #3 BOM, the availability query for the LM2596 module
+printed two rows:
+
+```
+OK  PSU  need 1  have 15  [28] LM2596 Buck Module ADJ, Vin 3-40V
+        stock   102      14  @ A3-R7C2
+        stock   753       1  @ RB-25
+```
+
+I earmarked 753 for Florida. It is a child row of 102, split off into **RB-25 —
+the SHRINK-FIT INDUCTION CONTROLLER kit (BO-0002)**, whose location description
+ends *"All allocated to the build."* I had just taken a part out of another
+project's kit.
+
+**Nothing in the stock row says so.** The allocation lives in the *location's*
+description, and `StockItem.quantity` + `location.name` — which is what every
+availability query prints — carries no hint. The row looks exactly like loose
+stock in a drawer.
+
+What made it worse: **splitting copies the parent's notes.** Both rows carry the
+identical paragraph about the A3-R7C2 drawer, including *"Check the output before
+trusting any module from this drawer"* — advice about a drawer the RB-25 row is
+no longer in. I then used those notes to pick between the two rows, which was
+picking on evidence that cannot distinguish them, and wrote the result into the
+earmark as though it were a finding.
+
+**Rule: before consuming a stock row, read its LOCATION description, not just
+its notes.** A bin named `RB-nn` is a red bin and a red bin is usually a kit.
+The cheap tell is `parent_id` — a split child in a differently-named bin was
+split off *for* something.
+
+Ruled out: putting the allocation on the stock row instead. InvenTree has real
+build allocations for that, and RB-25 predates them here; duplicating the fact
+onto every row is how the two copies drift apart. The fix is to look at the bin.
