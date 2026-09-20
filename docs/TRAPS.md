@@ -10548,24 +10548,39 @@ with no stock, no SupplierPart and no home; #1252 had all three plus the nine
 physical pieces. The stub's one unique fact, the 2025-01-06 order date, was
 copied across before deactivating it.
 
-## "Related by use" is not "belongs in the same place"
+## Don't invent a reason for a correction you can just ask about
 
 2026-09-20. Filed a 260 m spool of waxed lacing tape into **L2-D2** because
 that drawer is *WIRE TERMINATION & CONNECTORS* and lacing tape ties harnesses.
-Scott moved it to **WS1-S4**, the wire rack.
+Scott moved it to **WS1-S4**.
 
-The guess was made on the wrong axis. L2-D2 holds **termination hardware** —
-the discrete pieces that end a wire. WS1 holds **bulk consumables** — cable,
-wire, adhesives, spools. A thing can be part of the same *job* as a drawer's
-contents and still belong on a different shelf, because storage is organised
-by **form and bulk**, not only by subject.
+I then wrote the reason down myself. I inferred that shelving here sorts on
+**form and bulk** — L2-D2 for discrete termination pieces, WS1 for bulk
+spools — and committed that as a rule, in this file and in the part and stock
+notes, in the same turn as the move.
 
-**The rule:** before homing something on theme, ask what *form* it is —
-discrete piece, bulk spool, liquid, sheet — and check that against the
-candidate location, not just the subject match. When the form does not match
-the rest of the bin, say the home is a guess and ask.
+Then Scott said why: *"I put it there cuz thats where the zip ties are
+currently."* **Function, not form.** Lacing tape and zip ties do the same job,
+so they live together. That is grouping by use — the exact principle my
+invented rule declared invalid. Had anyone acted on what I wrote, the next
+bundling consumable would have been filed by its physical form and landed
+away from the rest of the set.
 
-That part worked: the choice was flagged in the part notes as *"the
-thematically right home, not an instruction he gave"*, so the correction was
-one word. **An assumption labelled as an assumption costs a word to fix; the
-same assumption stated as fact costs a search.**
+**The genuine finding is that I could not have known.** The zip ties are not
+in the catalogue. A search across `zip tie / cable tie / tie wrap / wire tie /
+velcro / hook and loop` returns exactly one part — a shop-printed tie-wrap
+hold-down at AT-D3 — and WS1-S4 held **zero** stock rows before the spool went
+on it. The fact that decides the location lives in the shop and nowhere else,
+which is [row count is not the bin] again, one shelf further on.
+
+**The rule:** a correction arrives with its reason attached or not at all.
+When Scott moves something and says only where, the location is now fact and
+the *why* is still unknown — record the move, mark the reason unknown, and
+ask. Do not reverse-engineer a principle from a single redirect and then write
+it down as house policy; a wrong rule propagates to everything filed after it,
+while "moved on instruction, reason not given" propagates nothing.
+
+What did work: the original guess was flagged in the part notes as *"the
+thematically right home, not an instruction he gave"*, so the correction cost
+one word. **An assumption labelled as an assumption costs a word to fix.** The
+failure was not the guess — it was explaining the fix.
