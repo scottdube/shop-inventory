@@ -37,6 +37,17 @@
     max-height: 8mm;
 }
 
+/* A char-count truncation CANNOT guarantee two lines, because wrapping is by
+   WORD. "Tactile Switch 6x6x7mm SPST, White LED Illuminated" truncated to 46
+   still broke into three lines and overprinted the quantity — caught by eye on
+   2026-09-20, which is why the render-before-print rule exists. So long names
+   get a smaller size that fits three lines inside the same 8.8mm gap before
+   .qty: 3 x 1.1 x 2.6mm = 8.58mm. Short names are untouched at 3.4mm. */
+.name.long {
+    font-size: 2.6mm;
+    line-height: 1.1;
+}
+
 /* Quantity is the fact a person is checking when they pick the bag up. */
 .qty {
     font-family: Arial, Helvetica, sans-serif;
@@ -85,7 +96,7 @@
    below instead of being cut. ~23 chars per line at 3.4mm Arial across 38mm,
    two lines. Comment tags, not hash-brace, which is single-line only.
 {% endcomment %}
-<div class='name'>{{ item.part.name|truncatechars:46 }}</div>
+<div class='name{% if item.part.name|length > 28 %} long{% endif %}'>{{ item.part.name|truncatechars:60 }}</div>
 
 <div class='qty'>{% localize off %}{{ quantity|floatformat:"-2" }}{% endlocalize %} pcs</div>
 
