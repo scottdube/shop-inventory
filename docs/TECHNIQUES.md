@@ -796,3 +796,60 @@ who is reading a parts list.
 
 **Use this for the next one** — switches, NVRs, controllers, anything mounted.
 Do not invent a second convention; add the room.
+
+### …but a device that MOVES gets one in-service bucket, not a room
+
+Same convention, one level coarser, and the distinction is not size or value —
+**it is whether the thing moves without anyone doing paperwork.**
+
+Established 2026-09-20, hours after the rule above, by the first case that did
+not fit it: 16 Athom `PG03V2-US16A-ESP-2` ESPHome smart plugs across two orders.
+Counts are Scott's, 2026-09-20, and they are measured, not derived:
+
+| | pieces | where |
+|---|---|---|
+| `#54653`, received last month | 4 | **deployed, in service** |
+| | 2 | spare |
+| `#56290`, in transit | 10 | not yet received |
+
+Note what the split already shows: **one order's 6 pieces are in two different
+states**, so the order cannot be the unit of tracking and neither can the part
+on its own. Two rows, two locations — which the one-row-per-part-per-location
+invariant allows, because the locations differ.
+
+| | nanoHD (the rule above) | Athom plug |
+|---|---|---|
+| how it is fixed | screwed to a ceiling | plugged into an outlet |
+| moves | in years, with a ladder | in 30 seconds, on a whim |
+| paperwork when it moves | there is none to do | **nobody will ever do it** |
+
+Applied literally, the room rule would give `3 in Machine Shop, 2 in Garage`.
+That is not tracking, it is a **snapshot that starts decaying the first time a
+plug is moved from the tree lamp to the 3D printer** — and it decays silently,
+because a stale row and a correct row look identical. It is the false precision
+`row count is not the bin` warns about, arrived at from a new direction: there
+the number was never measured, here it *was* measured and then quietly expired.
+
+**So: one `<SITE>/In Service — HA devices` location per site, not per room.** It
+answers the question inventory is actually asked — today, *"4 deployed, 2 spare,
+do I order more?"* — and it is the finest granularity that stays true with no
+upkeep.
+The `default_location` clause carries over unchanged: the in-service bucket is
+never a `default_location`; the spares row keeps one, because a spare does have
+a home.
+
+**What holds the per-device truth is Home Assistant, and it should stay there.**
+Every one of these is an ESPHome device with a hostname Scott chose when he
+adopted it, so HA already knows which plug runs the dust collector — live,
+self-updating, no paperwork. An InvenTree room count is a hand-copy of that
+registry which can only ever be more stale. Do not build the parallel map.
+
+If per-device traceability is ever genuinely wanted, **the join key between the
+two systems is the ESPHome hostname**, and the mechanism is serialisation, or
+`belongs_to` where there is a real parent unit (that one carries proof — someone
+put it there and the record names the unit). Both are worth it only for gear
+that does not move, which is the same test as above.
+
+Receiving trap that comes with this class: these arrive as **2-packs**, so
+`pack_quantity` must be 2 before `receive_po.py` runs, or 5 ordered units book
+5 pieces instead of 10.
