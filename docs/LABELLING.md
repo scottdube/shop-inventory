@@ -535,3 +535,38 @@ worse than printing nothing. The batch line carries what it is *for*
 It also forced a part rename: `item.part.name` was the raw Amazon title for
 #249 and truncated to `Dif…`, cutting the colour. **A name that will not fit a
 62 mm label is usually a name problem, not a template problem** — fix the part.
+
+## The discriminator must live in the first ~40 characters of the part name
+
+Template 12 truncates the name to roughly two lines, about 40 characters at
+3.4mm. Whatever falls past that is **gone from the label**, and the label is
+what somebody reads standing at an open drawer.
+
+This bit twice on 2026-09-20, in the same hour:
+
+| Part | Name as stored | What the label showed | What was lost |
+|---|---|---|---|
+| #1250 | `Dual Concentric Rotary Encoder Kit w/Switch (PropWash)` | `Dual Concentric Rotary Encoder Kit w/Switch` | **PropWash** — the brand, which is the field mark |
+| #95 | `Rotary Encoder EC11EBB24C03 Dual Axis 30 Positioning` | the designation | nothing lost, but the name never held a discriminator at all |
+
+Both live in `B3-R2C7`. Both are dual concentric encoders. They do not
+interchange. The two labels, as first rendered, would have been useless for
+telling one bag from the other — which is the only job they had.
+
+**The rule:** before printing a stock label, ask *"if two of these bags sat
+side by side, does the visible part of the label tell them apart?"* If the
+answer is no, **rename the part so the distinguishing fact comes first** — the
+colour, the brand, the base, whatever you would actually look at. Do not widen
+the template or shrink the font; the name is the thing that is wrong.
+
+Renamed accordingly: #95 → `Rotary Encoder GREEN base, dual concentric shaft,
+30 detent`, #1250 → `PropWash Dual Concentric Encoder KIT w/Switch`.
+
+**Rejected:** putting the discriminator only in the part *description*. The
+description is not on the label and is not visible at the drawer. A fact that
+matters at the bin has to survive truncation.
+
+This is the same failure as the three unlabelled tactile switch bags in
+`B3-R1C2` that cost an hour the same morning, arriving one level up: there the
+bags had no labels, here they would have had labels that did not discriminate.
+An unhelpful label is worse than none, because it stops you looking further.
