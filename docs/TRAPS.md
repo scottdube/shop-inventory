@@ -10406,12 +10406,22 @@ being 2 mm taller and wanting a cap. Scott, holding the part:
 
 The C&K ILS datasheet drawing, fetched after he said it:
 
-| | generic 6×6×7 tactile | C&K ILS TB250 50 |
+| | XKB TM-004-D3-01 (illuminated) | C&K ILS TB250 50 |
 |---|---|---|
-| Body | 6 × 6 mm | 6 ±0.1 × 6 ±0.1 mm |
-| **P.C.B land** | **6.5 × 4.5 rectangle** | **5.0 × 5.0 square** |
+| Body | 6.00 × 6.00 ±0.15 | 6 ±0.1 × 6 ±0.1 |
+| **P.C.B land** | 6 holes: 5.00 × 5.40 + LED pair on the centre column | 6 holes: 2 cols × 3 rows, 5.0 / 2.5 |
 
-Both are "6×6 switches". Neither will accept the other's four holes.
+Both are "6×6 switches" and both land on roughly a 5 mm grid. Neither accepts
+the other, because rotated to match, one's centre column is the LED pair and
+the other's is a switch pair.
+
+**Then I did it again, in the write-up of this very trap.** The first version of
+this entry gave the generic footprint as **6.5 × 4.5** — quoted from memory,
+without opening a drawing, in the paragraph telling the reader to open a
+drawing. 6.5 × 4.5 is the **non-illuminated** 6×6 tactile. An illuminated one
+has six holes, not four, because the LED needs its own pair. Scott caught the
+first error; the second was caught only because his catch forced the datasheet
+open. **Knowing the rule does not execute it.**
 
 **The attribute was not wrong; the reading was.** "Outline" is the envelope of
 the plastic. The land pattern is a separate drawing that parametric tables do
