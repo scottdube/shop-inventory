@@ -763,3 +763,36 @@ assortment — treat the destination as unconfirmed until somebody looks**, and
 say in the record that it is a proposal. Filing it and being told later costs a
 re-parent, a notes correction and a reprinted label, which is three writes for
 a question that costs one sentence.
+
+## A room can be a location — installed gear is not "missing", it is in service
+
+**Established 2026-09-20**, when a UniFi nanoHD access point (PO-0175) was
+received already **installed in the SLN mechanical room**.
+
+The location tree had modelled only places things are *stored*. An AP screwed to
+a ceiling fits none of them, and every available answer was wrong in a different
+way:
+
+| option | what it says, falsely |
+|---|---|
+| book it to a bin | the AP is on a shelf and can be picked |
+| leave it in `Receiving` | it is awaiting a drawer, and `Receiving` should trend to empty |
+| don't stock it at all | the shop does not own a $62 access point |
+
+So `SLN/Mechanical Room` (pk 620) was created as a sibling of `Garage`, `Machine
+Shop` and the rest — **a room in the building, holding installed infrastructure
+that is in service**. `SLN/Garage` had already set the precedent that a room is
+a legitimate location; this only names what that means.
+
+**The rule that comes with it: nothing in a room-location is ever a
+`default_location`.** A default is where a *spare* goes home, and nothing that is
+mounted and wired is spare. This is the same rule that keeps staging areas out of
+`default_location`, arriving from the opposite direction — a staging area is too
+temporary to be a home, an installed unit is too permanent to leave one.
+
+The stock row carries the install date and "in service, not spare — do not pick
+this row" in its notes, because the location name alone does not stop a picker
+who is reading a parts list.
+
+**Use this for the next one** — switches, NVRs, controllers, anything mounted.
+Do not invent a second convention; add the room.
