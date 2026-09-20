@@ -10649,3 +10649,50 @@ of them is doing the receiving.
 **Look for this wherever a part was named off a listing title.** The pack
 figure was set from the same title as the name, so the two will always agree —
 the agreement is not evidence.
+
+## A location sweep moves rows that SAY the location, not things in the drawer (2026-09-20)
+
+MC-T3 was emptied to `SLN/Florida Staging` today and `bag_to_staging_0920.py`
+reported the drawer down to **zero rows**. It was still wrong about the drawer.
+Part #108 (RKJXT1F42001, the 4-direction nav switch) was physically in MC-T3 —
+Scott counted it there, with the drawer open — but the row has been recorded at
+**#502, `Unfiled - Machine Shop`**, the waiting room, since 2026-08-18. The
+sweep selected on `location == MC-T3`, so it never saw the switch, and the
+switch stayed behind while the kit it belongs with went to Florida.
+
+**"MC-T3 now holds 0 rows" is a statement about the database, not the drawer.**
+It is true and it is not the thing anyone wanted to know. A row parked in a
+waiting-room location is *deliberately* not where the item is — that is what the
+waiting room is FOR — which makes the waiting room the one place a
+location-keyed sweep is guaranteed to miss.
+
+**Before emptying a location, ask what should be in it, not what says it is
+in it.** The cheap version: list the waiting-room rows alongside the sweep and
+eyeball them against the job. #502's own description says it should trend toward
+empty; a row sitting in it for a month is a standing invitation to this failure.
+
+### Two quantity scripts, two different defaults — and one of them writes on sight
+Found while fixing the above, and worth knowing before typing either:
+
+| Script | Default |
+|---|---|
+| `receive_po.py` | **dry run**, needs `--commit` |
+| `consumed.py` | **dry run**, needs `--commit` |
+| `record_count.py` | **WRITES IMMEDIATELY** — no `--commit`, no dry run |
+
+`record_count.py 9 1` changed the row the moment it ran. The write was the one
+intended here so nothing was lost, but the habit built by the other two scripts
+— type it once to see what it would do — silently does not transfer.
+
+### `consumed.py` assumes the shelf count is ALREADY corrected
+Its docstring workflow reads *"count says 27 on the shelf / Scott: three went
+into the pool controller -> inflate to 30, allocate 3, consume back to 27"*.
+The 27 is a **corrected, tallied** count that no longer contains the consumed
+three. Run the same command against an *uncorrected* database number and the
+inflation is pure double-count: #108 read 2, of which one was already in the
+MFD, and `--used 1` proposed *"inflate to 3 ... consumes it back to 2"* —
+leaving the shelf at the wrong figure it started with.
+
+**Order matters and it is not enforced:** record the count first, *then* record
+what a build ate. Reversed, both steps report success and the answer is high by
+exactly the amount consumed.
