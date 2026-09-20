@@ -1,0 +1,89 @@
+{% extends "label/label_base.html" %}
+{% load barcode report l10n i18n %}
+
+{% comment %}
+Shop Kit Box 62mm - for an ASSORTMENT KIT that is modelled as a LOCATION.
+
+Why this is not template 9. Template 9 is a BIN-CODE label: it hard-truncates
+location.name at 22 characters and picks a font size from the character count,
+maxing out at 6mm for names of 10 or fewer. That is right for `L2-D2` and
+wrong for every kit box in the shop -- `Kit - Glarks 80pc 2.54mm Double Row
+Female Socket` renders as `Kit - Glarks 80pc 2.5...`, which drops double row,
+female and socket, i.e. everything that tells you what is in the box.
+
+The other three kit boxes have the same problem waiting for them:
+`Kit - EMGTMS 24-Value Ceramic` (29 chars), `Kit - SMD Rectifier Bridge
+8-value` (34), `Kit - 10-Value Electrolytic 4x7` (31).
+
+So the name WRAPS here, at a fixed small size, over three lines.
+
+Use `{% comment %}`, never `{# #}` -- see LABELLING.md.
+Authored at 62mm: CUPS silently upscales anything narrower than the media.
+{% endcomment %}
+
+{% block style %}
+
+.qr {
+    position: absolute;
+    left: 2.5mm;
+    top: 3mm;
+    {% localize off %}
+    height: 19mm;
+    width: 19mm;
+    {% endlocalize %}
+}
+
+/* No CSS auto-fit in WeasyPrint, and overflow:hidden is IGNORED on an
+   absolutely-positioned block -- a too-long name prints straight through
+   whatever is below it, silently. So the length is capped in the TEMPLATE
+   with truncatechars, sized to the box: 34mm at 3.2mm Arial bold is about
+   19 characters a line, three lines, so 57. */
+.name {
+    font-family: Arial, Helvetica, sans-serif;
+    position: absolute;
+    left: 24mm;
+    top: 2.2mm;
+    width: 35mm;
+    font-size: 3.2mm;
+    font-weight: bold;
+    line-height: 1.18;
+}
+
+/* Where it goes back. On a kit box this is the whole point of the label:
+   the box is portable and the drawer is not. */
+.home {
+    font-family: Arial, Helvetica, sans-serif;
+    position: absolute;
+    left: 24mm;
+    top: 16.4mm;
+    font-size: 4.2mm;
+    font-weight: bold;
+    letter-spacing: 0.2mm;
+}
+
+.trail {
+    font-family: Arial, Helvetica, sans-serif;
+    position: absolute;
+    left: 24mm;
+    top: 21.2mm;
+    font-size: 2.6mm;
+    color: #000;
+}
+
+{% endblock style %}
+
+{% block content %}
+
+<img class='qr' alt="{% trans 'QR code' %}" src='{% qrcode qr_data %}'>
+
+<div class='name'>{{ location.name|truncatechars:57 }}</div>
+
+<div class='home'>
+    {% if location.parent %}{{ location.parent.name|truncatechars:16 }}{% else %}&nbsp;{% endif %}
+</div>
+
+<div class='trail'>
+    {% if location.parent.parent %}{{ location.parent.parent.pathstring|truncatechars:34 }}{% endif %}
+</div>
+
+{% endblock content %}

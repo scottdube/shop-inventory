@@ -1,0 +1,98 @@
+{% extends "label/label_base.html" %}
+
+{% load l10n i18n barcode %}
+
+{# Travel-bag label for 62mm continuous DK tape on the QL-810W.
+
+   Why this exists and is not the stock item template: a bag that LEAVES the
+   shop cannot carry its shelf address. The stockitem template's second line is
+   item.location.name, which is a Dover drawer, and it is confidently wrong the
+   moment the bag is in Florida. It also leads with the IPN, which for 370 of
+   this shop's parts is an Amazon ASIN and eats the width before the words that
+   identify the thing.
+
+   So: part name WITHOUT the IPN, the quantity, what the parts are FOR, and a
+   destination flag driven off the florida earmark in metadata. See LABELLING.md.
+#}
+
+{% block style %}
+
+.qr {
+    position: absolute;
+    left: 2mm;
+    top: 3.5mm;
+    height: 18mm;
+    width: 18mm;
+}
+
+.name {
+    font-family: Arial, Helvetica, sans-serif;
+    position: absolute;
+    left: 22mm;
+    top: 1.6mm;
+    width: 38mm;
+    font-size: 3.4mm;
+    font-weight: bold;
+    line-height: 1.15;
+    max-height: 8mm;
+}
+
+/* Quantity is the fact a person is checking when they pick the bag up. */
+.qty {
+    font-family: Arial, Helvetica, sans-serif;
+    position: absolute;
+    left: 22mm;
+    top: 10.4mm;
+    width: 38mm;
+    font-size: 3.6mm;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.forwhat {
+    font-family: Arial, Helvetica, sans-serif;
+    position: absolute;
+    left: 22mm;
+    top: 15.2mm;
+    width: 38mm;
+    font-size: 2.9mm;
+    white-space: nowrap;
+}
+
+/* Destination, in caps rather than a colour: Scott is mildly colourblind and
+   thermal tape is one colour anyway. */
+.dest {
+    font-family: Arial, Helvetica, sans-serif;
+    position: absolute;
+    left: 22mm;
+    top: 19.4mm;
+    width: 38mm;
+    font-size: 3.1mm;
+    font-weight: bold;
+    letter-spacing: 0.3mm;
+    white-space: nowrap;
+}
+
+{% endblock style %}
+
+{% block content %}
+
+<img class='qr' alt="{% trans 'QR Code' %}" src='{% qrcode qr_data %}'>
+
+{% comment %}
+   Truncated in the TEMPLATE, never by CSS overflow: WeasyPrint does not clip
+   absolutely-positioned blocks, so a long name silently overprints the line
+   below instead of being cut. ~23 chars per line at 3.4mm Arial across 38mm,
+   two lines. Comment tags, not hash-brace, which is single-line only.
+{% endcomment %}
+<div class='name'>{{ item.part.name|truncatechars:46 }}</div>
+
+<div class='qty'>{% localize off %}{{ quantity|floatformat:"-2" }}{% endlocalize %} pcs</div>
+
+<div class='forwhat'>{% if batch %}{{ batch|truncatechars:30 }}{% else %}&nbsp;{% endif %}</div>
+
+<div class='dest'>
+    {% if item.metadata.florida %}&#9654; FLORIDA{% else %}&#9654; TRAVEL BAG{% endif %}
+</div>
+
+{% endblock content %}

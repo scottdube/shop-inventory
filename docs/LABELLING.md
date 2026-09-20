@@ -501,3 +501,37 @@ request ("b04 label only"). Rendered, pulled, and looked at first — it reads
 Its line 2 will read `LW3-S1`, which is the parent-on-the-tape trap recorded
 above: B-04 was born on that shelf, so the tape is correct as long as the bin
 stays there.
+
+## A print cannot be verified after the fact on this install
+
+2026-09-20, printing job `QL810W-115` (travel-bag label, template 13): the job
+was accepted, the queue went idle, no error latched — and **none of that is
+evidence the tape moved.** There is no instrument:
+
+- `/var/log/cups/page_log` **does not exist** on the Mini, so pages are not logged.
+- `/var/log/cups/error_log` was last written **2026-08-24**.
+- `lpstat -W completed` is frozen at job **13** (2026-08-20); jobs 14–115 are gone.
+- `cupsd.conf` sets neither `PreserveJobHistory` nor `MaxJobs` — both are defaults.
+
+So the only confirmation available is a human looking at the printer. This is
+the one place the house rule *verify every write by re-read* has no read to
+make. **Say "sent, unconfirmed" and ask** — do not report a print as done.
+Scott confirmed 115 by eye.
+
+Worth fixing if label volume ever rises: turning on `page_log` would make the
+after-the-fact check possible. Not done today — mid-count, and it changes
+logging on a machine 1,300 miles from the person who would read it.
+
+## Template 13 — Shop Travel Bag 62mm
+
+62 × 25 mm, `stockitem`. QR + part name + qty + batch + destination banner
+(`▶ FLORIDA` when the row carries a `florida` earmark, else `▶ TRAVEL BAG`).
+
+**Deliberately carries no shelf location.** A bag that leaves the shop cannot
+carry its Dover drawer address; printing `MC-T3` on something headed to LRD is
+worse than printing nothing. The batch line carries what it is *for*
+(`G1000-PFD-FL`) instead.
+
+It also forced a part rename: `item.part.name` was the raw Amazon title for
+#249 and truncated to `Dif…`, cutting the colour. **A name that will not fit a
+62 mm label is usually a name problem, not a template problem** — fix the part.
