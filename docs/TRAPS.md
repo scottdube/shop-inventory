@@ -10079,3 +10079,55 @@ the two that were *about the same physical bundle* are the pair that crossed.
 
 Same family as "don't put an unestablished cause in the record": the failure is
 not getting a wrong answer, it is laundering a wrong answer into a stated fact.
+
+---
+
+## TRAPS.md gets opened before the write-up, never before the experiment (2026-09-20)
+
+Third consecutive night a run re-derived something this file already held.
+09-17 recorded "a documented trap does not stop you repeating it". 09-19
+corrected two of its own three vendor claims against entries already here.
+Tonight made it three: the run spent most of its queue-A effort testing whether
+an Amazon **order-history thumbnail** could rescue the 22 delisted ASINs that
+`/dp/` 404s on, and concluded — correctly, with a live/dead control — that it
+cannot.
+
+That experiment was run and closed on **2026-08-28**, twenty-three days earlier,
+in the entry *"Amazon 404 is delisting, not bot-blocking — and order history
+cannot rescue it"* on this page. It already states that a bare ASIN is a valid
+`/your-orders/search` query and that five delisted ASINs all render
+`01RmK+J4pJL._SS80_.gif`. The same run also wrote up eBay's `s-l1600` as a
+finding; that is in the 2026-08-29 entry.
+
+**The mechanism is not that the file failed.** Both entries are accurate,
+findable, and phrased as conclusions. The mechanism is *when* the file gets
+opened. The procedure — task file and `CLAUDE.md` both — says findings go in
+TRAPS.md, so a run opens it **to write**, at the end, after the work. Nothing
+anywhere says to open it **to choose**, at the start, before spending a night on
+an idea. So the file reliably catches a wrong write-up and reliably fails to
+prevent the wrong experiment, which is exactly the pattern three nights show.
+
+Note what caught it all three times: **opening the file to write.** That is the
+control working as designed, one step too late to save the effort.
+
+**The rule: before spending a run on an instrument or a vendor route, grep
+TRAPS.md for the vendor and the route.** One
+`grep -n -i -E "ebayimg|order.history|thumbnail"` would have cost seconds and
+returned both entries. A queue whose remaining backlog is measured in single
+rows cannot afford to re-litigate a closed bucket, and "I measured it myself
+tonight" feels like diligence while being the most expensive way to read a file.
+
+**The one thing tonight genuinely added**, recorded so the closed bucket does not
+get reopened a fourth time by someone reaching for the newer instrument:
+
+- The 2026-09-18 run built a **same-origin `fetch()`** route to
+  `/your-orders/search`, which post-dates the 08-28 entry. That route returns
+  **no product imagery at all** — 378 KB of HTML, the ASIN present at offset
+  231817, and **zero `/images/I/` ids anywhere in the raw document**, not merely
+  absent from `img` tags. Thumbnails arrive in a later client XHR. A harvester
+  reaching for the fetch instrument gets a calibrated-looking nothing that means
+  "wrong route", not "no photo".
+- 08-28 proved *placeholder* by **sameness** across five dead ASINs. The missing
+  control is now on record: live `B0FH6L2HJR` renders a real `61y6eV3GixL` id in
+  the **same DOM position on the same route** where dead `B07QD5JRSH` renders the
+  placeholder. Same conclusion, two directions instead of one.
