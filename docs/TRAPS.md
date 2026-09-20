@@ -10249,3 +10249,37 @@ split off *for* something.
 Ruled out: putting the allocation on the stock row instead. InvenTree has real
 build allocations for that, and RB-25 predates them here; duplicating the fact
 onto every row is how the two copies drift apart. The fix is to look at the bin.
+
+## A date in a location description is not a count date, and neither is `stocktake_date` (2026-09-20)
+
+Writing the MC-T3 count sheet I put down: *"the tray has claimed `NOT COUNTED`
+since 2026-08-29."* Scott: *"i dont think we ever counted T3 — that date is when
+it was created but no physical counts of the drawer occured other than pcb's."*
+
+He is right, and the sentence smuggled in a claim nobody made. "Has said so
+since 2026-08-29" asserts that something happened on 2026-08-29 and that the
+tray has been in a known state ever since. What actually happened is that a
+record was typed.
+
+Two things make this hard to see, both checked:
+
+- **`StockLocation` has no created or modified timestamp.** Its fields are id,
+  metadata, name, description, parent, pathstring, barcode, icon, owner,
+  structural, external, location_type and the MPTT columns. Any date you read
+  about a location is prose inside `description`, with nothing behind it.
+- **`stocktake_date` defaults to the creation date.** All four MC-T3 PCB rows
+  have `stocktake_date == creation_date == 2026-08-29` and exactly one tracking
+  entry each — the creation entry. So the field that *sounds* like "when this
+  was last counted" reads identically for a row someone counted and a row
+  someone typed. It cannot be used as evidence of a count.
+
+**Rule: treat every date in a note as the date it was WRITTEN, not the date
+something was measured, unless the note says which.** When recording a real
+count, write the word *counted* and the date into the description — that is the
+only place on this install where the distinction survives.
+
+This is the evidence-tier rule (`docs/CONTEXT.md`) applied to dates rather than
+quantities: a tallied count and an entered one look the same afterwards, and so
+do their timestamps. Ruled out relying on `tracking_info` to tell them apart —
+it records the creation of a row the same way whether or not anyone counted
+first.
