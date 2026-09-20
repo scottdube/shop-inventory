@@ -10449,3 +10449,39 @@ the hand-wired build #1, where no land pattern exists.
   pattern, not just height. ILS **TA** lands on 6.5 × 4.5 and *is* generic-
   compatible; ILS **TB** lands on 5.0 × 5.0 and is not. A series name is not a
   footprint either.
+
+
+## A binscan "counted by hand" can still be wrong by 8%
+
+Stock 37, the white illuminated tactiles in `B3-R1C2`, carried this note:
+
+> binscan 2026-08-23: filed into B3-R1C2 and COUNTED at 85 by hand.
+
+On 2026-09-20 Scott split 40 off for Florida and tallied the remainder: **38**.
+That makes the pre-split figure **78**, so the August hand count was **over by
+7**, about 8%, on a bag of small identical parts.
+
+**Why this matters more than a wrong number.** The house rules put a hand count
+at the top of the evidence tiers precisely so it ends arguments — see
+`kit-count-evidence-tiers`. A tally is supposed to be the thing you stop
+checking. This one had a date, a method, and a person, and it was still wrong,
+which means *"COUNTED by hand"* is a claim about method, not a guarantee of
+accuracy. Nothing in the tiers distinguishes a careful tally from a hurried one,
+and nothing ever will from the text alone.
+
+**What follows from it:**
+
+- A hand count of many small identical pieces is **not** exact. Treat it as
+  good to a few percent unless the note says how it was counted — poured and
+  tallied in tens, weighed, or eyeballed in the bag.
+- **A count that is about to be used for arithmetic deserves a recount**,
+  because errors only surface when something is subtracted from them. The 85
+  sat unchallenged for a month and was caught only because 40 left the bag.
+- When two tallies of the same container disagree, record **both and the
+  disagreement**, not just the winner. The gap is the evidence that the tier is
+  softer than it reads.
+- Do not silently overwrite the old figure. The correction is the finding.
+
+**Rejected:** demoting binscan counts to `[ESTIMATE]` wholesale. They are still
+the best evidence available and far better than division from a pack size; the
+fix is a recount before arithmetic, not a downgrade of the tier.
