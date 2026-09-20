@@ -10334,3 +10334,59 @@ a person holding the parts does not.
 Ruled out back-filling allocations onto the three complete builds. Nobody knows
 what they consumed now, and inventing allocations would convert an honest
 unknown into a precise-looking fiction. The fix is to count the affected bins.
+
+## A stock-row count is not a measurement of the bin
+
+Twice in one session, 2026-09-20, in opposite directions:
+
+| I wrote | What was true | Scott |
+|---|---|---|
+| *"`B2-R7C4` now holds 0 row(s)"* — meaning empty | Bin full of loose header strips InvenTree had never recorded | *"B2-R7C4 is not empty."* |
+| *"`B3` has zero empty bins"* — reported as **full**, and a whole new bin row proposed in `B2` | `B3-R2C7` held four tiny DC-DC converters in a mostly-empty drawer | *"There's room in B3, R2, C7."* |
+
+Same error both ways round: **a row count answers "what does the database know
+is in there", and nothing else.** Empty, full, and free space are properties of
+a physical drawer, and the only instrument for them is a person looking in it.
+
+The second one was the more expensive, because it did not look like a mistake —
+it produced a *plan*. Having concluded the electronics rack was out of space, I
+designed a new encoder bin in the fasteners rack, justified it, flagged it as
+off-pattern, and asked Scott to approve it. All of that was work on a problem
+that did not exist. **A wrong measurement does not stay a wrong number; it
+grows a proposal on top of itself**, and by then the original query is three
+steps back and nobody re-checks it.
+
+Practical rules:
+
+- `StockItem.objects.filter(location=...).count() == 0` means **unrecorded**,
+  never *empty*. Say "no rows recorded".
+- Never say *full*, *empty*, or *out of space* from a query. Those words need
+  eyes on the drawer.
+- Before building a plan on a physical claim, check that the claim came from a
+  physical observation. Ask *who looked?*
+
+See also *"Photographs show identity, not quantity"* in `CLAUDE.md` — same
+family: a source that is authoritative about one property, read as if it were
+authoritative about a different one.
+
+## Name a part by what is printed on it, not by the number its listing borrows
+
+I referred to the G1000's dual-shaft encoder as **"the Alps EC11EBB24C03."**
+Scott, 2026-09-20: *"I don't know where you got the Alps. Alps is the
+four-directional switch with a center … I think you're mixing those up."*
+
+Both readings were defensible and that is the trap. `EC11EBB24C03` genuinely is
+an Alps Alpine catalogue number — but **nothing in the drawer is a genuine Alps
+dual encoder**; they are eBay parts sold under that designation, and their field
+mark is a **green base**. Meanwhile the `RKJXT1F42001` really is Alps, and it is
+the part Scott calls "the Alps one", because it is the only one in the build
+where the manufacturer matters.
+
+So the shorthand was unambiguous in my head and collided with a different part
+in his — and he was the one holding both. It cost a round trip on the highest
+-stakes line on the BOM, and briefly had a satisfied line looking short.
+
+**Identify a part by what a person can see on the thing in the drawer:** green
+base, brass shaft, knurled shaft, the SKU on the bag. Catalogue numbers are for
+ordering. A manufacturer name is shorthand only when the shop owns exactly one
+part from that manufacturer, and this shop does not.
