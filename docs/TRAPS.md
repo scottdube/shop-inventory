@@ -9936,6 +9936,39 @@ a suppress bucket — or every "Order now!" blast becomes a decision item and
 the queue trains its own blindness. Filed as a rider on the open decision
 `section-4-category-purchases-has-a-hole`; the task file is unchanged.
 
+**The cost stopped being zero, 2026-09-20 16:40.** Third sighting, first one
+that lost something real:
+
+| query | result |
+|---|---|
+| `from:athom.tech` | **3 messages**, incl. order confirmations #54653 and #56290 |
+| `category:purchases from:athom.tech` | **0** |
+
+`athom.tech` (AthomTech, Shenzhen) sells the ESPHome-preflashed 16 A smart
+plugs — shop and Home Assistant hardware, squarely in scope. Two orders, 16
+plugs, **neither imported**: #54653 placed 2026-08-17 and *delivered* 2026-08-18
+(3 × 2-pack, $61.50) and #56290 placed today (5 × 2-pack, $99.50). It is not in
+section 3's known-sender list, so section 4 was the only thing that could have
+found it, and section 4 cannot see it at all.
+
+Both earlier write-ups above end with the same sentence — the dropped mail was
+suppressed apparel, so the cost was zero *by luck*. This is what the non-luck
+case looks like, and it was already sitting there: the 2026-08-17 message is 34
+days old, so **no window or lag explanation applies**, same elimination as
+#6407.
+
+How it surfaced is the part worth keeping: the vendor was paid through PayPal,
+so the only thing in `category:purchases` was `service@paypal.com` with the
+merchant's Chinese legal name, 深圳市极乌智能科技有限公司, as the subject. The
+vendor's own name appears nowhere in it. It was found by searching Gmail for
+that merchant string out of the receipt body — a **third** independent channel,
+after `shop.app` produced #6663 on 2026-09-19. **Twice now the sweep has been
+saved by an accident rather than by either prescribed search.** A discovery pass
+that depends on a lucky second channel is not a discovery pass, and this one
+also says a payment rail can be the only visible sender while the real vendor
+stays invisible — so "drop senders already in a suppress bucket", proposed above
+as the companion constraint, would have dropped the single mail that led here.
+
 ### Re-parent a location through the instance, not the queryset
 
 `StockLocation.pathstring` is **denormalised** — it is rebuilt in `save()`, and
