@@ -10485,3 +10485,35 @@ and nothing ever will from the text alone.
 **Rejected:** demoting binscan counts to `[ESTIMATE]` wholesale. They are still
 the best evidence available and far better than division from a pack size; the
 fix is a recount before arithmetic, not a downgrade of the tier.
+
+## A kit modelled as a PART hides its contents from every search
+
+Measured 2026-09-20. The G1000 build #3 BOM recorded 330 Ω and 470 Ω as **not
+stocked** and queued a purchase. Both were already owned — 10 of each, in the
+½ W rating the build actually prefers — inside the ALLECIN 25-value kit,
+[part #1](http://192.168.50.10:8001/web/part/1).
+
+The kit is catalogued as a **part with zero stock rows**. Nothing inside it is
+a part, so nothing inside it can match a search by value. The search was
+correct and the answer was wrong.
+
+The EAONE kit does not have this problem: it was exploded into 30 value-parts
+(#609, #611, #612 …) each homed at the kit's location. Part #6's description
+already states the policy — *"an assortment kit is a LOCATION, not a part"* —
+so this is a kit that was never migrated, not a missing rule.
+
+**The rule:** before believing a "not stocked" result for a commodity value,
+list the assortment kits and check whether each one is modelled as a location
+or as a part. A kit that is still a part is a blind spot the search cannot see
+into, and there is no marker in the result set to warn you.
+
+**Rejected:** exploding #1 into 25 value-parts on the spot. The right end state,
+but it needs an LRD location designed first, and half a re-model is worse than
+a note. Recorded as a TODO in the part's own notes instead.
+
+**Second finding, same hunt:** `default_location` on #1 said LRD, which
+happened to be right — but that field is policy, not observation, and could
+have been set from the same recollection it was being used to confirm. The
+thing that actually settled it was Amazon order `113-4288189-7490647`, ship-to
+1879 Lake Ridge Dr. Purchase records carry a shipping address; the catalogue
+does not.
