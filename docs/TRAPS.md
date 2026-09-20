@@ -10283,3 +10283,54 @@ quantities: a tallied count and an entered one look the same afterwards, and so
 do their timestamps. Ruled out relying on `tracking_info` to tell them apart —
 it records the creation of a row the same way whether or not anyone counted
 first.
+
+## A build that was never recorded as consuming stock leaves every part it used overstated (2026-09-20)
+
+Counting MC-T3 for the G1000 build, the DB said part #108 (RKJXT1F42001,
+4-direction switch) was 2 on hand. Scott, with the drawer open: *"1 rkjxt, the
+other got used on the MFD build already."*
+
+The MFD is build #2, and it is **built**. Nothing deducted its parts, because
+checked 2026-09-20 **there is no build order for it at all** — BO-0017 "Sim
+G1000" is the one we are now using for build #3, and it is Pending with zero
+allocations. The MFD was assembled entirely outside the system.
+
+**It is not a one-off.** Three build orders are `Complete` with **0**
+allocations:
+
+| BO | Title | Qty built |
+|---|---|---:|
+| BO-0003 | Desk controller build | 1 |
+| BO-0008 | Rat GDO — three already built | 3 |
+| BO-0013 | Shop Minisplit CN105 Adapter | 1 |
+
+A completed build that consumed no stock is not a build that used no parts. It
+is a build whose parts are still sitting in the database, on the shelf,
+available to be promised to something else — which is exactly what happened
+here: the RKJXT was on this BOM as "2 on hand, satisfied" when one of them was
+already soldered into the MFD.
+
+**Rule: `Complete` + `allocations = 0` means the stock numbers for that build's
+parts are upper bounds, not counts.** The query is cheap:
+
+```python
+for b in Build.objects.filter(status=40):          # Complete
+    n = BuildItem.objects.filter(build_line__build=b).count()
+```
+
+**Where it bites, and where it does not.** The error is a fixed subtraction, so
+it only changes a verdict when stock is close to demand. 85 tactile switches
+minus a possible 32 is still more than the 32 this BOM needs; 2 RKJXT minus 1 is
+the difference between satisfied and exact. **Check the lines with the least
+headroom first**, not the biggest ones.
+
+**A tallied count is immune.** Both M2 screw lines came from Scott physically
+counting on 2026-08-29, so no amount of unrecorded consumption before that date
+can make them wrong — the count already saw whatever was left. This is the
+evidence tier (`docs/CONTEXT.md`) earning its keep: a number derived from
+arithmetic over records inherits every gap in those records, and a number from
+a person holding the parts does not.
+
+Ruled out back-filling allocations onto the three complete builds. Nobody knows
+what they consumed now, and inventing allocations would convert an honest
+unknown into a precise-looking fiction. The fix is to count the affected bins.
