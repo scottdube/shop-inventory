@@ -10390,3 +10390,52 @@ in his — and he was the one holding both. It cost a round trip on the highest
 base, brass shaft, knurled shaft, the SKU on the bag. Catalogue numbers are for
 ordering. A manufacturer name is shorthand only when the shop owns exactly one
 part from that manufacturer, and this shop does not.
+
+## A distributor's "Outline" attribute is the body, not the land pattern
+
+**2026-09-20.** Three illuminated 6 mm tactile switches share one bin and Scott
+could not tell which the G1000 needed. To rule one in or out I read DigiKey's
+parametric table for the C&K `ILS TB250 50`:
+
+> Outline **6.00mm x 6.00mm**
+
+and concluded it "drops into the same 6×6 hole pattern" and differs only by
+being 2 mm taller and wanting a cap. Scott, holding the part:
+
+> *"These seem to have a five millimeter footprint, not a six by six."*
+
+The C&K ILS datasheet drawing, fetched after he said it:
+
+| | generic 6×6×7 tactile | C&K ILS TB250 50 |
+|---|---|---|
+| Body | 6 × 6 mm | 6 ±0.1 × 6 ±0.1 mm |
+| **P.C.B land** | **6.5 × 4.5 rectangle** | **5.0 × 5.0 square** |
+
+Both are "6×6 switches". Neither will accept the other's four holes.
+
+**The attribute was not wrong; the reading was.** "Outline" is the envelope of
+the plastic. The land pattern is a separate drawing that parametric tables do
+not carry, because it is not a single number. Nothing on the product page is
+false, and nothing on it answers "will this fit my board".
+
+Worse, the wrong reading was *load-bearing*: because 6×6 seemed compatible, it
+stayed a live candidate for the already-built MFD, which produced an invented
+worry — that the two halves of one cockpit might not match, against only 28
+switches on hand. Once the land pattern was known, that whole branch vanished:
+the part cannot ever have gone into an FSD faceplate, so the 72 consumed went to
+the hand-wired build #1, where no land pattern exists.
+
+### Rules
+
+- **A footprint claim needs a drawing.** Body size, "outline", package name and
+  series name are all envelope facts. If the question is *will it fit the
+  board*, the parametric table has not answered it — open the datasheet.
+- **Two parts sharing a body size is not evidence of anything.** It is the most
+  common way for incompatible parts to look interchangeable in a bin.
+- **When Scott eyeballs a dimension and the catalogue disagrees, he is holding
+  it and the catalogue is not.** Go and get the drawing; do not defend the
+  attribute. Same shape as [a UI value is not a measurement].
+- Useful corollary found on the way: within one series the styles differ in land
+  pattern, not just height. ILS **TA** lands on 6.5 × 4.5 and *is* generic-
+  compatible; ILS **TB** lands on 5.0 × 5.0 and is not. A series name is not a
+  footprint either.
