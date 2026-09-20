@@ -2150,6 +2150,25 @@ count exactly.
 navigation switch (#9) and the Tapmatic No.90X tapping head (#586). Its own
 description says it should trend toward empty, and it is.
 
+**2026-09-20 — one row left, and it is not a to-do.** The RKJXT row (#9) is now
+qty 1, allocated to **BO-0020 (Sim G1000 MFD, Production)**: that switch is
+soldered into the MFD panel in the simulator. The travelling unit was split out
+to row 873, `SLN/Florida Staging`. So the switch is no longer lost — it reads
+`Unfiled` only because nothing has moved the row, and today's MC-T3 sweep keyed
+on `location == MC-T3` and could not see it (`docs/TRAPS.md`, "A location sweep
+moves rows that SAY the location").
+
+**Do not file it by hand.** Closing BO-0020 consumes the row and the waiting
+room empties itself; moving it to a drawer first would put an installed part
+back on a shelf. Ruled out giving it a location + `belongs_to` the way the
+fitted pull studs got one — a stud stays a stud on a visible rack, this one is
+solder inside a panel and is about to leave stock entirely.
+
+**Until then the waiting-room lamp reads 1 for a settled thing.** #502's
+description defines every row in it as "find it physically, then move it", and
+that is the wrong sentence for a part awaiting a build close — the location
+cannot express "found, installed, pending consumption".
+
 **The fitted studs carry BOTH `belongs_to` and a location.** `belongs_to` is
 what makes them read as spent rather than available; the location is what makes
 them show up when you look at the rack. The LiPo precedent left location null,
