@@ -10547,3 +10547,25 @@ from purchase history. Direction follows content, not age — #43 was a stub
 with no stock, no SupplierPart and no home; #1252 had all three plus the nine
 physical pieces. The stub's one unique fact, the 2025-01-06 order date, was
 copied across before deactivating it.
+
+## "Related by use" is not "belongs in the same place"
+
+2026-09-20. Filed a 260 m spool of waxed lacing tape into **L2-D2** because
+that drawer is *WIRE TERMINATION & CONNECTORS* and lacing tape ties harnesses.
+Scott moved it to **WS1-S4**, the wire rack.
+
+The guess was made on the wrong axis. L2-D2 holds **termination hardware** —
+the discrete pieces that end a wire. WS1 holds **bulk consumables** — cable,
+wire, adhesives, spools. A thing can be part of the same *job* as a drawer's
+contents and still belong on a different shelf, because storage is organised
+by **form and bulk**, not only by subject.
+
+**The rule:** before homing something on theme, ask what *form* it is —
+discrete piece, bulk spool, liquid, sheet — and check that against the
+candidate location, not just the subject match. When the form does not match
+the rest of the bin, say the home is a guess and ask.
+
+That part worked: the choice was flagged in the part notes as *"the
+thematically right home, not an instruction he gave"*, so the correction was
+one word. **An assumption labelled as an assumption costs a word to fix; the
+same assumption stated as fact costs a search.**
