@@ -10584,3 +10584,35 @@ What did work: the original guess was flagged in the part notes as *"the
 thematically right home, not an instruction he gave"*, so the correction cost
 one word. **An assumption labelled as an assumption costs a word to fix.** The
 failure was not the guess — it was explaining the fix.
+
+## A 2-pack of two different connectors is an assortment, not a multipack
+
+2026-09-20. `SupplierPart` 290 (Amazon `B07WFKBR4X`) carried
+`pack_quantity = 2`, correctly: the box holds two antennas. Part #388 was
+named after the listing — *"...SMA Male MCX Antenna (2-Pack)"* — so the pack
+figure and the part agreed and nothing looked wrong.
+
+Then the part became specific. Scott has **only the MCX antenna**; there is no
+SMA one. #388 is now *the MCX antenna*, and `pack_quantity = 2` means a
+receive books **two MCX antennas from a box containing one**.
+
+The existing house rule says an assortment is not a multipack, and it is
+written around obvious cases — a 480-piece capacitor kit of 24 values. **A
+2-pack hides in the gap.** Two is a plausible multipack quantity, the listing
+title says "2-Pack", and `pack_audit.py` compares `pack_quantity` against
+`pack_quantity_native` — which agreed. Nothing flags it. The test is not the
+number, it is whether the pieces are **interchangeable**: two antennas with
+different connectors are two parts that shipped together.
+
+Set to 1 via `.save()`, never `.update()` — native followed, verified by
+re-read.
+
+**The price is now wrong and that is the lesser evil.** The whole pack price
+lands on the MCX row, because the SMA twin has no part record to carry its
+half. Recorded in the SupplierPart note. Rejected leaving the pack at 2 with a
+warning: `receive_po.py` reads the field, a human reads the note, and only one
+of them is doing the receiving.
+
+**Look for this wherever a part was named off a listing title.** The pack
+figure was set from the same title as the name, so the two will always agree —
+the agreement is not evidence.
