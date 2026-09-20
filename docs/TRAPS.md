@@ -10517,3 +10517,33 @@ have been set from the same recollection it was being used to confirm. The
 thing that actually settled it was Amazon order `113-4288189-7490647`, ship-to
 1879 Lake Ridge Dr. Purchase records carry a shipping address; the catalogue
 does not.
+
+## Don't `tail` your own duplicate check
+
+2026-09-20. Created part #1252 as new when
+[#43](http://192.168.50.10:8001/web/part/43) was the same uxcell socket. The
+duplicate guard was not missing and did not fail — `name__icontains='idc'`
+matched #43 and printed it. The output ran long, it went through `tail -60`,
+and the match scrolled off the top. Caught only because a *later* script's
+guard, on a different part, happened to print #43 in a short result set.
+
+This is [Truncated searches hide the answer] in its most expensive form: the
+truncation is applied by the same person reading the result, one second after
+asking the question, so there is no moment where the loss is visible.
+
+**The rule:** a duplicate check gets its own call and its output is read
+whole. No `tail`, no `head`, no `[:20]`. If it is too long to read, the query
+was too broad — narrow the query, never the output. Any probe whose answer is
+"nothing found" must print a count so an empty tail is distinguishable from an
+empty result.
+
+**Second-order:** the guard that caught it was *over-broad* — it also flagged
+#44, a Keszoox 30-pin F-F made-up assembly, which is genuinely a different
+product from bulk cable. An over-broad guard that you actually read beats a
+precise one you truncate.
+
+**Rejected:** folding #1252 into #43 because #43 has the lower PK and came
+from purchase history. Direction follows content, not age — #43 was a stub
+with no stock, no SupplierPart and no home; #1252 had all three plus the nine
+physical pieces. The stub's one unique fact, the 2025-01-06 order date, was
+copied across before deactivating it.
