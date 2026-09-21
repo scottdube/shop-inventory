@@ -10696,3 +10696,68 @@ leaving the shelf at the wrong figure it started with.
 **Order matters and it is not enforced:** record the count first, *then* record
 what a build ate. Reversed, both steps report success and the answer is high by
 exactly the amount consumed.
+
+## A vendor search that FUZZY-matches will hand you the wrong product's photo
+
+Measured 2026-09-21 working queue A. Tormach's store search is Klevu, and Klevu
+does not fail a no-match query — it returns near misses and renders them exactly
+like hits:
+
+| searched | returned |
+|---|---|
+| `39044` (1100MX Enclosure Kit) | 33044, 39041, 39644, 39598 |
+| `34444` (15L Slant-PRO lathe) | 31289 USB Bulkhead Port Assembly |
+| `33089` (6in Super Spacer) | 16 products, none of them 33089 |
+
+Every one of those pages returns **HTTP 200 with a plausible product grid**, and
+the page title says *Search results for: '39044'*, so status, title and shape all
+agree that the search worked. Taking the first tile would have put an External
+Contactor Kit photo on the enclosure kit.
+
+**What saved it was a field mark, not a judgement.** Tormach's image URLs embed
+the SKU as the filename prefix —
+`media/klevu_images/200X200/3/3/33044_external-power-contact-kit...jpg` — so the
+test is `basename.startswith("<our sku>_")`, exact and mechanical. All five
+Tormach rows were refused on it. They are discontinued and genuinely absent from
+the live catalogue.
+
+Generalise it: **on any vendor site, accept an image only when something in the
+response carries our identifier verbatim.** A title that merely looks right is
+the thing that matched the wrong product twice on 2026-09-17 as well.
+
+### Amazon 404 really is delisting — confirmed with a second instrument
+Sixteen of nineteen ASINs came back 404 with an *identical 2296-byte body*,
+which looks exactly like a block, and the task file's guard says to read 404 as
+delisting and not back off. Rather than trust either reading, three of them
+(`B00CHTLAIS`, `B00MBHXWGY`, `B074V28ZVS`) were re-tested in the logged-in agent
+Chrome — different client, different origin, different IP — and all three read
+*Page Not Found* there too. **The guard is confirmed, not contradicted.** Two
+runs of the same failing method would have been one experiment repeated.
+
+### The image backlog headline overstates the work by ~40x
+`image_backlog.py` reports **515 parts with no image**, which reads as a queue.
+The reachable part of it is not:
+
+- **434** have no supplier part *and* no link — no URL method can ever reach
+  them. Camera-only.
+- **12** are McMaster, out of scope by standing rule.
+- **16** Amazon ASINs are delisted; **5** Tormach SKUs are discontinued;
+  **2** Mouser rows are Akamai-denied (*"Access to this page has been denied"*).
+- **9** Lakeshore rows sit behind an ASP.NET WebForms postback search
+  (`__VIEWSTATE` + `ctl00$ctl03$search`); the SKUs appear in none of the 1168
+  sitemap entries and `/<sku>.aspx` is a 404.
+- **7** PreciseBits rows: the OpenCart search answers, but returns catalogue
+  numbers adjacent to ours rather than ours.
+
+So the workable figure is roughly a dozen, against a section-A target of 30–50
+per run. **Enrich at acquisition, while the source page is still live** — the
+same lesson as `closures-go-stale-with-inflow`, applied to images. Queued for
+Scott as `image-queue-reachable-pool-is-exhausted`.
+
+### Keywords on a tombstone make a retired part answer searches
+Queue D finished the same night: 17 live rows written, and **0 active parts now
+have empty keywords**. 37 rows still read empty and are *meant to* — every one is
+an `active=False` merge receipt or a refund/not-inventory tombstone. Giving those
+good plain-English terms would put a solved duplicate back in front of Scott at
+the bench, which is the failure already recorded under *inactive parts are merge
+receipts*. **Blank is what keeps them out of the way.**
