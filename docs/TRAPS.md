@@ -10754,6 +10754,25 @@ per run. **Enrich at acquisition, while the source page is still live** — the
 same lesson as `closures-go-stale-with-inflow`, applied to images. Queued for
 Scott as `image-queue-reachable-pool-is-exhausted`.
 
+### `$0.00` in a journal line silently becomes `/bin/zsh.00`
+Measured 2026-09-21 08:52. A sweep wrote a `journal.py --line "..."` argument
+containing a zero-dollar price. The shell expanded `$0` — the *name of the
+running shell* — before `itq` ever saw the string, so the journal permanently
+recorded **`/bin/zsh.00`** where `$0.00` was meant. Nothing errored, nothing
+warned, and the wrong text is now in the file the next run reads.
+
+The generalisation is the dangerous part: **every `journal.py`, `decide.py` and
+`--end` argument is a double-quoted shell string**, so `$0`–`$9`, `$PATH`,
+`` `cmd` `` and `$(cmd)` all expand inside prose. Prices, regexes, `$VIEWSTATE`
+and awk snippets are all live. Use **single quotes** for any argument carrying a
+`$`, or write `USD 0.00` instead of `$0.00`.
+
+Why it matters more here than in an ordinary shell: these strings are the
+*record*. A corrupted commit message is visible in `git log`; a corrupted journal
+line is read back by the next run as fact, and the `$` is gone by then, so
+nothing downstream can tell it was ever a price. The correction has to be
+appended as its own line — which this run did.
+
 ### Keywords on a tombstone make a retired part answer searches
 Queue D finished the same night: 17 live rows written, and **0 active parts now
 have empty keywords**. 37 rows still read empty and are *meant to* — every one is
