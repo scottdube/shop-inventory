@@ -10809,3 +10809,78 @@ place that fact lives.
 **The general rule: a record created to hold ONE measured fact must not be
 shaped like a record that holds all of them.** See `docs/G1000.md`, "Backfilling
 the MFD", for the per-line count-basis rule that makes finishing it safe.
+
+## The archive held a POINTER, not the data (2026-09-21)
+
+`FSD_G1000_v2.3_PCB_Instructions.pdf` had been archived on part #1153 and
+attached with care, on the explicit principle that a vendor link is not a
+holding. It was opened for the first time today. **Page 1:** *"For Parts list
+and MobiFlight configuration information: Please refer to the Parts list
+located on the Project resource page at FlightSimDIY.com."*
+
+So the archive contained a document whose content was *"the content is
+elsewhere"*. Every quantity anyone wanted from it — how many tactiles, how many
+encoders, how many resistors — had never been in hand at all, and the file's
+presence made it look like they were.
+
+**Archiving is not finished until something has READ the file.** A filename, a
+size and a plausible title are not evidence of content. The cheap check is to
+extract the text and look for the thing you are archiving it FOR.
+
+**And check the public site before chasing a lost paid entitlement.** This file
+carried an open to-do to open a support ticket with FSD for the GMA1347
+download — $8.99, receipt and their own "Expires: Never" email as proof. The
+GMA1347's **instructions, parts list and MobiFlight configs are free public
+downloads** on `/fsd-downloads/`, no account at all. The ticket as written
+would have asked a vendor for documents already on their own website. What the
+money actually bought and is still missing is the Gerbers and 3D print files —
+a much smaller ask, and a credible one.
+
+## Naming a record for WHERE a thing sits breaks when it moves (2026-09-21)
+
+Two renames were proposed in one day and only the first happened, which is the
+only reason this is a trap and not a mess.
+
+Morning: Scott could not tell BO-0017 from BO-0020, so both were retitled by
+position — `Sim G1000 PFD` and `Sim G1000 MFD`. It fixed the confusion.
+Afternoon, same session, Scott describing the plan: *"I would then physically
+move the current mfd to the pfd panel position."* The moment he does, BO-0020 —
+the consumption record for the panel now sitting in the PFD slot — is titled
+MFD and is wrong again.
+
+**A build order records WHAT WAS BUILT. Position is a property of the installed
+assembly and is allowed to change.** The durable name is the thing's own
+distinguishing feature (*with AFCS section*, *no-autopilot*); the slot goes in
+a field that can be edited without rewriting history.
+
+**The general shape: a name that encodes a RELATIONSHIP rots when the
+relationship changes.** Same family as #1152, which was named for
+FlightSimMaker — the G1000 the shield is *for* — rather than Peter Eier, who
+drew it.
+
+Also: **do not rename the same records twice in one session.** The second
+rename was raised for Scott instead of applied. A record that changes name
+twice in a day teaches a future reader nothing except that the name is
+unreliable.
+
+## Do not model an inventory change from a one-line description (2026-09-21)
+
+Scott: *"I could build an mfd with no buttons though and just swap them."* I
+answered confidently that this was **inventory-neutral** — a reallocation
+between build orders, not a recount — and it was wrong. His actual plan:
+
+1. **build a new no-autopilot panel** (a real consumption of a full PCB set,
+   MEGA, mux, 20 tactiles, LEDs, screws),
+2. **move the existing MFD into the PFD position** (the only neutral step),
+3. **scrap the current PFD and harvest its 10.4" display** (a recovery INTO
+   stock — part #397 has no stock row at all, so that display has never been
+   in this system).
+
+One sentence, three events, and I had modelled the whole thing as the middle
+one. **"Swap" in a person's sentence is not a swap in the database.** The
+saving comes from omitting parts from a BOM, not from moving parts between
+records.
+
+**Ask what physically happens to each object before saying what the stock
+does.** The question that would have caught it: *what is in the PFD position
+right now, and where does it go?*
