@@ -1,0 +1,26 @@
+[
+  {
+    "sender": "service@paypal.com",
+    "subject": "深圳市极乌智能科技有限公司: $99.50 USD",
+    "date": "2026-09-20T20:09:51Z",
+    "snippet": "Track your purchase from this email. Hello, Scott Dube You paid $99.50 USD to 深圳市极乌智能科技有限公司 Merchant 深圳市极乌智能科技有限公司 Transaction date September 20, 2026 1:09:23 PM PDT Ship to Scott Dube 19 Shore Lane"
+  },
+  {
+    "sender": "service@paypal.com",
+    "subject": "Receipt for your PayPal payment",
+    "date": "2026-09-20T20:09:36Z",
+    "snippet": "Scott Dube, thanks for paying with PayPal. Scott Dube - Here's your receipt. Thanks for paying with PayPal To see the payment details, log in to your PayPal account. Payment from Scott Dube scott@"
+  },
+  {
+    "sender": "USPSInformeddelivery@email.informeddelivery.usps.com",
+    "subject": "Your Mail Was Delivered Sat, Sep 19",
+    "date": "2026-09-19T20:18:30Z",
+    "snippet": "MAIL DELIVERY NOTIFICATION View Dashboard Your mail has been delivered today, September 19!"
+  },
+  {
+    "sender": "USPSInformeddelivery@email.informeddelivery.usps.com",
+    "subject": "Your Daily Digest for Sat, 9/19 is ready to view",
+    "date": "2026-09-19T11:45:23Z",
+    "snippet": "COMING TO YOU SOON Hi, Scott! You have 1 mailpiece(s) and 0 inbound package(s) arriving soon."
+  }
+]
