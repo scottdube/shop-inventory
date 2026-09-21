@@ -10780,3 +10780,32 @@ an `active=False` merge receipt or a refund/not-inventory tombstone. Giving thos
 good plain-English terms would put a solved duplicate back in front of Scott at
 the bench, which is the failure already recorded under *inactive parts are merge
 receipts*. **Blank is what keeps them out of the way.**
+
+## A reconstruction with one line reads as a build record (2026-09-21)
+
+BO-0020 was created 2026-09-20 to absorb one nav switch the count found already
+consumed. It got a title (`Sim G1000 MFD`), an assembly part (#1255) and a
+one-line BOM. Next morning, Scott scanning the build list: *"there is a g1000
+build and a g1000 mfd build with only 1 part... I don't know which is which."*
+
+**A build order asserts "this is what the build consumed" whether or not that
+is what you meant.** #1255's description said plainly *"not a designed assembly
+— a container for what it consumed"*, and it did not help: nobody reads a part
+description while scanning a list of build orders. The *title* is the only
+field a list shows, so the title has to carry the disclaimer. Renamed to
+`Sim G1000 MFD - consumption record`.
+
+**It also made the sibling ambiguous.** BO-0017 was `Sim G1000` — fine while it
+was the only one, misleading the moment a second, more specific G1000 build
+existed beside it. **Adding a specific name retroactively makes a general name
+wrong.** Renamed to `Sim G1000 PFD`.
+
+Rejected filling out the real 24-line MFD BOM to make it look like a proper
+build: every line but the switch would have been inferred from the PFD's BOM,
+and `docs/G1000.md` records the PFD's quantities differing on purpose. Rejected
+deleting it: the consumption really happened and the allocation is the only
+place that fact lives.
+
+**The general rule: a record created to hold ONE measured fact must not be
+shaped like a record that holds all of them.** See `docs/G1000.md`, "Backfilling
+the MFD", for the per-line count-basis rule that makes finishing it safe.
