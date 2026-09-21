@@ -2164,6 +2164,12 @@ back on a shelf. Ruled out giving it a location + `belongs_to` the way the
 fitted pull studs got one — a stud stays a stud on a visible rack, this one is
 solder inside a panel and is about to leave stock entirely.
 
+**2026-09-21: the two G1000 build orders are renamed** (BO-0017 `Sim G1000 PFD`,
+BO-0020 `Sim G1000 MFD - consumption record`) and row 9's note is closed — it
+stays at SLN, in the built MFD. **Still open: the MFD backfill.** It is safe
+per line and reversible until BO-0020 closes, but 10 of 24 lines have no count
+marker either way and must not be guessed; `docs/G1000.md` has the basis table.
+
 **Until then the waiting-room lamp reads 1 for a settled thing.** #502's
 description defines every row in it as "find it physically, then move it", and
 that is the wrong sentence for a part awaiting a build close — the location
