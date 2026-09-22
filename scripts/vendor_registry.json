@@ -43,11 +43,13 @@
    ]
   },
   "subscription": {
-   "why": "Recurring software/services. Rule 7: memberships and subscriptions are not parts. Added 2026-09-05: email.monarch.com, a personal-finance app whose activity digests ('You have 2 new updates in Monarch') the order-shape regex reads as a purchase event with no order number — the same false-positive mechanism as the globalgolf promos, and the same fix. Suppressing the domain is right because Monarch sells software and can never produce a shop part; do NOT instead widen the not_an_order prefixes, which would mask real orders from other vendors.",
+   "why": "Recurring software/services. Rule 7: memberships and subscriptions are not parts. Added 2026-09-05: email.monarch.com, a personal-finance app whose activity digests ('You have 2 new updates in Monarch') the order-shape regex reads as a purchase event with no order number — the same false-positive mechanism as the globalgolf promos, and the same fix. Suppressing the domain is right because Monarch sells software and can never produce a shop part; do NOT instead widen the not_an_order prefixes, which would mask real orders from other vendors. account.ifit.com added 2026-09-22 (08:40 sweep) on that same test: a membership-CANCELLATION mail ('We miss you already, Scott!' — 'Your iFIT membership was canceled.') classified as a plain unknown vendor with one order event and no order number, and would have spent a decision line per run on a question section 3 already answers — memberships are skipped outright. iFIT sells fitness CONTENT, not hardware, so it can never produce a shop part even though the NordicTrack/ProForm machines it drives are physical goods; if equipment is ever bought it will arrive from the equipment vendor's own domain, which is unaffected by this entry. Suppressed the domain rather than adding 'miss you'/'canceled' to the not_an_order prefixes — a cancellation subject line is not vendor-specific and masking it globally would hide a real vendor cancelling a real order.",
    "domains": [
     "anthropic.com",
     "monarch.com",
     "email.monarch.com",
+    "ifit.com",
+    "account.ifit.com",
     "apple.com",
     "parallelsnetwork.com",
     "adobe.com",
