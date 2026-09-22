@@ -10884,3 +10884,90 @@ records.
 **Ask what physically happens to each object before saying what the stock
 does.** The question that would have caught it: *what is in the PFD position
 right now, and where does it go?*
+
+## A zero price break does not read as "unknown", it reads as FREE (2026-09-22)
+
+Found while re-deriving queue B, which turned out to be a different queue than
+the one the task file names. **123 of 746 supplier parts carry no
+`SupplierPriceBreak` at all** while 623 do (83.5%), and eleven suppliers sit at
+zero coverage — Mouser, DigiKey, Seeed, eBay, LCSC, Walmart, JLCPCB, MSC,
+Cults3D, AliExpress, MFC. A part with no break shows no supplier price anywhere
+InvenTree does pricing, and for **75 of the 123 the cost is sitting on that
+part's own purchase-order line, one join away.** Nothing needs fetching,
+nothing needs inventing, and no task-file queue names this class of write.
+
+So a backfill was written (`breaks_backfill_0922.py`) and dry-run. **The dry run
+is the entire value of this entry — three things it found that the four
+read-only probes ahead of it could not.**
+
+**1. Two LCSC rows would have written a `$0.00` break.** `C2907219` (10k 0805)
+and `C95781` (1k 0805) cost well under a cent each, and the order line rounds
+them to `0.00`. A zero break is not a null: it does not read as *price unknown*,
+it reads as *this part is free*, and it propagates into every BOM rollup the part
+appears in. **A break of zero is strictly worse than the missing break it
+replaces** — the gap at least presents as a gap. Now skipped with its own
+counter, because a silent skip of two rows out of 75 is invisible.
+
+**2. The per-pack convention was proved by the rows that "disagreed".** Probe 2
+flagged 4 rows where the PO line price and the `StockItem.purchase_price`
+disagree, and read that as a data-quality problem. It is the opposite: all four
+divide *exactly* by `pack_quantity_native` — `$57.46/59 = $0.974`, `$9.49/5 =
+$1.898`, `$14.99/3 = $5.00`, `$17.99/2 = $9.00`. That is `receive_line_item()`
+working correctly, per pack on the line and per piece in stock. **The four rows
+that looked like the defect are the calibration**, and without them the pack
+denomination of a price break would have been a guess.
+
+**3. Which turns the same check into a guard, and it caught two live bad rows.**
+`sp=547` (native 5, line `$2.60`, stock `$2.60`) and `sp=551` (native 2, line
+`$9.99`, stock `$9.99`) do **not** divide — their stock rows carry the whole
+pack price against one piece. That is the 19-storage-bins bug from CLAUDE.md
+(`$208.62` where it meant `$20.86`), still in the data, found by a script that
+was not looking for it. Both skipped and queued; neither number is corroborated,
+so propagating either into a break would have laundered a known error into a
+second table.
+
+Held back rather than guessed: **12 pack rows with no stock cost to reconcile
+against.** The convention says the line price is per pack, but one of these is
+visibly wrong on its face — `sp=586`, `$0.15` for twenty KF301 terminal blocks,
+which is `$0.0076` a piece and is plainly a per-piece price on a pack line.
+Where a denomination cannot be *checked*, it is held for Scott, not assumed.
+
+Net: 123 gap rows → **59 writable, verified 1:1 against the vendor's own order
+line**, 2 zero-price, 2 pack-inflated, 12 uncorroborated packs, 48 with no cost
+recorded anywhere (10 of which are the Tormach DIRECTPAY parts already queued).
+**Nothing was written.** A 59-row change to what the instance reports as pricing
+is not one of the four sanctioned chunks, so it is on the decision queue as one
+`--commit`.
+
+**The general lesson, and it is about dry runs, not prices.** The four probes
+before this each answered a *counting* question — how many rows, from what
+source, with what pack factor — and all four were correct. Not one of them
+looked at the **value** that would actually be written. A probe that measures the
+shape of a backfill and a dry run that composes each individual write are
+different instruments, and only the second one can see that the number is zero.
+Related and already recorded one section over: *"a dry run that validates less
+than the commit is not a dry run, it is a rehearsal of the easy half."*
+
+## Queue A's denominator is mostly parts with no vendor handle (2026-09-22)
+
+The standing instruction says measure the reachable pool every run and journal
+the number even when it is zero. Tonight, stated as the rows examined rather
+than as a vendor or a verdict:
+
+    imageless parts          513 of 1241
+      no link, no supplier   435   <- no handle of any kind
+      supplier part, no link  61
+      carries a link          17
+
+and **all 17 of the linked rows are unworkable by standing rule, not by
+method**: 12 point at `mcmaster.com`, the one site this job is forbidden to
+read, and 5 at `github.com` — Scott's own repos, already named in the 09-19
+entry as things no vendor ever sold. So the *linked* pool is not blocked, it is
+**structurally empty**, which is a stronger closure than a count.
+
+The 61 supplier-part-no-link rows are the only live route, via order-history
+search (09-16 entry, scored 1 in 10). **Not attempted tonight** — the run's
+chunk went to the price-break finding above — so this is a deliberate omission
+with a named next step, not an exhausted queue. The Amazon slice of it is
+mostly pre-explained: recent rows carry `X00…` order-line ids, which 404 on
+`/dp/` forever, and the older ASINs are the aged-out pool of the 09-15 entry.
