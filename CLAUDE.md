@@ -99,6 +99,12 @@ new function.
   a staging area.
 - **Check for a duplicate before creating a part.** Two importers have already
   entered the same item twice under different names.
+- **Installed infrastructure is not an inventory item.** When leftovers turn up
+  from an install, record the LEFTOVERS and put the order in their notes; do not
+  offer to add the device that is wired into the building. Scott, 2026-09-23, on
+  the Emporia Vue 3 whose spare CTs were being filed: *"its not really a
+  inventory item."* Shop MACHINES are the separate case and do belong — they get
+  moved, lent and consumed against; a panel-mounted monitor never will be.
 - Prices not verified live get **+40%** and are marked as estimates.
 
 ## Buying tool holders
