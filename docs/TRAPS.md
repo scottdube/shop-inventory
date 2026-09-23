@@ -11008,8 +11008,8 @@ what caught it: the script printed `part.link=None` right after claiming success
 
 ## "Update Available" points at a plugin that "is not installed" — it is not about a plugin
 
-Scott, 2026-09-23: the InvenTree notification bell shows **Update Available**,
-and clicking through to see more says *the plugin is not installed*.
+Scott, 2026-09-23: the notification bell shows **Update Available**, and clicking
+through to see more says *the plugin is not installed*.
 
 Nothing is wrong with any plugin. Read the notification row:
 
@@ -11020,48 +11020,71 @@ target=Plugin / PluginConfiguration:10
 ```
 
 PluginConfig 10 is `inventree-ui-notification` — the plugin that **delivered**
-the message, stored in the `target` field. The drawer then tries to open that
-target as a plugin detail page and fails. The subject of the notification is the
-SERVER: 1.5.0 installed, `_INVENTREE_LATEST_VERSION` 1.5.5. Four of these have
-arrived, one a week since 2026-08-24, all identical and all cosmetically broken
-the same way.
+the message, stored in `target`. The drawer then tries to open the deliverer as
+the subject and fails. The subject is the SERVER. Upstream fixed this in 1.5.5
+("notification external link handling"), so the symptom disappears with the very
+update it is failing to describe.
 
-**The misleading part is the word "plugin" appearing at all.** It sends you
-looking for a missing plugin package, and there is no missing package — the
-plugin list is complete and `inventree-ui-notification` is active. Upstream
-fixed this in 1.5.5 itself ("notification external link handling"), so the
-symptom disappears with the very update it is failing to tell you about.
+**The misleading word is "plugin".** It sends you hunting a missing package, and
+there is none — the plugin list is complete and the named plugin is active.
 
-### What an upgrade here actually involves
-
-Measured the same day, because none of this was written down:
+## Upgrading InvenTree on the Mini — measured 2026-09-23 doing 1.5.0 → 1.5.5
 
 ```
-source   mini:/Volumes/4TB_Removable/inventree/src/src/backend/InvenTree   (NO .git)
-venv     mini:/Volumes/4TB_Removable/inventree/env
-config   mini:/Volumes/4TB_Removable/inventree/config.yaml
-serve    gunicorn -w 3 -b 0.0.0.0:8001, launchd com.inventree.server, KeepAlive
+repo root   mini:/Volumes/4TB_Removable/inventree/src          <- .git IS HERE
+django dir  mini:/Volumes/4TB_Removable/inventree/src/src/backend/InvenTree
+venv        mini:/Volumes/4TB_Removable/inventree/env          <- no `pip` BINARY
+config      mini:/Volumes/4TB_Removable/inventree/config.yaml
+services    com.inventree.server (gunicorn :8001), com.inventree.worker (qcluster)
 ```
 
-**There is no `git pull` path.** The tree is an unpacked source tarball with no
-`.git` anywhere above it, and `pip show inventree` returns nothing — the package
-is not pip-installed either. An upgrade means fetching the 1.5.5 source, running
-its requirements and migrations against the existing SQLite database, and
-restarting.
+**Correcting an error made earlier the same day: there IS a git checkout.** A
+first pass looked for `.git` in `.`, `..` and `../..` from the Django directory,
+found none, and concluded the tree was an unpacked tarball needing a manual
+file-swap. The repo root is `../../..` — one level further up. The whole upgrade
+is `git fetch --tags && git checkout <tag>`. **Three directories up is not far
+enough when the path contains `src/src/backend/`** — count the levels against
+the actual path instead of probing a fixed number of them.
 
-**The hazard is `plugins/`, which lives INSIDE that source tree:**
+Verified sequence, all of it through `itq run`:
 
-```
-src/src/backend/InvenTree/plugins/cups_label      <- the label printing path
-src/src/backend/InvenTree/plugins/shop_status
-```
+1. **Rollback point first**, outside the source tree: `git rev-parse HEAD`,
+   `sqlite3 <db> ".backup <copy>"` then `PRAGMA integrity_check`, a tar of
+   `plugins/`, and a copy of `config.yaml`.
+2. **Stop both services** — `launchctl bootout gui/$(id -u)/<label>`. They set
+   `KeepAlive`, so `kill` just brings them back. The worker matters: it runs the
+   old code against the newly migrated DB if left up.
+3. `git checkout -- src/backend/InvenTree/InvenTree/urls.py` to drop the local
+   patch, then `git fetch --tags origin`, then `git checkout 1.5.5`.
+4. `env/bin/python3 -m pip install -r src/backend/requirements.txt`.
+5. `manage.py migrate` — 1.5.0→1.5.5 added exactly one migration,
+   `common.0049_notificationentry_charfield_uid`.
+6. `invoke frontend-download --tag 1.5.5` from the repo root. There is no node on
+   this box, so the frontend cannot be compiled locally; the task fetches the
+   prebuilt bundle. The task is **`frontend-download`, not `int.frontend-download`**
+   — the `int.` namespace holds the build-from-source ones.
+7. `manage.py collectstatic --noinput`.
+8. Re-apply the media patch, then `launchctl bootstrap gui/$(id -u) <plist>` for
+   both services.
 
-Both are local, neither is a pip package, and neither exists anywhere upstream.
-Replacing the tree in place deletes them. `cups_label` is not optional — it is
-the ONLY working route to the QL-810W, since brother_ql fails silently on this
-unit (see LABELLING.md). Back both directories up off the tree before touching
-anything, and check they are still loaded after the restart rather than assuming.
+### The two things an upgrade here silently breaks
 
-Worth having, when the upgrade does happen: 1.5.2 fixes **supplier part
-`pack_quantity` pricing recalculation**, which is the trap this shop has paid
-for more than once.
+**`plugins/` lives INSIDE the Django directory** and holds `cups_label` and
+`shop_status`, neither of them upstream or pip-installed. Git leaves them alone
+because they are untracked, so a tag checkout is safe — but any upgrade that
+replaces the tree wholesale deletes them, and `cups_label` is the ONLY working
+route to the QL-810W (brother_ql fails silently on this unit, see LABELLING.md).
+Verify after restart with `PluginConfig` active **and** `registry.get_plugin(key)`
+non-None; the config row survives on its own and proves nothing.
+
+**`InvenTree/urls.py` carries a local patch that serves `/media/`.** Django
+registers that route only under DEBUG, and this deployment is bare gunicorn with
+no reverse proxy, so without the patch every part image goes blank. A tag
+checkout overwrites it. Save `git diff` of that file before checking out and
+`git apply` it after — it applied cleanly onto 1.5.5. Test it anonymously:
+**401 is the pass** (the route exists and AuthRequiredMiddleware gates it), 404
+means the patch did not take.
+
+Worth having, and the reason not to defer this again: 1.5.2 fixes supplier part
+**`pack_quantity` pricing recalculation**, the trap this shop has paid for more
+than once.
