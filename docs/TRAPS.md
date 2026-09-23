@@ -11005,3 +11005,63 @@ true, so a NULL column is never matched. `Part.link` and `SupplierPart.link` on
 these rows were NULL, not `''`. Use `Q(f="") | Q(f__isnull=True)`, which is what
 `kw_write_0922.py` already does for `keywords`. The re-read after the write is
 what caught it: the script printed `part.link=None` right after claiming success.
+
+## "Update Available" points at a plugin that "is not installed" — it is not about a plugin
+
+Scott, 2026-09-23: the InvenTree notification bell shows **Update Available**,
+and clicking through to see more says *the plugin is not installed*.
+
+Nothing is wrong with any plugin. Read the notification row:
+
+```
+name=Update Available  category=update_available
+message="An update for InvenTree is available"
+target=Plugin / PluginConfiguration:10
+```
+
+PluginConfig 10 is `inventree-ui-notification` — the plugin that **delivered**
+the message, stored in the `target` field. The drawer then tries to open that
+target as a plugin detail page and fails. The subject of the notification is the
+SERVER: 1.5.0 installed, `_INVENTREE_LATEST_VERSION` 1.5.5. Four of these have
+arrived, one a week since 2026-08-24, all identical and all cosmetically broken
+the same way.
+
+**The misleading part is the word "plugin" appearing at all.** It sends you
+looking for a missing plugin package, and there is no missing package — the
+plugin list is complete and `inventree-ui-notification` is active. Upstream
+fixed this in 1.5.5 itself ("notification external link handling"), so the
+symptom disappears with the very update it is failing to tell you about.
+
+### What an upgrade here actually involves
+
+Measured the same day, because none of this was written down:
+
+```
+source   mini:/Volumes/4TB_Removable/inventree/src/src/backend/InvenTree   (NO .git)
+venv     mini:/Volumes/4TB_Removable/inventree/env
+config   mini:/Volumes/4TB_Removable/inventree/config.yaml
+serve    gunicorn -w 3 -b 0.0.0.0:8001, launchd com.inventree.server, KeepAlive
+```
+
+**There is no `git pull` path.** The tree is an unpacked source tarball with no
+`.git` anywhere above it, and `pip show inventree` returns nothing — the package
+is not pip-installed either. An upgrade means fetching the 1.5.5 source, running
+its requirements and migrations against the existing SQLite database, and
+restarting.
+
+**The hazard is `plugins/`, which lives INSIDE that source tree:**
+
+```
+src/src/backend/InvenTree/plugins/cups_label      <- the label printing path
+src/src/backend/InvenTree/plugins/shop_status
+```
+
+Both are local, neither is a pip package, and neither exists anywhere upstream.
+Replacing the tree in place deletes them. `cups_label` is not optional — it is
+the ONLY working route to the QL-810W, since brother_ql fails silently on this
+unit (see LABELLING.md). Back both directories up off the tree before touching
+anything, and check they are still loaded after the restart rather than assuming.
+
+Worth having, when the upgrade does happen: 1.5.2 fixes **supplier part
+`pack_quantity` pricing recalculation**, which is the trap this shop has paid
+for more than once.
