@@ -10971,3 +10971,37 @@ chunk went to the price-break finding above — so this is a deliberate omission
 with a named next step, not an exhausted queue. The Amazon slice of it is
 mostly pre-explained: recent rows carry `X00…` order-line ids, which 404 on
 `/dp/` forever, and the older ASINs are the aged-out pool of the 09-15 entry.
+
+## The "61" were already walked. The live pool is new parts only (2026-09-23)
+
+The 09-22 entry above called the supplier-part-no-link rows "the only live
+route". Tonight's list (`img_sp_nolink_0923.py`, **62** rows now) was checked
+row by row against this file before any fetch, and **almost all of it had
+already been closed with evidence, just under vendor headings instead of under
+this bucket**: the 19 Amazon ASINs 404 (delisting, confirmed with a second
+instrument), the 6 `X00…` ids are not ASINs, 5 Tormach are discontinued, 9
+Lakeshore and 7 PreciseBits are search-URL-only, 4 AliExpress return the shared
+`Sf5a31ce…` delisting placeholder, 2 Mouser are Akamai-defended (re-confirmed
+tonight with one visit in the signed-in agent Chrome, which returned an empty
+document with no title), DigiKey serves the wrong variant, MSC has
+`noimageavailable.gif`, Canal Rubber has no per-SKU page, and JLCPCB/Cults3D rows
+are Scott's own boards and an STL file. **The pool looked live only because it was
+bucketed by handle shape, while the closures were written by vendor.**
+
+What remained were **two rows created after the 09-21 closure**: #1257 Athom
+(on open PO-0180) and #1250 PropWash. Both went on first try from single-product
+pages that carry our identifier verbatim. That is the
+`closures-go-stale-with-inflow` rule working as designed: **queue A's real
+workload is now whatever parts were created since the last run**, and the probe
+to run first is `img_openpo_0923.py` (open-PO parts, which jump the queue)
+followed by the newest imageless rows. It is not the old backlog.
+
+## `field__in=["", None]` never matches NULL
+
+Same night, in `img_attach_0923.py`. The link-fill wrote
+`.filter(link__in=["", None]).update(...)` and filled **0 of 3** empty links,
+with no error. SQL `IN (…, NULL)` compares with `=`, and `NULL = NULL` is not
+true, so a NULL column is never matched. `Part.link` and `SupplierPart.link` on
+these rows were NULL, not `''`. Use `Q(f="") | Q(f__isnull=True)`, which is what
+`kw_write_0922.py` already does for `keywords`. The re-read after the write is
+what caught it: the script printed `part.link=None` right after claiming success.
