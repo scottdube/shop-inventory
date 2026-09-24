@@ -11088,3 +11088,20 @@ means the patch did not take.
 Worth having, and the reason not to defer this again: 1.5.2 fixes supplier part
 **`pack_quantity` pricing recalculation**, the trap this shop has paid for more
 than once.
+
+## A part with no SKU still needs an identity guard for its image (2026-09-24)
+
+Queue A's guard is "accept an image only when the page carries our identifier
+verbatim". The Emporia Vue 3 leftover CTs (#1259 50A, #1260 200A) have **no**
+identifier on purpose: no supplier part, no IPN, because the kit ASIN is an
+assortment. The guard has nothing to match, and the easy mistake is to wave
+the part through on the name alone.
+
+The substitute used: **maker + generation + rating, each read off the record**
+(Emporia, Vue 3 from the kit order in the notes, 50A). #1259 passed against the
+maker's own single-sensor page (SKU EMV3CT5-A-1). #1260 **failed on
+generation**: the only rigid 200A clamp Emporia sells on its own is a *GEN2*
+replacement, and the Vue 3 kit photo shows the monitor and sixteen clamps, not
+the mains clamp. Left blank. A wrong-generation photo is the
+`name-the-part-off-the-part` failure, and a blank slot is honest.
+`img_attach_0924.py` carries the full reasoning.
