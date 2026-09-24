@@ -85,6 +85,12 @@
     "geeksoutfit.com"
    ]
   },
+  "review_request": {
+   "why": "Post-purchase review solicitation sent by a THIRD-PARTY review service on a merchant's behalf. It is never itself an order: the merchant's own confirmation/shipping mail is the source and arrives separately. Added 2026-09-23 22:40 sweep: loox.io 'Order #6407, how did it go?' surfaced as an unknown vendor with an order-shaped subject, and the classifier emitted a 'new vendor loox.io' decision line. Order #6407 is Rustic Edge Co (already suppressed as apparel since 2026-09-04) - the body lists only shirt titles and sizes and never names the merchant, so the sender domain is not the vendor. Suppressing the domain (not the 'how did it go' subject) is right for the same reason as the payment rails: nothing loox.io sends can become a PO, whichever merchant it fronts. NOT put in 'platform', because platform is a DISCOVERY bucket in vendor_triage.py and would keep emitting a decision line per review request. Only loox.io is listed because only loox.io has been seen; judge.me/yotpo/stamped.io/okendo are the same class but unmeasured here - add each when it first appears, after reading the body.",
+   "domains": [
+    "loox.io"
+   ]
+  },
   "medical": {
    "why": "Rule 3: medical/pharmacy/personal-care are OUT and MUST NOT BE TRANSCRIBED. Log the order id only, never the detail. Note wexhealth mail is benefits-card traffic and is not always even Scott's. baystatept.com added 2026-09-16 (12:40 sweep): the SAME $25.00 physical-therapy visit arrived twice, once as a wexhealth benefits-card alert — correctly suppressed — and once as the provider's own credit-card receipt, which was NOT, because this bucket listed pharmacy chains and the benefits rail but no CLINIC domains. The classifier emitted a decision line reading 'Credit Card Transaction Receipt from MVPT Physical Therapy-NH', i.e. it was about to write a medical detail into the decision queue, which is precisely what rule 3 forbids. Suppressing one rail does not suppress a medical event: the provider bills directly too, so a care episode reaches the mailbox by at least two independent paths and each needs its own entry. Not generalised to a keyword match on 'Therapy'/'Medical' in the subject — that would silently bin a real order from a vendor with an unlucky name, and a suppression nobody can audit is the failure this file's header warns about.",
    "redact": true,
