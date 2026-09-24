@@ -4722,6 +4722,12 @@ this run had fed it — an earlier run's file, still sitting in the Mini's
 previous run's question, and an empty `unknown:` bucket from it would be a
 false all-clear.
 
+**Fixed in the task file 2026-09-24** (Scott approved option 1 of
+`triage-reads-stale-cands-json`): section 4 of `inventree-daytime-sweep` now
+pushes before triage and checks the count. Rejected for now: having
+`vendor_triage.py` delete its input after reading. It would make a stale read
+impossible rather than merely documented, but Scott chose the one-line fix.
+
 ## WRONG — "the overnight window is lost to the browser PREFLIGHT, not to sleep"
 
 > **Superseded 2026-08-26 13:2x by "Every lost window so far is ONE unapproved
