@@ -4710,6 +4710,18 @@ a local path being read on the Mini. The task file's `--candidates /tmp/cands.js
 reads like a scratch path on this laptop and is not — it is the Mini's `/tmp`,
 and it only ever worked because an earlier run had pushed something there.
 
+**The worse half is when it does NOT fail.** Measured 2026-09-24 08:4x daytime
+sweep: wrote a fresh local `/tmp/cands.json` (5 candidates) and ran the task
+file's line without a push. It printed a clean, confident triage of **4**
+candidates, including a medical domain (`baystatept.com`) that was in no mail
+this run had fed it — an earlier run's file, still sitting in the Mini's
+`/tmp`. Output was well-formed and plausible; the only tells were the count (4 ≠
+5) and a sender I had not written. After `itq push /tmp/cands.json
+/tmp/cands.json` the rerun read 5 of 5. **Always push, then check the
+`N candidates` header against what you wrote** — a stale file answers the
+previous run's question, and an empty `unknown:` bucket from it would be a
+false all-clear.
+
 ## WRONG — "the overnight window is lost to the browser PREFLIGHT, not to sleep"
 
 > **Superseded 2026-08-26 13:2x by "Every lost window so far is ONE unapproved
