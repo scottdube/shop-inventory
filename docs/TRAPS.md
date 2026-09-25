@@ -11123,3 +11123,47 @@ replacement, and the Vue 3 kit photo shows the monitor and sixteen clamps, not
 the mains clamp. Left blank. A wrong-generation photo is the
 `name-the-part-off-the-part` failure, and a blank slot is honest.
 `img_attach_0924.py` carries the full reasoning.
+
+## "No handle of any kind" was wrong: the NAME is a handle (2026-09-25)
+
+The 09-22 entry above counted the imageless rows with no link and no supplier
+part as having **no handle of any kind**, and every run since treated that
+bucket as unworkable. It was bucketed by *fields*. Measured tonight with
+`probe_0925_pn_in_name.py`: of the **399** active rows in that bucket, **145
+carry a part-number-shaped token in the part name** — `DSA-13PFC-05`,
+`ESP32-S3-LCD-2.8C`, `P4400.01`, `2SHPn`, "(PID 4900)".
+
+That handle only becomes usable under the 09-24 rule above (maker + model,
+each read off the record). So the real split of the 145 is:
+
+- **Maker named on the record + maker runs a single-product page** → workable.
+  Six went on tonight, first try: Adafruit 4900 and 4366, Raspberry Pi 3B,
+  MikroTik Metal 2SHPn, Kill A Watt P4400, Waveshare ESP32-S3-LCD-2.8C.
+- **Commodity part, no maker on the record** (2N3904, 1N4148, JST-XH clones,
+  WEIDU terminal blocks, bearings) → the guard cannot pass. A photo of *a*
+  2N3904 is not a photo of ours. This is most of the 145, and it stays blank.
+
+Four more **failed the guard tonight**, which is the guard doing its job:
+
+- **#1144 waveshare 4inch HDMI (C)** — the slug `4inch-hdmi-lcd-c.htm` now
+  serves a 720x720 **capacitive** panel. Ours is 800x480 **resistive, XPT2046**.
+  A maker reusing a product name for a different product is the vendor-side
+  version of `name-the-part-off-the-part`: the URL matched, the product did not.
+- **#1237 Stontronics DSA-13PFC-05** — the official Pi 1/2/3 PSU page names
+  neither Stontronics nor the model, and that PSU shipped from more than one
+  maker. A page about the *role* is not a page about the part.
+- Brother DK-11201, Watts P-412 → maker page 404; WIMAXIT → store gone.
+
+Two smaller traps from the same run:
+
+- **Adafruit's `og:image` can be a video still.** `4900-06` 404s at the
+  970x728 size because it only exists under `product-videos/`. Take the first
+  `cdn-shop.adafruit.com/<size>/<pid>-NN.jpg` in the page source instead.
+- **One Waveshare page can cover two variants.** `esp32-s3-touch-lcd-2.8c.htm`
+  sells touch and non-touch ("Options For Touch Function") and carries our
+  non-touch identifier verbatim, so it passes — but check for this before
+  assuming a `-touch-` URL is the wrong product.
+
+Next run: the remaining branded rows in the 145 (vintage ALCO/NKK/TEC/CTS
+switches, Churod, XQF, MEANLIN) are the live queue-A pool; expect low yield
+from the vintage ones, whose makers mostly no longer run product pages.
