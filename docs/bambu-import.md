@@ -131,9 +131,10 @@ emailed subtotal, all are COMPLETE, and AA187 carries pack 20 in both fields.
 - **Count at SLN.** Stock is created from the count, not from orders.
 - **Count at LRD on arrival.** That is the only way to settle the
   undocumented SLN-to-LRD moves.
-- **Shelf boxes no Bambu order explains:** PLA Basic Magenta 10202 with spool,
-  Cyan with spool, Yellow 10400 with spool, and the Hatchbox ABS. They likely
-  came through Amazon or a reseller. Create those parts when they are counted.
+- ~~Shelf boxes no order explained~~ **Explained 2026-10-03.** Yellow, Magenta
+  and Cyan with spool are the 2023 PLA CMYK Lithophane Bundle (PO-0190). Scott:
+  *"all bambu filament was bought from bambu"*. The Hatchbox ABS is the only
+  non-Bambu box, and where it was bought is not recorded.
 - ~~Printer locations~~ **Done 2026-10-03.** H2D stock 879 at SLN (Scott, same day);
   X1C stock 880 at LRD (Scott, 2026-08-22). Both are located to the site only.
 - Add `noreply@bambulab.com` to the overnight agent's vendor sweep.
@@ -160,13 +161,23 @@ still had 0 supplier parts and 0 POs**, so the import above has not run.
 Nothing has been created yet. Counts and the shelf location are still owed by
 Scott, because a photo shows what each box is, not how many there are.
 
-**The box label usually gives the form away, so refill vs spool can often be
-read from the box.** The older white labels carry a Model line ending
-`-SPLFREE` (Yellow 10400, Orange 10300) or `-SPL` (Yellow "With Spool",
-Magenta 10202, Cyan). It reads as SPLFREE = refill, SPL = with spool. That is
-a **hypothesis until an order line confirms it.** The newer oval side labels
-show no form, so for those boxes the form has to come from the order or from
-Scott.
+**Reading the form off a sealed box. Confirmed 2026-10-03 against two orders.**
+- OLD rectangular labels: the Model/SKU suffix. `-SPLFREE` = refill, `-SPL` =
+  with spool. Some old labels also print "With Spool" by the color dot.
+- NEW oval side labels: a **ring printed around the color dot that reads "With
+  Spool"**. No ring = refill. Checked against Pink 10203 (no ring, ordered as a
+  refill) and Pumpkin Orange 10301 (ring, ordered with spool).
+- Text on the oval labels is too small to read from a whole-shelf photo. Crop
+  and zoom first. TPU "90A vs 95A" is still unread for that reason.
+
+**SEEDED 2026-10-03: 19 sealed boxes at `SLN/Garage/WS3`** (location #623,
+main garage beside the H2D), stock 881-895, `stocktake_date` set. Scott
+confirmed the two photos show every box: a carton of 8 and 11 on the shelf.
+The carton is the 2025-11 order (PO-0198). The H2D moved from bare SLN to
+SLN/Garage on the same evidence. TPU 51103 renamed "with spool" (both boxes
+carry the ring). Its SKU stays `51103` because that is the importer's
+idempotency key. New parts: Yellow/Magenta/Cyan with spool (Cyan's old label
+prints no code, so its IPN is blank) and Hatchbox ABS True Black.
 
 **Tracking usage: no InvenTree plugin found** (searched 2026-10-03). The
 standard tool is Spoolman (Donkie/Spoolman), with Bambu feeders such as
