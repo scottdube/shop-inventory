@@ -105,6 +105,17 @@ on the vendor order number, PLACED first and status moved by queryset
 Also add `noreply@bambulab.com` to the overnight agent's vendor list so new
 orders are swept automatically rather than needing another historical import.
 
+**The import must NOT create stock rows.** Scott, 2026-10-03: *"if we run the
+import wont we end up with a lot of filament that has been used up?"* He is
+right. `mcmaster_import.py` books every purchased unit as an `[ESTIMATE]` stock
+row, which works for screws that sit in a drawer. Filament gets burned, and
+some of these orders go back to 2023. Copying that pattern would put three
+years of printed-away spools on the shelf. Plan (not yet built): import parts,
+supplier parts and POs as **history only**. Lines are marked received, the
+order is complete, and no StockItem is created. Stock comes only from Scott's
+physical count at each site. A side benefit: bought minus on-hand gives the
+consumption rate per SKU.
+
 ## Seeding the SLN filament — started 2026-10-03
 
 Scott sent two photos of the unopened filament at SLN (a carton and a wire
