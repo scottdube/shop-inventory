@@ -50,6 +50,12 @@ ap = argparse.ArgumentParser()
 ap.add_argument("--commit", action="store_true")
 ap.add_argument("--comparator-loc", default="MB-D2",
                 help="StockLocation name for the comparator (Scott: MB-D2)")
+ap.add_argument("--camera-loc", default="BL-5",
+                help="StockLocation name for the camera. BL-5 does not exist "
+                     "(BL has BL-D1..D6); unconfirmed as of 2026-10-03")
+ap.add_argument("--only", choices=("camera", "comparator"),
+                help="file just one item -- the comparator went first while the "
+                     "camera's drawer was still unconfirmed")
 args = ap.parse_args()
 
 
@@ -63,10 +69,12 @@ def loc_named(name):
 
 
 # ------------------------------------------------------------ locations
-cam_loc = loc_named("BL-5")
-cmp_loc = loc_named(args.comparator_loc) if args.comparator_loc else None
-for want, got in (("BL-5", cam_loc), (args.comparator_loc, cmp_loc)):
-    if got is None:   # show what IS there, so the fix is a retype, not a hunt
+do_cam = args.only in (None, "camera")
+do_cmp = args.only in (None, "comparator")
+cam_loc = loc_named(args.camera_loc) if do_cam else None
+cmp_loc = loc_named(args.comparator_loc) if do_cmp and args.comparator_loc else None
+for want, got, on in ((args.camera_loc, cam_loc, do_cam), (args.comparator_loc, cmp_loc, do_cmp)):
+    if on and got is None:   # show what IS there, so the fix is a retype, not a hunt
         pre = want.split("-")[0]
         print(f"   locations starting {pre}:", list(StockLocation.objects.filter(
             name__istartswith=pre).values_list("pk", "name")[:40]))
@@ -125,17 +133,21 @@ CMP = dict(
 )
 
 dups = []
-for spec, terms in ((CAM, ["P2 Pro", "Thermal Master", "thermal camera", "thermal imager"]),
-                    (CMP, ["comparator", "roughness comparator", "ISO 2632"])):
+for spec, terms, on in ((CAM, ["P2 Pro", "Thermal Master", "thermal camera", "thermal imager"], do_cam),
+                        (CMP, ["comparator", "roughness comparator", "ISO 2632"], do_cmp)):
+    if not on:
+        continue
     q = Q(name__iexact=spec["name"])
     for t in terms:
         q |= Q(name__icontains=t) | Q(keywords__icontains=t)
     hits = list(Part.objects.filter(q).values_list("pk", "name"))
     # the AMT220 tester legitimately matches roughness terms; it is not a duplicate
-    hits = [h for h in hits if h[0] != 1268]
+    # #703 LM358 and #163 KY-024 carry "comparator" as the ELECTRONIC kind;
+    # Scott confirmed 2026-10-03 neither is a roughness comparator.
+    hits = [h for h in hits if h[0] not in (1268, 703, 163)]
     if hits:
         dups.append((spec["name"], hits))
-if StockItem.objects.filter(serial=SN).exists():
+if do_cam and StockItem.objects.filter(serial=SN).exists():
     dups.append(("serial", SN))
 for d in dups:
     print("!! possible duplicate:", d)
@@ -144,7 +156,8 @@ for spec in (CAM, CMP):
     assert len(spec["name"]) <= 100 and len(spec["description"]) <= 250 \
         and len(spec["keywords"]) <= 250, spec["name"]
 
-missing = [n for n, v in (("BL-5", cam_loc), (args.comparator_loc, cmp_loc)) if v is None]
+missing = [n for n, v, on in ((args.camera_loc, cam_loc, do_cam),
+                              (args.comparator_loc, cmp_loc, do_cmp)) if on and v is None]
 if not args.commit:
     print("\nDRY RUN -- add --commit"
           + (f"\n   unresolved: {missing}" if missing else "")
@@ -177,18 +190,22 @@ def make_stock(part, loc, serial=None):
     return s
 
 
-cam = make_part(CAM, cam_loc)
-cam_si = make_stock(cam, cam_loc, serial=SN)
-cmp_part = make_part(CMP, cmp_loc)
-cmp_si = make_stock(cmp_part, cmp_loc) if cmp_loc else None
+cam_si = cmp_si = None
+if do_cam:
+    cam = make_part(CAM, cam_loc)
+    cam_si = make_stock(cam, cam_loc, serial=SN)
+if do_cmp:
+    cmp_part = make_part(CMP, cmp_loc)
+    cmp_si = make_stock(cmp_part, cmp_loc) if cmp_loc else None
 
 print("\nNEXT:")
-print(f'  itq run scripts/trip.py mark {cam_si.pk} "thermal camera, one only, carry both ways"')
+if cam_si:
+    print(f'  itq run scripts/trip.py mark {cam_si.pk} "thermal camera, one only, carry both ways"')
 pks = " ".join(str(s.pk) for s in (cam_si, cmp_si) if s)
 print(f"  itq run scripts/print_part_label.py {pks} --stockitem")
 # Drawer labels: every child of BL, BR and the comparator's bench, unlabelled only.
-parents = [cam_loc.parent, cmp_loc.parent,
-           StockLocation.objects.filter(name__iexact="BR").first()]
+parents = [StockLocation.objects.filter(name__iexact=n).first()
+           for n in ("BL", "BR")] + [cmp_loc.parent if cmp_loc else None]
 todo = []
 for par in dict.fromkeys(p for p in parents if p):
     kids = list(par.get_children().order_by("name"))
