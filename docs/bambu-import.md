@@ -94,16 +94,51 @@ belong in the Equipment tree, never as consumable stock lines.
 says Dover; it lives in Florida. Set the location from that fact, not from the
 order.
 
-## Still to do
+## Import DONE 2026-10-03: purchase history only
 
-The 12 confirmations have been located and the parser proven, but **the orders
-are not yet imported**. Remaining: fetch the 8 unread bodies, run them through
-the parser, and create POs the same way `mcmaster_import.py` does — idempotent
-on the vendor order number, PLACED first and status moved by queryset
-`.update()`, never `save()` on a completed order.
+`scripts/bambu_import.py` brought in all 12 confirmations: **PO-0189 to PO-0200,
+44 parts, 0 stock rows**. Verified by re-reading. Each PO's lines equal its
+emailed subtotal, all are COMPLETE, and AA187 carries pack 20 in both fields.
 
-Also add `noreply@bambulab.com` to the overnight agent's vendor list so new
-orders are swept automatically rather than needing another historical import.
+- **Categories created:** `Shop/Consumables/Filament` (#142, 28 filaments and
+  3 bundles), `Shop/Accessories/3D Printer` (#140, hotends, plates, glue,
+  Flipper, screws), `Equipment/3D Printers` (#141, X1C and H2D, no stock rows).
+- **PO `destination` = ship-to site.** 10 orders went to SLN and 2 (2026-02
+  and 2026-03) to LRD. That is provenance only. Scott moved some SLN filament
+  to LRD and does not know which, so the LRD count settles it, not these POs.
+- **Bodies were transcribed, not parsed.** The Gmail MCP returns the body into
+  context and cannot write it to disk, so `bambu_parse.py` had nothing to run
+  on. The line data was read off the emails into
+  `~/code/scripts/bambu_orders_1003.json` (PRIVATE repo, because it holds order
+  numbers). The importer refuses any order whose lines do not sum to its
+  emailed subtotal, which is the same checksum the parser relied on.
+- **Discounts were allocated back to their lines.** The 2023-11 and 2024-03
+  emails carry an order-level membership discount ($8 a spool). The 2025-08
+  PLA-CF 4-roll bundle listed no per-roll price and was split evenly at
+  $27.99 each.
+- **2023 lines had no numeric code.** PETG-CF Black and PLA Basic Orange took
+  31100 and 10300 from later orders. The part notes say "INFERRED".
+- **TPU 85A (51107) and 90A (51103): the orders name no form**, so those parts
+  are named without one. The SLN photo labels read "95A" to me, but the order
+  says 90A. The label text is tiny and the order is the better witness until
+  someone reads the box.
+- **Bundles are one unit each** (CMYK Lithophane, Gratitude 2x Black,
+  Starter Classic). Their colors are unknown, and opened rolls count under
+  their own color parts.
+
+### Still open
+
+- **Count at SLN.** Stock is created from the count, not from orders.
+- **Count at LRD on arrival.** That is the only way to settle the
+  undocumented SLN-to-LRD moves.
+- **Shelf boxes no Bambu order explains:** PLA Basic Magenta 10202 with spool,
+  Cyan with spool, Yellow 10400 with spool, and the Hatchbox ABS. They likely
+  came through Amazon or a reseller. Create those parts when they are counted.
+- **Printer locations.** The X1C is at LRD (above). Where the H2D stands is not
+  recorded. Neither has a stock row.
+- Add `noreply@bambulab.com` to the overnight agent's vendor sweep.
+
+### Why no stock rows
 
 **The import must NOT create stock rows.** Scott, 2026-10-03: *"if we run the
 import wont we end up with a lot of filament that has been used up?"* He is
