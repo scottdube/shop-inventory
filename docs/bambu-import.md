@@ -134,8 +134,8 @@ emailed subtotal, all are COMPLETE, and AA187 carries pack 20 in both fields.
 - **Shelf boxes no Bambu order explains:** PLA Basic Magenta 10202 with spool,
   Cyan with spool, Yellow 10400 with spool, and the Hatchbox ABS. They likely
   came through Amazon or a reseller. Create those parts when they are counted.
-- **Printer locations.** The X1C is at LRD (above). Where the H2D stands is not
-  recorded. Neither has a stock row.
+- ~~Printer locations~~ **Done 2026-10-03.** H2D stock 879 at SLN (Scott, same day);
+  X1C stock 880 at LRD (Scott, 2026-08-22). Both are located to the site only.
 - Add `noreply@bambulab.com` to the overnight agent's vendor sweep.
 
 ### Why no stock rows
