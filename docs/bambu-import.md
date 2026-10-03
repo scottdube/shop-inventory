@@ -104,3 +104,28 @@ on the vendor order number, PLACED first and status moved by queryset
 
 Also add `noreply@bambulab.com` to the overnight agent's vendor list so new
 orders are swept automatically rather than needing another historical import.
+
+## Seeding the SLN filament — started 2026-10-03
+
+Scott sent two photos of the unopened filament at SLN (a carton and a wire
+shelf) and asked to start tracking it. Inventory state when measured: **no
+filament part existed, no 3D-printing category, and Bambu Lab (company #29)
+still had 0 supplier parts and 0 POs**, so the import above has not run.
+Nothing has been created yet. Counts and the shelf location are still owed by
+Scott, because a photo shows what each box is, not how many there are.
+
+**The box label usually gives the form away, so refill vs spool can often be
+read from the box.** The older white labels carry a Model line ending
+`-SPLFREE` (Yellow 10400, Orange 10300) or `-SPL` (Yellow "With Spool",
+Magenta 10202, Cyan). It reads as SPLFREE = refill, SPL = with spool. That is
+a **hypothesis until an order line confirms it.** The newer oval side labels
+show no form, so for those boxes the form has to come from the order or from
+Scott.
+
+**Tracking usage: no InvenTree plugin found** (searched 2026-10-03). The
+standard tool is Spoolman (Donkie/Spoolman), with Bambu feeders such as
+OpenSpoolMan and Bambuddy that read AMS trays and 3MF usage. A split was
+proposed and is **not decided**: InvenTree counts sealed boxes per SKU, and a
+spool moves to Spoolman when it is opened. Before relying on the feeders,
+check whether the H2D/X1C firmware still lets third parties read the printer
+without LAN/developer mode.
