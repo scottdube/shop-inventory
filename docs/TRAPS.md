@@ -10566,7 +10566,7 @@ a note. Recorded as a TODO in the part's own notes instead.
 happened to be right — but that field is policy, not observation, and could
 have been set from the same recollection it was being used to confirm. The
 thing that actually settled it was Amazon order `113-4288189-7490647`, ship-to
-1879 Lake Ridge Dr. Purchase records carry a shipping address; the catalogue
+the LRD address. Purchase records carry a shipping address; the catalogue
 does not.
 
 ## Don't `tail` your own duplicate check
