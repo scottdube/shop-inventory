@@ -6,8 +6,8 @@
      there is one code path that writes the `commutes` metadata.
   2. Surface roughness comparator, 30 specimens (6 x 5 in the case, Scott
      counted), ISO 2632/1-1975, maker not marked anywhere visible.
-     Stays at SLN (Scott) -- does not commute. Filed to Metrology Bench by
-     default; that bench is an inference, override with --comparator-loc.
+     Stays at SLN -- does not commute. Lives in BR-2, bench right drawer 2
+     (Scott: "metrology bench is right drawer 2").
 
 CATEGORIES. The comparator goes to Tooling/Measuring beside the AMTAST AMT220
 profilometer (#1268) -- every metrology instrument lives there, per
@@ -24,7 +24,7 @@ Read from the packaging only. Nothing here is from a listing; no price, no PO
 Then:
     itq run scripts/trip.py mark <camera SI pk> "thermal camera, one only, carry both ways"
     itq run scripts/print_part_label.py <camera SI pk> <comparator SI pk> --stockitem
-    itq run scripts/print_part_label.py <Metrology Bench loc pk> --location
+    itq run scripts/print_part_label.py <BR-2 loc pk> --location --compact
 (add --print to the last two once the render looks right)
 """
 import argparse
@@ -43,9 +43,8 @@ from stock.models import StockItem, StockLocation  # noqa: E402
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--commit", action="store_true")
-ap.add_argument("--comparator-loc", default="Metrology Bench",
-                help="StockLocation name for the comparator. Scott: 'stays at sln'; the "
-                     "bench is inferred from him asking for its label in the same breath")
+ap.add_argument("--comparator-loc", default="BR-2",
+                help="StockLocation name for the comparator (Scott: right drawer 2)")
 args = ap.parse_args()
 
 
@@ -64,9 +63,10 @@ if cam_loc is None:
     bl = StockLocation.objects.filter(name__iexact="BL").first()
     if bl:
         print("   children of BL:", [(c.pk, c.name) for c in bl.get_children()])
-metro = loc_named("Metrology Bench")
-if metro:
-    print(f"Metrology Bench = loc #{metro.pk} {metro.pathstring}")
+if args.comparator_loc and not StockLocation.objects.filter(name__iexact=args.comparator_loc).exists():
+    br = StockLocation.objects.filter(name__iexact="BR").first()
+    if br:
+        print("   children of BR:", [(c.pk, c.name) for c in br.get_children()])
 cmp_loc = loc_named(args.comparator_loc) if args.comparator_loc else None
 if cam_loc:
     print(f"camera home     = loc #{cam_loc.pk} {cam_loc.pathstring}")
@@ -142,7 +142,7 @@ for spec in (CAM, CMP):
     assert len(spec["name"]) <= 100 and len(spec["description"]) <= 250 \
         and len(spec["keywords"]) <= 250, spec["name"]
 
-missing = [n for n, v in (("BL-5", cam_loc), ("Metrology Bench", metro)) if v is None]
+missing = [n for n, v in (("BL-5", cam_loc), (args.comparator_loc, cmp_loc)) if v is None]
 if not args.commit:
     print("\nDRY RUN -- add --commit"
           + (f"\n   unresolved: {missing}" if missing else "")
@@ -150,8 +150,8 @@ if not args.commit:
     sys.exit(0)
 if dups:
     sys.exit("refusing to commit with possible duplicates -- check them first")
-if cam_loc is None:
-    sys.exit("refusing to commit: BL-5 not resolved")
+if missing:
+    sys.exit(f"refusing to commit: unresolved {missing}")
 
 
 # ------------------------------------------------------------ write
@@ -184,5 +184,5 @@ print("\nNEXT:")
 print(f'  itq run scripts/trip.py mark {cam_si.pk} "thermal camera, one only, carry both ways"')
 pks = " ".join(str(s.pk) for s in (cam_si, cmp_si) if s)
 print(f"  itq run scripts/print_part_label.py {pks} --stockitem")
-if metro:
-    print(f"  itq run scripts/print_part_label.py {metro.pk} --location")
+print(f"  itq run scripts/print_part_label.py {cmp_loc.pk} --location --compact"
+      "   # only if BR-2 has no label yet (metadata.labeled)")
