@@ -9,7 +9,7 @@ MEASURED 2026-09-20, not inferred:
   - contents, from the live Amazon listing: 25 values x 10 pcs, 1/2W 1%,
     and 150R / 330R / 470R are all on the list
   - location, from Amazon order 113-4288189-7490647 placed 2026-02-12:
-    Ship to the LRD address. Not the Dover address.
+    Ship to the LRD address. Not the SLN address.
 
 Deliberately NOT exploding the kit into 25 value-parts here. That is the
 right end state - it is how the EAONE kit is modelled and #6's description
@@ -38,7 +38,7 @@ CONTENTS, from the live Amazon listing (ASIN B0BTP63DGQ, style 1/2W):
 Body 9mm long x 3mm dia, leads 27mm.
 
 LOCATION: IT IS IN FLORIDA. Amazon order 113-4288189-7490647, placed
-2026-02-12, Ship to the LRD address. That is the
+2026-02-12, Ship to the LRD address (FL). That is the
 order record, not a recollection and not the default_location field.
 Caveat worth keeping: shipped there in February proves where it ARRIVED. No
 one has laid eyes on it since, so it is 'should be at LRD', not 'seen at LRD'.
@@ -62,7 +62,7 @@ p.notes = (p.notes or '') + NOTE
 p.save()
 p2 = Part.objects.get(pk=1)
 print(f"  notes_len after  = {len(p2.notes or '')}")
-ok = 'LRD' in (p2.notes or '') and '10 PCS OF EACH' in (p2.notes or '')
+ok = 'IT IS IN FLORIDA' in (p2.notes or '') and '10 PCS OF EACH' in (p2.notes or '')
 print("VERIFIED" if ok else "*** VERIFY FAILED ***")
 
 # The two EAONE rows earmarked for this trip may no longer need to travel.
