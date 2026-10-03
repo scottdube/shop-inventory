@@ -6,8 +6,13 @@
      there is one code path that writes the `commutes` metadata.
   2. Surface roughness comparator, 30 specimens (6 x 5 in the case, Scott
      counted), ISO 2632/1-1975, maker not marked anywhere visible.
-     Stays at SLN -- does not commute. Lives in BR-2, bench right drawer 2
-     (Scott: "metrology bench is right drawer 2").
+     Stays at SLN -- does not commute. Lives in MB-D2, metrology bench
+     drawer 2 (Scott).
+
+LABELS. Scott: "there are no labels on BL or BR". So the closing step prints
+the 16 mm compact location label (template 10, the drawer label) for every
+child of BL, BR and the metrology bench that is not metadata.labeled -- not
+just the two drawers filed into today.
 
 CATEGORIES. The comparator goes to Tooling/Measuring beside the AMTAST AMT220
 profilometer (#1268) -- every metrology instrument lives there, per
@@ -24,7 +29,7 @@ Read from the packaging only. Nothing here is from a listing; no price, no PO
 Then:
     itq run scripts/trip.py mark <camera SI pk> "thermal camera, one only, carry both ways"
     itq run scripts/print_part_label.py <camera SI pk> <comparator SI pk> --stockitem
-    itq run scripts/print_part_label.py <BR-2 loc pk> --location --compact
+    itq run scripts/print_part_label.py <BL/BR/MB drawer pks> --location --compact
 (add --print to the last two once the render looks right)
 """
 import argparse
@@ -43,8 +48,8 @@ from stock.models import StockItem, StockLocation  # noqa: E402
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--commit", action="store_true")
-ap.add_argument("--comparator-loc", default="BR-2",
-                help="StockLocation name for the comparator (Scott: right drawer 2)")
+ap.add_argument("--comparator-loc", default="MB-D2",
+                help="StockLocation name for the comparator (Scott: MB-D2)")
 args = ap.parse_args()
 
 
@@ -59,15 +64,12 @@ def loc_named(name):
 
 # ------------------------------------------------------------ locations
 cam_loc = loc_named("BL-5")
-if cam_loc is None:
-    bl = StockLocation.objects.filter(name__iexact="BL").first()
-    if bl:
-        print("   children of BL:", [(c.pk, c.name) for c in bl.get_children()])
-if args.comparator_loc and not StockLocation.objects.filter(name__iexact=args.comparator_loc).exists():
-    br = StockLocation.objects.filter(name__iexact="BR").first()
-    if br:
-        print("   children of BR:", [(c.pk, c.name) for c in br.get_children()])
 cmp_loc = loc_named(args.comparator_loc) if args.comparator_loc else None
+for want, got in (("BL-5", cam_loc), (args.comparator_loc, cmp_loc)):
+    if got is None:   # show what IS there, so the fix is a retype, not a hunt
+        pre = want.split("-")[0]
+        print(f"   locations starting {pre}:", list(StockLocation.objects.filter(
+            name__istartswith=pre).values_list("pk", "name")[:40]))
 if cam_loc:
     print(f"camera home     = loc #{cam_loc.pk} {cam_loc.pathstring}")
 if cmp_loc:
@@ -184,5 +186,16 @@ print("\nNEXT:")
 print(f'  itq run scripts/trip.py mark {cam_si.pk} "thermal camera, one only, carry both ways"')
 pks = " ".join(str(s.pk) for s in (cam_si, cmp_si) if s)
 print(f"  itq run scripts/print_part_label.py {pks} --stockitem")
-print(f"  itq run scripts/print_part_label.py {cmp_loc.pk} --location --compact"
-      "   # only if BR-2 has no label yet (metadata.labeled)")
+# Drawer labels: every child of BL, BR and the comparator's bench, unlabelled only.
+parents = [cam_loc.parent, cmp_loc.parent,
+           StockLocation.objects.filter(name__iexact="BR").first()]
+todo = []
+for par in dict.fromkeys(p for p in parents if p):
+    kids = list(par.get_children().order_by("name"))
+    bare = [k for k in kids if not (k.metadata or {}).get("labeled")]
+    print(f"  {par.pathstring}: {len(bare)} of {len(kids)} unlabelled "
+          f"{[k.name for k in bare]}")
+    todo += [k.pk for k in bare]
+if todo:
+    print(f"  itq run scripts/print_part_label.py {' '.join(map(str, todo))} --location --compact")
+    print("  then, once stuck on:  itq run scripts/mark_labeled.py <names>")
