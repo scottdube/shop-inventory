@@ -118,10 +118,9 @@ emailed subtotal, all are COMPLETE, and AA187 carries pack 20 in both fields.
   $27.99 each.
 - **2023 lines had no numeric code.** PETG-CF Black and PLA Basic Orange took
   31100 and 10300 from later orders. The part notes say "INFERRED".
-- **TPU 85A (51107) and 90A (51103): the orders name no form**, so those parts
-  are named without one. The SLN photo labels read "95A" to me, but the order
-  says 90A. The label text is tiny and the order is the better witness until
-  someone reads the box.
+- **TPU 85A (51107) and 90A (51103): the orders name no form.** 51103 was
+  settled as with spool from the boxes at WS3 on 2026-10-03, and its grade (90A)
+  is on the receipt.
 - **Bundles are one unit each** (CMYK Lithophane, Gratitude 2x Black,
   Starter Classic). Their colors are unknown, and opened rolls count under
   their own color parts.
@@ -168,7 +167,9 @@ Scott, because a photo shows what each box is, not how many there are.
   Spool"**. No ring = refill. Checked against Pink 10203 (no ring, ordered as a
   refill) and Pumpkin Orange 10301 (ring, ordered with spool).
 - Text on the oval labels is too small to read from a whole-shelf photo. Crop
-  and zoom first. TPU "90A vs 95A" is still unread for that reason.
+  and zoom first. I read TPU "95A" off one and nearly put it in the record
+  against the receipt, which says 90A (PO-0198). A blurry label is not a
+  witness. When the receipt names the item, the receipt wins.
 
 **SEEDED 2026-10-03: 19 sealed boxes at `SLN/Garage/WS3`** (location #623,
 main garage beside the H2D), stock 881-895, `stocktake_date` set. Scott
