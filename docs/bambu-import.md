@@ -169,7 +169,7 @@ Scott, because a photo shows what each box is, not how many there are.
 - Text on the oval labels is too small to read from a whole-shelf photo. Crop
   and zoom first. I read TPU "95A" off one and nearly put it in the record
   against the receipt, which says 90A (PO-0198). A blurry label is not a
-  witness. When the receipt names the item, the receipt wins.
+  witness. When the receipt names the item, the receipt wins. (Scott then read the box: 90A.)
 
 **SEEDED 2026-10-03: 19 sealed boxes at `SLN/Garage/WS3`** (location #623,
 main garage beside the H2D), stock 881-895, `stocktake_date` set. Scott
