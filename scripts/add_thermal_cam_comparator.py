@@ -50,9 +50,9 @@ ap = argparse.ArgumentParser()
 ap.add_argument("--commit", action="store_true")
 ap.add_argument("--comparator-loc", default="MB-D2",
                 help="StockLocation name for the comparator (Scott: MB-D2)")
-ap.add_argument("--camera-loc", default="BL-5",
-                help="StockLocation name for the camera. BL-5 does not exist "
-                     "(BL has BL-D1..D6); unconfirmed as of 2026-10-03")
+ap.add_argument("--camera-loc", default="BL-D5",
+                help="StockLocation name for the camera (Scott: BL-D5; the handoff's "
+                     "BL-5 does not exist)")
 ap.add_argument("--only", choices=("camera", "comparator"),
                 help="file just one item -- the comparator went first while the "
                      "camera's drawer was still unconfirmed")
