@@ -11173,3 +11173,36 @@ Two smaller traps from the same run:
 Next run: the remaining branded rows in the 145 (vintage ALCO/NKK/TEC/CTS
 switches, Churod, XQF, MEANLIN) are the live queue-A pool; expect low yield
 from the vintage ones, whose makers mostly no longer run product pages.
+
+## Rewriting history in a repo other sessions are live in (2026-10-04)
+
+This repo is PUBLIC and two 2026-09-20 commits carried both sites' street
+addresses (lifted straight from order ship-to fields). Scott approved a
+history rewrite. A session committed here two minutes before it ran.
+
+**Rejected: `git filter-repo --force` in this checkout.** It finishes with a
+`git reset --hard`, which would silently destroy any uncommitted edit a live
+session had in the tree. Done instead:
+
+1. bundle `--all` as a backup (outside the repo);
+2. `git clone --no-local` to scratch, filter-repo there (`--replace-text` AND
+   `--replace-message`; commit messages had the addresses too);
+3. verify: zero hits across `git log --all -p` and all messages, same commit
+   count, and **the tip tree hash is identical** to the old tip's;
+4. `git push --force-with-lease=main:<old sha>` from the clone;
+5. here: confirm `main` still equals the old SHA, fetch, `git reset --soft
+   origin/main`. Equal trees mean index and working tree are untouched;
+   `git status --porcelain` was diffed before and after to prove it.
+
+The live session's next commit landed on the new history on its own.
+
+**Transient trap:** the fetch kicked off an auto-gc, and a `git log -p`
+running at the same time printed hundreds of `packfile ... index
+unavailable` errors. The pack had been replaced mid-read. `git fsck` was
+clean and a re-run was quiet, so check for a repack before concluding the
+repo is corrupt.
+
+**Rule going forward:** order/receipt text pasted into a script, a JSON
+capture or a doc gets its ship-to replaced with the site code *before* it is
+written. The grep that looks for the address must not contain it either:
+read the pattern from somewhere private.
