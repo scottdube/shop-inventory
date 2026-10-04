@@ -1,6 +1,7 @@
 """B0-R1C3 is home for PO-0184's panel jacks + test pins; re-read, 2026-10-04.
 
-Scott put both "with the b[arrel] jacks". default_location is set because this
+Scott put both "with the b[arrel] jacks" -- my misreading; the pins moved to
+A3-R7C7 the same day (move_testpins_1004.py). default_location is set because this
 is a real home, not staging. Writes by queryset .update().
 
 Rejected: widening B0-R1C3's description to say so. It is already at the
