@@ -11024,6 +11024,12 @@ these rows were NULL, not `''`. Use `Q(f="") | Q(f__isnull=True)`, which is what
 `kw_write_0922.py` already does for `keywords`. The re-read after the write is
 what caught it: the script printed `part.link=None` right after claiming success.
 
+**Bit again 2026-10-04, `img_attach_1004.py`: 0 of 44.** The script was built
+by copying `img_attach_1003.py`, which has no link-fill, so the fix in
+`img_attach_0923.py` was never in the file being imitated. Documenting a trap
+does not protect a script written from a different template. The re-read caught
+it again (`update n=0` on every row); a re-run with the `Q` form filled 44/44.
+
 ## "Update Available" points at a plugin that "is not installed" — it is not about a plugin
 
 Scott, 2026-09-23: the notification bell shows **Update Available**, and clicking
