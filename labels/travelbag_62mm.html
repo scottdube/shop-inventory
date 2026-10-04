@@ -98,7 +98,12 @@
 {% endcomment %}
 <div class='name{% if item.part.name|length > 28 %} long{% endif %}'>{{ item.part.name|truncatechars:60 }}</div>
 
-<div class='qty'>{% localize off %}{{ quantity|floatformat:"-2" }}{% endlocalize %} pcs</div>
+{% comment %}
+   The BAG's quantity, not the row's. A florida earmark is usually part of a
+   row (15 of 30 barrel jacks, 2026-10-04), and the first render printed 30 on
+   a bag holding 15 -- the one number this label exists to carry.
+{% endcomment %}
+<div class='qty'>{% localize off %}{% if item.metadata.florida.qty %}{{ item.metadata.florida.qty|floatformat:"-2" }}{% else %}{{ quantity|floatformat:"-2" }}{% endif %}{% endlocalize %} pcs</div>
 
 <div class='forwhat'>{% if batch %}{{ batch|truncatechars:30 }}{% else %}&nbsp;{% endif %}</div>
 

@@ -570,3 +570,10 @@ This is the same failure as the three unlabelled tactile switch bags in
 `B3-R1C2` that cost an hour the same morning, arriving one level up: there the
 bags had no labels, here they would have had labels that did not discriminate.
 An unhelpful label is worse than none, because it stops you looking further.
+
+**Template 13 prints the EARMARKED quantity, not the row's (2026-10-04).** A
+florida earmark is usually part of a row — 15 of 30 barrel jacks, 50 of 100 test
+pins — and the first render printed `30 pcs` on a bag holding 15, the one number
+the label is for. The `.qty` line now reads `metadata.florida.qty` when present.
+Templates are installed with `scripts/install_label_tpl.py <pk> <file>` (backs up
+the live file, re-reads the write); before that there was no installer at all.
