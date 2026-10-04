@@ -11206,3 +11206,16 @@ repo is corrupt.
 capture or a doc gets its ship-to replaced with the site code *before* it is
 written. The grep that looks for the address must not contain it either:
 read the pattern from somewhere private.
+
+## Drawer records outnumbered the drawers (2026-10-04)
+
+BL and BR each had six drawer locations and the Metrology Bench ten; the
+furniture has **five per pedestal and seven on MB** (Scott). Nobody checked
+the seeded counts against the cabinets, and nothing could catch it until
+labels were printed for "every child" — five labels came out for drawers that
+do not exist. `drop_phantom_drawers_1004.py` deleted the five empty records
+(it refuses any that hold stock, children or a part's default_location).
+
+**Rule:** a location tree seeded from a plan is a hypothesis. Before a batch
+print over "all children", read the child count back to Scott against the
+physical cabinet.
