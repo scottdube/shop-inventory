@@ -11219,3 +11219,24 @@ do not exist. `drop_phantom_drawers_1004.py` deleted the five empty records
 **Rule:** a location tree seeded from a plan is a hypothesis. Before a batch
 print over "all children", read the child count back to Scott against the
 physical cabinet.
+
+## One PO in the notes is not one receipt (2026-10-04)
+
+Backfilling `purchase_order` on the 14 rows old `receive_po.py` left
+unlinked, the plan was "one PO named → created by that receipt → link it".
+**None of the 14 named two POs.** The rule caught nothing it was written to
+catch. The cases that needed catching looked different:
+
+- **SI 608** (Hi-Link, RB-14) names only PO-0146, but it was *counted at 3
+  before* that PO merged 5 into it. Linking it would say the whole row came
+  from PO-0146. The tell is the word "merged" in the note, not the PO count.
+- **SI 762** (#35 chain) names PO-0130, but that's the *sprocket's* order,
+  cited as evidence for an inference. A PO reference in prose is not
+  provenance. Check that the PO has a line for this part.
+- **SI 558** (returned UV lamp) names no PO at all, only an Amazon order number.
+
+The `"RECEIVED "` filter that produced the list must have been
+case-insensitive: 762's only match is the lowercase "as received on the
+bench", and 558's is "credit received".
+`link_po_rows_legacy_1004.py` requires a single PO, no merge wording, and
+exactly one line for the part, and prints the reason for every skip.
