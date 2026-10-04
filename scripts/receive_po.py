@@ -119,6 +119,9 @@ for ln, sp, pack, pieces, unit, row, before in plan:
     else:
         row = StockItem.objects.create(
             part=sp.part, location=dest, quantity=pieces,
+            # a new row came from exactly one order, so link it; a merged row
+            # spans several and keeps the history in its notes instead
+            supplier_part=sp, purchase_order=po,
             purchase_price=unit, purchase_price_currency="USD",
             notes=(f"RECEIVED {pieces:g} on {when} from {po.reference} at "
                    f"${unit:.4f} each (line qty {float(ln.quantity):g} x pack {pack:g})."))
