@@ -170,14 +170,17 @@ indications of others."*
       count as one.
     - **Refunded, not booked**: the 1in Accusize roughing end mill (canceled)
       and the ALSGS power feed (refunded).
-    - **Held for Scott, not booked**:
-      - The machine-mounted 2022 add-ons: the X-axis power feed (qualitymachinetools),
-        the 2-axis and 3-axis DRO heads (machinertool0), four glass scales
-        (550/200 and 900/200 mm, chargerangel) and the Clough42 ELS kit. These
-        go ON a machine; if that machine was sold, the add-ons went with it.
-      - The Starrett 257D surface gage (2025-10). The email greets "Christopher",
-        was charged to card x-7953, and shipped to Scott in The Villages FL, so
-        whose it is and which site it is at are both unknown.
+    - **Held for Scott, resolved 2026-10-05**:
+      - The Clough42 ELS kit: *"still have the els kit"*. Booked -> PO-0247, Unfiled.
+      - The Starrett 257D surface gage: *"257d is here in sln at the MB"*, i.e.
+        the Metrology Bench. Booked -> PO-0248, stock row on SLN/Metrology Bench.
+        The "Christopher" greeting and card x-7953 do not change whose it is.
+      - The DROs: *"2 separate dro set ups one for the mill drill I still have
+        and the other for an enco lathe I sold"*. One head plus its scales went
+        with the Enco. **Still open**: which head (2-axis or 3-axis) and which
+        scale pair belong to the Jet mill/drill. The guess, NOT recorded as a
+        fact, is 550 + 200 mm for the mill (table X/Y) and 900 + 200 mm for the
+        lathe (bed/cross-slide). The X-axis power feed was not addressed.
       - Non-machine-tool items, left out by default: the welding helmet and
         jacket, plasma consumables, the Milwaukee ratchet and batteries, the
         Ryobi battery, the Bosch laser measure, and aluminum/steel bar stock.
@@ -187,7 +190,9 @@ indications of others."*
     - **CORRECTION to the earlier note here**: the 6in Super Spacer rotary table
       is NOT an eBay purchase. Scott SOLD one on eBay, "NEVER USED", listed
       2025-07-14 and paid 2025-07-21; the buyer collected it. InvenTree
-      still shows one at SLN/Machine Shop as [CONFIRMED OWNED], from Scott's
-      2026-08-19 confirmation. Either he had two (the 1100MX package one plus a
-      spare) or the record is wrong. **Ask, don't zero.**
+      showed one at SLN/Machine Shop as [CONFIRMED OWNED], from Scott's
+      2026-08-19 confirmation. Asked; Scott 2026-10-05: *"sold it"*. The row
+      was zeroed and kept (scripts/super_spacer_sold_1005.py). **Lesson: a
+      'confirmed owned' from memory can predate a sale; the seller-side mail
+      (You made the sale / You got paid) is a source too.**
   - **Not checked**: tormach.com account order history for orders with no email.

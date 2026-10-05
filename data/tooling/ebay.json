@@ -678,6 +678,33 @@
      }
     }
    ]
+  },
+  {
+   "order": "20-08034-91704",
+   "date": "2021-12-21",
+   "desc": "Clough42 ELS interface + control panel kit",
+   "subtotal": 44.98,
+   "shipping": 3.98,
+   "tax": 0,
+   "total": 48.96,
+   "note": "eBay seller clough42, item 164781208092. Held on the first pass as a machine-mounted add-on; Scott 2026-10-05: \"still have the els kit\".",
+   "lines": [
+    {
+     "sku": "164781208092",
+     "qty": 1,
+     "unit": 44.98,
+     "title": "CLOUGH42 Electronic Leadscrew (ELS) Combo Interface and Control Panel Kit",
+     "pack": 1,
+     "link": "https://www.ebay.com/itm/164781208092",
+     "new": {
+      "name": "Clough42 Electronic Leadscrew (ELS) Interface & Control Panel Kit",
+      "category": "Equipment/Machine Accessories",
+      "description": "Clough42 ELS combo interface board + control panel kit for a manual lathe",
+      "keywords": "ebay ELS clough42 lathe",
+      "link": "https://www.ebay.com/itm/164781208092"
+     }
+    }
+   ]
   }
  ]
 }

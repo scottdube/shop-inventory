@@ -1,0 +1,35 @@
+{
+ "vendor_pk": 14,
+ "vendor_name": "eBay",
+ "source": "Gmail eBay order confirmation 2025-10-21; location from Scott 2026-10-05 (\"here in sln at the MB\")",
+ "location": "SLN/Metrology Bench",
+ "orders": [
+  {
+   "order": "27-13706-44068",
+   "date": "2025-10-21",
+   "desc": "Starrett 257D surface gage",
+   "subtotal": 165.0,
+   "shipping": 16.82,
+   "tax": 12.73,
+   "total": 194.55,
+   "note": "eBay seller 5164jscott, item 116801070090. The email greets 'Christopher' and was charged to card x-7953; Scott 2026-10-05 confirms the gage is his and is at SLN on the metrology bench.",
+   "lines": [
+    {
+     "sku": "116801070090",
+     "qty": 1,
+     "unit": 165.0,
+     "title": "STARRETT No. 257D Surface Gage With 12\u201d & 18\u201d Spindles, Scriber, Rod, And Snugs",
+     "pack": 1,
+     "link": "https://www.ebay.com/itm/116801070090",
+     "new": {
+      "name": "Starrett 257D Surface Gage, 12 & 18 in spindles",
+      "category": "Tooling/Measuring",
+      "description": "Surface gage with 12 and 18 in spindles, scriber, rod and snugs",
+      "keywords": "ebay starrett surface gage",
+      "link": "https://www.ebay.com/itm/116801070090"
+     }
+    }
+   ]
+  }
+ ]
+}
