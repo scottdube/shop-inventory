@@ -448,6 +448,18 @@ stock row. Corrected the same day. The two fields answer different questions —
 is right now* — and a part out on a build is exactly the case that separates
 them.
 
+- [ ] **AC Wall Adapter kit to Florida — is anything off-BOM missing?**
+      Scott 2026-10-05: *"build out a kit for that so I take whatever I need to
+      build them"*. `scripts/kit_check.py 1169 4 RB-14` showed RB-14 holds 5 of
+      the BOM's 8 lines. The other 3 (470uF 8x12 cap, 1k R1, clear red D1, 4 of
+      each) are earmarked for Florida FROM THEIR HOMES with florida.py, not
+      moved. The records follow the hands: they move when Scott pulls them.
+      The whole RB-14 allocation is earmarked too, plus 5 spare X2 caps from
+      A3-R7C3.
+      **Not on the BOM at all**: the ESP8266/ESP32 module the board carries.
+      Bare PCBs, plugs and the jig are in RB-14 but uncatalogued, so the bin
+      travels whole. Ask Scott which ESP these get before he packs.
+
 ## Short to build
 
 - [x] ~~**C2 for the AC Wall Adapter**~~ — **RESOLVED 2026-08-23, no purchase
