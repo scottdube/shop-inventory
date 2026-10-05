@@ -73,8 +73,13 @@ indications of others."*
   Packs fixed through .save(): 197 (2), 235 (5), 349 (10), 392 (10), 394 (10). All
   were at the importer's default of 1; the counts come from the seller titles.
   Left out on purpose:
-  - 391 GBJ TCMT inserts: the title never states the box count.
-  - 1268 AMTAST roughness tester: no purchase-history table.
+  - 391 GBJ TCMT inserts: the title never states the box count. Scott
+    2026-10-05: "not sure, have to look into it". Stays open until he reads
+    the box.
+  - 1268 AMTAST roughness tester: it had no history table because it was
+    still in transit. Scott 2026-10-05: it arrived 10-04 (delivered to Dover).
+    PO-0188 was received through receive_po.py -> stock item 1019, a REAL
+    receive, not [ESTIMATE].
   - INACTIVE 190, 317, 340, 354: merge receipts; their survivor carries the
     history.
   - Consumables: flap discs, abrasive rolls, sandpaper, Scotch-Brite, rust wheel,
