@@ -1,0 +1,212 @@
+{
+ "vendor_pk": 11,
+ "vendor_name": "Lakeshore Carbide",
+ "source": "lakeshorecarbide.com order history + order-detail pages, logged-in Chrome, read 2026-10-04 (6 orders, the whole history: one page)",
+ "location": "SLN/Machine Shop/Unfiled - Machine Shop",
+ "orders": [
+  {
+   "order": "63270",
+   "date": "2024-05-20",
+   "desc": "drill mills + 1/4, 3/8 4FL end mills",
+   "subtotal": 156.77,
+   "shipping": 12.39,
+   "tax": 0,
+   "total": 169.16,
+   "lines": [
+    {
+     "sku": "11DRLML14",
+     "qty": 1,
+     "unit": 17.9,
+     "title": "1/4\" Drill Mill 2 Flute 120 Deg."
+    },
+    {
+     "sku": "13DRLML12",
+     "qty": 1,
+     "unit": 48.13,
+     "title": "1/2\" Drill Mill 4 Flute 120 Deg."
+    },
+    {
+     "sku": "LC206014",
+     "qty": 2,
+     "unit": 12.97,
+     "title": "1/4\" DIA. 4 FLUTE END MILL"
+    },
+    {
+     "sku": "LC206038",
+     "qty": 3,
+     "unit": 21.6,
+     "title": "3/8\" DIA. 4 FLUTE END MILL"
+    }
+   ]
+  },
+  {
+   "order": "63746",
+   "date": "2024-06-24",
+   "desc": "ball end mills, 1/8 4FL, 1/4 single-profile threadmill",
+   "subtotal": 156.24,
+   "shipping": 12.39,
+   "tax": 0,
+   "total": 168.63,
+   "lines": [
+    {
+     "sku": "LC223018",
+     "qty": 2,
+     "unit": 7.98,
+     "title": "1/8\" CARBIDE BALL END MILL 4 FLUTE"
+    },
+    {
+     "sku": "LC223014",
+     "qty": 2,
+     "unit": 15.33,
+     "title": "1/4\" CARBIDE BALL END MILL 4 FLUTE"
+    },
+    {
+     "sku": "LC206018",
+     "qty": 2,
+     "unit": 6.53,
+     "title": "1/8\" DIA. 4 FLUTE END MILL"
+    },
+    {
+     "sku": "540014CX",
+     "qty": 1,
+     "unit": 24.38,
+     "title": "1/4\" LONG CARBIDE BALL END 4 FL ALTIN CTD 1.125 LOC 3.0 OAL"
+    },
+    {
+     "sku": "1/4-SPTRMLB",
+     "qty": 1,
+     "unit": 72.18,
+     "title": "1/4 SINGLE PROFILE THREADMILL, 1/2 LOC, .180 CUT DIA, 18-56 RANGE"
+    }
+   ]
+  },
+  {
+   "order": "64050",
+   "date": "2024-07-17",
+   "desc": "1/8 long 4FL, #10 threadmill, 3mm 4FL",
+   "subtotal": 107.35,
+   "shipping": 12.39,
+   "tax": 0,
+   "total": 119.74,
+   "lines": [
+    {
+     "sku": "LC215018-B",
+     "qty": 2,
+     "unit": 9.06,
+     "title": "1/8\" CARBIDE .750 LOC LONG 4 FLUTE END MILL, coating: Uncoated"
+    },
+    {
+     "sku": "10-SPTRMLB",
+     "qty": 1,
+     "unit": 69.49,
+     "title": "#10 SINGLE PROFILE THREADMILL, 3/8 LOC, .138 CUT DIA, 24-56 RANGE"
+    },
+    {
+     "sku": "LC206-001313",
+     "qty": 2,
+     "unit": 9.87,
+     "title": "3.0MM DIA. 4 FLUTE END MILL UNCOATED"
+    }
+   ]
+  },
+  {
+   "order": "64139",
+   "date": "2024-07-24",
+   "desc": "1/8 ball, 1/8 long 4FL, #4 long threadmill",
+   "subtotal": 83.57,
+   "shipping": 12.39,
+   "tax": 0,
+   "total": 95.96,
+   "lines": [
+    {
+     "sku": "LC223018",
+     "qty": 1,
+     "unit": 7.98,
+     "title": "1/8\" CARBIDE BALL END MILL 4 FLUTE"
+    },
+    {
+     "sku": "LC215018-B",
+     "qty": 1,
+     "unit": 9.06,
+     "title": "1/8\" CARBIDE .750 LOC LONG 4 FLUTE END MILL, coating: Uncoated"
+    },
+    {
+     "sku": "4L-SPTRMLB",
+     "qty": 1,
+     "unit": 66.53,
+     "title": "#4 LONG SINGLE PROFILE THREADMILL, 1/4 LOC, .080 CUT DIA, 40-64 RANGE"
+    }
+   ]
+  },
+  {
+   "order": "64344",
+   "date": "2024-08-08",
+   "desc": "90deg drill mills + 1/4 TAS Aluminum Shredder",
+   "subtotal": 71.34,
+   "shipping": 12.39,
+   "tax": 0,
+   "total": 83.73,
+   "lines": [
+    {
+     "sku": "17DRLML14",
+     "qty": 1,
+     "unit": 17.9,
+     "title": "1/4\" Drill Mill 4 Flute 90 Deg."
+    },
+    {
+     "sku": "17DRLML18",
+     "qty": 2,
+     "unit": 9.78,
+     "title": "1/8\" Drill Mill 4 Flute 90 Deg."
+    },
+    {
+     "sku": "160RFA14",
+     "qty": 1,
+     "unit": 33.88,
+     "title": "TAS 1/4\" THE ALUMINUM SHREDDER VARIABLE FLUTE CARBIDE ROUGHING ENDMILL"
+    }
+   ]
+  },
+  {
+   "order": "64490",
+   "date": "2024-08-20",
+   "desc": "1/4 4FL, 1/8 3FL, TAS 1/4 3/8 1/8 Aluminum Shredders",
+   "subtotal": 121.84,
+   "shipping": 12.39,
+   "tax": 0,
+   "total": 134.23,
+   "lines": [
+    {
+     "sku": "LC206014",
+     "qty": 1,
+     "unit": 12.97,
+     "title": "1/4\" DIA. 4 FLUTE END MILL"
+    },
+    {
+     "sku": "LC205018",
+     "qty": 1,
+     "unit": 6.53,
+     "title": "1/8\" DIA. 3 FLUTE END MILL"
+    },
+    {
+     "sku": "160RFA14",
+     "qty": 1,
+     "unit": 33.88,
+     "title": "TAS 1/4\" THE ALUMINUM SHREDDER VARIABLE FLUTE CARBIDE ROUGHING ENDMILL"
+    },
+    {
+     "sku": "160RFA38",
+     "qty": 1,
+     "unit": 44.46,
+     "title": "TAS 3/8\" THE ALUMINUM SHREDDER VARIABLE FLUTE CARBIDE ROUGHING ENDMILL"
+    },
+    {
+     "sku": "160RFA18",
+     "qty": 1,
+     "unit": 24.0,
+     "title": "TAS 1/8\" THE ALUMINUM SHREDDER VARIABLE FLUTE CARBIDE ROUGHING ENDMILL"
+    }
+   ]
+  }
+ ]
+}
