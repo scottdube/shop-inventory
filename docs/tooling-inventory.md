@@ -61,3 +61,26 @@ indications of others."*
   as part costs; the quote line is cited in the note instead. Kits count as one
   unit (an assortment is not a multipack). Way oil, coolant and Sikaflex from the
   same quotes were left out - liquids bought in 2024, consumed, not tooling.
+- **Amazon tooling DONE** (scripts/amazon_tooling_1004.py): 76 parts, 117 pieces,
+  stock items 931-1006 in Unfiled, all [ESTIMATE]. The quantity comes from each
+  part's own "Purchase history (Amazon)" table, read by column header. Paid lines
+  count; **$0 lines do not**: they are replacements or free swaps (parts 176, 231,
+  257, 366), so the first unit went back.
+  **No PO**: an Amazon order mixes tooling with everything else. A PO holding only
+  the tooling lines under the full order number would also trip the idempotency
+  key and block the real import of that order later. Order numbers are in the
+  stock notes instead.
+  Packs fixed through .save(): 197 (2), 235 (5), 349 (10), 392 (10), 394 (10). All
+  were at the importer's default of 1; the counts come from the seller titles.
+  Left out on purpose:
+  - 391 GBJ TCMT inserts: the title never states the box count.
+  - 1268 AMTAST roughness tester: no purchase-history table.
+  - INACTIVE 190, 317, 340, 354: merge receipts; their survivor carries the
+    history.
+  - Consumables: flap discs, abrasive rolls, sandpaper, Scotch-Brite, rust wheel,
+    buffing and wire wheels, Tap Magic, Anchorlube, Vactra.
+  - Misfiled non-tooling: crimpers, potentiometers, fuse box, polyimide tape,
+    iron holder.
+  - Hardware: rivet nuts, knurled nuts.
+  Kept as tooling or equipment: saw blades, the sandblast cabinet, the shop vise,
+  the benchstone.
