@@ -133,6 +133,10 @@ indications of others."*
     to book; the PDF invoice sits behind a link. No Company created, since it
     would hang nothing. **Scott: what was in it?** A LittleMachineShop account
     login would show the invoice.
+    Scott 2026-10-05: *"might be a drill set, I will look"*. The only drill
+    sets in InvenTree are the Tormach machine-length set (bundle), the Amazon
+    center-drill set and the two PreciseBits PCB sets, so none is from LMS. A
+    drill set found on the shelf is a NEW part, not a duplicate.
   - **Kennametal**: only a tech-support thread about CNMG432 inserts that came
     with a used mill. Not a purchase.
   - **eBay, NOT swept**: about 200 order/message threads, mostly electronics and
