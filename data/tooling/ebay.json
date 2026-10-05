@@ -1,0 +1,683 @@
+{
+ "vendor_pk": 14,
+ "vendor_name": "eBay",
+ "source": "Gmail eBay order confirmations, swept 2026-10-05 (all searches listed in docs/tooling-inventory.md)",
+ "location": "SLN/Machine Shop/Unfiled - Machine Shop",
+ "orders": [
+  {
+   "order": "03-11687-80696",
+   "date": "2024-06-10",
+   "desc": "Electronic Tool Setter (ETS), Tormach-compatible, aftermarket",
+   "subtotal": 149.98,
+   "shipping": 9.85,
+   "tax": 0,
+   "total": 159.83,
+   "note": "eBay seller sea_halt, item 264702255216. Order number is eBay's.",
+   "lines": [
+    {
+     "sku": "264702255216",
+     "qty": 1,
+     "unit": 149.98,
+     "title": "CNC Tormach 440 770 1100 Tool ETS Detector Probe Sets Tool Length 770m 1100m MX",
+     "pack": 1,
+     "link": "https://www.ebay.com/itm/264702255216",
+     "new": {
+      "name": "Electronic Tool Setter (ETS), Tormach-compatible, aftermarket",
+      "category": "Tooling/Metrology",
+      "description": "Tool-length setter for Tormach 440/770/1100 (eBay aftermarket set, not a Tormach part number)",
+      "keywords": "ebay",
+      "link": "https://www.ebay.com/itm/264702255216"
+     }
+    }
+   ]
+  },
+  {
+   "order": "07-11637-45451",
+   "date": "2024-05-30",
+   "desc": "SolidClamp Series 1 Long Nose Toe Clamp, 10-32",
+   "subtotal": 49.96,
+   "shipping": 5.0,
+   "tax": 0,
+   "total": 54.96,
+   "note": "eBay seller red.dog.products, item 256331384231. Order number is eBay's.",
+   "lines": [
+    {
+     "sku": "256331384231",
+     "qty": 4,
+     "unit": 12.49,
+     "title": "SolidClamp - Series 1 Long Nose 1/4 x 1/2 x 2 ^10-32^ Pallet Fixture Toe Clamp",
+     "pack": 1,
+     "link": "https://www.ebay.com/itm/256331384231",
+     "new": {
+      "name": "SolidClamp Series 1 Long Nose Toe Clamp, 10-32",
+      "category": "Tooling/Workholding/Clamping",
+      "description": "Pallet/fixture-plate toe clamp, 1/4 x 1/2 x 2, 10-32",
+      "keywords": "ebay",
+      "link": "https://www.ebay.com/itm/256331384231"
+     }
+    }
+   ]
+  },
+  {
+   "order": "27-11191-76248",
+   "date": "2024-02-19",
+   "desc": "Mid Tech Ring Gage 1.5540 in",
+   "subtotal": 47.25,
+   "shipping": 7.5,
+   "tax": 0,
+   "total": 54.75,
+   "note": "eBay seller rebuiltmachinery, item 184249666929. Order number is eBay's.",
+   "lines": [
+    {
+     "sku": "184249666929",
+     "qty": 1,
+     "unit": 47.25,
+     "title": "\"NEW\" Mid Tech Gage 1.5540 Bore Plug Ring Gage Gauge",
+     "pack": 1,
+     "link": "https://www.ebay.com/itm/184249666929",
+     "new": {
+      "name": "Mid Tech Ring Gage 1.5540 in",
+      "category": "Tooling/Measuring",
+      "description": "Bore/ring gage, 1.5540 in, Mid Tech",
+      "keywords": "ebay",
+      "link": "https://www.ebay.com/itm/184249666929"
+     }
+    }
+   ]
+  },
+  {
+   "order": "02-09581-57514",
+   "date": "2023-01-13",
+   "desc": "Starrett Tap Drill Wall Chart, decimal & metric",
+   "subtotal": 18.0,
+   "shipping": 0,
+   "tax": 0,
+   "total": 18.0,
+   "note": "eBay seller pezz-402, item 295465693342. Order number is eBay's.",
+   "lines": [
+    {
+     "sku": "295465693342",
+     "qty": 1,
+     "unit": 18.0,
+     "title": "Starrett Decimal & Metric Tap Drill Machinist Wall Chart with Pocket Car...",
+     "pack": 1,
+     "link": "https://www.ebay.com/itm/295465693342",
+     "new": {
+      "name": "Starrett Tap Drill Wall Chart, decimal & metric",
+      "category": "Tooling/Drills & Taps",
+      "description": "Machinist wall chart with pocket card",
+      "keywords": "ebay",
+      "link": "https://www.ebay.com/itm/295465693342"
+     }
+    }
+   ]
+  },
+  {
+   "order": "18-09462-87618",
+   "date": "2022-12-13",
+   "desc": "Starrett S829EZ Small Hole Gage Set (4 pc)",
+   "subtotal": 49.95,
+   "shipping": 4.28,
+   "tax": 0,
+   "total": 54.23,
+   "note": "eBay seller the-frozen-north, item 275394746093. Order number is eBay's.",
+   "lines": [
+    {
+     "sku": "275394746093",
+     "qty": 1,
+     "unit": 49.95,
+     "title": "Starrett No. S 829EZ Small Hole Gages Set of 4 Full Pouch With Original Box",
+     "pack": 1,
+     "link": "https://www.ebay.com/itm/275394746093",
+     "new": {
+      "name": "Starrett S829EZ Small Hole Gage Set (4 pc)",
+      "category": "Tooling/Measuring",
+      "description": "Set of 4 small hole gages in pouch; one set",
+      "keywords": "ebay",
+      "link": "https://www.ebay.com/itm/275394746093"
+     }
+    }
+   ]
+  },
+  {
+   "order": "15-09389-94524",
+   "date": "2022-11-26",
+   "desc": "Micrometer Stand, cast iron, adjustable",
+   "subtotal": 18.88,
+   "shipping": 0,
+   "tax": 0,
+   "total": 18.88,
+   "note": "eBay seller 2016yaetek, item 333668081662. Order number is eBay's.",
+   "lines": [
+    {
+     "sku": "333668081662",
+     "qty": 1,
+     "unit": 18.88,
+     "title": "Precision Micrometer Holder Stand Adjustable Cast Iron Base Inspection F...",
+     "pack": 1,
+     "link": "https://www.ebay.com/itm/333668081662",
+     "new": {
+      "name": "Micrometer Stand, cast iron, adjustable",
+      "category": "Tooling/Measuring",
+      "description": "Micrometer holder stand",
+      "keywords": "ebay",
+      "link": "https://www.ebay.com/itm/333668081662"
+     }
+    }
+   ]
+  },
+  {
+   "order": "23-09275-21671",
+   "date": "2022-10-30",
+   "desc": "Starrett S167C Radius Gage Set",
+   "subtotal": 49.95,
+   "shipping": 9.75,
+   "tax": 0,
+   "total": 59.7,
+   "note": "eBay seller moldmaker1993, item 134230344393. Order number is eBay's.",
+   "lines": [
+    {
+     "sku": "134230344393",
+     "qty": 1,
+     "unit": 49.95,
+     "title": "Starrett Radius Gage Set S167C",
+     "pack": 1,
+     "link": "https://www.ebay.com/itm/134230344393",
+     "new": {
+      "name": "Starrett S167C Radius Gage Set",
+      "category": "Tooling/Measuring",
+      "description": "Radius/fillet gage set; one set",
+      "keywords": "ebay",
+      "link": "https://www.ebay.com/itm/134230344393"
+     }
+    }
+   ]
+  },
+  {
+   "order": "23-09248-22860",
+   "date": "2022-10-23",
+   "desc": "Lead Hammer Mold Set, 4 lb",
+   "subtotal": 299.95,
+   "shipping": 0,
+   "tax": 0,
+   "total": 299.95,
+   "note": "eBay seller grahamtool, item 234608958985. Order number is eBay's.",
+   "lines": [
+    {
+     "sku": "234608958985",
+     "qty": 1,
+     "unit": 299.95,
+     "title": "Lead Hammer Mold Set, 4 Pound",
+     "pack": 1,
+     "link": "https://www.ebay.com/itm/234608958985",
+     "new": {
+      "name": "Lead Hammer Mold Set, 4 lb",
+      "category": "Equipment/Hand Tools",
+      "description": "Mold for casting 4 lb lead hammers (grahamtool)",
+      "keywords": "ebay",
+      "link": "https://www.ebay.com/itm/234608958985"
+     }
+    }
+   ]
+  },
+  {
+   "order": "01-09229-58021",
+   "date": "2022-10-17",
+   "desc": "Starrett 81-111-630 Dial Indicator",
+   "subtotal": 31.0,
+   "shipping": 9.45,
+   "tax": 0,
+   "total": 40.45,
+   "note": "eBay seller sam1300, item 284992980012. Order number is eBay's.",
+   "lines": [
+    {
+     "sku": "284992980012",
+     "qty": 1,
+     "unit": 31.0,
+     "title": "Starrett dial indicator 81-111-630 used Excellent Condition",
+     "pack": 1,
+     "link": "https://www.ebay.com/itm/284992980012",
+     "new": {
+      "name": "Starrett 81-111-630 Dial Indicator",
+      "category": "Tooling/Measuring",
+      "description": "Dial indicator, used",
+      "keywords": "ebay",
+      "link": "https://www.ebay.com/itm/284992980012"
+     }
+    }
+   ]
+  },
+  {
+   "order": "21-09217-43509",
+   "date": "2022-10-15",
+   "desc": "Federal Dial Test Indicators (lot: B21, C3K, C81, C81S)",
+   "subtotal": 45.0,
+   "shipping": 0,
+   "tax": 0,
+   "total": 45.0,
+   "note": "eBay seller dadsoldbarn, item 144758795348. Order number is eBay's.",
+   "lines": [
+    {
+     "sku": "144758795348",
+     "qty": 1,
+     "unit": 45.0,
+     "title": "Lot of 4 Federal Dial Test Indicators, B21, C3K, C81, C81S",
+     "pack": 4,
+     "link": "https://www.ebay.com/itm/144758795348",
+     "new": {
+      "name": "Federal Dial Test Indicators (lot: B21, C3K, C81, C81S)",
+      "category": "Tooling/Measuring",
+      "description": "Lot of 4 Federal test indicators, four different models; stock counts pieces",
+      "keywords": "ebay",
+      "link": "https://www.ebay.com/itm/144758795348"
+     }
+    }
+   ]
+  },
+  {
+   "order": "03-09205-46628",
+   "date": "2022-10-11",
+   "desc": "Tapmatic 30XB Reversing Tapping Attachment",
+   "subtotal": 128.0,
+   "shipping": 9.0,
+   "tax": 0,
+   "total": 137.0,
+   "note": "eBay seller pandaman38, item 354312593872. Order number is eBay's.",
+   "lines": [
+    {
+     "sku": "354312593872",
+     "qty": 1,
+     "unit": 128.0,
+     "title": "Vintage Tapmatic 30XB Reversible Tapping Attachment in Original Box",
+     "pack": 1,
+     "link": "https://www.ebay.com/itm/354312593872",
+     "new": {
+      "name": "Tapmatic 30XB Reversing Tapping Attachment",
+      "category": "Equipment/Machine Accessories",
+      "description": "Self-reversing tapping head, 30XB, vintage, in box",
+      "keywords": "ebay",
+      "link": "https://www.ebay.com/itm/354312593872"
+     }
+    }
+   ]
+  },
+  {
+   "order": "27-09167-01949",
+   "date": "2022-10-03",
+   "desc": "Magnetic Chuck 6x18, fine pole, permanent",
+   "subtotal": 120.99,
+   "shipping": 0,
+   "tax": 0,
+   "total": 120.99,
+   "note": "eBay seller happykisssoul, item 401689165022. Order number is eBay's.",
+   "lines": [
+    {
+     "sku": "401689165022",
+     "qty": 1,
+     "unit": 120.99,
+     "title": "6\"x18\" Fine Pole Magnetic Chuck Permanent Hoist Crane Workholding Surfac...",
+     "pack": 1,
+     "link": "https://www.ebay.com/itm/401689165022",
+     "new": {
+      "name": "Magnetic Chuck 6x18, fine pole, permanent",
+      "category": "Tooling/Workholding",
+      "description": "Fine-pole permanent magnetic chuck, 6 x 18 in",
+      "keywords": "ebay",
+      "link": "https://www.ebay.com/itm/401689165022"
+     }
+    }
+   ]
+  },
+  {
+   "order": "08-09018-19348",
+   "date": "2022-08-24",
+   "desc": "5C Universal Cutter Grinder, 110V",
+   "subtotal": 750.0,
+   "shipping": 119.0,
+   "tax": 0,
+   "total": 869.0,
+   "note": "eBay seller favoritecoss39, item 133803227307. Order number is eBay's.",
+   "lines": [
+    {
+     "sku": "133803227307",
+     "qty": 1,
+     "unit": 750.0,
+     "title": "5C Universal Cutter Grinder Sharpener 110V Multi-functional Grinding Mac...",
+     "pack": 1,
+     "link": "https://www.ebay.com/itm/133803227307",
+     "new": {
+      "name": "5C Universal Cutter Grinder, 110V",
+      "category": "Equipment",
+      "description": "Tool and cutter grinder, 5C collet head, 110V",
+      "keywords": "ebay",
+      "link": "https://www.ebay.com/itm/133803227307"
+     }
+    }
+   ]
+  },
+  {
+   "order": "15-09014-60844",
+   "date": "2022-08-23",
+   "desc": "Hardinge 5C Collets, hex and square, assorted (lot of 31)",
+   "subtotal": 120.0,
+   "shipping": 20.0,
+   "tax": 0,
+   "total": 140.0,
+   "note": "eBay seller globalmachinesales, item 155129761591. Order number is eBay's.",
+   "lines": [
+    {
+     "sku": "155129761591",
+     "qty": 1,
+     "unit": 120.0,
+     "title": "31 Hardinge 5C Collets Hex and Square, See Description, Variety of Sizes",
+     "pack": 31,
+     "link": "https://www.ebay.com/itm/155129761591",
+     "new": {
+      "name": "Hardinge 5C Collets, hex and square, assorted (lot of 31)",
+      "category": "Tooling/Workholding/Collets",
+      "description": "Lot of 31 Hardinge 5C hex and square collets, mixed sizes; stock counts collets",
+      "keywords": "ebay",
+      "link": "https://www.ebay.com/itm/155129761591"
+     }
+    }
+   ]
+  },
+  {
+   "order": "02-08969-73545",
+   "date": "2022-08-10",
+   "desc": "Starrett 91-D Straight Tap Wrench, 15-5/8 in",
+   "subtotal": 129.99,
+   "shipping": 0,
+   "tax": 0,
+   "total": 129.99,
+   "note": "eBay seller groberts1, item 204065097603. Order number is eBay's.",
+   "lines": [
+    {
+     "sku": "204065097603",
+     "qty": 1,
+     "unit": 129.99,
+     "title": "Vintage L.S. Starrett No.91-D Straight Tap Handle Wrench,15-5/8\"...",
+     "pack": 1,
+     "link": "https://www.ebay.com/itm/204065097603",
+     "new": {
+      "name": "Starrett 91-D Straight Tap Wrench, 15-5/8 in",
+      "category": "Tooling/Drills & Taps",
+      "description": "Straight-handle tap wrench, vintage",
+      "keywords": "ebay",
+      "link": "https://www.ebay.com/itm/204065097603"
+     }
+    }
+   ]
+  },
+  {
+   "order": "03-08953-06927",
+   "date": "2022-08-06",
+   "desc": "Starrett 711GCS Last Word Dial Test Indicator, .030 in",
+   "subtotal": 150.0,
+   "shipping": 10.0,
+   "tax": 0,
+   "total": 160.0,
+   "note": "eBay seller jackr1952, item 325273975331. Order number is eBay's.",
+   "lines": [
+    {
+     "sku": "325273975331",
+     "qty": 1,
+     "unit": 150.0,
+     "title": "NEW Starrett 711GCS. -.001 Last Word Dial Test Indicator, .030\" Range",
+     "pack": 1,
+     "link": "https://www.ebay.com/itm/325273975331",
+     "new": {
+      "name": "Starrett 711GCS Last Word Dial Test Indicator, .030 in",
+      "category": "Tooling/Measuring",
+      "description": "Dial test indicator, .0005/.001 grad, .030 in range, new",
+      "keywords": "ebay",
+      "link": "https://www.ebay.com/itm/325273975331"
+     }
+    }
+   ]
+  },
+  {
+   "order": "17-08921-84428",
+   "date": "2022-07-30",
+   "desc": "Starrett 25-441J Dial Indicator, 0-1 in, .001 in",
+   "subtotal": 75.0,
+   "shipping": 0,
+   "tax": 0,
+   "total": 75.0,
+   "note": "eBay seller mary-stax, item 275405044259. Order number is eBay's.",
+   "lines": [
+    {
+     "sku": "275405044259",
+     "qty": 1,
+     "unit": 75.0,
+     "title": "Starrett 25-441J Dial Indicator Jeweled .001\" Grads, 0-1\" Range, 0-100 R...",
+     "pack": 1,
+     "link": "https://www.ebay.com/itm/275405044259",
+     "new": {
+      "name": "Starrett 25-441J Dial Indicator, 0-1 in, .001 in",
+      "category": "Tooling/Measuring",
+      "description": "Jeweled dial indicator, 1 in travel",
+      "keywords": "ebay",
+      "link": "https://www.ebay.com/itm/275405044259"
+     }
+    }
+   ]
+  },
+  {
+   "order": "21-08894-80002",
+   "date": "2022-07-23",
+   "desc": "Starrett 472 Screw Pitch Gage",
+   "subtotal": 44.0,
+   "shipping": 4.7,
+   "tax": 0,
+   "total": 48.7,
+   "note": "eBay seller deals-from-me, item 234628772159. Order number is eBay's.",
+   "lines": [
+    {
+     "sku": "234628772159",
+     "qty": 1,
+     "unit": 44.0,
+     "title": "Starrett Screw Pitch Guage 472",
+     "pack": 1,
+     "link": "https://www.ebay.com/itm/234628772159",
+     "new": {
+      "name": "Starrett 472 Screw Pitch Gage",
+      "category": "Tooling/Measuring",
+      "description": "Thread pitch gage",
+      "keywords": "ebay",
+      "link": "https://www.ebay.com/itm/234628772159"
+     }
+    }
+   ]
+  },
+  {
+   "order": "24-08899-98399",
+   "date": "2022-07-21",
+   "desc": "Tapmatic 50X Reversing Tapping Attachment, 5/8 in shank",
+   "subtotal": 529.99,
+   "shipping": 0,
+   "tax": 0,
+   "total": 529.99,
+   "note": "eBay seller richie85333, item 195226905167. Order number is eBay's.",
+   "lines": [
+    {
+     "sku": "195226905167",
+     "qty": 1,
+     "unit": 529.99,
+     "title": "Tapmatic 50X Reversible Tapping Attachment,5/8\" Shank,2 collets,Wrenches",
+     "pack": 1,
+     "link": "https://www.ebay.com/itm/195226905167",
+     "new": {
+      "name": "Tapmatic 50X Reversing Tapping Attachment, 5/8 in shank",
+      "category": "Equipment/Machine Accessories",
+      "description": "Self-reversing tapping head with 2 collets and wrenches",
+      "keywords": "ebay",
+      "link": "https://www.ebay.com/itm/195226905167"
+     }
+    }
+   ]
+  },
+  {
+   "order": "23-08864-32004",
+   "date": "2022-07-15",
+   "desc": "Starrett Machinist Precision Level, 12 in",
+   "subtotal": 150.5,
+   "shipping": 10.11,
+   "tax": 0,
+   "total": 160.61,
+   "note": "eBay seller i76tjsmhs, item 125407705231. Order number is eBay's.",
+   "lines": [
+    {
+     "sku": "125407705231",
+     "qty": 1,
+     "unit": 150.5,
+     "title": "Starrett Machinist Millwright Precision Level 12.25 inch",
+     "pack": 1,
+     "link": "https://www.ebay.com/itm/125407705231",
+     "new": {
+      "name": "Starrett Machinist Precision Level, 12 in",
+      "category": "Tooling/Measuring",
+      "description": "Millwright precision level, 12.25 in",
+      "keywords": "ebay",
+      "link": "https://www.ebay.com/itm/125407705231"
+     }
+    }
+   ]
+  },
+  {
+   "order": "19-08864-24196",
+   "date": "2022-07-15",
+   "desc": "Lathe Alignment Test Bar, 272 mm parallel shank",
+   "subtotal": 55.0,
+   "shipping": 0,
+   "tax": 0,
+   "total": 55.0,
+   "note": "eBay seller hawk-werkzeuge, item 402805083620. Order number is eBay's.",
+   "lines": [
+    {
+     "sku": "402805083620",
+     "qty": 1,
+     "unit": 55.0,
+     "title": "Lathe Alignment Test Bar 272mm (10-3/4\") Parallel Shank Mandrel Wooden Box",
+     "pack": 1,
+     "link": "https://www.ebay.com/itm/402805083620",
+     "new": {
+      "name": "Lathe Alignment Test Bar, 272 mm parallel shank",
+      "category": "Tooling/Measuring",
+      "description": "Parallel-shank test mandrel in wooden box (not the Tormach test piece kit)",
+      "keywords": "ebay",
+      "link": "https://www.ebay.com/itm/402805083620"
+     }
+    }
+   ]
+  },
+  {
+   "order": "02-08851-59685",
+   "date": "2022-07-10",
+   "desc": "Starrett 91C Tap Wrench",
+   "subtotal": 102.5,
+   "shipping": 9.85,
+   "tax": 0,
+   "total": 112.35,
+   "note": "eBay seller deals-from-me, item 234613445995. Order number is eBay's.",
+   "lines": [
+    {
+     "sku": "234613445995",
+     "qty": 1,
+     "unit": 102.5,
+     "title": "Starrett 91C Tap Wrench",
+     "pack": 1,
+     "link": "https://www.ebay.com/itm/234613445995",
+     "new": {
+      "name": "Starrett 91C Tap Wrench",
+      "category": "Tooling/Drills & Taps",
+      "description": "Straight-handle tap wrench",
+      "keywords": "ebay",
+      "link": "https://www.ebay.com/itm/234613445995"
+     }
+    }
+   ]
+  },
+  {
+   "order": "23-08838-95096",
+   "date": "2022-07-09",
+   "desc": "Accusize 87-Piece Gauge Block Set, Grade 2",
+   "subtotal": 90.0,
+   "shipping": 13.8,
+   "tax": 0,
+   "total": 103.8,
+   "note": "eBay seller shpu_7884, item 284880500364. Order number is eBay's.",
+   "lines": [
+    {
+     "sku": "284880500364",
+     "qty": 1,
+     "unit": 90.0,
+     "title": "Accusize Industrial Tool 87 Piece Steel Gauge Block Set Grade 2 Germany...",
+     "pack": 1,
+     "link": "https://www.ebay.com/itm/284880500364",
+     "new": {
+      "name": "Accusize 87-Piece Gauge Block Set, Grade 2",
+      "category": "Tooling/Measuring",
+      "description": "Steel gauge blocks, 87 pc; one set",
+      "keywords": "ebay",
+      "link": "https://www.ebay.com/itm/284880500364"
+     }
+    }
+   ]
+  },
+  {
+   "order": "20-08632-50531",
+   "date": "2022-05-16",
+   "desc": "V-Block 2-1/4 x 2-1/4 x 3 in, no maker",
+   "subtotal": 8.0,
+   "shipping": 11.4,
+   "tax": 0,
+   "total": 19.4,
+   "note": "eBay seller rog1134, item 275307979393. Order number is eBay's.",
+   "lines": [
+    {
+     "sku": "275307979393",
+     "qty": 1,
+     "unit": 8.0,
+     "title": "machinist \"V\" block 21/4x21/4x3\"long ex cond. no maker mark",
+     "pack": 1,
+     "link": "https://www.ebay.com/itm/275307979393",
+     "new": {
+      "name": "V-Block 2-1/4 x 2-1/4 x 3 in, no maker",
+      "category": "Tooling/Workholding",
+      "description": "Single machinist V-block, used",
+      "keywords": "ebay",
+      "link": "https://www.ebay.com/itm/275307979393"
+     }
+    }
+   ]
+  },
+  {
+   "order": "21-08632-13562",
+   "date": "2022-05-16",
+   "desc": "Precision V-Block & Clamp Set, 1-5/8 x 1-1/4 x 1-1/4",
+   "subtotal": 49.99,
+   "shipping": 0,
+   "tax": 0,
+   "total": 49.99,
+   "note": "eBay seller prolinemax, item 283659821545. Order number is eBay's.",
+   "lines": [
+    {
+     "sku": "283659821545",
+     "qty": 1,
+     "unit": 49.99,
+     "title": "1-5/8\" x 1-1/4\" x 1-1/4\" Precision V Blocks & Clamp Set Steel Gauge Mach...",
+     "pack": 1,
+     "link": "https://www.ebay.com/itm/283659821545",
+     "new": {
+      "name": "Precision V-Block & Clamp Set, 1-5/8 x 1-1/4 x 1-1/4",
+      "category": "Tooling/Workholding",
+      "description": "Matched V-blocks with clamps; one set",
+      "keywords": "ebay",
+      "link": "https://www.ebay.com/itm/283659821545"
+     }
+    }
+   ]
+  }
+ ]
+}

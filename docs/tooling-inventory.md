@@ -151,14 +151,43 @@ indications of others."*
     company (Form Roll Die Corp), not the letterhead.
   - **Kennametal**: only a tech-support thread about CNMG432 inserts that came
     with a used mill. Not a purchase.
-  - **eBay, NOT swept**: about 200 order/message threads, mostly electronics and
-    sim instruments. Two tooling hits in the first page of results:
-    - The 6in Super Spacer rotary table (2025-07) already exists: part 569,
-      stocked.
-    - The "NEW" Mid Tech 1.5540 bore plug/ring gage set from rebuiltmachinery
-      (2024-02, item 184249666929) has **no part**. A name search for
-      gage/gauge found none.
-
-    eBay needs its own pass through the order-confirmation emails; a
-    vendor-name search is not enough.
+  - **eBay DONE** (2026-10-05): a sweep of every eBay order mail in Gmail found
+    162 purchase rows. 36 were tooling and 17 borderline. The sweep's searches:
+    `from:ebay@ebay.com` (stopped at 2023-11-18, drowned in saved-search alerts,
+    so it was re-run from 2023-11-18 back with alerts filtered out, to 2016),
+    order/won/shipped/paid/refund subjects before 2016, seller messages,
+    "Order number", refund/return/cancel, "Order confirmed", "eBay purchase" and
+    "eBay order". All of them ran to the end. The rows sit in the session
+    scratchpad, not the repo; data/tooling/ebay.json holds what was booked.
+    - **25 orders booked** -> PO-0222..PO-0246, parts 1344-1368, 61 pieces
+      [ESTIMATE] in Unfiled. scripts/ebay_dupcheck_1005.py found no existing
+      part for any of them. The near-misses are different items: the Amazon
+      Starrett 93-series tap wrenches, the Tormach lathe test piece kit, the
+      Amazon round 5C collet set, and the passive probe (which is not the ETS).
+      SKU = eBay item number, the existing eBay supplier-part convention.
+      Pieces: the toe clamps (4), the Federal indicators (a lot of 4) and the
+      Hardinge 5C collets (a lot of 31) count pieces. Sets of gages and blocks
+      count as one.
+    - **Refunded, not booked**: the 1in Accusize roughing end mill (canceled)
+      and the ALSGS power feed (refunded).
+    - **Held for Scott, not booked**:
+      - The machine-mounted 2022 add-ons: the X-axis power feed (qualitymachinetools),
+        the 2-axis and 3-axis DRO heads (machinertool0), four glass scales
+        (550/200 and 900/200 mm, chargerangel) and the Clough42 ELS kit. These
+        go ON a machine; if that machine was sold, the add-ons went with it.
+      - The Starrett 257D surface gage (2025-10). The email greets "Christopher",
+        was charged to card x-7953, and shipped to Scott in The Villages FL, so
+        whose it is and which site it is at are both unknown.
+      - Non-machine-tool items, left out by default: the welding helmet and
+        jacket, plasma consumables, the Milwaukee ratchet and batteries, the
+        Ryobi battery, the Bosch laser measure, and aluminum/steel bar stock.
+    - **Already in InvenTree**: the 3000W induction heater (the shrink-fit
+      project) and the 41-piece terminal removal set (already carries its eBay
+      SKU).
+    - **CORRECTION to the earlier note here**: the 6in Super Spacer rotary table
+      is NOT an eBay purchase. Scott SOLD one on eBay, "NEVER USED", listed
+      2025-07-14 and paid 2025-07-21; the buyer collected it. InvenTree
+      still shows one at SLN/Machine Shop as [CONFIRMED OWNED], from Scott's
+      2026-08-19 confirmation. Either he had two (the 1100MX package one plus a
+      spare) or the record is wrong. **Ask, don't zero.**
   - **Not checked**: tormach.com account order history for orders with no email.
