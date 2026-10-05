@@ -5,10 +5,10 @@ indications of others". That request is the approval vendor_triage.py waits
 for: these two have whole, itemised order confirmations in email, so they get
 a Company and their orders go through hist_import.py like every other vendor.
 
-NOT created: LittleMachineShop. Order 22010514 (2022-01-05) has a received and
-a shipped email, neither itemised (the line table is an unfilled %OrderDetails%
-template; the PDF invoice sits behind a link). No lines, no PO, so a Company
-would hang nothing. Listed in docs/tooling-inventory.md for Scott instead.
+LittleMachineShop was held back on the first run: order 22010514's emails carry
+an unfilled %OrderDetails% template, so there were no lines to hang a PO on.
+Added 2026-10-05 once Scott sent a screenshot of the order page from his
+LittleMachineShop account.
 
     itq run scripts/add_tooling_vendors_1004.py [--commit]
 """
@@ -35,6 +35,9 @@ VENDORS = [
     ("Zoro", r"^zoro",
      "Industrial supply (Grainger-owned). Mixed shop supplies; classify per order.",
      "https://www.zoro.com"),
+    ("LittleMachineShop", r"little ?machine",
+     "Mini-mill/lathe accessories, measuring and layout tools (Pasadena CA).",
+     "https://www.littlemachineshop.com"),
 ]
 
 for name, rx, desc, web in VENDORS:

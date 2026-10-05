@@ -128,15 +128,15 @@ indications of others."*
       1018), booked at the $22.06 actually paid after the promo.
     - SO25543893, the 19in louvered panel ($73.81, 2022-02-20): storage, not
       tooling. Left out.
-  - **LittleMachineShop, NOT booked**: order 22010514 (2022-01-05, UPS 2-day).
-    Both emails carry an unfilled `%OrderDetails%` template, so there are no lines
-    to book; the PDF invoice sits behind a link. No Company created, since it
-    would hang nothing. **Scott: what was in it?** A LittleMachineShop account
-    login would show the invoice.
-    Scott 2026-10-05: *"might be a drill set, I will look"*. The only drill
-    sets in InvenTree are the Tormach machine-length set (bundle), the Amazon
-    center-drill set and the two PreciseBits PCB sets, so none is from LMS. A
-    drill set found on the shelf is a NEW part, not a duplicate.
+  - **LittleMachineShop DONE** (2026-10-05): order 22010514 (2022-01-05).
+    Neither email listed the items (an unfilled `%OrderDetails%` template).
+    Scott guessed "a drill set", then sent a screenshot of the order page from
+    his account, and it was NOT a drill set: adjustable parallel set,
+    BoltSize-It checker, Starrett automatic center punch, 12in 4R combination
+    square. Company #39 -> PO-0220, stock items 1020-1023, [ESTIMATE].
+    Descriptive SKUs (LMS-...): the page shows no LMS part numbers.
+    **Lesson: when a vendor email is a template shell, the account order page
+    has the lines. Ask Scott for it before guessing.**
   - **Kennametal**: only a tech-support thread about CNMG432 inserts that came
     with a used mill. Not a purchase.
   - **eBay, NOT swept**: about 200 order/message threads, mostly electronics and
