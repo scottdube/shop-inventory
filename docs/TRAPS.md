@@ -11240,3 +11240,21 @@ case-insensitive: 762's only match is the lowercase "as received on the
 bench", and 558's is "credit received".
 `link_po_rows_legacy_1004.py` requires a single PO, no merge wording, and
 exactly one line for the part, and prints the reason for every skip.
+
+## One eBay item number can be several products (2026-10-05)
+
+eBay sells variations under one item number. The DRO head (2-axis or 3-axis)
+and the glass scales (550/200/900 mm) each shared one number across lines.
+hist_import.py matches a supplier part by (supplier, SKU). With the bare item
+number as SKU, the first variation's supplier part would capture every later
+line. **Any line sold under a variation gets a variation suffix in the SKU**
+(`193219008931-550MM`, `165118402394-3AXIS`). The bare item number stays the
+SKU only for single-product listings, matching the existing eBay rows.
+
+## "Confirmed owned" can predate a sale (2026-10-05)
+
+The 6in Super Spacer row was [CONFIRMED OWNED], from Scott's 2026-08-19
+answer. Scott had sold it on eBay on 2025-07-21. Purchase sweeps never see a
+sale, so nothing ever contradicted the row. The seller-side mail did:
+`You made the sale` / `You got paid for`. **On a vendor-mail sweep, also
+search the seller-side subjects, and subtract.**

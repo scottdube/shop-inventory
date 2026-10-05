@@ -151,7 +151,7 @@ indications of others."*
     company (Form Roll Die Corp), not the letterhead.
   - **Kennametal**: only a tech-support thread about CNMG432 inserts that came
     with a used mill. Not a purchase.
-  - **eBay DONE** (2026-10-05): a sweep of every eBay order mail in Gmail found
+  - **eBay DONE** (2026-10-05; 31 orders booked in all, PO-0222..PO-0251): a sweep of every eBay order mail in Gmail found
     162 purchase rows. 36 were tooling and 17 borderline. The sweep's searches:
     `from:ebay@ebay.com` (stopped at 2023-11-18, drowned in saved-search alerts,
     so it was re-run from 2023-11-18 back with alerts filtered out, to 2016),
@@ -176,11 +176,12 @@ indications of others."*
         the Metrology Bench. Booked -> PO-0248, stock row on SLN/Metrology Bench.
         The "Christopher" greeting and card x-7953 do not change whose it is.
       - The DROs: *"2 separate dro set ups one for the mill drill I still have
-        and the other for an enco lathe I sold"*. One head plus its scales went
-        with the Enco. **Still open**: which head (2-axis or 3-axis) and which
-        scale pair belong to the Jet mill/drill. The guess, NOT recorded as a
-        fact, is 550 + 200 mm for the mill (table X/Y) and 900 + 200 mm for the
-        lathe (bed/cross-slide). The X-axis power feed was not addressed.
+        and the other for an enco lathe I sold"*, then *"3 axis on the mill,
+        power feed is on it too scale guess is right"*. The Jet mill/drill
+        carries the 3-axis head, the 550 + 200 mm scales and the X power feed:
+        PO-0249..0251, parts 1371-1374, all on the Jet Mill/Drill Stand (the
+        precedent set by the head mover). The 2-axis head and the 900 + 200 mm
+        scales went with the Enco and are not booked. Variation SKUs: see TRAPS.
       - Non-machine-tool items, left out by default: the welding helmet and
         jacket, plasma consumables, the Milwaukee ratchet and batteries, the
         Ryobi battery, the Bosch laser measure, and aluminum/steel bar stock.
@@ -196,3 +197,11 @@ indications of others."*
       'confirmed owned' from memory can predate a sale; the seller-side mail
       (You made the sale / You got paid) is a source too.**
   - **Not checked**: tormach.com account order history for orders with no email.
+
+## Still open (checkpoint 2026-10-05)
+
+- The GBJ TCMT inserts (Amazon B07B7GF4F2): Scott has to read the box count.
+- The tormach.com account order history has not been checked for orders with
+  no email.
+- The non-machine-tool eBay buys are left out by default (welding, plasma,
+  cordless batteries, laser measure, bar stock). Not asked.

@@ -1,0 +1,104 @@
+{
+ "vendor_pk": 14,
+ "vendor_name": "eBay",
+ "source": "Gmail eBay order confirmations, swept 2026-10-05; machine assignment from Scott 2026-10-05",
+ "location": "SLN/Machine Shop/Jet Mill/Drill Stand",
+ "orders": [
+  {
+   "order": "26-08552-69375",
+   "date": "2022-04-26",
+   "desc": "3-axis DRO display (Jet mill/drill)",
+   "subtotal": 109.99,
+   "shipping": 6.0,
+   "tax": 0,
+   "total": 115.99,
+   "note": "eBay seller machinertool0, item 165118402394, variation '3 Axis DRO'. SKU carries the variation because the same item number also sold the 2-axis head. Scott 2026-10-05: the 3-axis head, the 550 + 200 mm scales and the power feed are on the Jet mill/drill (still in service). The 2-axis head and the 900 + 200 mm scales were the Enco lathe's set and went with that lathe when it was sold, so they are NOT booked.",
+   "lines": [
+    {
+     "sku": "165118402394-3AXIS",
+     "qty": 1,
+     "unit": 109.99,
+     "title": "2 Axis Digital Readout 3 Axes DRO Display And Linear Scale Encoder 5um M...",
+     "pack": 1,
+     "link": "https://www.ebay.com/itm/165118402394",
+     "new": {
+      "name": "DRO Display, 3-axis, 5um TTL",
+      "category": "Equipment/Machine Accessories",
+      "description": "3-axis digital readout head, installed on the Jet mill/drill",
+      "keywords": "ebay jet mill DRO readout",
+      "link": "https://www.ebay.com/itm/165118402394"
+     }
+    }
+   ]
+  },
+  {
+   "order": "22-08226-67216",
+   "date": "2022-02-06",
+   "desc": "DRO glass scales 550 + 200 mm (Jet mill/drill)",
+   "subtotal": 149.98,
+   "shipping": 11.98,
+   "tax": 0,
+   "total": 161.96,
+   "note": "eBay seller chargerangel, item 193219008931, two variations. SKUs carry the length because both lines share one item number. Scott 2026-10-05: the 3-axis head, the 550 + 200 mm scales and the power feed are on the Jet mill/drill (still in service). The 2-axis head and the 900 + 200 mm scales were the Enco lathe's set and went with that lathe when it was sold, so they are NOT booked.",
+   "lines": [
+    {
+     "sku": "193219008931-550MM",
+     "qty": 1,
+     "unit": 79.99,
+     "title": "2/3 Axis Digital Readout DRO TTL 5um Linear Glass Scale Encoder Milling Lathe US",
+     "pack": 1,
+     "link": "https://www.ebay.com/itm/193219008931",
+     "new": {
+      "name": "DRO Linear Glass Scale 5um TTL, 550 mm",
+      "category": "Equipment/Machine Accessories",
+      "description": "Glass scale, 550 mm travel, installed on the Jet mill/drill (table X)",
+      "keywords": "ebay jet mill DRO scale",
+      "link": "https://www.ebay.com/itm/193219008931"
+     }
+    },
+    {
+     "sku": "193219008931-200MM",
+     "qty": 1,
+     "unit": 69.99,
+     "title": "2/3 Axis Digital Readout DRO TTL 5um Linear Glass Scale Encoder Milling Lathe US",
+     "pack": 1,
+     "link": "https://www.ebay.com/itm/193219008931",
+     "new": {
+      "name": "DRO Linear Glass Scale 5um TTL, 200 mm",
+      "category": "Equipment/Machine Accessories",
+      "description": "Glass scale, 200 mm travel, installed on the Jet mill/drill",
+      "keywords": "ebay jet mill DRO scale",
+      "link": "https://www.ebay.com/itm/193219008931"
+     }
+    }
+   ]
+  },
+  {
+   "order": "02-08856-53699",
+   "date": "2022-07-12",
+   "desc": "X-axis power feed (Jet mill/drill)",
+   "subtotal": 329.99,
+   "shipping": 19.99,
+   "tax": 0,
+   "total": 349.98,
+   "note": "eBay seller qualitymachinetools, item 333231538298. Bought after the ALSGS power feed (order 17-08646-61200) was refunded. Scott 2026-10-05: the 3-axis head, the 550 + 200 mm scales and the power feed are on the Jet mill/drill (still in service). The 2-axis head and the 900 + 200 mm scales were the Enco lathe's set and went with that lathe when it was sold, so they are NOT booked.",
+   "lines": [
+    {
+     "sku": "333231538298",
+     "qty": 1,
+     "unit": 329.99,
+     "title": "X AXIS POWER FEED FOR MOST BENCH TYPE MILLING MACHINES",
+     "pack": 1,
+     "link": "https://www.ebay.com/itm/333231538298",
+     "new": {
+      "name": "X-Axis Power Feed, bench mill",
+      "category": "Equipment/Machine Accessories",
+      "description": "Table power feed, X axis, installed on the Jet mill/drill",
+      "keywords": "ebay jet mill power feed",
+      "link": "https://www.ebay.com/itm/333231538298"
+     }
+    }
+   ]
+  }
+ ]
+}
