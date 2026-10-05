@@ -38,6 +38,13 @@ VENDORS = [
     ("LittleMachineShop", r"little ?machine",
      "Mini-mill/lathe accessories, measuring and layout tools (Pasadena CA).",
      "https://www.littlemachineshop.com"),
+    # 2026-10-05: Scott handed over invoice 71490 as a PDF ("one you won't find
+    # easily"); a Gmail search for stafford/knurl/71490 returned only noise. The
+    # PDF's file name says Form Roll Die Corp; the invoice letterhead says
+    # Stafford Special Tools, so that's the record name.
+    ("Stafford Special Tools", r"stafford",
+     "Knurls and knurl holders (KP-series). Worcester MA; invoice file name says Form Roll Die Corp. Rep Rich, 508-755-5302.",
+     "https://www.staffordspecialtools.com"),
 ]
 
 for name, rx, desc, web in VENDORS:

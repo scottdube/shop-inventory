@@ -137,6 +137,18 @@ indications of others."*
     Descriptive SKUs (LMS-...): the page shows no LMS part numbers.
     **Lesson: when a vendor email is a template shell, the account order page
     has the lines. Ask Scott for it before guessing.**
+  - **Stafford Special Tools DONE** (2026-10-05): invoice 71490 (2025-09-23,
+    S.O. 50731), from a PDF Scott handed over with *"here's one you won't find
+    easily"*. A Gmail search for stafford/knurl/71490 returned only noise.
+    Company #40 -> PO-0221, with the PDF ATTACHED to the PO
+    (scripts/attach_po_pdf.py). Contents: SKP12D straddle knurl holder ($375)
+    plus 8 KP knurls in 25 and 35 TPI (2 straight, 1 RH, 1 LH of each). Parts
+    1337-1343, [ESTIMATE].
+    **Blind spot this exposes**: the email sweep only finds vendors that EMAIL
+    a confirmation. Vendors who send only a PDF invoice (rep-handled,
+    credit-card-terms shops) leave nothing a sender search can match, so they
+    surface only when Scott remembers them. The PDF filename names the parent
+    company (Form Roll Die Corp), not the letterhead.
   - **Kennametal**: only a tech-support thread about CNMG432 inserts that came
     with a used mill. Not a purchase.
   - **eBay, NOT swept**: about 200 order/message threads, mostly electronics and
