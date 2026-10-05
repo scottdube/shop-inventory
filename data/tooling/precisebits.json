@@ -1,0 +1,19 @@
+{"vendor_pk": 12, "vendor_name": "Precise Bits",
+ "source": "PreciseBits order-confirmation emails from cartsales@precisebits.com, 2026-07-28 (paid invoices 20261119 / 20261129 from brp@)",
+ "location": "SLN/Machine Shop/Unfiled - Machine Shop",
+ "orders": [
+  {"order": "20261474", "date": "2026-07-28", "desc": "PCB milling bits + Heart drill sets",
+   "subtotal": 191.06, "shipping": 14.05, "total": 205.11,
+   "note": "Shipping = UPS 2nd Day Air $13.55 + insurance $0.50. Vendor rounds line totals from an unrounded unit price, so qty x unit is 1 cent over the subtotal. Bits were living on the PCB bench 2026-08-16 with no drawer.",
+   "lines": [
+    {"sku": "EM2E8-0625-60V", "qty": 5, "unit": 13.11, "title": "60 deg PreciseBIT 2-flute Scoring / Engraving bit, 0.005in tip"},
+    {"sku": "MN208-0625-009F", "qty": 3, "unit": 11.40, "title": "1/16 in. PreciseBIT 2-flute Stub End-mill"},
+    {"sku": "MN208-1250-019F", "qty": 1, "unit": 11.84, "title": "1/8 in. PreciseBIT 2-flute Stub End-mill"},
+    {"sku": "RCC08-0945-039F", "qty": 2, "unit": 5.65, "title": "2.400mm fish-tail chip breaker router bit"},
+    {"sku": "DC208-1001-SET", "qty": 1, "unit": 34.09, "title": "PCB Drill Set - Heart Range A (assortment, one unit)"},
+    {"sku": "DC208-1002-SET", "qty": 1, "unit": 34.09, "title": "PCB Drill Set - Heart Range B (assortment, one unit)"}]},
+  {"order": "20261480", "date": "2026-07-28", "desc": "ER-20 EP 1/8in collet",
+   "subtotal": 40.95, "shipping": 8.80, "total": 49.75,
+   "note": "Scott asked to combine with 20261474; it had already shipped, so this went separately by UPS Ground.",
+   "lines": [
+    {"sku": "EREP-ER20-1250", "qty": 1, "unit": 40.95, "title": "1/8 in. clamping ER-20 extreme-precision (EP) collet"}]}]}

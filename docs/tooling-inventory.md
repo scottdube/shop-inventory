@@ -84,3 +84,20 @@ indications of others."*
   - Hardware: rivet nuts, knurled nuts.
   Kept as tooling or equipment: saw blades, the sandblast cabinet, the shop vise,
   the benchstone.
+- **Precise Bits DONE**: orders 20261474 and 20261480 (both 2026-07-28, from the
+  cartsales@ confirmations) -> PO-0212 and PO-0213. 13 pieces [ESTIMATE] across
+  parts 528-534, stock items 1007-1013. PreciseBits rounds line totals from an
+  unrounded unit price, so qty x unit runs 1 cent over the subtotal. The Heart
+  drill sets are assortments: one unit each.
+- **Shars DONE**: five orders in email.
+  - 200031028, 200061342 and 200064959 -> PO-0214..0216. All bookkeeping only:
+    every part already held a counted quantity, e.g. 8 ER20 holders = two
+    4-packs. Pull studs: 7 bought, 1 loose; the rest are presumably in holders.
+    Shars' Price column is the LINE total, not the unit.
+  - 100215875 (2022-12-15, D1-4 adapter plate, part 545): email has only the
+    shipping notice, so the order's other contents are unknown. Booked with
+    scripts/nopo_receive.py, no PO (stock item 1014).
+  - 200063527, the 18x24 granite plate: on freight hold and never paid ($300
+    R+L quote). Part 118 is inactive with no notes and no survivor - read as
+    not bought; left alone.
+- **MSC / McMaster tooling**: already stocked; nothing to do.

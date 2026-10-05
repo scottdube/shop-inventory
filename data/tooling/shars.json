@@ -1,0 +1,22 @@
+{"vendor_pk": 6, "vendor_name": "Shars Tool",
+ "source": "Shars.com 'New Order' confirmation emails from sales@shars.com",
+ "location": "SLN/Machine Shop/Unfiled - Machine Shop",
+ "orders": [
+  {"order": "200031028", "date": "2024-07-24", "desc": "BT30 ER20 holder 4-pack + 4 pull studs",
+   "subtotal": 223.40, "discount": -3.34, "shipping": 17.60, "total": 237.66,
+   "note": "Shars' Price column is the LINE total: 4 studs = $33.40, so $8.35 each.",
+   "lines": [
+    {"sku": "202-7499-4", "qty": 1, "unit": 190.00, "title": "4pcs BT30 ER20 45mm Collet Chuck Tool Holder"},
+    {"sku": "202-5921", "qty": 4, "unit": 8.35, "title": "BT30 M12 45 Pull Stud Retention Knob"}]},
+  {"order": "200061342", "date": "2025-07-14", "desc": "BT30 ER20 holder 4-pack + 3 pull studs",
+   "subtotal": 226.49, "shipping": 18.95, "total": 245.44,
+   "note": "Shars' Price column is the LINE total: 3 studs = $25.05, so $8.35 each.",
+   "lines": [
+    {"sku": "202-7499-4", "qty": 1, "unit": 201.44, "title": "4pcs BT30 ER20 45mm Collet Chuck Tool Holder"},
+    {"sku": "202-5921", "qty": 3, "unit": 8.35, "title": "BT30 M12 45 Pull Stud Retention Knob"}]},
+  {"order": "200064959", "date": "2025-09-06", "desc": "ER20 collet set, 3/16 reamer, DPS height gage",
+   "subtotal": 312.59, "shipping": 35.25, "total": 347.84,
+   "lines": [
+    {"sku": "202-6491", "qty": 1, "unit": 152.85, "title": "1/16 - 1/2 ER20 10 pcs Collet Set"},
+    {"sku": "416-0344", "qty": 1, "unit": 20.74, "title": "3/16 (0.1875) M42 Cobalt Straight Flute Chucking Reamer"},
+    {"sku": "303-4477", "qty": 1, "unit": 139.00, "title": "6in Electronic DPS Height Gage"}]}]}
