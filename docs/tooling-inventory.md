@@ -196,12 +196,20 @@ indications of others."*
       was zeroed and kept (scripts/super_spacer_sold_1005.py). **Lesson: a
       'confirmed owned' from memory can predate a sale; the seller-side mail
       (You made the sale / You got paid) is a source too.**
-  - **Not checked**: tormach.com account order history for orders with no email.
+  - **tormach.com account DONE** (2026-10-05): My Orders lists exactly 8 orders,
+    every one already known from email. Nothing was missing.
+    - 3000048323, 3000059655 and 3000059656 are the DIRECTPAY machine payments
+      (quotes QT123040 and QT125789), never part costs.
+    - 3000048956 and 3000053997 = PO-0026 and PO-0025.
+    - 3000069522 (microARC 4 4th axis, subplate, driver kit), 3000069852 (three
+      thread mills) and 3000070065 (turret coolant nozzles, 3 fixture plates)
+      were stocked by the 2026-09 cost mining but had no PO. They now have
+      bookkeeping-only POs, PO-0252..0254, with no stock added.
+    - The 2 Tormach T-shirts on 3000070065 were left off as apparel; the PO notes
+      say so.
 
 ## Still open (checkpoint 2026-10-05)
 
 - The GBJ TCMT inserts (Amazon B07B7GF4F2): Scott has to read the box count.
-- The tormach.com account order history has not been checked for orders with
-  no email.
 - The non-machine-tool eBay buys are left out by default (welding, plasma,
   cordless batteries, laser measure, bar stock). Not asked.
