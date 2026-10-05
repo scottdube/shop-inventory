@@ -101,3 +101,43 @@ indications of others."*
     R+L quote). Part 118 is inactive with no notes and no survivor - read as
     not bought; left alone.
 - **MSC / McMaster tooling**: already stocked; nothing to do.
+- **Email sweep for other vendors** (a from:(vendor list) search; the broad
+  tooling-term search drowned in golf promos):
+  - **Saunders Machine Works DONE**: Company #37 created (scripts/add_tooling_vendors_1004.py).
+    Scott's request to search email for other vendors is the approval
+    vendor_triage.py waits for.
+    - #12858 -> PO-0217: 5 pairs of Gen2 aluminum soft jaws (part 1329).
+    - #12891 -> PO-0218: Gen2 Modular Vise System 1/2in (part 1330) and 2
+      reversible jaw inserts (part 1331).
+    - Stock items 1015-1017, [ESTIMATE].
+    - **#12840 (Gen3 jaws) deliberately not a PO**: returned and refunded
+      2024-08-08. Invoices D1236 (the same order as #12858) and D1257 (exchange
+      shipping) are not separate goods.
+    - Saunders prints no SKU, so the supplier SKUs are descriptive handles
+      (MODVISE-G2-...), not vendor part numbers.
+    - Soft jaws are counted in PAIRS: that is how they are sold and used.
+    - Part 560, the Saunders tooling plate, came in the Tormach bundle and was
+      already stocked.
+  - **Zoro DONE**: Company #38.
+    - SO29365201 -> PO-0219: webbed slotted angle plate (part 1332, stock item
+      1018), booked at the $22.06 actually paid after the promo.
+    - SO25543893, the 19in louvered panel ($73.81, 2022-02-20): storage, not
+      tooling. Left out.
+  - **LittleMachineShop, NOT booked**: order 22010514 (2022-01-05, UPS 2-day).
+    Both emails carry an unfilled `%OrderDetails%` template, so there are no lines
+    to book; the PDF invoice sits behind a link. No Company created, since it
+    would hang nothing. **Scott: what was in it?** A LittleMachineShop account
+    login would show the invoice.
+  - **Kennametal**: only a tech-support thread about CNMG432 inserts that came
+    with a used mill. Not a purchase.
+  - **eBay, NOT swept**: about 200 order/message threads, mostly electronics and
+    sim instruments. Two tooling hits in the first page of results:
+    - The 6in Super Spacer rotary table (2025-07) already exists: part 569,
+      stocked.
+    - The "NEW" Mid Tech 1.5540 bore plug/ring gage set from rebuiltmachinery
+      (2024-02, item 184249666929) has **no part**. A name search for
+      gage/gauge found none.
+
+    eBay needs its own pass through the order-confirmation emails; a
+    vendor-name search is not enough.
+  - **Not checked**: tormach.com account order history for orders with no email.

@@ -1,0 +1,15 @@
+{"vendor_pk": 38, "vendor_name": "Zoro",
+ "source": "zoro@e.zoro.com order confirmation in Gmail, read 2026-10-04",
+ "location": "SLN/Machine Shop/Unfiled - Machine Shop",
+ "orders": [
+  {"order": "SO29365201", "date": "2022-11-21", "desc": "4-1/2 x 3-1/2 x 3in webbed slotted angle plate",
+   "subtotal": 22.06, "shipping": 5.00, "tax": 0, "total": 27.06,
+   "note": "Printed unit $25.95 less a $3.89 promo; the line is booked at the $22.06 actually paid.",
+   "lines": [{"sku": "G2455207", "qty": 1, "unit": 22.06,
+              "title": "4-1/2 X 3-1/2 X 3\" Webbed Slotted Angle Plate",
+              "new": {"name": "Webbed Slotted Angle Plate 4-1/2 x 3-1/2 x 3in",
+                      "category": "Tooling/Workholding",
+                      "description": "Cast-iron webbed angle plate with slots, 4-1/2 x 3-1/2 x 3in",
+                      "keywords": "angle plate slotted webbed workholding",
+                      "link": "https://www.zoro.com/i/G2455207/"}}]}
+ ]}
