@@ -111,9 +111,13 @@ for o in spec["orders"]:
         continue
 
     s = sum(Decimal(str(l["unit"])) * Decimal(str(l["qty"])) for l in o["lines"])
-    if "subtotal" in o and abs(s - Decimal(str(o["subtotal"]))) > Decimal("0.011"):
-        print(f"    REFUSE: lines sum {s} != subtotal {o['subtotal']}")
-        report["refused"].append(f"{num}: lines {s} != subtotal {o['subtotal']}")
+    # Some vendors print a LIST subtotal above SALE-price lines (Haas): the spec
+    # then gives "lines_total" = what the printed lines sum to, and the check
+    # runs against that instead of the subtotal.
+    key = "lines_total" if "lines_total" in o else "subtotal"
+    if key in o and abs(s - Decimal(str(o[key]))) > Decimal("0.011"):
+        print(f"    REFUSE: lines sum {s} != {key} {o[key]}")
+        report["refused"].append(f"{num}: lines {s} != {key} {o[key]}")
         continue
 
     plan, bad = [], False
@@ -157,7 +161,7 @@ for o in spec["orders"]:
 
     # ---------------------------------------------------------------- write
     ref = PurchaseOrder.generate_reference()
-    money = " ".join(f"{k} ${o[k]:.2f}" for k in ("subtotal", "shipping", "tax", "total")
+    money = " ".join(f"{k} ${o[k]:.2f}" for k in ("lines_total", "subtotal", "discount", "shipping", "tax", "total")
                      if k in o)
     po = PurchaseOrder(
         supplier=vendor, reference=ref, supplier_reference=num,

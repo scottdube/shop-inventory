@@ -41,3 +41,14 @@ indications of others."*
   machine payments that must never become part costs (TRAPS).
 
 ## Progress log
+
+- **Lakeshore DONE** (2026-10-04 23:xx): whole site history = 6 orders (2024-05-20
+  .. 2024-08-20) -> PO-0204..PO-0209, 23 lines, 32 tools received [ESTIMATE] into
+  Unfiled. Every SKU already existed (parts 509-527); none had a stock row. The
+  part notes' purchase-history tables matched the site line for line.
+- **Haas DONE**: site lists 5 orders. 1000486003 -> PO-0210, 1000491501 -> PO-0211,
+  both bookkeeping-only: every line's part already held exactly the purchased
+  quantity (holders, pull studs counted 08-23), so no stock added. 1000340763 is the
+  $10 Winner's Circle membership - deliberately absent, not inventory.
+  Haas prints EXTENDED sale prices under a LIST subtotal; hist_import.py takes
+  `lines_total` for that case.

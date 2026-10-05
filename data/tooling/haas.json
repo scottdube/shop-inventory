@@ -1,0 +1,72 @@
+{
+ "vendor_pk": 5,
+ "vendor_name": "Haas Tooling",
+ "source": "haastooling.com My Account > Orders (logged-in Chrome, 5 orders total) cross-checked against the no_reply@haascnc.com order-confirmation emails, 2026-10-04. Not imported: 1000523832 = PO-0201, 1000520353 = PO-0186, 1000340763 = Winner's Circle membership $10 (not inventory)",
+ "location": "SLN/Machine Shop/Unfiled - Machine Shop",
+ "orders": [
+  {
+   "order": "1000486003",
+   "date": "2026-07-31",
+   "desc": "3x BT30 shrink-fit holders (1/8 x2, 1/4, 3/8) + standard pull studs 10-pack",
+   "lines_total": 693.85,
+   "subtotal": 741.75,
+   "discount": -179.73,
+   "shipping": 0,
+   "tax": 0,
+   "total": 593.24,
+   "note": "Haas prints EXTENDED sale prices; subtotal $741.75 is LIST. Order Discounts -$148.51 + Winner's Circle -$31.22. Paid $593.24. Lines booked at printed/qty.",
+   "lines": [
+    {
+     "sku": "04-1424",
+     "qty": 2,
+     "unit": 179.97,
+     "title": "BT30 1/8\" Shrink Fit Holder x 2.56 in Gage Length, TSC"
+    },
+    {
+     "sku": "04-1421",
+     "qty": 1,
+     "unit": 71.97,
+     "title": "Haas BT30 Pull Stud/Retention Knob, Standard - Pack of 10"
+    },
+    {
+     "sku": "04-1432",
+     "qty": 1,
+     "unit": 130.97,
+     "title": "BT30 3/8\" Shrink Fit Holder x 2.56 in Gage Length, TSC"
+    },
+    {
+     "sku": "04-1428",
+     "qty": 1,
+     "unit": 130.97,
+     "title": "BT30 1/4\" Shrink Fit Holder x 2.56 in Gage Length, TSC"
+    }
+   ]
+  },
+  {
+   "order": "1000491501",
+   "date": "2026-08-11",
+   "desc": "TSC pull studs 10-pack + 1/4 chamfer mill 03-0612",
+   "lines_total": 101.94,
+   "subtotal": 122.9,
+   "discount": -76.16,
+   "shipping": 0,
+   "tax": 0,
+   "total": 49.34,
+   "note": "Haas prints EXTENDED sale prices; subtotal $122.90 is LIST. Order Discounts -$73.56 (includes the 50goodwill coupon Haas support issued over order 1000486003) + Winner's Circle -$2.60. Paid $49.34.",
+   "lines": [
+    {
+     "sku": "04-1420",
+     "qty": 1,
+     "unit": 83.97,
+     "title": "Haas BT30 Pull Stud/Retention Knob, TSC - Pack of 10"
+    },
+    {
+     "sku": "03-0612",
+     "qty": 1,
+     "unit": 17.97,
+     "title": "1/4\" Dia. 45\u00b0 Carbide Chamfer Mill, 2 Flute, TiCN Coated, 1/8\" LOC x 2-1/2\" Overall Length, HSAM1"
+    }
+   ]
+  }
+ ]
+}
