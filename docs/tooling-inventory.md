@@ -52,3 +52,12 @@ indications of others."*
   $10 Winner's Circle membership - deliberately absent, not inventory.
   Haas prints EXTENDED sale prices under a LIST subtotal; hist_import.py takes
   `lines_total` for that case.
+- **Tormach bundle tooling DONE** (scripts/bundle_receive_1004.py): seven parts from
+  the two machine packages had a catalogue entry but no stock row - stock items
+  924-930 in Unfiled, all [ESTIMATE]: End Mill Kit for Aluminum #1, YG-1 V7 kit,
+  drill set, gang-riser shim kit (1 each), CCMT 431 / CCGT 432 / VBMT 221 inserts
+  (10 pieces each). **No PO and no purchase price**: both packages were paid as
+  DIRECTPAY against quotes QT123040 / QT125789, and TRAPS forbids booking those
+  as part costs; the quote line is cited in the note instead. Kits count as one
+  unit (an assortment is not a multipack). Way oil, coolant and Sikaflex from the
+  same quotes were left out - liquids bought in 2024, consumed, not tooling.
