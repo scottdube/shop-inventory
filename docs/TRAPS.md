@@ -11258,3 +11258,26 @@ answer. Scott had sold it on eBay on 2025-07-21. Purchase sweeps never see a
 sale, so nothing ever contradicted the row. The seller-side mail did:
 `You made the sale` / `You got paid for`. **On a vendor-mail sweep, also
 search the seller-side subjects, and subtract.**
+
+## The Mini's IP reputation came back (2026-10-06)
+
+The enrich task file carries a "SUPERSEDED 2026-08-24: the Mini is no longer
+bot-challenged" paragraph, measured once with curl. On 2026-10-06 the Mini got
+HTTP 403 from `ebay.com/itm` three times running and a 3.8 KB page with no
+`hiRes` from `amazon.com/dp/B0DQPDCGPZ`. Agent Chrome on the laptop loaded
+both pages normally, and the CDNs (`i.ebayimg.com`, `m.media-amazon.com`)
+still served the bytes to the Mini. The paragraph itself warned that
+reputation drifts; it drifted.
+
+**Standing shape for product images:** read the image URL in Chrome on the
+laptop, fetch only the CDN bytes from the Mini (`scripts/img_1006b.py`). Do
+not re-test the product page from the Mini each night; a 200 with a short
+`text/html` body is what a defended host returns. Queued as decision
+`mini-amazon-reputation-1006`.
+
+**eBay listings expire.** 19 of 31 item links imported from order history on
+10-05 already return "Discover error". An eBay `SupplierPart.link` is a
+photo source for months, not years; image at acquisition while the listing
+is live. A gone listing may also redirect to a `/p/<product>` page for a
+*different* product (333668081662 went to a micrometer, not the stand), so
+check the title before accepting an og:image.
