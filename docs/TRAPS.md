@@ -11281,3 +11281,32 @@ photo source for months, not years; image at acquisition while the listing
 is live. A gone listing may also redirect to a `/p/<product>` page for a
 *different* product (333668081662 went to a micrometer, not the stand), so
 check the title before accepting an og:image.
+
+## A return started on Amazon is invisible to the watcher until InvenTree hears about it (2026-10-06)
+
+`refund_watch.py` lists a PO only when its status is RETURNED or its notes say
+a refund is unconfirmed. PO-0177 (biaze Mini DP → DP adapter 2-pack, order
+113-9362952-1785800) had neither: status COMPLETE, received 2026-09-20 into
+stock 843. Scott raised the RMA on Amazon 2026-10-04 and said nothing to
+InvenTree. The 2026-10-05 run only found it because the blanket
+`from:return@amazon.com newer_than:30d` search turned up an RMA for an order
+no PO was watching. On 2026-10-06 the refund landed ($16.99, dropoff at
+Staples 10-05) while stock 843 still read 2 pieces OK at SLN Receiving staging.
+
+Two things compounded it:
+
+- **Stock 843 has no `purchase_order` link.** `StockItem.purchase_order` is
+  None although the PO line records `received=1`. The watcher's "surviving
+  stock rows" check joins on that field and would have printed `(none)` even
+  if PO-0177 had been on the list. The row was matched to the PO by PART:
+  #1216 is the only part on the line and 843 is its only stock row. Check how
+  `receive_po.py` sets the link; this may be every row it has ever created.
+- **The PO-0182 return had two "Return request confirmed" emails** four
+  minutes apart (Whole Foods, then Staples), same RMA `D729ygH8RRMA`. A
+  dropoff-method change re-sends the confirmation; it is not a second return.
+
+**The rule: the blanket `from:return@amazon.com` search is not a formality.**
+Every RMA it returns whose order number matches no watched PO is a return
+InvenTree does not know about, and it is one refund away from phantom stock.
+Report those by order number the day they appear. And `[REFUND-CONFIRMED]` on
+a PO whose stock row is unlinked still leaves the row standing — say so.
