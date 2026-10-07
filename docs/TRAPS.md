@@ -11310,3 +11310,40 @@ Every RMA it returns whose order number matches no watched PO is a return
 InvenTree does not know about, and it is one refund away from phantom stock.
 Report those by order number the day they appear. And `[REFUND-CONFIRMED]` on
 a PO whose stock row is unlinked still leaves the row standing — say so.
+
+## A storefront-homepage link is a placeholder, and the store's JSON answers it (2026-10-07)
+
+The 10-05 tooling back-fill gave 14 parts a `Part.link` and `SupplierPart.link`
+of the vendor's homepage (LittleMachineShop ×4, XoomSpeed ×3, Stafford ×7).
+`pool_1007.py` grouped them as "has a link", which is how the image sweep
+classed them as reachable. A homepage is not a handle. What resolved them:
+
+- **LittleMachineShop and XoomSpeed are both Shopify.** The old
+  `products/product_search.php` is gone (404). `/search/suggest.json?q=…`
+  returns titles + featured image, and `/products/<handle>.json` returns the
+  product with `variants[]`, `images[]` and `images[].variant_ids`. Read in
+  Chrome; fetch the `cdn.shopify.com` bytes from the Mini (`img_1007.py`).
+  A `_1024x1024` suffix before the extension resizes the CDN original.
+- **The identifier was the PO line's printed title, not the price.** Three
+  12" 4R combination squares exist at LMS (iGaging 69.95, Dasqua 99.95,
+  Starrett 549.99) and PO-0220 says 59.99 — matching nothing. The printed
+  title `Combination Square Set, 12" 4R Precision` is the iGaging product's
+  title verbatim; all four LMS prices have moved since the 2024 order. Price
+  is a disambiguator only when it matches; a miss is not a refusal.
+- **`images[].variant_ids` picks the variant photo.** The USB I/O board's
+  "Without case" variant carries its own image; the part is "uncased", so
+  that one, not the product's featured cased photo.
+- **A family photo fails the field-mark test even when the page matched.**
+  DigiKey's h1 for 108-ILSTB25050-ND is `ILS TB250 50`, but the og:image
+  file is `MFG_ILS TA180 40` — the TA sibling. The part's notes exist to say
+  TB has a different land pattern, so no image; link set to the product page
+  (`/en/products/detail/c-k/ILS-TB250-50/12352661`, which the search URL
+  resolves to).
+- **Stafford Special Tools is unreachable from two hosts.** Agent Chrome
+  shows an error page on http and https; the Mini gets a certificate hostname
+  mismatch on `www.` and timeouts on http and the apex. Seven parts
+  (#1337–#1343) stay imageless until the site comes back; re-probe with
+  `stafford_probe_1007.py`, not by hand.
+
+Result: 7 images, 8 links, coverage 770/1273. The remaining 503 are the
+09-20 closure (396 with no vendor handle at all) plus Stafford 7 and Mouser 2.
