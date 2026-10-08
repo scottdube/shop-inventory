@@ -11381,3 +11381,14 @@ Result: 7 images, 4 links, coverage 777/1273. Remaining 496 = the 09-20
 closure (396 no vendor handle) plus Mouser 2 (Akamai) and the rest of the
 09-20 vendor groups. Scripts: `stafford_search*_1008.py` (shop-inventory),
 `stafford_probe_1008.py` and `img_1008.py` (code).
+
+## A pack count in the part NAME prints on the label as a quantity
+
+2026-10-08: part 496 was named straight from its AliExpress listing,
+"10PCS IPX IPEX U.FL Female Connector ...". The part label (template 11)
+carries the name, so the bag label read "10" over a bag of 4 and Scott
+crossed it out by hand. The stock row (9) and the supplier part pack size
+(10) were both correct; only the name lied. Rule: the pack size belongs on
+the supplier part, the listing title in the description, and the name says
+what the thing is. Check `Part.objects.filter(name__iregex=r'^\d+ ?pcs')`
+before any label batch.
