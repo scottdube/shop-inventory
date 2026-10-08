@@ -1024,7 +1024,14 @@ in the spindle.
       Also boxed: the whole of RB-07 (bench PSU kit BO-0004: XY6020L buck
       row 107 and Waveshare 5in LCD row 288), Scott "contents of rb07 in box
       1 too". RB-08's 3D-printed prototypes were NOT named and were not
-      moved. FL-01 is at 51 rows. Original note kept below.
+      moved. FL-01 is at 51 rows.
+      3D scanner (Scott: "3d scanner going to fl"): it had NO record. It is
+      the Shining 3D Einstar Vega, Amazon 2025-01-22, $1,799.00, found in
+      Gmail. Filed 2026-10-08 as part 1379 / stock 1089 straight into FL-01
+      with a commute marker whose SLN home is UNKNOWN (scripts/einstar_vega_1008.py)
+      - set the home with it in hand when it returns north. The HXOGYUB 3D
+      scanning spray (Amazon 2025-05-27) is also unrecorded; not asked about.
+      FL-01 is at 52 rows. Original note kept below.
       `scripts/florida_unboxed.py` lists what is still earmarked and not boxed
       (42 rows on 2026-10-08, grouped by purpose); `scripts/florida_pack.py
       <stock_pk> <qty> ... --commit` moves or splits each into FL-01 and drops
