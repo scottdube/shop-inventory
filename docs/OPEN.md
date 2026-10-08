@@ -1011,7 +1011,16 @@ in the spindle.
 
 ## Florida — decided in principle, quantity not yet
 
-- [ ] **Take some RF pigtails / U.FL adapters to LRD.** Scott, 2026-08-23,
+- [x] **Take some RF pigtails / U.FL adapters to LRD.** DONE 2026-10-08:
+      Scott said "4 of each". Earmarked 4 of 8 (stock 603, part 732) and
+      4 of 9 (stock 604, part 496) with florida.py; part labels (template 11,
+      no quantity line) printed as jobs QL810W-158/159 for the two Florida
+      bags. Stock-item labels were rendered too and rejected because they
+      print the drawer count (8 / 9), which would be wrong on a bag of 4.
+      Same day: LCR-P1 (stock 572) and the 8ch logic analyzer (stock 88)
+      marked as commuting tools in trip.py, and the PPK2 earmark changed from
+      MAYBE to taking it. Original note kept below.
+      Scott, 2026-08-23,
       after stowing them: *"we're definitely gonna take some of those to
       Florida... I can't do it right now."* Both rows are in **A3-R6C6**:
 
