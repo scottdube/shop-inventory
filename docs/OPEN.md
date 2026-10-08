@@ -1049,8 +1049,9 @@ in the spindle.
       label not reprinted). FL-01 is at 52 rows.
       Soldering fume fan (shop-made, no record): filed 2026-10-08 as part
       1381 / stock 1091 at `SLN/Florida Staging` with earmark + commute
-      marker (scripts/soldering_fan_1008.py). Two things Scott has not said:
-      box 1 or loose, and the SLN home. Build details not recorded either.
+      marker (scripts/soldering_fan_1008.py). Then Scott: "box 1 BLd4" -
+      moved into FL-01 (53 rows), earmark dropped, SLN home BL-D4 on both
+      the commute marker and default_location. Build details not recorded.
       Original note kept below.
       `scripts/florida_unboxed.py` lists what is still earmarked and not boxed
       (42 rows on 2026-10-08, grouped by purpose); `scripts/florida_pack.py
