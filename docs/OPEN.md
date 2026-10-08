@@ -1017,7 +1017,11 @@ in the spindle.
       florida_pack.py in one run (27 whole-row moves, 14 splits), all earmarks
       cleared; the USB CAN FD adapter earmark dropped (stays at SLN, still a
       commuting tool). The 13-vs-12 Florida Staging count in the chat was my
-      miscount; the script counted the rows. Original note kept below.
+      miscount; the script counted the rows. Later the same day the four
+      commuting tools going south (PPK2, LCR-P1, logic analyzer, thermal
+      camera) were moved into FL-01 too; trip.py now shows them away, and
+      each needs `trip.py land <pk> <location>` at LRD. CAN FD stays home.
+      Original note kept below.
       `scripts/florida_unboxed.py` lists what is still earmarked and not boxed
       (42 rows on 2026-10-08, grouped by purpose); `scripts/florida_pack.py
       <stock_pk> <qty> ... --commit` moves or splits each into FL-01 and drops
