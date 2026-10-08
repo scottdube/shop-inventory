@@ -1033,7 +1033,16 @@ in the spindle.
       first, then "sorry d5"); default_location and the commute home both
       say BL-D5. The HXOGYUB 3D
       scanning spray (Amazon 2025-05-27) is also unrecorded; not asked about.
-      FL-01 is at 52 rows. Original note kept below.
+      Later: Scott, "scanner is going loose not in box 1" - stock 1089 moved
+      out of FL-01 to `SLN/Florida Staging` with a Florida earmark, so it is
+      the one line on the "still to collect" part of the packing list and
+      still shows away in trip.py. Do not count it as boxed.
+      BDM frame (Scott: "BDM Frame going"): also had no record; part 495 was
+      only the AliExpress probe-pen 4-pack (no stock row, still unfiled).
+      Filed 2026-10-08 as part 1380 / stock 1090 in FL-01, $39.99, Amazon
+      order 113-9975085-1113813 delivered to The Villages 2026-05-12, so it
+      came north in May (scripts/bdm_frame_1008.py). No ASIN in the emails.
+      Commuting tool, SLN home UNKNOWN. FL-01 is at 52 rows. Original note kept below.
       `scripts/florida_unboxed.py` lists what is still earmarked and not boxed
       (42 rows on 2026-10-08, grouped by purpose); `scripts/florida_pack.py
       <stock_pk> <qty> ... --commit` moves or splits each into FL-01 and drops
