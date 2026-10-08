@@ -9,9 +9,11 @@ the ORDER still has to be received and closed or it ages into OVERDUE.
 What it does, per outstanding line:
   - books the pieces (pack-aware, piece price = line price / pack) as a stock
     row at --to, exactly as receive_po.py would, so the receipt is on record;
-  - then takes the whole quantity straight back out with a DEPLOYED tracking
-    entry, leaving the row at 0 with delete_on_deplete=False, so the part page
-    still shows where it went and what it cost;
+  - then writes "DEPLOYED <why>, N pcs from PO-x at $y" onto the PART notes
+    and DELETES the row. A row kept at 0 was tried first (2026-10-08) and Scott
+    saw it on the dashboard and the location list: "shows up on dashboard
+    even though it is marked as returned". Zero rows are still rows. The PO
+    line keeps the price; the part note keeps the fate;
   - virtual parts (STL downloads) get no row at all, only the line receipt.
 Then closes the order.
 
@@ -35,6 +37,7 @@ django.setup()
 
 from django.contrib.auth.models import User  # noqa: E402
 from order.models import PurchaseOrder  # noqa: E402
+from part.models import Part  # noqa: E402
 from stock.models import StockItem, StockLocation  # noqa: E402
 
 ap = argparse.ArgumentParser()
@@ -79,18 +82,24 @@ for ln, sp, pack, pieces, unit, keep, virt in plan:
             part=sp.part, location=dest, quantity=pieces,
             supplier_part=sp, purchase_order=po,
             purchase_price=unit, purchase_price_currency="USD",
-            delete_on_deplete=False,
             notes=(f"RECEIVED {pieces:g} on {when} from {po.reference} at ${unit:.4f} each "
                    f"(line qty {float(ln.quantity):g} x pack {pack:g})."))
         row.refresh_from_db()
         assert float(row.quantity) == pieces, "quantity did not stick"
         if not keep:
-            row.take_stock(pieces, user, notes=(
-                f"DEPLOYED: {a.why} (Scott, {when}). Installed hardware leaves "
-                f"inventory; row kept at 0 as the receipt record."))
-            row.refresh_from_db()
-            assert float(row.quantity) == 0, "deploy did not stick"
-        print(f"  + row {row.pk}: {sp.part.name[:44]} -> {float(row.quantity):g}")
+            part = sp.part
+            line = (f"DEPLOYED {a.why} {when} (Scott): {pieces:g} pcs from "
+                    f"{po.reference} at ${unit:.4f} each. Not inventory any more; "
+                    f"the PO carries the price.")
+            Part.objects.filter(pk=part.pk).update(
+                notes=((part.notes or "").rstrip() + "\n\n" + line).strip())
+            assert line[:20] in Part.objects.get(pk=part.pk).notes, "part note did not stick"
+            rid = row.pk
+            row.delete()
+            assert not StockItem.objects.filter(pk=rid).exists(), "row not deleted"
+            print(f"  + {sp.part.name[:44]}: received {pieces:g}, deployed, row removed")
+        else:
+            print(f"  + row {row.pk}: {sp.part.name[:44]} -> {float(row.quantity):g} kept")
     ln.received = ln.quantity
     ln.save(); ln.refresh_from_db()
     assert float(ln.received) == float(ln.quantity), "line did not mark received"

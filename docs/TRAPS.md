@@ -11403,3 +11403,12 @@ of the mill."* Both the relays and the 0.1% resistors went to the Bin Wall
 not decide where the next part goes; when a part has no `default_location`
 and the order does not say, receive to `SLN/Receiving` and **ask**, then set
 `default_location` so the next receipt does not ask again.
+
+## A zero-quantity row is still a row (2026-10-08)
+
+Deployed and returned goods were received and then taken to 0 with
+`delete_on_deplete=False`, to keep "what did it cost, where did it go" on the
+part page. Scott saw them immediately: *"shows up on dashboard even though it
+is marked as returned"* - the Receiving list, the location list and the
+dashboard all count rows, not pieces. The fate goes on the PART notes and the
+row is deleted; the PO line keeps the price. `deploy_po.py` does it that way.

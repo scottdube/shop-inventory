@@ -1090,9 +1090,10 @@ in the spindle.
         the 4 from PO-0181), 5 taken out as DEPLOYED (where not stated). Row
         **1095** = 5 on the bench.
       - **PO-0171** cockpit transducers + amp (6 lines): *"rec all deployed at
-        flight sim."* Received at `SLN/Flight Sim` then taken to 0 as DEPLOYED,
-        rows 1097-1102 kept at 0 (`delete_on_deplete=False`) as the receipt
-        record. The location's own rule: once installed it leaves inventory.
+        flight sim."* Received at `SLN/Flight Sim`, then the rows DELETED and the
+        fate written on each PART's notes (first kept at 0 - Scott: *"shows up
+        on dashboard even though it is marked as returned"*; a zero row is
+        still a row). The location's own rule: once installed it leaves inventory.
       - **PO-0170** Cults3D STL (virtual): *"instant download built installed
         at flight sim."* Line received, order closed, NO stock row - a
         download has no shelf.
@@ -1101,7 +1102,7 @@ in the spindle.
         default, `--keep <part_pk>` for the piece that stayed). Checked the
         listing really was a single lock before trusting pack 1.
       - Row **843** Mini DisplayPort adapter (2, in Receiving, no PO linked):
-        *"returned to amazon."* Taken to 0, status Returned, row kept.
+        *"returned to amazon."* Row deleted, return written on part 1216's notes.
         `SLN/Receiving` is now EMPTY.
 
 - [ ] **Commuter-tool dashboard (Scott, 2026-10-08).** *"might want to think
