@@ -1009,6 +1009,27 @@ in the spindle.
 
 - [ ] ~240 locations are **printed but not affixed**. A1 sheet still to install.
 
+## Florida — packing status, 2026-10-08
+
+- [ ] **Pack the remaining earmarks into FL-01 as they physically go in the box.**
+      `scripts/florida_unboxed.py` lists what is still earmarked and not boxed
+      (42 rows on 2026-10-08, grouped by purpose); `scripts/florida_pack.py
+      <stock_pk> <qty> ... --commit` moves or splits each into FL-01 and drops
+      the earmark, exactly as the pigtails were done. Only Scott knows what is
+      in the box: never pack from here on a guess. Open question for him: the
+      13 rows sitting directly in `Florida Staging` (G1000 PCBs, switches,
+      encoders, resistors, jumpers) — are those in the box or beside it?
+
+- [ ] **Commuter-tool dashboard (Scott, 2026-10-08).** *"might want to think
+      about a dashboard for commuter tools to make it easy to round up and
+      then mark status."* Two jobs: a round-up list for the day before a trip
+      (every `commutes` row, where it is, home/away/packed), and a one-tap
+      status change (packed, landed at <location>). Natural home is the
+      BinScan phone app on the Mini, which already walks locations and writes;
+      trip.py has the data model (`metadata.commute`, `pack`, `land`). NOT
+      BUILT - design first (what "round up" looks like on a phone at the
+      cart, whether packed is a state or just FL-01 like consumables).
+
 ## Florida — decided in principle, quantity not yet
 
 - [x] **Take some RF pigtails / U.FL adapters to LRD.** DONE 2026-10-08:
