@@ -1021,7 +1021,10 @@ in the spindle.
       commuting tools going south (PPK2, LCR-P1, logic analyzer, thermal
       camera) were moved into FL-01 too; trip.py now shows them away, and
       each needs `trip.py land <pk> <location>` at LRD. CAN FD stays home.
-      Original note kept below.
+      Also boxed: the whole of RB-07 (bench PSU kit BO-0004: XY6020L buck
+      row 107 and Waveshare 5in LCD row 288), Scott "contents of rb07 in box
+      1 too". RB-08's 3D-printed prototypes were NOT named and were not
+      moved. FL-01 is at 51 rows. Original note kept below.
       `scripts/florida_unboxed.py` lists what is still earmarked and not boxed
       (42 rows on 2026-10-08, grouped by purpose); `scripts/florida_pack.py
       <stock_pk> <qty> ... --commit` moves or splits each into FL-01 and drops
