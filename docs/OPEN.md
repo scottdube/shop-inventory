@@ -1025,7 +1025,7 @@ in the spindle.
       invented number is worse than no earmark: it reads as a decision that
       was never made, and the packing list is built from those numbers.
 
-      Do it before the **~2026-10-12** departure. One question answers it:
+      Do it before the **Sun 2026-10-11** departure (confirmed 2026-10-08, early AM). One question answers it:
       how many of each. Then `itq run scripts/florida.py add <pk> A3-R6C6 <n>
       "<why>"` for each, and the packing list picks them up.
 
@@ -1041,7 +1041,7 @@ in the spindle.
       This instance also carries a custom `shopstatus` plugin and BinScan
       depends on specific API shapes, so it is not a no-risk upgrade.
 
-      **The window is after the ~2026-10-12 move**, when Scott is beside the
+      **The window is after the Sun 2026-10-11 move**, when Scott is beside the
       machine and a failure costs an hour rather than a season. Same reasoning
       that makes LRD the cycle-count pilot site — see [[seasonal-residency]].
 
