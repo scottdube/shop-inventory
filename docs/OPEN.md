@@ -1083,6 +1083,27 @@ in the spindle.
       `florida_pack.py 1095 6`). FL-01 now 55 rows. No labels - none asked
       for. The 4 at SLN sit at `SLN/Electronics Bench` (Scott: *"elec bench for now"*) - a parking spot, not a home, so no `default_location` was set.
 
+- [x] **Open-PO walk from the bench, 2026-10-08.** Scott worked down the
+      placed-not-received list by voice; each line below is his word.
+      - **PO-0180** Athom plugs (3 two-packs = 6): *"rec all but 1 deployed it
+        is at elect bench."* Received straight into the bench row (merged with
+        the 4 from PO-0181), 5 taken out as DEPLOYED (where not stated). Row
+        **1095** = 5 on the bench.
+      - **PO-0171** cockpit transducers + amp (6 lines): *"rec all deployed at
+        flight sim."* Received at `SLN/Flight Sim` then taken to 0 as DEPLOYED,
+        rows 1097-1102 kept at 0 (`delete_on_deplete=False`) as the receipt
+        record. The location's own rule: once installed it leaves inventory.
+      - **PO-0170** Cults3D STL (virtual): *"instant download built installed
+        at flight sim."* Line received, order closed, NO stock row - a
+        download has no shelf.
+      - **PO-0169** cam lock: *"rec, deplyed flight sim."* Same as 0171 via the
+        new `scripts/deploy_po.py` (receive + deploy-to-0 + close, dry run by
+        default, `--keep <part_pk>` for the piece that stayed). Checked the
+        listing really was a single lock before trusting pack 1.
+      - Row **843** Mini DisplayPort adapter (2, in Receiving, no PO linked):
+        *"returned to amazon."* Taken to 0, status Returned, row kept.
+        `SLN/Receiving` is now EMPTY.
+
 - [ ] **Commuter-tool dashboard (Scott, 2026-10-08).** *"might want to think
       about a dashboard for commuter tools to make it easy to round up and
       then mark status."* Two jobs: a round-up list for the day before a trip
