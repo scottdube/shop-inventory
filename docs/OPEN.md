@@ -1020,6 +1020,12 @@ in the spindle.
       Same day: LCR-P1 (stock 572) and the 8ch logic analyzer (stock 88)
       marked as commuting tools in trip.py, and the PPK2 earmark changed from
       MAYBE to taking it. Original note kept below.
+      Follow-up 2026-10-08: the part-496 label read "10PCS ..." because the
+      Amazon/AliExpress listing title was the part name; Scott crossed the 10
+      out by hand. Renamed the part to "IPX/IPEX U.FL Female Connector to open
+      single-end, RG178, 30cm" (description keeps the listing title, pack of
+      10 stays on the supplier part). Counts were already right: 9 on hand,
+      4 earmarked. Label NOT reprinted.
       Scott, 2026-08-23,
       after stowing them: *"we're definitely gonna take some of those to
       Florida... I can't do it right now."* Both rows are in **A3-R6C6**:
