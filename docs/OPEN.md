@@ -1081,7 +1081,7 @@ in the spindle.
       472 --commit`: 5 two-packs = 10 plugs at $8.75 each, order CLOSED. Row
       **1095** (4, SLN) and **1096** (6, split into FL-01 with
       `florida_pack.py 1095 6`). FL-01 now 55 rows. No labels - none asked
-      for. SLN home for the 4: see the row's location (Receiving until named).
+      for. The 4 at SLN sit at `SLN/Electronics Bench` (Scott: *"elec bench for now"*) - a parking spot, not a home, so no `default_location` was set.
 
 - [ ] **Commuter-tool dashboard (Scott, 2026-10-08).** *"might want to think
       about a dashboard for commuter tools to make it easy to round up and
