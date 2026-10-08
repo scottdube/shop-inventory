@@ -11347,3 +11347,37 @@ classed them as reachable. A homepage is not a handle. What resolved them:
 
 Result: 7 images, 8 links, coverage 770/1273. The remaining 503 are the
 09-20 closure (396 with no vendor handle at all) plus Stafford 7 and Mouser 2.
+
+## Stafford's domain is a redirect stub; the store lives at knurls-sst.com (2026-10-08)
+
+The 10-07 closure above ("unreachable from two hosts") was one night's
+reading. Re-probed 2026-10-08 with `stafford_probe_1007.py` from the Mini:
+https on `www.` still fails the certificate hostname check and the apex still
+times out, but **plain http on `www.` now answers 200 with a 366-byte page**
+whose only content is `<meta http-equiv="Refresh" … url=https://www.knurls-sst.com/zencart/>`.
+That Zen Cart store is the real Stafford Special Tools storefront
+(334 KB homepage, 172 products) and the Mini reads it without trouble. Agent
+Chrome still renders an error page for staffordspecialtools.com on both
+schemes, so the redirect is invisible from the browser — the certificate
+mismatch is what Chrome trips on, and it never gets to the http stub.
+
+- **Search by the store's spelling.** Zen Cart search
+  (`index.php?main_page=advanced_search_result&keyword=`) finds `SKP12D`
+  verbatim (pid 141) but returns nothing for `KPS-225B`; the store writes
+  `KPS 225` (space, no suffix). The invoice SKUs on PO-0221 carry a `-B`
+  (beveled) suffix and the 3/4 x 3/8 x 1/4 size runs 12/16/20/25/30/40 TPI
+  in the store — **no 35 TPI and no -B anywhere**, so `KPS-235B` etc. were a
+  special or catalogue-only item. Pids: KPS/KPR/KPL 225 = 525/533/541.
+- **The knurl photos are pattern photos, not product photos.** One file per
+  pattern — `knurl_aa-s.jpg` straight, `knurl_br30-r.jpg` RH, `knurl_bl30-l.jpg`
+  LH — serves every pitch and the V series too. Attached to all six knurls
+  anyway, because the pattern is the thing a photo of a knurl wheel can show
+  and the pitch and bevel are in the name; each part note says so. The holder
+  (`sstcatp70_orig.png`, 1100x750) is a real per-product photo.
+- Links: product page for the four with one; the three 235B parts keep the
+  vendor homepage rather than trading one placeholder for another.
+
+Result: 7 images, 4 links, coverage 777/1273. Remaining 496 = the 09-20
+closure (396 no vendor handle) plus Mouser 2 (Akamai) and the rest of the
+09-20 vendor groups. Scripts: `stafford_search*_1008.py` (shop-inventory),
+`stafford_probe_1008.py` and `img_1008.py` (code).
