@@ -1011,7 +1011,13 @@ in the spindle.
 
 ## Florida — packing status, 2026-10-08
 
-- [ ] **Pack the remaining earmarks into FL-01 as they physically go in the box.**
+- [x] **Pack the remaining earmarks into FL-01 as they physically go in the box.**
+      DONE 2026-10-08: Scott confirmed every group was in box 1 ("all in box
+      1, ppk2 also in box 1, leaving can fd here at sln"). 41 rows packed with
+      florida_pack.py in one run (27 whole-row moves, 14 splits), all earmarks
+      cleared; the USB CAN FD adapter earmark dropped (stays at SLN, still a
+      commuting tool). The 13-vs-12 Florida Staging count in the chat was my
+      miscount; the script counted the rows. Original note kept below.
       `scripts/florida_unboxed.py` lists what is still earmarked and not boxed
       (42 rows on 2026-10-08, grouped by purpose); `scripts/florida_pack.py
       <stock_pk> <qty> ... --commit` moves or splits each into FL-01 and drops
