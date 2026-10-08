@@ -1061,6 +1061,21 @@ in the spindle.
       13 rows sitting directly in `Florida Staging` (G1000 PCBs, switches,
       encoders, resistors, jumpers) — are those in the box or beside it?
 
+- [x] **DigiKey PO-0203 received 2026-10-08 (relays + 0.1% resistors).** Scott:
+      *"digikey order arrived, taking 5 of these resistors to LRD leaving 5 and
+      all 4 relays here need labels for all 3 packages."* Received with
+      `receive_po.py --to 472` (SLN/Receiving), order CLOSED. Rows: relays
+      **1092** (4, moved to `SLN/Machine Shop/1100MX Electrical Cabinet`, the
+      location whose description says it holds the machine's own spares - MY
+      choice from that description, not Scott's word; note on the row says so);
+      resistors **1093** (5, still at `SLN/Receiving` - NO HOME NAMED, what
+      they are for is not in the order) and **1094** (5, split into FL-01 with
+      `florida_pack.py 1093 5`). Labels printed (jobs 161-163, queue drained):
+      a STOCK-ITEM label for the FL-01 bag (reads "5 · FL-01", correct and
+      stable) and PART labels for the two SLN bags, because a stock-item label
+      there would have baked in "Receiving" and my cabinet guess. Rejected
+      guessing a resistor home: a wrong home is a lie that outlives the bag.
+
 - [ ] **Commuter-tool dashboard (Scott, 2026-10-08).** *"might want to think
       about a dashboard for commuter tools to make it easy to round up and
       then mark status."* Two jobs: a round-up list for the day before a trip
