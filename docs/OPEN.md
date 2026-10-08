@@ -1046,7 +1046,12 @@ in the spindle.
       had carried a VERIFIED EMPTY 2026-08-19 stamp - replaced, since an
       empty drawer that is a commuter's home reads "in Florida", not "free".
       Description changed to 8 probe pins on Scott's word (listing says 4;
-      label not reprinted). FL-01 is at 52 rows. Original note kept below.
+      label not reprinted). FL-01 is at 52 rows.
+      Soldering fume fan (shop-made, no record): filed 2026-10-08 as part
+      1381 / stock 1091 at `SLN/Florida Staging` with earmark + commute
+      marker (scripts/soldering_fan_1008.py). Two things Scott has not said:
+      box 1 or loose, and the SLN home. Build details not recorded either.
+      Original note kept below.
       `scripts/florida_unboxed.py` lists what is still earmarked and not boxed
       (42 rows on 2026-10-08, grouped by purpose); `scripts/florida_pack.py
       <stock_pk> <qty> ... --commit` moves or splits each into FL-01 and drops
