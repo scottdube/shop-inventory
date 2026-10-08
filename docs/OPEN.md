@@ -1042,7 +1042,11 @@ in the spindle.
       Filed 2026-10-08 as part 1380 / stock 1090 in FL-01, $39.99, Amazon
       order 113-9975085-1113813 delivered to The Villages 2026-05-12, so it
       came north in May (scripts/bdm_frame_1008.py). No ASIN in the emails.
-      Commuting tool, SLN home UNKNOWN. FL-01 is at 52 rows. Original note kept below.
+      Commuting tool; SLN home set to **MC-T7** (Scott, 2026-10-08), which
+      had carried a VERIFIED EMPTY 2026-08-19 stamp - replaced, since an
+      empty drawer that is a commuter's home reads "in Florida", not "free".
+      Description changed to 8 probe pins on Scott's word (listing says 4;
+      label not reprinted). FL-01 is at 52 rows. Original note kept below.
       `scripts/florida_unboxed.py` lists what is still earmarked and not boxed
       (42 rows on 2026-10-08, grouped by purpose); `scripts/florida_pack.py
       <stock_pk> <qty> ... --commit` moves or splits each into FL-01 and drops
