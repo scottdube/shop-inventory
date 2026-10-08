@@ -1026,6 +1026,10 @@ in the spindle.
       single-end, RG178, 30cm" (description keeps the listing title, pack of
       10 stays on the supplier part). Counts were already right: 9 on hand,
       4 earmarked. Label NOT reprinted.
+      Then PACKED, same day (Scott: "shouldn't this now say 5 at sln 4 lrd?"):
+      scripts/pack_pigtails_florida_1008.py split 4 of each into FL-01 (new
+      rows 1073, 1074), earmarks dropped, drawer rows now 4 (SMA pigtail) and
+      5 (U.FL female). Not LRD yet: the box gets its LRD location on arrival.
       Scott, 2026-08-23,
       after stowing them: *"we're definitely gonna take some of those to
       Florida... I can't do it right now."* Both rows are in **A3-R6C6**:
