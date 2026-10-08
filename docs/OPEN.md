@@ -1076,6 +1076,13 @@ in the spindle.
       the two SLN bags got part labels first, then stock-item labels once the
       drawers were named (the FL-01 bag's stock-item label was right first time).
 
+- [x] **Athom PO-0181 received 2026-10-08 (ESPHome smart plugs).** Scott:
+      *"po 181 was rec 6 going to lrd 4 staying at sln."* `receive_po.py --to
+      472 --commit`: 5 two-packs = 10 plugs at $8.75 each, order CLOSED. Row
+      **1095** (4, SLN) and **1096** (6, split into FL-01 with
+      `florida_pack.py 1095 6`). FL-01 now 55 rows. No labels - none asked
+      for. SLN home for the 4: see the row's location (Receiving until named).
+
 - [ ] **Commuter-tool dashboard (Scott, 2026-10-08).** *"might want to think
       about a dashboard for commuter tools to make it easy to round up and
       then mark status."* Two jobs: a round-up list for the day before a trip
