@@ -11392,3 +11392,14 @@ crossed it out by hand. The stock row (9) and the supplier part pack size
 the supplier part, the listing title in the description, and the name says
 what the thing is. Check `Part.objects.filter(name__iregex=r'^\d+ ?pcs')`
 before any label batch.
+
+## A location's self-description is not a home (2026-10-08)
+
+The 1100MX Electrical Cabinet location says it "holds the machine's own
+spares", so the four spare ECM1 coolant relays were filed there on receipt.
+Scott: *"I'm not going to keep these in the RB07 or in the electrical cabinet
+of the mill."* Both the relays and the 0.1% resistors went to the Bin Wall
+(A3-R7C8, A3-R8C2). A description written for the fuses that live there does
+not decide where the next part goes; when a part has no `default_location`
+and the order does not say, receive to `SLN/Receiving` and **ask**, then set
+`default_location` so the next receipt does not ask again.

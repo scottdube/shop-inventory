@@ -1064,17 +1064,17 @@ in the spindle.
 - [x] **DigiKey PO-0203 received 2026-10-08 (relays + 0.1% resistors).** Scott:
       *"digikey order arrived, taking 5 of these resistors to LRD leaving 5 and
       all 4 relays here need labels for all 3 packages."* Received with
-      `receive_po.py --to 472` (SLN/Receiving), order CLOSED. Rows: relays
-      **1092** (4, moved to `SLN/Machine Shop/1100MX Electrical Cabinet`, the
-      location whose description says it holds the machine's own spares - MY
-      choice from that description, not Scott's word; note on the row says so);
-      resistors **1093** (5, still at `SLN/Receiving` - NO HOME NAMED, what
-      they are for is not in the order) and **1094** (5, split into FL-01 with
-      `florida_pack.py 1093 5`). Labels printed (jobs 161-163, queue drained):
-      a STOCK-ITEM label for the FL-01 bag (reads "5 · FL-01", correct and
-      stable) and PART labels for the two SLN bags, because a stock-item label
-      there would have baked in "Receiving" and my cabinet guess. Rejected
-      guessing a resistor home: a wrong home is a lie that outlives the bag.
+      `receive_po.py --to 472`, order CLOSED. Rows: relays **1092** (4, home
+      **A3-R7C8**, named by Scott), resistors **1093** (5, home **A3-R8C2**
+      with the 150R parts, bagged separately, named by Scott) and **1094** (5,
+      split into FL-01 with `florida_pack.py 1093 5`). `default_location` set
+      on both parts. I had first parked the relays in the 1100MX Electrical
+      Cabinet on that location's "holds the machine's spares" description -
+      Scott: *"I'm not going to keep these in the RB07 or in the electrical
+      cabinet of the mill."* Both go in the wall bin system; a location's
+      self-description is not a home. Labels: 5 printed in all (jobs 161-165);
+      the two SLN bags got part labels first, then stock-item labels once the
+      drawers were named (the FL-01 bag's stock-item label was right first time).
 
 - [ ] **Commuter-tool dashboard (Scott, 2026-10-08).** *"might want to think
       about a dashboard for commuter tools to make it easy to round up and
