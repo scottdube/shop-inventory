@@ -213,3 +213,48 @@ indications of others."*
 - The GBJ TCMT inserts (Amazon B07B7GF4F2): Scott has to read the box count.
 - The non-machine-tool eBay buys are left out by default (welding, plasma,
   cordless batteries, laser measure, bar stock). Not asked.
+
+## Tool records — the TOOL is the cutter (2026-10-08)
+
+`scripts/tool_tag.py` (docstring has the full contract). Rulings from Scott, verbatim:
+
+- *"the tool number is the cutter, that's how fusion does it and how pathpilot does it,
+  the holder could and should be an optional attribute but is not the identity of the
+  tool."* Rejected: numbering the holder (serialised holder stock items with the cutter
+  installed). That was the first draft; it is how PDX sells the tags, not how the CAM
+  thinks.
+- *"a cutter may end up being numbered with 2 diff numbers, if one was designated as a
+  finish vs roughing tool"* and *"dont make that impossible"* — numbers are a LIST per
+  cutter, and the same number on two cutters is a `?? WARNING` in the audit, never a
+  refusal.
+
+Shape on 1.5.5: a tool = a qty-1 stock item of the cutter part carrying `T7`-style
+**tags** (stock items have no parameters on this version; tags are visible, multi-valued,
+non-unique). The holder is a qty-1 split of the rack row **installed** into the tool
+(`belongs_to`, same as the pull studs in the shrink-fit holders) and merges back on
+`unfit`. `replace` retires the old item (DESTROYED, qty 0, `delete_on_deplete=False`) and
+moves tags + holder to a fresh split — the label must be reprinted because the QR is the
+item's own `INV-SI<pk>`. The Fusion tool library stays the master list of T numbers.
+
+**Speeds & feeds = one link Attachment on the cutter PART, comment prefixed
+`Speeds & feeds`.** Applied 2026-10-08 to all 55 in-scope cutter parts with stock
+(`sf-batch`, one SSH session): 37 chart links, 18 recorded as *none published* — those
+link to the vendor page where the absence was checked, because an Attachment must carry a
+file or a link. Sources that worked:
+
+| Vendor | Chart | Note |
+|---|---|---|
+| Haas | HSAM1 (03-0080..0089, 03-0392..0396), HSAM2 (03-0564..0587), chamfer mill, keyseat (03-3392..3410) PDFs on haastooling.com | product pages 403 to scripted fetch; the PDF link is in the page's DOM in the browser pane, PDFs then curl fine |
+| Lakeshore | `lakeshorecarbidecomspeedandfeedcharts.aspx` index → General Purpose EM, Standard Threadmills, variable-flute-for-aluminum page (TAS) | **no drill-mill chart exists**; product pages carry no cutting data; the `MCP/.../variable-rougher-speeds-and-feeds.pdf` link on the index is a 404 |
+| YG-1 (Tormach kit 51603) | V7 Plus A catalog PDF, 24.9 MB, cutting conditions pp. 32/36 | Tormach's page has only the Prop 65 sheet |
+| Precise Bits | `/calc` + `/reference/drillfeedspeed.htm` | product pages give RPM ranges and say run the sweet-spot test; EM2E8-0625-60V is now sold as EM2E8-0050-60V |
+| Freud | CNC feed-and-speed PDF (chip loads + formulas) | |
+| Niagara (via Amazon) | `niagaracutter.com/speedfeed?catalog=solidcarbide` | site certificate expired 2026-10-08 and it 403s curl; the browser pane refused it too; link recorded from the search snippet |
+| Tormach | none for kit 37377, thread mills 34695/6/7, drill set 37331, face mill 31280 | tormach.com returns 450 to fetch and its catalog search renders empty in the browser pane |
+| MSC 82976713 | none; it is **Accupro ASQSC3-Z-CC-AL40H** (read off the page in the browser pane) | mscdirect.com blocks scripted fetch, browser fine |
+| Amazon no-names, SPEED TIGER, SpeTool, VIERDWIN, ACCUCUT | none | |
+
+Still open: no tool has been created yet — the three Tormach tool libraries in Fusion
+(Unified, Aluminum, Aluminum_RENUMBERED_v2) number the same cutters differently and Scott
+has to say which one is master. Also #1066/#1067/#1068 are fasteners filed under
+Tooling/Holders (not fixed, flagged).

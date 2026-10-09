@@ -45,6 +45,8 @@ Usage (all mutate only with --commit; run via ~/code/scripts/itq):
   itq run scripts/tool_tag.py scrap <stock_pk|T7> --reason "..." --commit  # no replacement
   itq run scripts/tool_tag.py sf <part_pk> <url> [--comment "..."] --commit  # speeds & feeds link
   itq run scripts/tool_tag.py sf <part_pk> none --commit                 # "none published"
+  itq run scripts/tool_tag.py sf-batch /tmp/sf_links.tsv --commit        # part<TAB>url|none<TAB>comment per line
+                                                                         # (itq push the file first; one SSH session, not 55)
 """
 import argparse
 import datetime as dt
@@ -74,6 +76,7 @@ CUTTER_ROOTS = (42, 45, 73)  # Tooling/Endmills, Tooling/Drills & Taps, Tooling/
 SF_CATS = (42, 74, 75, 76, 77, 78, 79, 81, 90, 100)
 TNUM = re.compile(r"^T\d{1,3}$")
 SF_PREFIX = "Speeds & feeds"
+SF_NONE = "Speeds & feeds: none"   # comment prefix of a "no chart published" record (link = vendor page checked)
 TODAY = dt.date.today().isoformat()
 USER = get_user_model().objects.filter(is_superuser=True).order_by("pk").first()
 
@@ -291,23 +294,27 @@ def cmd_audit(a):
                 print(f"  !! supplier part without link: #{p.pk} {p.name[:50]} {sp.supplier.name} {sp.SKU}")
     print(f"\n== speeds & feeds attachments (cutter parts in stock) ==")
     ct = ContentType.objects.get_for_model(Part)
-    missing = []
+    missing, nopub = [], []
     for p in cutters:
         if p.total_stock <= 0 or p.category_id not in SF_CATS:
             continue
         atts = [x for x in Attachment.objects.filter(model_type=ct, model_id=p.pk) if (x.comment or "").startswith(SF_PREFIX)]
-        if atts:
-            print(f"  ok #{p.pk} {p.name[:50]} -> {atts[0].link or atts[0].attachment.name} ({atts[0].comment})")
-        else:
+        if not atts:
             missing.append(p)
+        elif atts[0].comment.startswith(SF_NONE):
+            nopub.append((p, atts[0]))
+        else:
+            print(f"  ok #{p.pk} {p.name[:50]} -> {atts[0].link or atts[0].attachment.name} ({atts[0].comment})")
+    for p, x in nopub:
+        print(f"  -- no chart: #{p.pk} {p.name[:50]} ({x.comment[len(SF_PREFIX)+2:]})")
     for p in missing:
-        print(f"  !! none: #{p.pk} {p.name[:70]}")
+        print(f"  !! unchecked: #{p.pk} {p.name[:70]}")
     print(f"\n== holders on the rack ==")
     for p in holders:
         for r in StockItem.objects.filter(part=p, quantity__gt=0).order_by("pk"):
             where = f"in tool #{r.belongs_to_id}" if r.belongs_to_id else (r.location.pathstring if r.location else "-")
             print(f"  #{r.pk} {p.name[:55]} qty={r.quantity:g} {where}")
-    print(f"\nAUDIT {'CLEAN' if not shared and not missing else 'FINDINGS'}: {len(tools)} tools, {len(shared)} shared numbers, {len(missing)} cutter parts without a speeds & feeds link")
+    print(f"\nAUDIT {'CLEAN' if not shared and not missing else 'FINDINGS'}: {len(tools)} tools, {len(shared)} shared numbers, {len(missing)} cutter parts with no speeds & feeds record ({len(nopub)} recorded as none published)")
 
 
 def cmd_show(a):
@@ -427,15 +434,32 @@ def cmd_scrap(a):
     print("SUCCESS")
 
 
-def cmd_sf(a):
-    p = Part.objects.get(pk=a.part)
+def set_sf(part_pk, url_text, comment, commit):
+    """One speeds & feeds link Attachment per cutter part (comment starts SF_PREFIX); updates in place."""
+    p = Part.objects.get(pk=part_pk)
     ct = ContentType.objects.get_for_model(Part)
     existing = [x for x in Attachment.objects.filter(model_type=ct, model_id=p.pk) if (x.comment or "").startswith(SF_PREFIX)]
-    link = None if a.url.lower() == "none" else a.url
-    comment = a.comment or (f"{SF_PREFIX} (mfg)" if link else f"{SF_PREFIX}: none published by the manufacturer ({TODAY})")
+    none = url_text.lower() == "none"
+    if none:
+        # An Attachment must carry a file or a link (ValidationError "Missing external link", hit
+        # 2026-10-08), so "none published" points at the vendor page where the absence was checked.
+        pages = [sp.link for sp in SupplierPart.objects.filter(part=p) if sp.link]
+        if not pages:
+            die(f"#{p.pk}: 'none' needs a supplier part with a link to point at; give a URL instead")
+        link = pages[0]
+        comment = comment or f"{SF_PREFIX}: none published by the manufacturer ({TODAY})"
+        if not comment.startswith(SF_NONE):
+            die(f"#{p.pk}: a 'none' comment must start {SF_NONE!r} so the audit can tell it from a chart")
+    else:
+        link = url_text
+        comment = comment or f"{SF_PREFIX} (mfg)"
+        if not comment.startswith(SF_PREFIX):
+            comment = f"{SF_PREFIX}: {comment}"   # the audit finds these by prefix; a free comment would hide the link from it
+        if comment.startswith(SF_NONE):
+            die(f"#{p.pk}: a chart link must not carry a 'none' comment")
     print(f"#{p.pk} {p.name[:60]}\n  existing: {[(x.link, x.comment) for x in existing]}\n  set: {link} | {comment}")
-    if not a.commit:
-        print("\nDRY RUN -- add --commit"); return
+    if not commit:
+        return
     if existing:
         x = existing[0]
         Attachment.objects.filter(pk=x.pk).update(link=link or "", comment=comment)
@@ -444,7 +468,28 @@ def cmd_sf(a):
         x.save()
     chk = Attachment.objects.get(pk=x.pk)
     assert (chk.link or None) == link and chk.comment == comment, "attachment did not stick"
-    print(f"OK attachment #{chk.pk} on part #{p.pk}: {chk.link or '(no link)'} | {chk.comment}\nSUCCESS")
+    print(f"  OK attachment #{chk.pk}: {chk.link or '(no link)'}")
+
+
+def cmd_sf(a):
+    set_sf(a.part, a.url, a.comment, a.commit)
+    print("SUCCESS" if a.commit else "\nDRY RUN -- add --commit")
+
+
+def cmd_sf_batch(a):
+    rows = []
+    for n, line in enumerate(open(a.file, encoding="utf-8"), 1):
+        line = line.rstrip("\n")
+        if not line.strip() or line.startswith("#"):
+            continue
+        f = line.split("\t")
+        if len(f) < 2:
+            die(f"{a.file}:{n}: need part<TAB>url[<TAB>comment]")
+        rows.append((int(f[0]), f[1].strip(), f[2].strip() if len(f) > 2 and f[2].strip() else None))
+    for pk, u, c in rows:
+        set_sf(pk, u, c, a.commit)
+    print(f"{len(rows)} parts")
+    print("SUCCESS" if a.commit else "\nDRY RUN -- add --commit")
 
 
 ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -458,5 +503,6 @@ x = sub.add_parser("unfit"); x.add_argument("ref"); x.add_argument("--commit", a
 x = sub.add_parser("replace"); x.add_argument("ref"); x.add_argument("--reason"); x.add_argument("--commit", action="store_true")
 x = sub.add_parser("scrap"); x.add_argument("ref"); x.add_argument("--reason"); x.add_argument("--commit", action="store_true")
 x = sub.add_parser("sf"); x.add_argument("part", type=int); x.add_argument("url"); x.add_argument("--comment"); x.add_argument("--commit", action="store_true")
+x = sub.add_parser("sf-batch"); x.add_argument("file"); x.add_argument("--commit", action="store_true")
 args = ap.parse_args()
-globals()[f"cmd_{args.cmd}"](args)
+globals()[f"cmd_{args.cmd.replace('-', '_')}"](args)

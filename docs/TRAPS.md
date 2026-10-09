@@ -11412,3 +11412,41 @@ part page. Scott saw them immediately: *"shows up on dashboard even though it
 is marked as returned"* - the Receiving list, the location list and the
 dashboard all count rows, not pieces. The fate goes on the PART notes and the
 row is deleted; the PO line keeps the price. `deploy_po.py` does it that way.
+
+## Stock items have no parameters on 1.5.5 (2026-10-08)
+
+`InvenTreeParameterMixin` is on `Part` only; `common.Parameter.model_type` accepts
+`part` but a stock-item template cannot be created. Tool numbers therefore live in
+**tags** (`StockItem.tags`, taggit) — multi-valued and non-unique, which is what the
+tool-record contract needs anyway. Probed with `param_probe*.py` before designing
+around it; don't re-derive.
+
+## An Attachment must carry a file OR a link (2026-10-08)
+
+`Attachment(...).save()` with neither raises `ValidationError {'attachment': ['Missing
+file'], 'link': ['Missing external link']}`. A "none published" speeds & feeds record
+therefore points at the vendor page where the absence was checked, with the comment
+starting `Speeds & feeds: none`; `tool_tag.py audit` tells the two apart by that prefix.
+18 of 55 writes failed on this the first time; `set_sf` now refuses a `none` row for a
+part with no supplier link rather than silently skipping it.
+
+## Tooling/Holders (cat 44) is a grab-bag (2026-10-08)
+
+It holds saw blades, bolts, boring bars and three plain fasteners (#1066/#1067/#1068, no
+supplier part) alongside the BT30 holders. Anything that needs "the holders" must filter
+on `name__icontains="BT30"` and exclude pull studs; a category query alone audits the
+wrong things. The fasteners are still misfiled.
+
+## Vendor sites, 2026-10-08 fetch behaviour (for the next S&F pass)
+
+- **haascnc.com / haastooling.com**: product pages 403 to WebFetch and curl; open fine
+  in the browser pane, where the Speeds & Feeds PDF href is in the DOM. The PDFs
+  themselves curl 200 from `haastooling.com/content/dam/...`.
+- **niagaracutter.com**: TLS certificate expired, 403 to curl even with `-k`, and the
+  browser pane refused the navigation. Nothing on the site could be read.
+- **tormach.com**: 450 to WebFetch; `catalogsearch/result/?q=` renders an empty body in
+  the browser pane. Product pages by their own URL work.
+- **mscdirect.com**: "not available for your use" to fetch; browser pane fine. Memory
+  `browser-beats-curl` holds.
+- **lakeshorecarbide.com**: everything fetches; the search page redirects to a product
+  page without ever printing the SKU, so confirm the match by description.
