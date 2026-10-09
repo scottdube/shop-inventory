@@ -15,6 +15,8 @@ the server; pull them with `itq pull` and actually look.
 Templates (see LABELLING.md for why they are 62mm and not the stock 50mm):
   11  Shop Part 62mm (QR + Text)        default here
   12  Shop Stock Item 62mm (QR + Text)  --stockitem, takes StockItem pks
+  15  Shop Tool Tag 62x38mm (QR + T number)  --stockitem --template 15, tool records
+                                         (labels/tooltag_62x38.html, tool_tag.py)
 """
 import argparse, os, sys, django
 

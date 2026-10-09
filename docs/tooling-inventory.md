@@ -223,13 +223,17 @@ indications of others."*
   tool."* Rejected: numbering the holder (serialised holder stock items with the cutter
   installed). That was the first draft; it is how PDX sells the tags, not how the CAM
   thinks.
-- *"a cutter may end up being numbered with 2 diff numbers, if one was designated as a
-  finish vs roughing tool"* and *"dont make that impossible"* — numbers are a LIST per
-  cutter, and the same number on two cutters is a `?? WARNING` in the audit, never a
-  refusal.
+- *"dont make that impossible"* — the same number on two cutters is a `?? WARNING` in the
+  audit, never a refusal.
+- **One T number per tool record** (later the same day, after the first label render showed
+  "T18 · T22"): *"it should only have 1 tool number on it the tool number also carries the
+  length in pp so the control will think it has the correct length even tho 18 and 22 will
+  likely be diff."* The earlier reading — a cutter may carry a roughing and a finishing
+  number as a LIST — is withdrawn: two Fusion entries for one cutter part are two physical
+  tool records (or one Fusion entry to retire). `parse_numbers` now refuses more than one.
 
-Shape on 1.5.5: a tool = a qty-1 stock item of the cutter part carrying `T7`-style
-**tags** (stock items have no parameters on this version; tags are visible, multi-valued,
+Shape on 1.5.5: a tool = a qty-1 stock item of the cutter part carrying one `T7`-style
+**tag** (stock items have no parameters on this version; tags are visible, filterable,
 non-unique). The holder is a qty-1 split of the rack row **installed** into the tool
 (`belongs_to`, same as the pull studs in the shrink-fit holders) and merges back on
 `unfit`. `replace` retires the old item (DESTROYED, qty 0, `delete_on_deplete=False`) and
@@ -257,8 +261,20 @@ file or a link. Sources that worked:
 **Master T list = Fusion library "Tormach 1100MX Unified"** (Scott, 2026-10-08: *"Unified is
 going to be the master, I hope to work on this while in fl this winter. Now that I have remote
 access to the mill."*). The Aluminum and Aluminum_RENUMBERED_v2 libraries are not consulted.
-No tool has been created yet: tools get made only for cutters physically in holders, which
-needs Scott at the rack (or a photo per holder).
+**First tool record 2026-10-08: #905**, part 525 Lakeshore 11DRLML14 1/4" drill mill
+(http://192.168.50.10:8001/web/stock/item/905), created with both of Unified's numbers
+(T18, T22) before the one-number ruling — **Scott has to say which one it is**; the other
+is a second physical drill mill or a Unified entry to retire. No holder installed: the
+Tormach 39655 ER20 60 mm holder it sits in has no InvenTree part (Scott to confirm he owns
+it before one is made). Further tools get made only for cutters physically in holders,
+which needs Scott at the rack (or a photo per holder). Seen on the way: part 119 (Shars
+BT30 ER20 45 mm 4-pc set) has two rows, #19 and #20, qty 4 each at the same location —
+violates one-row-per-part-per-location, not fixed.
+
+Label: template 15 "Shop Tool Tag 62x38mm (QR + T number)" from `labels/tooltag_62x38.html`,
+installed with `scripts/new_label_tpl.py` (new; creates a LabelTemplate from a pushed HTML
+file, refuses a duplicate name), rendered with `print_part_label.py <pk> --stockitem
+--template 15`. Geometry rules and measurements in `docs/LABELLING.md`.
 Scott's T-number schema (ranges by cutter class, 2025-08-12) is copied in
 `tormach-1100mx/docs/tool-numbering-schema.md`; Unified is 13/41 on-schema as of 2026-10-08
 and the renumbering is his winter 2026–27 job. `tool_tag.py` does not enforce the schema —

@@ -3,14 +3,19 @@ number it; the holder is an optional attribute of the tool.
 
 Scott, 2026-10-08: "the tool number is the cutter, that's how fusion does it and how
 pathpilot does it, the holder could and should be an optional attribute but is not the
-identity of the tool."  And a cutter may carry two numbers (roughing and finishing
-entries for the same physical cutter), so numbers are a LIST and a number on two
-cutters is a WARNING, never an error ("dont make that impossible").
+identity of the tool."  A number on two cutters is a WARNING, never an error ("dont
+make that impossible").  But a tool record carries exactly ONE number: PathPilot's tool
+table holds the length offset per T number, so one physical cutter-in-holder tagged
+T18 and T22 would let the control run the wrong length (Scott, 2026-10-08: "it should
+only have 1 tool number on it ... the control will think it has the correct length even
+tho 18 and 22 will likely be diff").  Two Fusion entries for one cutter part are two
+tool records, or one record and a Fusion entry to retire.  Ruled out earlier the same
+day: numbers as a list per record.
 
 Record shape on this install (InvenTree 1.5.5):
 
   * A tool is one qty-1 StockItem of a cutter part, split off the part's counted row
-    when the cutter goes into service.  Its tool numbers are TAGS (`T7`, `T17`):
+    when the cutter goes into service.  Its tool number is a TAG (`T7`):
     stock items have no parameters in 1.5.5 (no InvenTreeParameterMixin on StockItem,
     probed 2026-10-08), and tags are visible, filterable, multi-valued and non-unique,
     which is exactly the contract above.  The QR on the tag label is the item's own
@@ -37,8 +42,8 @@ Usage (all mutate only with --commit; run via ~/code/scripts/itq):
 
   itq run scripts/tool_tag.py audit
   itq run scripts/tool_tag.py show T7
-  itq run scripts/tool_tag.py new <cutter_part_pk> T7[,T17] [--holder <holder_part_pk>] [--note "..."] --commit
-  itq run scripts/tool_tag.py set <stock_pk|T7> T7,T17 --commit        # replace the list
+  itq run scripts/tool_tag.py new <cutter_part_pk> T7 [--holder <holder_part_pk>] [--note "..."] --commit
+  itq run scripts/tool_tag.py set <stock_pk|T7> T17 --commit           # renumber (one number per tool)
   itq run scripts/tool_tag.py fit <stock_pk|T7> <holder_part_pk> --commit
   itq run scripts/tool_tag.py unfit <stock_pk|T7> --commit
   itq run scripts/tool_tag.py replace <stock_pk|T7> [--reason "..."] --commit
@@ -115,7 +120,11 @@ def parse_numbers(text):
     for n in nums:
         if not TNUM.match(n):
             die(f"{n!r} is not a tool number (T1..T999)")
-    return sorted(set(nums), key=lambda x: int(x[1:]))
+    nums = sorted(set(nums), key=lambda x: int(x[1:]))
+    if len(nums) != 1:
+        die(f"one tool number per tool record, got {nums}: PathPilot holds the length offset "
+            "per T number, so a second number is a second physical tool (make another record)")
+    return nums
 
 
 def resolve(ref):

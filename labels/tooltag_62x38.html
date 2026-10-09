@@ -1,0 +1,151 @@
+{% extends "label/label_base.html" %}
+
+{% load l10n i18n barcode %}
+
+{# Tool-tag label, 62 x 38 mm, for the printed BT30 tag (tormach-1100mx/docs/tool-tags.md).
+
+   Rendered from the TOOL stock item: a qty-1 cutter item whose T numbers are its
+   tags and whose holder is installed into it (shop-inventory/scripts/tool_tag.py).
+   The tag plate is 62 wide; the label's top 30 mm lies on the flat and the bottom
+   8 mm wraps the 30-degree edge lip, so the T NUMBER goes in that bottom strip --
+   it is the part that faces you when the tag is parked in the tower.
+
+   No gauge length anywhere on it (Scott: "false sense of security"). No holder
+   in the big type: the holder is an attribute of the tool, not its identity.
+   ONE tool number: PathPilot's tool table carries the length offset per T number,
+   so a tag reading "T18 . T22" would let the control load the wrong length
+   (Scott, 2026-10-08). A record with more than one tag is a data error and the
+   label says so in small type instead of hiding it.
+#}
+
+{% block style %}
+
+.qr {
+    position: absolute;
+    left: 2mm;
+    top: 2mm;
+    height: 22mm;
+    width: 22mm;
+}
+
+/* Cutter name: up to three lines beside the QR. Word-wrap decides the line
+   count, so long names drop a size rather than overprint the lines below
+   (the travel-bag lesson, 2026-09-20). */
+.name {
+    font-family: Arial, Helvetica, sans-serif;
+    position: absolute;
+    left: 26mm;
+    top: 1.8mm;
+    width: 33mm;
+    font-size: 3.4mm;
+    font-weight: bold;
+    line-height: 1.15;
+}
+.name.long {
+    font-size: 2.7mm;
+    line-height: 1.1;
+}
+
+/* Manufacturer and part number: the reorder handle. nowrap overflows the box,
+   so the TEMPLATE truncates: measured 2026-10-08, 24 chars at 2.6mm ran to
+   60.5mm (1.5mm from the edge); 22 chars at 2.5mm stay inside 58mm. */
+.mpn {
+    font-family: Arial, Helvetica, sans-serif;
+    position: absolute;
+    left: 26mm;
+    top: 15.4mm;
+    width: 33mm;
+    font-size: 2.5mm;
+    white-space: nowrap;
+}
+
+/* Holder currently fitted. Blank when none is recorded: an unrecorded holder is
+   not the same as no holder, and a label must not assert what nobody checked. */
+.holder {
+    font-family: Arial, Helvetica, sans-serif;
+    position: absolute;
+    left: 26mm;
+    top: 19.4mm;
+    width: 33mm;
+    font-size: 2.5mm;
+    white-space: nowrap;
+}
+
+/* Data-error line: only rendered when the record carries more than one T number. */
+.warn {
+    font-family: Arial, Helvetica, sans-serif;
+    position: absolute;
+    left: 26mm;
+    top: 25.2mm;
+    width: 33mm;
+    font-size: 2.3mm;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+/* Stock item pk under the QR so a human can type what the phone reads; the QR
+   itself is the item's own barcode (whatever format this install generates). */
+.id {
+    font-family: Arial, Helvetica, sans-serif;
+    position: absolute;
+    left: 2mm;
+    top: 24.6mm;
+    width: 22mm;
+    font-size: 2.2mm;
+    text-align: center;
+    white-space: nowrap;
+}
+
+/* The fold is at 30 mm. Nothing straddles it: the strip text sits in the
+   31-36.5 mm band, 1.5 mm clear of the fold and of the unprintable bottom edge.
+   Black on white, not inverted: a thermal head cannot reliably fill a 62 x 8
+   solid, and the bar would show every scuff on the lip. One number, so no
+   small-size variant. */
+.tnum {
+    font-family: Arial, Helvetica, sans-serif;
+    position: absolute;
+    left: 2mm;
+    top: 30.6mm;
+    width: 58mm;
+    height: 6mm;
+    font-size: 5.4mm;
+    line-height: 6mm;
+    font-weight: bold;
+    letter-spacing: 0.4mm;
+    text-align: center;
+    white-space: nowrap;
+}
+{% endblock style %}
+
+{% block content %}
+
+<img class='qr' alt="{% trans 'QR Code' %}" src='{% qrcode qr_data %}'>
+<div class='id'>#{{ item.pk }}</div>
+
+{% comment %}
+   Truncated in the TEMPLATE, never by CSS overflow: WeasyPrint does not clip
+   absolutely-positioned blocks. ~21 chars per line at 3.4mm Arial across 34mm;
+   names over 40 chars drop to 2.7mm (about 27 per line, three lines in 9mm).
+   Comment tags, not hash-brace, which is single-line only.
+{% endcomment %}
+<div class='name{% if item.part.name|length > 40 %} long{% endif %}'>{{ item.part.name|truncatechars:78 }}</div>
+
+<div class='mpn'>{% with mp=item.part.manufacturer_parts.first %}{% if mp %}{{ mp.manufacturer.name|truncatechars:9 }} {{ mp.MPN|truncatechars:12 }}{% elif item.part.IPN %}{{ item.part.IPN|truncatechars:22 }}{% else %}&nbsp;{% endif %}{% endwith %}</div>
+
+{% comment %}
+   The holder is whichever installed child is NOT a pull stud; studs are
+   installed in holders, not tools, so a tool's direct children are holders.
+{% endcomment %}
+<div class='holder'>{% with h=item.installed_parts.first %}{% if h %}in {{ h.part.name|truncatechars:30 }}{% else %}&nbsp;{% endif %}{% endwith %}</div>
+
+{% comment %}
+   The T number is the item's tag. Exactly one: the strip prints the first tag,
+   and a record carrying more than one gets the warning line so the error is
+   visible on the bench instead of silently printing one of them.
+{% endcomment %}
+{% with tags=item.tags.all %}
+<div class='tnum'>{% if tags %}{{ tags.0.name }}{% else %}no T number{% endif %}</div>
+{% if tags|length > 1 %}<div class='warn'>! {{ tags|length }} T numbers on record</div>{% endif %}
+{% endwith %}
+
+{% endblock content %}

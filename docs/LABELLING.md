@@ -132,6 +132,7 @@ Two independent problems, both fixed by authoring at the tape's real width:
 | `Shop Location 62mm Compact (QR + Text)` | 62 × 16 mm | ~12 mm | **default** — matches the Avery 5167 scale already in use |
 | `Shop Part 62mm (QR + Text)` | 62 × 18 mm | ~14 mm | name (3 lines) + location · category |
 | `Shop Stock Item 62mm (QR + Text)` | 62 × 18 mm | ~14 mm | name + quantity · location + serial/batch |
+| `Shop Tool Tag 62x38mm (QR + T number)` | 62 × 38 mm | ~22 mm | template 15, `labels/tooltag_62x38.html`, for the printed BT30 tag: top 30 mm on the flat (QR, `#pk`, name, mfr/MPN, holder), the ONE T number at 5.4 mm in the bottom 8 mm strip that wraps the tag's angled edge; nothing in the 29.5–30.5 mm fold band. Measured 2026-10-08: a `nowrap` line of 24 chars at 2.6 mm Arial ran to 1.5 mm from the right edge; now 21 chars at 2.5 mm. Render only, on request. |
 
 ## Printing an Avery sheet — the Chrome route
 
@@ -212,6 +213,7 @@ tape, and continuous DK tape is consumed by label *length*, so:
 |---|---:|---:|
 | Location 62mm Compact | 16mm | ~310 |
 | Part / Stock Item 62mm | 18mm | ~275 |
+| Tool Tag 62x38mm | 38mm | ~130 |
 | Location 62mm | 25mm | ~200 |
 
 Those are ceilings — they ignore the feed the cutter eats between jobs, which
@@ -326,6 +328,7 @@ badly understates what a real roll holds.
 |---|---|---|
 | Location 62mm Compact | 16 mm | ~1,905 |
 | Part / Stock Item 62mm | 18 mm | ~1,693 |
+| Tool Tag 62x38mm | 38 mm | ~800 |
 | Location 62mm | 25 mm | ~1,219 |
 
 Against the actual shop: 324 drawers at 16 mm plus ~1,050 catalogue parts at
