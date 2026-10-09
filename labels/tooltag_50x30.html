@@ -1,0 +1,124 @@
+{% extends "label/label_base.html" %}
+
+{% load l10n i18n barcode %}
+
+{# Tool-tag label, 50 x 30 mm, for the printed BT30 tag (tormach-1100mx/docs/tool-tags.md).
+   Supersedes tooltag_62x38.html (template 15) on 2026-10-08.
+
+   Rendered from the TOOL stock item: a qty-1 cutter item whose T number is its tag
+   and whose holder is installed into it (shop-inventory/scripts/tool_tag.py).
+
+   Why 50 x 30: the enclosure rack's pocket pitch is 55.88 mm (Scott's Fusion rack
+   model), so a 62 plate overlapped its neighbor by 6 mm; the plate is now 52 wide and
+   the label comes off the DK-2223 50 mm roll. And the plate is relieved for the clip
+   ring from 26.5 mm out of the holder center, so only the LOWER 23 mm of the flat is
+   clear of the flange; the old 38 label put its top 7 mm (QR, name) under the flange.
+   Now 22 mm on the flat + 8 mm on the 30-degree lip, label top 1.5 mm below the ring.
+
+   ONE tool number, in the lip strip: PathPilot carries the length offset per T number.
+   No gauge length (Scott: "false sense of security"). No holder in the big type.
+#}
+
+{% block style %}
+
+/* 18 mm QR: INV-SI<pk> is a 25-module code, 0.72 mm modules, phone-readable. */
+.qr {
+    position: absolute;
+    left: 2mm;
+    top: 2mm;
+    height: 18mm;
+    width: 18mm;
+}
+
+/* Text column 22..48 mm. Name up to two lines at 3.0 mm; over 28 chars drops to
+   2.4 mm and three lines. Everything ends above 19.5 mm; the fold is at 22. */
+.name {
+    font-family: Arial, Helvetica, sans-serif;
+    position: absolute;
+    left: 22mm;
+    top: 1.6mm;
+    width: 26mm;
+    font-size: 3.0mm;
+    font-weight: bold;
+    line-height: 1.15;
+}
+.name.long {
+    font-size: 2.4mm;
+    line-height: 1.1;
+}
+
+/* nowrap lines overflow their box, so the TEMPLATE truncates: 2.3 mm Arial runs
+   about 1.25 mm per character, 20 chars = 25 mm. */
+.mpn {
+    font-family: Arial, Helvetica, sans-serif;
+    position: absolute;
+    left: 22mm;
+    top: 10.8mm;
+    width: 26mm;
+    font-size: 2.3mm;
+    white-space: nowrap;
+}
+
+/* Holder currently fitted; blank when none is recorded (unrecorded is not none). */
+.holder {
+    font-family: Arial, Helvetica, sans-serif;
+    position: absolute;
+    left: 22mm;
+    top: 13.8mm;
+    width: 26mm;
+    font-size: 2.3mm;
+    white-space: nowrap;
+}
+
+/* Stock item pk so a human can type what the phone reads. Shares the line with
+   the data-error warning, which only renders for a record with >1 T number. */
+.id {
+    font-family: Arial, Helvetica, sans-serif;
+    position: absolute;
+    left: 22mm;
+    top: 16.8mm;
+    width: 26mm;
+    font-size: 2.2mm;
+    white-space: nowrap;
+}
+.warn { font-weight: bold; }
+
+/* Fold at 22 mm. Strip text 22.8..28.0: 0.8 clear of the fold, 2.0 of the cut edge.
+   Black on white, not inverted (thermal heads do not fill a solid bar cleanly). */
+.tnum {
+    font-family: Arial, Helvetica, sans-serif;
+    position: absolute;
+    left: 2mm;
+    top: 22.8mm;
+    width: 46mm;
+    height: 5.2mm;
+    font-size: 4.8mm;
+    line-height: 5.2mm;
+    font-weight: bold;
+    letter-spacing: 0.4mm;
+    text-align: center;
+    white-space: nowrap;
+}
+
+{% endblock style %}
+
+{% block content %}
+
+<img class='qr' alt="{% trans 'QR Code' %}" src='{% qrcode qr_data %}'>
+
+{% comment %}
+   Truncated in the TEMPLATE, never by CSS overflow: WeasyPrint does not clip
+   absolutely-positioned blocks. Comment tags, not hash-brace (single-line only).
+{% endcomment %}
+<div class='name{% if item.part.name|length > 28 %} long{% endif %}'>{{ item.part.name|truncatechars:60 }}</div>
+
+<div class='mpn'>{% with mp=item.part.manufacturer_parts.first %}{% if mp %}{{ mp.manufacturer.name|truncatechars:8 }} {{ mp.MPN|truncatechars:11 }}{% elif item.part.IPN %}{{ item.part.IPN|truncatechars:20 }}{% else %}&nbsp;{% endif %}{% endwith %}</div>
+
+<div class='holder'>{% with h=item.installed_parts.first %}{% if h %}in {{ h.part.name|truncatechars:17 }}{% else %}&nbsp;{% endif %}{% endwith %}</div>
+
+{% with tags=item.tags.all %}
+<div class='id'>#{{ item.pk }}{% if tags|length > 1 %} <span class='warn'>! {{ tags|length }} T numbers on record</span>{% endif %}</div>
+<div class='tnum'>{% if tags %}{{ tags.0.name }}{% else %}no T number{% endif %}</div>
+{% endwith %}
+
+{% endblock content %}

@@ -275,10 +275,12 @@ which needs Scott at the rack (or a photo per holder). Seen on the way: part 119
 BT30 ER20 45 mm 4-pc set) has two rows, #19 and #20, qty 4 each at the same location —
 violates one-row-per-part-per-location, not fixed.
 
-Label: template 15 "Shop Tool Tag 62x38mm (QR + T number)" from `labels/tooltag_62x38.html`,
-installed with `scripts/new_label_tpl.py` (new; creates a LabelTemplate from a pushed HTML
-file, refuses a duplicate name), rendered with `print_part_label.py <pk> --stockitem
---template 15`. Geometry rules and measurements in `docs/LABELLING.md`.
+Label: template 16 "Shop Tool Tag 50x30mm (QR + T number)" from `labels/tooltag_50x30.html`
+on the DK-2223 50 mm roll (to buy), installed with `scripts/new_label_tpl.py` (new; creates a
+LabelTemplate from a pushed HTML file, refuses a duplicate name), rendered with
+`print_part_label.py <pk> --stockitem --template 16`. Template 15 (62 × 38) is disabled: the
+62 plate collides on the rack's 55.88 mm pitch and its top 7 mm sat under the flange.
+Geometry rules and measurements in `docs/LABELLING.md`.
 Scott's T-number schema (ranges by cutter class, 2025-08-12) is copied in
 `tormach-1100mx/docs/tool-numbering-schema.md`; Unified is 13/41 on-schema as of 2026-10-08
 and the renumbering is his winter 2026–27 job. `tool_tag.py` does not enforce the schema —

@@ -29,9 +29,10 @@ Narrower continuous rolls exist for this printer (brother-usa.com, verified live
 | DK-2223 | 50 mm | $24.49 |
 | DK-2205 | 62 mm | $25.99 |
 
-Asked 2026-10-08 because 62 mm tool tags may not clear each other on the
-enclosure rack (tormach-1100mx/docs/tool-tags.md). A narrower roll means a
-narrower template authored at that width AND the roll swapped in the printer:
+The tool tags moved to **DK-2223 (50 mm)** on 2026-10-08 because 62 mm tags do
+not clear each other on the enclosure rack's 55.88 mm pitch
+(tormach-1100mx/docs/tool-tags.md); the roll is not yet bought. A narrower roll
+means a narrower template authored at that width AND the roll swapped in the printer:
 CUPS scales to the loaded roll, so a 50 mm template on the 62 mm roll prints
 1.24× (the "Author at 62 mm" rule below is really "author at the loaded width").
 
@@ -149,7 +150,7 @@ Two independent problems, both fixed by authoring at the tape's real width:
 | `Shop Location 62mm Compact (QR + Text)` | 62 × 16 mm | ~12 mm | **default** — matches the Avery 5167 scale already in use |
 | `Shop Part 62mm (QR + Text)` | 62 × 18 mm | ~14 mm | name (3 lines) + location · category |
 | `Shop Stock Item 62mm (QR + Text)` | 62 × 18 mm | ~14 mm | name + quantity · location + serial/batch |
-| `Shop Tool Tag 62x38mm (QR + T number)` | 62 × 38 mm | ~22 mm | template 15, `labels/tooltag_62x38.html`, for the printed BT30 tag: top 30 mm on the flat (QR, `#pk`, name, mfr/MPN, holder), the ONE T number at 5.4 mm in the bottom 8 mm strip that wraps the tag's angled edge; nothing in the 29.5–30.5 mm fold band. Measured 2026-10-08: a `nowrap` line of 24 chars at 2.6 mm Arial ran to 1.5 mm from the right edge; now 21 chars at 2.5 mm. Render only, on request. |
+| `Shop Tool Tag 50x30mm (QR + T number)` | 50 × 30 mm | 18 mm | template 16, `labels/tooltag_50x30.html`, **DK-2223 50 mm roll** (not the 62 roll: CUPS would scale it 1.24×). For the printed BT30 tag: 22 mm on the flat (QR, name, mfr/MPN, holder, `#pk`), the ONE T number at 4.8 mm in the 8 mm strip that wraps the tag's lip; nothing in the 21.5–22.5 mm fold band. Rendered 2026-10-08: margins L 2.95 T 2.10 R 3.90 B 2.80 mm. Render only, on request. Template 15 (62 × 38) is DISABLED: 62 plates collide on the rack's 55.88 mm pitch and its top 7 mm sat under the holder flange; one was printed. |
 
 ## Printing an Avery sheet — the Chrome route
 
@@ -230,7 +231,7 @@ tape, and continuous DK tape is consumed by label *length*, so:
 |---|---:|---:|
 | Location 62mm Compact | 16mm | ~310 |
 | Part / Stock Item 62mm | 18mm | ~275 |
-| Tool Tag 62x38mm | 38mm | ~130 |
+| Tool Tag 50x30mm (on its own 50 mm roll) | 30mm | ~165 of a 5 m roll |
 | Location 62mm | 25mm | ~200 |
 
 Those are ceilings — they ignore the feed the cutter eats between jobs, which
@@ -345,7 +346,7 @@ badly understates what a real roll holds.
 |---|---|---|
 | Location 62mm Compact | 16 mm | ~1,905 |
 | Part / Stock Item 62mm | 18 mm | ~1,693 |
-| Tool Tag 62x38mm | 38 mm | ~800 |
+| Tool Tag 50x30mm (DK-2223, 30.48 m) | 30 mm | ~1,000 |
 | Location 62mm | 25 mm | ~1,219 |
 
 Against the actual shop: 324 drawers at 16 mm plus ~1,050 catalogue parts at
