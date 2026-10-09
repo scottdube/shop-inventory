@@ -1,9 +1,12 @@
 {% extends "label/label_base.html" %}
 
-{% load l10n i18n barcode %}
+{% load l10n i18n barcode report %}
 
 {# Tool-tag label, 50 x 30 mm, for the printed BT30 tag (tormach-1100mx/docs/tool-tags.md).
-   Supersedes tooltag_62x38.html (template 15) on 2026-10-08.
+   Supersedes tooltag_62x38.html (template 15) on 2026-10-08; layout revised 2026-10-09
+   to Scott's spec: maker on the top line, tool detail nearer the fold, smaller QR, and
+   the strip reads  T22  1/4"  120deg  -- number at the left, then diameter and profile
+   (part parameters "Cutter Diameter" / "Cutter Profile", scripts/cutter_params.py).
 
    Rendered from the TOOL stock item: a qty-1 cutter item whose T number is its tag
    and whose holder is installed into it (shop-inventory/scripts/tool_tag.py).
@@ -21,83 +24,92 @@
 
 {% block style %}
 
-/* 18 mm QR: INV-SI<pk> is a 25-module code, 0.72 mm modules, phone-readable. */
+/* 14 mm QR: INV-SI<pk> is a 25-module code, 0.56 mm modules, still phone-readable. */
 .qr {
     position: absolute;
     left: 2mm;
     top: 2mm;
-    height: 18mm;
-    width: 18mm;
+    height: 14mm;
+    width: 14mm;
 }
 
-/* Text column 22..48 mm. Name up to two lines at 3.0 mm; over 28 chars drops to
-   2.4 mm and three lines. Everything ends above 19.5 mm; the fold is at 22. */
+/* Stock item pk under the QR so a human can type what the phone reads. */
+.id {
+    font-family: Arial, Helvetica, sans-serif;
+    position: absolute;
+    left: 2mm;
+    top: 16.4mm;
+    width: 14mm;
+    font-size: 2.2mm;
+    text-align: center;
+    white-space: nowrap;
+}
+
+/* Text column 18..48 mm (30 wide). Top line: maker and part number, the reorder
+   handle. nowrap overflows its box, so the TEMPLATE truncates (2.4 mm Arial is
+   about 1.3 mm per character; 22 chars = 29 mm). */
+.mpn {
+    font-family: Arial, Helvetica, sans-serif;
+    position: absolute;
+    left: 18mm;
+    top: 1.6mm;
+    width: 30mm;
+    font-size: 2.4mm;
+    white-space: nowrap;
+}
+
+/* Tool detail, set toward the fold: up to three lines ending by 16 mm. Over 38
+   characters drops a size. */
 .name {
     font-family: Arial, Helvetica, sans-serif;
     position: absolute;
-    left: 22mm;
-    top: 1.6mm;
-    width: 26mm;
-    font-size: 3.0mm;
+    left: 18mm;
+    top: 6.0mm;
+    width: 30mm;
+    font-size: 2.8mm;
     font-weight: bold;
     line-height: 1.15;
 }
 .name.long {
-    font-size: 2.4mm;
+    font-size: 2.3mm;
     line-height: 1.1;
 }
 
-/* nowrap lines overflow their box, so the TEMPLATE truncates: 2.3 mm Arial runs
-   about 1.25 mm per character, 20 chars = 25 mm. */
-.mpn {
-    font-family: Arial, Helvetica, sans-serif;
-    position: absolute;
-    left: 22mm;
-    top: 10.8mm;
-    width: 26mm;
-    font-size: 2.3mm;
-    white-space: nowrap;
-}
-
-/* Holder currently fitted; blank when none is recorded (unrecorded is not none). */
+/* Holder currently fitted; blank when none is recorded (unrecorded is not none).
+   Replaced by the data-error line when the record carries more than one T number. */
 .holder {
     font-family: Arial, Helvetica, sans-serif;
     position: absolute;
-    left: 22mm;
-    top: 13.8mm;
-    width: 26mm;
-    font-size: 2.3mm;
-    white-space: nowrap;
-}
-
-/* Stock item pk so a human can type what the phone reads. Shares the line with
-   the data-error warning, which only renders for a record with >1 T number. */
-.id {
-    font-family: Arial, Helvetica, sans-serif;
-    position: absolute;
-    left: 22mm;
-    top: 16.8mm;
-    width: 26mm;
+    left: 18mm;
+    top: 16.6mm;
+    width: 30mm;
     font-size: 2.2mm;
     white-space: nowrap;
 }
 .warn { font-weight: bold; }
 
 /* Fold at 22 mm. Strip text 22.8..28.0: 0.8 clear of the fold, 2.0 of the cut edge.
+   Left-aligned: the T number first, then diameter and profile in smaller type.
    Black on white, not inverted (thermal heads do not fill a solid bar cleanly). */
-.tnum {
+.strip {
     font-family: Arial, Helvetica, sans-serif;
     position: absolute;
-    left: 2mm;
+    left: 2.5mm;
     top: 22.8mm;
     width: 46mm;
     height: 5.2mm;
-    font-size: 4.8mm;
     line-height: 5.2mm;
-    font-weight: bold;
-    letter-spacing: 0.4mm;
-    text-align: center;
     white-space: nowrap;
+}
+.strip .t {
+    font-size: 4.8mm;
+    font-weight: bold;
+    letter-spacing: 0.3mm;
+}
+.strip .d {
+    font-size: 3.4mm;
+    font-weight: bold;
+    margin-left: 3mm;
 }
 
 {% endblock style %}
@@ -105,20 +117,22 @@
 {% block content %}
 
 <img class='qr' alt="{% trans 'QR Code' %}" src='{% qrcode qr_data %}'>
+<div class='id'>#{{ item.pk }}</div>
+
+<div class='mpn'>{% with mp=item.part.manufacturer_parts.first %}{% if mp %}{{ mp.manufacturer.name|truncatechars:9 }} {{ mp.MPN|truncatechars:12 }}{% elif item.part.IPN %}{{ item.part.IPN|truncatechars:22 }}{% else %}&nbsp;{% endif %}{% endwith %}</div>
 
 {% comment %}
    Truncated in the TEMPLATE, never by CSS overflow: WeasyPrint does not clip
    absolutely-positioned blocks. Comment tags, not hash-brace (single-line only).
 {% endcomment %}
-<div class='name{% if item.part.name|length > 28 %} long{% endif %}'>{{ item.part.name|truncatechars:60 }}</div>
-
-<div class='mpn'>{% with mp=item.part.manufacturer_parts.first %}{% if mp %}{{ mp.manufacturer.name|truncatechars:8 }} {{ mp.MPN|truncatechars:11 }}{% elif item.part.IPN %}{{ item.part.IPN|truncatechars:20 }}{% else %}&nbsp;{% endif %}{% endwith %}</div>
-
-<div class='holder'>{% with h=item.installed_parts.first %}{% if h %}in {{ h.part.name|truncatechars:17 }}{% else %}&nbsp;{% endif %}{% endwith %}</div>
+<div class='name{% if item.part.name|length > 38 %} long{% endif %}'>{{ item.part.name|truncatechars:66 }}</div>
 
 {% with tags=item.tags.all %}
-<div class='id'>#{{ item.pk }}{% if tags|length > 1 %} <span class='warn'>! {{ tags|length }} T numbers on record</span>{% endif %}</div>
-<div class='tnum'>{% if tags %}{{ tags.0.name }}{% else %}no T number{% endif %}</div>
+<div class='holder'>{% if tags|length > 1 %}<span class='warn'>! {{ tags|length }} T numbers on record</span>{% else %}{% with h=item.installed_parts.first %}{% if h %}in {{ h.part.name|truncatechars:22 }}{% else %}&nbsp;{% endif %}{% endwith %}{% endif %}</div>
+
+{% parameter item.part "Cutter Diameter" as dia %}
+{% parameter item.part "Cutter Profile" as prof %}
+<div class='strip'><span class='t'>{% if tags %}{{ tags.0.name }}{% else %}no T#{% endif %}</span><span class='d'>{% if dia %}{{ dia.data }}{% endif %}{% if dia and prof %} &nbsp;{% endif %}{% if prof %}{% if "deg" in prof.data %}{{ prof.data|cut:"deg" }}&deg;{% else %}{{ prof.data }}{% endif %}{% endif %}</span></div>
 {% endwith %}
 
 {% endblock content %}

@@ -280,7 +280,14 @@ on the DK-2223 50 mm roll (to buy), installed with `scripts/new_label_tpl.py` (n
 LabelTemplate from a pushed HTML file, refuses a duplicate name), rendered with
 `print_part_label.py <pk> --stockitem --template 16`. Template 15 (62 × 38) is disabled: the
 62 plate collides on the rack's 55.88 mm pitch and its top 7 mm sat under the flange.
-Geometry rules and measurements in `docs/LABELLING.md`.
+Geometry rules and measurements in `docs/LABELLING.md`. The strip reads `T22  1/4"  120°`:
+diameter and profile are the part parameters **Cutter Diameter / Cutter Profile** (templates 5
+and 6, created 2026-10-09), derived from the part NAME by `scripts/cutter_params.py` for 24
+rotating cutters with stock (47 values; the engraver has no diameter in its name). Each carries
+the note "derived from part name by cutter_params.py"; change the note and the script leaves
+that value alone. The Fusion library knows the true diameters and is the better source when the
+winter renumbering happens. Inserts, turning, parting, threading, PCB drill sets and kits are
+skipped: not single rotating cutters.
 Scott's T-number schema (ranges by cutter class, 2025-08-12) is copied in
 `tormach-1100mx/docs/tool-numbering-schema.md`; Unified is 13/41 on-schema as of 2026-10-08
 and the renumbering is his winter 2026–27 job. `tool_tag.py` does not enforce the schema —
