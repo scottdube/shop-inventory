@@ -254,7 +254,14 @@ file or a link. Sources that worked:
 | MSC 82976713 | none; it is **Accupro ASQSC3-Z-CC-AL40H** (read off the page in the browser pane) | mscdirect.com blocks scripted fetch, browser fine |
 | Amazon no-names, SPEED TIGER, SpeTool, VIERDWIN, ACCUCUT | none | |
 
-Still open: no tool has been created yet — the three Tormach tool libraries in Fusion
-(Unified, Aluminum, Aluminum_RENUMBERED_v2) number the same cutters differently and Scott
-has to say which one is master. Also #1066/#1067/#1068 are fasteners filed under
+**Master T list = Fusion library "Tormach 1100MX Unified"** (Scott, 2026-10-08: *"Unified is
+going to be the master, I hope to work on this while in fl this winter. Now that I have remote
+access to the mill."*). The Aluminum and Aluminum_RENUMBERED_v2 libraries are not consulted.
+No tool has been created yet: tools get made only for cutters physically in holders, which
+needs Scott at the rack (or a photo per holder).
+Scott's T-number schema (ranges by cutter class, 2025-08-12) is copied in
+`tormach-1100mx/docs/tool-numbering-schema.md`; Unified is 13/41 on-schema as of 2026-10-08
+and the renumbering is his winter 2026–27 job. `tool_tag.py` does not enforce the schema —
+numbers come from Fusion, and a number outside its band is a Fusion problem, not an
+inventory one. Also #1066/#1067/#1068 are fasteners filed under
 Tooling/Holders (not fixed, flagged).

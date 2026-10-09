@@ -30,8 +30,8 @@ Record shape on this install (InvenTree 1.5.5):
   * Reorder = SupplierPart.link (audited, not rewritten).  Speeds & feeds = an
     Attachment with a link on the cutter PART, comment starting "Speeds & feeds".
 
-The Fusion tool library is the master list of T numbers; this mirrors it, never the
-reverse.  Labels are rendered on request only (memory: labels-print-on-request).
+The Fusion tool library "Tormach 1100MX Unified" is the master list of T numbers (Scott,
+2026-10-08: "Unified is going to be the master"); this mirrors it, never the reverse.  Labels are rendered on request only (memory: labels-print-on-request).
 
 Usage (all mutate only with --commit; run via ~/code/scripts/itq):
 
