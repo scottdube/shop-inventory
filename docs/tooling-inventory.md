@@ -230,7 +230,9 @@ indications of others."*
   length in pp so the control will think it has the correct length even tho 18 and 22 will
   likely be diff."* The earlier reading — a cutter may carry a roughing and a finishing
   number as a LIST — is withdrawn: two Fusion entries for one cutter part are two physical
-  tool records (or one Fusion entry to retire). `parse_numbers` now refuses more than one.
+  tool records (or one Fusion entry to retire). `parse_numbers` now refuses more than one. Trap: `add_tracking_entry` takes the
+  `StockHistoryCode` enum, not an int — `set` crashed after the tags were already written
+  (fixed; the tags stuck, so a crash there is not a failed renumber — read the row).
 
 Shape on 1.5.5: a tool = a qty-1 stock item of the cutter part carrying one `T7`-style
 **tag** (stock items have no parameters on this version; tags are visible, filterable,
@@ -263,8 +265,10 @@ going to be the master, I hope to work on this while in fl this winter. Now that
 access to the mill."*). The Aluminum and Aluminum_RENUMBERED_v2 libraries are not consulted.
 **First tool record 2026-10-08: #905**, part 525 Lakeshore 11DRLML14 1/4" drill mill
 (http://192.168.50.10:8001/web/stock/item/905), created with both of Unified's numbers
-(T18, T22) before the one-number ruling — **Scott has to say which one it is**; the other
-is a second physical drill mill or a Unified entry to retire. No holder installed: the
+(T18, T22) before the one-number ruling; **Scott picked T22** the same day and the record now
+carries T22 alone. T18 in Unified is therefore a second physical drill mill or an entry for
+Scott to retire in the winter renumbering. First tag label printed 2026-10-08 (CUPS job
+QL810W-166) on Scott's request. No holder installed: the
 Tormach 39655 ER20 60 mm holder it sits in has no InvenTree part (Scott to confirm he owns
 it before one is made). Further tools get made only for cutters physically in holders,
 which needs Scott at the rack (or a photo per holder). Seen on the way: part 119 (Shars

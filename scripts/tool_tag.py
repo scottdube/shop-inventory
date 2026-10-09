@@ -72,7 +72,7 @@ from common.models import Attachment                     # noqa: E402
 from company.models import SupplierPart                  # noqa: E402
 from part.models import Part, PartCategory               # noqa: E402
 from stock.models import StockItem, StockLocation        # noqa: E402
-from stock.status_codes import StockStatus               # noqa: E402
+from stock.status_codes import StockHistoryCode, StockStatus  # noqa: E402
 
 RACK_PK = 423          # SLN/Machine Shop/Toolholder Rack
 HOLDER_CATS = (44, 84)  # Tooling/Holders, Tooling/Toolholders/BT30
@@ -378,7 +378,12 @@ def cmd_set(a):
     if not a.commit:
         print("\nDRY RUN -- add --commit"); return
     s = set_tags(s, nums)
-    s.add_tracking_entry(99, USER, notes=f"tool numbers set to {','.join(nums)}")
+    # add_tracking_entry wants the StockHistoryCode enum, not its int (crashed 2026-10-08
+    # after the tags were already set -- the tags stuck, the history line did not).
+    s.add_tracking_entry(StockHistoryCode.EDITED, USER, notes=f"tool number set to {','.join(nums)}")
+    s.notes = f"TOOL {','.join(nums)} -- renumbered {TODAY}. " + (s.notes or "")
+    s.save()
+    assert StockItem.objects.get(pk=s.pk).notes.startswith(f"TOOL {','.join(nums)}")
     print("OK " + describe(s) + "\nSUCCESS")
 
 
