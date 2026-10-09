@@ -18,6 +18,23 @@ RTT. That is fine; latency was investigated and is not a problem.
 Media is **62 mm × 5 m continuous DK tape**. The printer reports it as
 `62mm / 2.4"` and IPP reports `roll_current_62x0mm`.
 
+Narrower continuous rolls exist for this printer (brother-usa.com, verified live
+2026-10-08, each 100 ft, black on white paper, QL-810W in the "For use with" list;
+62 mm is the printer's maximum):
+
+| Roll | Width | Price |
+|---|---|---|
+| DK-2210 | 29 mm | $17.49 |
+| DK-2225 | 38 mm | $22.49 |
+| DK-2223 | 50 mm | $24.49 |
+| DK-2205 | 62 mm | $25.99 |
+
+Asked 2026-10-08 because 62 mm tool tags may not clear each other on the
+enclosure rack (tormach-1100mx/docs/tool-tags.md). A narrower roll means a
+narrower template authored at that width AND the roll swapped in the printer:
+CUPS scales to the loaded roll, so a 50 mm template on the 62 mm roll prints
+1.24× (the "Author at 62 mm" rule below is really "author at the loaded width").
+
 ### Power — and the 2026-08-24 dead-printer diagnosis
 
 From Brother's own spec page, recorded because this doc had no electrical
