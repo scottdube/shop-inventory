@@ -11450,3 +11450,37 @@ wrong things. The fasteners are still misfiled.
   `browser-beats-curl` holds.
 - **lakeshorecarbide.com**: everything fetches; the search page redirects to a product
   page without ever printing the SKU, so confirm the match by description.
+
+## "No vendor handle" was measured on two fields out of four (2026-10-10)
+
+The 09-20/10-07 image-pool closures bucketed an imageless part as unworkable when
+it had no `SupplierPart` and no `Part.link`. Two more places a handle can live
+were never asked: `ManufacturerPart` (0 rows in the bucket, measured tonight) and
+**the IPN itself**. Nine of the 398 "no handle" rows carry an IPN that is a vendor
+identifier — Adafruit PIDs (`P3104`, `P3105`, `P1756`, `P550`), Amazon ASINs
+written as IPN (`B0799LBFNY`, `B07486RHH7`), a Hakko part number (`A5044`).
+Six produced images first try (`~/code/scripts/img_1010.py`; the measurement is
+`scripts/mfr_pool_1010.py`). Coverage 778 → 784/1276.
+
+- **An IPN can be an ASIN with no SupplierPart behind it.** Earlier imports
+  wrote the ASIN into `IPN` and never created the Amazon supplier part, so every
+  ASIN-keyed sweep (`dump_asin_worklist.py`, the pool scripts) missed them. Match
+  `^B0[A-Z0-9]{8}$` on IPN as well as on `SupplierPart.SKU`. `X002B4EKD7`-shaped
+  values are Amazon *seller* SKUs, not ASINs; `/dp/` does not resolve them.
+- **Adafruit: take the cdn-shop image largest-size-first and og:image last.**
+  `og:image` is the 480x360 render on `www.adafruit.com/images/` (and can be a
+  video still, 09-25); the same frame exists at 970x728 on
+  `cdn-shop.adafruit.com/970x728/<pid>-NN.jpg` in the page source. The first dry
+  run took the og 480x360 because it was listed first.
+- **The Mini is still challenged on `amazon.com/dp/`** — 3781-byte titleless
+  page for both ASINs, same as 10-06. The standing shape held: hiRes read in
+  agent Chrome (titles matched the parts), bytes fetched on the Mini from
+  `m.media-amazon.com`. Nothing new to decide; `mini-amazon-reputation-1006` is
+  already queued.
+- **A maker photo can be too small to be a photo.** hakko.com's FR-301 parts
+  page names A5044 verbatim but its image is a 78x58 thumbnail. Left the image
+  blank and set the link only: a filled slot hides the part from every later
+  image pass, and nothing at the bench can read 78 px. hakkousa.com search lists
+  "A5044 Filter (10 pack)" at $10.27 with no image at all.
+- Still blank after this: `B4304H1` (an LED card number, no vendor) and the
+  seller-SKU row above.
