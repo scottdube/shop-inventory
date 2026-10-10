@@ -11484,3 +11484,20 @@ Six produced images first try (`~/code/scripts/img_1010.py`; the measurement is
   "A5044 Filter (10 pack)" at $10.27 with no image at all.
 - Still blank after this: `B4304H1` (an LED card number, no vendor) and the
   seller-SKU row above.
+
+## Walmart's signed-out form can show on a SIGNED-IN first load (2026-10-10)
+
+Measured 16:40 daytime sweep. The first load of `walmart.com/orders` — even
+after a 5 s wait — rendered the track-by-email box and "Sign in or create
+account", **alongside** `Hi, Scott D` and `Sign Out` in the masthead, with zero
+`a[href*="/orders/"]` links. The task file calls that form "a *positive*
+signed-out signal". A plain reload six seconds later rendered Purchase history
+with three order links: the session was live the whole time.
+
+So the form alone is not proof of OUT. **Before recording `walmart=OUT`, reload
+once and wait ~6 s; OUT only if the second load still has the form and no
+`/orders/` links.** Recording OUT off the first load would have pushed a false
+"session went OUT" alarm and armed the next run's "is back" alarm too — two
+notifications for nothing. Same family as the "slow to become scriptable"
+section above: Walmart's pages hydrate in stages, and the stage you catch is
+not the state of the account.
