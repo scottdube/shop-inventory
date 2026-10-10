@@ -1,0 +1,63 @@
+FLORIDA CARRY BOX 1 (FL-01)  -  PACKING LIST          packed 2026-10-10, SLN -> LRD
+56 lines, 374 pieces.   C = commuting tool (goes home to SLN in spring)
+
+ [ ]  qty  item                                                            cat / IPN
+----- ---- --------------------------------------------------------------- ---------------
+ [ ]     4  Hi-Link 5W 5V 1A Low Cost Solution HLK-5M05B AC-DC Power Module  AC-DC Modules
+ [ ]     1  MAX98357 I2S Class-D Amplifier Breakout                          Audio
+ [ ]     1  ReSpeaker Lite Voice Assistant Kit (2-Mic Array, speaker, enclo  Audio
+ [ ]     1  DC Barrel Pigtail, 5.5 x 2.1 mm FEMALE jack, flying leads        Cables
+ [ ]     4  10pcs 275VAC X2 Safety capacitor 275V 10/15/22.5/27.5mm 0.022/0  Capacitors
+ [ ]     5  10pcs 275VAC X2 Safety capacitor 275V 10/15/22.5/27.5mm 0.022/0  Capacitors
+ [ ]     4  Capacitor Electrolytic 470uF 25V (8x12mm)                        Capacitors
+ [ ]    15  DC Barrel Jack, 5.5 x 2.1 mm FEMALE, panel mount, 2-pin, 3A (LE  Connectors
+ [ ]    50  Jumper Shunt 2.54mm, 2-pin                                       Connectors
+ [ ] C   1  BDM Frame with 4 probe pins and LED test board, ECU programming  Diagnostics
+ [ ]     1  waveshare ESP32-S3 5inch Capacitive Touch LCD 800x480 IPS        Display
+ [ ]     1  Heltec V3 ESP32 LoRa Development Board with OLED Display Case N  Displays
+ [ ]     1  VL53L4CD Time-of-Flight Distance Sensor Carrier w/ Voltage Regu  Distance
+ [ ]     1  Dayton Audio DMA45-4 1.5in Full-Range Driver 4 Ohm               Electromechanic
+ [ ]     5  Rotary Encoder GREEN base, dual concentric shaft, 30 detent      Electromechanic
+ [ ]     4  50 PCS Square Fuse 0.5A-10A 250V 392 series                      Fuses
+ [ ] C   1  ARROWMAX Cordless Engraving Pen                                  Hand Tools
+ [ ]    10  Foam Tape, CR neoprene weatherstrip, 3/8 x 1/4 in (Yotache)      Hardware
+ [ ]    14  Socket Head Cap Screw, M2 x 0.4 mm Thread, 16 mm Long, 304 Stai  Hardware
+ [ ]    16  Socket Head Cap Screw, M2 x 0.4 mm Thread, 5 mm Long, 304 Stain  Hardware
+ [ ]     4  Steel Hex Nut, Low-Strength, M3 x 0.5 mm Thread                  Hardware
+ [ ]     4  Steel Pan Head Phillips Screw, M3 x 0.5 mm Thread, 25 mm Long    Hardware
+ [ ]     4  5MH 10MH 15MH 4A Annular Common Mode Filter Inductor 0.6 Wire C  Inductors
+ [ ]     4  LED 5mm Red Clear                                                LEDs
+ [ ]     1  SANXIXING ESP32-S3-WROOM-1 N16R8 Dev Board 44-pin 8M PSRAM       MCU
+ [ ]     1  Seeed Studio XIAO ESP32-S3                                       MCU
+ [ ]     1  Teyleten Robot ESP32S ESP-WROOM-32 Dev Board 38P                 MCU
+ [ ]     1  XIAO nRF52840 & Wio-SX1262 Kit for Meshtastic                    MCU
+ [ ]     6  Athom US V2 Smart Plug 16A, ESPHome pre-flashed (PG03V2-US16A-E  Modules
+ [ ]     1  Raspberry Pi 3 Model B (BCM2837, 1GB), cased, with Pi-hole SD c  Modules
+ [ ]     1  LM2596 Buck Module ADJ, Vin 3-40V                                Power
+ [ ]     1  Stontronics DSA-13PFC-05 PSU, 5.1V 2.5A micro-USB (official Ras  Power
+ [ ]     1  XY6020L Buck Converter Module, Vin 6-70V, 20A 1200W              Power
+ [ ] C   1  Logic Analyzer 8 Channels 24MHz USB Kit with Base Module, Bread  Prototyping
+ [ ]    50  PCB Test Point Pin, black, 3.2 mm head, 0.8-1.0 mm hole          Prototyping
+ [ ]     1  PCB, G1000 NXi v2 Shield + GMA1347 Control (Peter Eier, Rev 3)   Prototyping
+ [ ]     1  PCB, G1000 NXi v2.3 Left Side (FlightSimDIY)                     Prototyping
+ [ ]     1  PCB, G1000 NXi v2.3 Right Side (FlightSimDIY)                    Prototyping
+ [ ]     1  PCB, G1000 NXi v2.3 Soft Keys (FlightSimDIY)                     Prototyping
+ [ ]     4  IPX/IPEX U.FL Female Connector to open single-end, RG178, 30cm   RF
+ [ ]     4  SMA Female to U.FL/IPEX Pigtail Cable, 1.13, 15cm                RF
+ [ ]    35  Resistor 150R 1% 1/2W                                            Resistors
+ [ ]     4  Resistor 1k 1% 1/4W                                              Resistors
+ [ ]     2  Resistor 330R 1% 1/4W                                            Resistors
+ [ ]     1  Resistor 470R 1% 1/4W                                            Resistors
+ [ ]     5  Resistor 47k 0.1% 1/4W metal film, axial (MFP-25BRD52-47K)       Resistors
+ [ ]    15  LED 3mm White Diffused Ultra-Bright                              Semiconductors
+ [ ]    20  Chip Quik SMDSWLTLFP32 Low-Temp Lead-Free Solder Wire (32 ft)    Solder
+ [ ]    10  DONJON Toggle Switch SPST ON/OFF, pre-soldered wires             Solder
+ [ ] C   1  Soldering Fume Fan, shop-made                                    Soldering
+ [ ]     1  RKJXT1F42001 4-Direction Navigation Switch w/ Center Push        Switches
+ [ ]    40  Tactile Switch 6x6x7mm SPST, White LED Illuminated               Switches
+ [ ] C   1  FNIRSI LCR-P1 Component Tester (LCR / transistor / capacitor)    Test Equipment
+ [ ] C   1  Nordic Power Profiler Kit II (PPK2)                              Test Equipment
+ [ ] C   1  Thermal Master P2 Pro Thermal Camera, iOS, macro lens            Test Equipment
+ [ ]     4  10pcs 10D561K Varistor Precision +/-10% 10mm 560V                Varistors
+
+Verify at LRD: itq run scripts/florida.py list ; trip.py land <pk> <location> for each C line.

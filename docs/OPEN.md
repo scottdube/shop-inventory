@@ -1105,6 +1105,12 @@ in the spindle.
         *"returned to amazon."* Row deleted, return written on part 1216's notes.
         `SLN/Receiving` is now EMPTY.
 
+- [x] **Box 1 closed 2026-10-10.** Arrowmax engraving pen (stock 91) added as
+      a commuter, home BR-D2, label reads "1 · BR-D2" (row parked at home for
+      the print, then put back). Packing list printed on the HL-L2360D and
+      saved as `docs/florida/FL-01-packing-list-2026-10-10.txt`: 56 lines,
+      374 pieces, 8 commuting tools marked C. Scanner travels loose.
+
 - [ ] **Commuter-tool dashboard (Scott, 2026-10-08).** *"might want to think
       about a dashboard for commuter tools to make it easy to round up and
       then mark status."* Two jobs: a round-up list for the day before a trip
