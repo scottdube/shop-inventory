@@ -1107,9 +1107,15 @@ in the spindle.
 
 - [x] **Box 1 closed 2026-10-10.** Arrowmax engraving pen (stock 91) added as
       a commuter, home BR-D2, label reads "1 · BR-D2" (row parked at home for
-      the print, then put back). Packing list printed on the HL-L2360D and
-      saved as `docs/florida/FL-01-packing-list-2026-10-10.txt`: 56 lines,
-      374 pieces, 8 commuting tools marked C. Scanner travels loose.
+      the print, then put back). WIMAXIT 15.6 in touchscreen monitor (stock
+      548) moved in from Triage on Scott's word. Packing list (rev 2) printed
+      on the HL-L2360D and saved as
+      `docs/florida/FL-01-packing-list-2026-10-10.txt`: 56 lines, 375 pieces,
+      8 commuting tools marked C. Scanner travels loose. **TO-0001 is now the
+      manifest**: `scripts/fl01_manifest_1010.py` put one line per part and one
+      allocation per FL-01 row on it (56 lines, 375 allocated = 375 in the box;
+      the stale 2026-09 VL53L4CD allocation against the RB-03 row was dropped).
+      Complete the TO at LRD to perform the move.
 
 - [ ] **Commuter-tool dashboard (Scott, 2026-10-08).** *"might want to think
       about a dashboard for commuter tools to make it easy to round up and

@@ -1,7 +1,7 @@
-FLORIDA CARRY BOX 1 (FL-01)  -  PACKING LIST          packed 2026-10-10, SLN -> LRD
-56 lines, 374 pieces.   C = commuting tool (goes home to SLN in spring)
+FLORIDA CARRY BOX 1 (FL-01)  -  PACKING LIST  (rev 2)       packed 2026-10-10, SLN -> LRD   manifest TO-0001
+57 lines, 375 pieces.   C = commuting tool (goes home to SLN in spring)   Scanner travels LOOSE, not in this box.
 
- [ ]  qty  item                                                            cat / IPN
+ [ ]  qty  item                                                            cat
 ----- ---- --------------------------------------------------------------- ---------------
  [ ]     4  Hi-Link 5W 5V 1A Low Cost Solution HLK-5M05B AC-DC Power Module  AC-DC Modules
  [ ]     1  MAX98357 I2S Class-D Amplifier Breakout                          Audio
@@ -15,6 +15,7 @@ FLORIDA CARRY BOX 1 (FL-01)  -  PACKING LIST          packed 2026-10-10, SLN -> 
  [ ] C   1  BDM Frame with 4 probe pins and LED test board, ECU programming  Diagnostics
  [ ]     1  waveshare ESP32-S3 5inch Capacitive Touch LCD 800x480 IPS        Display
  [ ]     1  Heltec V3 ESP32 LoRa Development Board with OLED Display Case N  Displays
+ [ ]     1  WIMAXIT M1560CTV2 Portable Touchscreen Monitor, 15.6in           Displays
  [ ]     1  VL53L4CD Time-of-Flight Distance Sensor Carrier w/ Voltage Regu  Distance
  [ ]     1  Dayton Audio DMA45-4 1.5in Full-Range Driver 4 Ohm               Electromechanic
  [ ]     5  Rotary Encoder GREEN base, dual concentric shaft, 30 detent      Electromechanic
@@ -60,4 +61,4 @@ FLORIDA CARRY BOX 1 (FL-01)  -  PACKING LIST          packed 2026-10-10, SLN -> 
  [ ] C   1  Thermal Master P2 Pro Thermal Camera, iOS, macro lens            Test Equipment
  [ ]     4  10pcs 10D561K Varistor Precision +/-10% 10mm 560V                Varistors
 
-Verify at LRD: itq run scripts/florida.py list ; trip.py land <pk> <location> for each C line.
+At LRD: itq run scripts/florida.py list ; trip.py land <pk> <location> for each C line; complete TO-0001.
