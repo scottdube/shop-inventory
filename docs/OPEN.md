@@ -1110,7 +1110,7 @@ in the spindle.
       the print, then put back). WIMAXIT 15.6 in touchscreen monitor (stock
       548) moved in from Triage on Scott's word. Packing list (rev 2) printed
       on the HL-L2360D and saved as
-      `docs/florida/FL-01-packing-list-2026-10-10.txt`: 56 lines, 375 pieces,
+      `docs/florida/FL-01-packing-list-2026-10-10.txt`: 57 rows, 375 pieces,
       8 commuting tools marked C. Scanner travels loose. **TO-0001 is now the
       manifest**: `scripts/fl01_manifest_1010.py` put one line per part and one
       allocation per FL-01 row on it (56 lines, 375 allocated = 375 in the box;
