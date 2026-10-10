@@ -3,7 +3,9 @@
 
 Generalises pack_pigtails_florida_1008.py. Takes (stock_pk, qty) pairs:
 
-    itq run scripts/florida_pack.py 741 1 859 50 647 5 [--commit]
+    itq run scripts/florida_pack.py 741 1 859 50 647 5 [--box FL-02] [--commit]
+
+--box defaults to FL-01; any FL-NN under SLN/Florida Staging is accepted.
 
 Rules, all learned the hard way (see pack_rpi3b_florida.py, florida.py):
   - qty == on hand  -> the whole row MOVES to FL-01 (no split, same pk).
@@ -25,13 +27,16 @@ from django.contrib.auth import get_user_model  # noqa: E402
 from django.utils import timezone  # noqa: E402
 from stock.models import StockItem, StockLocation  # noqa: E402
 
-args = [a for a in sys.argv[1:] if a != '--commit']
+argv = sys.argv[1:]
+BOX = 'FL-01'
+if '--box' in argv:
+    i = argv.index('--box'); BOX = argv[i + 1]; del argv[i:i + 2]
+args = [a for a in argv if a != '--commit']
 COMMIT = '--commit' in sys.argv
 if len(args) < 2 or len(args) % 2:
     print(__doc__); sys.exit(1)
 PLAN = [(int(args[i]), float(args[i + 1])) for i in range(0, len(args), 2)]
-FL = StockLocation.objects.get(pk=504)
-assert FL.name == 'FL-01', FL.pathstring
+FL = StockLocation.objects.get(name=BOX, parent__name='Florida Staging')
 user = get_user_model().objects.filter(is_superuser=True).order_by('pk').first()
 today = str(timezone.now().date())
 
