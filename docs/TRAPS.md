@@ -11534,3 +11534,35 @@ Overnight queue A on the 1382-1407 metrology inflow (img_1011.py):
   challenged), General Tools Angle-izer (835/836/8361/digital exist and the model
   was not read off the part), Federal C81 (vintage Providence RI unit; Mahr's
   current C81 is not evidence of this one), and every maker-unknown item.
+
+## `lrd_reach.py` said "Mini is reachable" with the tunnel down (2026-10-11)
+
+Measured by the `amazon-refund-watch` scheduled run: `itq run` failed with
+`scp: Connection closed` (exit 255). `lrd_reach.py` then printed, in one run:
+LRD WireGuard client **Disconnected**, **no route** to 192.168.50.0/24 (default
+via 192.168.20.1 on en0), far gateway and all three Mini ports **REFUSED in
+0.00 s** — and the verdict **"Mini is reachable."**, exit 0.
+
+The verdict logic (`reachable = any(s in ("OPEN","REFUSED") ...)`) treats a
+REFUSED as proof the host answered, and that branch is tested *before*
+`lrd_down`. A refusal in zero time to a subnet with no route did not come from
+the Mini. Where it came from is **not established** — hypothesis: something on
+the local network or the laptop's own stack (bridge100/bridge101 also carry
+default routes) is resetting the connection.
+
+**Rule until the script is fixed:** if section 2 says the LRD tunnel is
+Disconnected, believe that over the verdict. A REFUSED faster than the RTT to
+Florida is not an answer from Florida. Not fixed in the unattended run — the
+fix is to check `lrd_down` (or no route) before trusting REFUSED; left for an
+attended session.
+
+**Addendum, 19:52 daytime sweep, same day — the rule above is also wrong.** Same
+first `itq` failure (`scp: Connection closed`, exit 255), same `lrd_reach.py`
+output (WireGuard Disconnected, no route, REFUSED in 0.00 s, "reachable"). A
+plain `itq` retry about a minute later **succeeded**, and every `itq` call in
+the run after it worked — with the WireGuard client still Disconnected. So
+"Disconnected" does not mean "cannot reach the Mini" from wherever this laptop
+now sits (192.168.20.x; the day's Amazon mail ships to Florida, so possibly on
+the LRD LAN itself — **not established**). Neither section 2 nor the verdict
+discriminated today; the one-shot retry did. Measured only: the first ssh of a
+run failed twice today and a retry worked.
