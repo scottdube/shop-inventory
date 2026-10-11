@@ -11501,3 +11501,36 @@ once and wait ~6 s; OUT only if the second load still has the form and no
 notifications for nothing. Same family as the "slow to become scriptable"
 section above: Walmart's pages hydrate in stages, and the stage you catch is
 not the state of the account.
+
+## Image CDNs content-negotiate the format — ask for JPEG/PNG (2026-10-11)
+
+Overnight queue A on the 1382-1407 metrology inflow (img_1011.py):
+
+- **`images.knipex.com/square_md/...png` returns AVIF** (magic `\x00\x00\x00\x18`,
+  7-9 KB) to a browser-style `Accept: image/avif,image/webp,...`. With
+  `Accept: image/jpeg,image/png` the same URL returns a 480x480 JPEG. The magic
+  check rejected the AVIF correctly; the fix is the Accept header, not the
+  validator. `square_lg` / `square_xl` 404 — 480 px is the largest Knipex serves
+  under that path.
+- **BigCommerce (starrett.com's CDN) serves WebP for a `.png` path whatever
+  Accept says.** Converted to PNG with PIL before `image.save()` so no thumbnail
+  path ever meets WebP. Shopify (accusizetools.com) honours Accept.
+- **Knipex product URLs are not guessable.** The category path in the URL is
+  long and changes; `knipex.com/search?keys=<8-digit number>` lists the product
+  link. The site shows a Cloudflare "Just a moment" on the first Chrome load that
+  clears by itself in ~6 s — no interaction, never click anything on it.
+- **DuckDuckGo's HTML endpoint in agent Chrome is a working discovery
+  instrument** (`duckduckgo.com/html/?q=...`, read `a.result__a`, decode the
+  `uddg=` param). WebSearch/WebFetch are gate-denied overnight; this is the
+  sanctioned path to a maker page from a make + model.
+- **bradyid.com bounces agent Chrome to an `*.azurewebsites.net` host** with no
+  product content. Amazon's bare-unit listing B09WZBQWN1 ("BRADY M210 HANDHELD
+  LABEL MAKER") was used instead — not the M210-KIT listing.
+- **Accusize co-ax listing has three SKUs (JD21-0001/0002/0003, white and yellow
+  faces).** Took the JD21-0001 *variant* image only; the script refuses a
+  multi-variant listing whose variant has no image of its own, so the wrong face
+  can't land.
+- Left blank deliberately: Cornwell RB-FG-10 (only a reseller page, Cloudflare
+  challenged), General Tools Angle-izer (835/836/8361/digital exist and the model
+  was not read off the part), Federal C81 (vintage Providence RI unit; Mahr's
+  current C81 is not evidence of this one), and every maker-unknown item.
