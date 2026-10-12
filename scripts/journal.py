@@ -23,7 +23,7 @@ covers it forever:
 Writes on the Mini, where the journal lives, and prints what it wrote so the
 caller can confirm rather than assume.
 """
-import argparse, os, sys
+import argparse, os, re, sys
 from datetime import datetime
 
 PATH = "/Volumes/4TB_Removable/inventree/enrich_progress.md"
@@ -39,12 +39,16 @@ now = datetime.now().strftime("%Y-%m-%d %H:%M")
 
 if a.check:
     body = open(PATH).read() if os.path.exists(PATH) else ""
-    i = body.rfind("RUN STARTED")
-    if i < 0:
+    # Match the HEADER only. A free-text --end string that merely mentions
+    # "RUN STARTED" (2026-10-11 19:55: "no 08:40/12:40/16:40 RUN STARTED in
+    # journal today") was taken as the last start and read as a dead run.
+    heads = list(re.finditer(r"^### .* — RUN STARTED \(", body, re.M))
+    if not heads:
         print("no RUN STARTED found")
         sys.exit(0)
+    i = heads[-1].start()
     tail = body[i:]
-    died = "RUN COMPLETE" not in tail
+    died = not re.search(r"^### .* — RUN COMPLETE — ", tail, re.M)
     print(f"last RUN STARTED: {body[max(0,i-20):i+70].strip()[:90]}")
     print("PREVIOUS RUN DIED — no completion after it" if died
           else "previous run completed cleanly")

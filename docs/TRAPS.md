@@ -11566,3 +11566,21 @@ now sits (192.168.20.x; the day's Amazon mail ships to Florida, so possibly on
 the LRD LAN itself — **not established**). Neither section 2 nor the verdict
 discriminated today; the one-shot retry did. Measured only: the first ssh of a
 run failed twice today and a retry worked.
+
+### `journal.py --check` reported a dead run that had completed (2026-10-11)
+
+The 22:40 sweep's `--check` printed `PREVIOUS RUN DIED`. It hadn't died: the
+19:53 run closed at 19:55, and its own `--end` text ended "no 08:40/12:40/16:40
+RUN STARTED in journal today". `--check` did `body.rfind("RUN STARTED")`, so it
+matched that prose *after* the RUN COMPLETE header and found no completion
+following it. **Any run that mentions the marker in its free text makes the next
+check read as a crash.** Fixed: `--check` now matches only `### … — RUN
+STARTED (` and `### … — RUN COMPLETE — ` header lines. Rejected banning the
+words from journal prose: that rule would be broken by the next run that
+reported on missing runs, which is exactly the run that wrote it.
+
+Same run, unexplained and not diagnosed: started 23:09, closed 02:13. Three
+hours inside a run of about fifteen tool calls, so it overlapped the 02:05
+enrich on the shared agent Chrome. The one irregular call was an early Chrome
+`javascript_tool` read that came back "connection lost"; that it caused the
+gap is a **hypothesis**. The transcript timestamps can settle it.
