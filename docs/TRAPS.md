@@ -7612,6 +7612,14 @@ and this was a missing term in a hand-typed OR list. The generalisable trap —
 specific mechanism will keep changing. Do not read the remedy as "drop the
 subject filter". Read it as "no single query is evidence of a quiet window".
 
+**FOURTH INSTANCE 2026-10-14 22:40 — wrong domain, not a missing one.** The
+sender query had `from:seeedstudio.com subject:order`; Seeed's order mail comes
+from `no-reply@notify.seeed.cc` (the 09-10 brace group above had it right). The
+new order #4000600920 was caught only by the shape-based `category:purchases`
+search in section 4. **Seeed's sender domain is `seeed.cc`.** The section-4
+search is the backstop that worked; keep running it even when section 3 looks
+complete.
+
 The three orders became PO-0165/0166/0167 only because the preflight had
 already read the order-history page. That page has now caught this on 09-02,
 09-09 and 09-10, by three different failure modes. It is not a backstop; it is
