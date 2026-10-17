@@ -11,9 +11,19 @@ Related: `docs/TRAPS.md` (the individual gotchas), `docs/TECHNIQUES.md`
 
 ## The printer
 
-**Brother QL-810W, PRINTER_IP (static), at SLN.** InvenTree runs on the Mac
-Mini at LRD, so every print job crosses the site-to-site VPN — roughly 120 ms
-RTT. That is fine; latency was investigated and is not a problem.
+**Brother QL-810W at LRD since 2026-10-17, `192.168.11.161` on the IoT VLAN**
+(UniFi name `BRW08F97E935AB3`). It was at SLN on 192.168.30.252 until then, with
+every job crossing the site-to-site VPN; now the Mini prints to it locally.
+
+The move was one command on the Mini — `lpadmin -p QL810W -v
+ipp://192.168.11.161/ipp/print` — because the queue is IP-bound (TRAPS.md,
+"Swapping the label printer…"). `-v` alone keeps the PPD defaults (Roll,
+EndOfPage, High), re-read after the change. Recreating the queue with
+`-m everywhere` was rejected: it throws those defaults away.
+
+**Servers → IoT is open for IPP; IoT → Servers is Block All.** The Mini reached
+631 and 80 on the printer on the first try, so no firewall change was needed —
+the printer never initiates to the Mini. Probe: `scripts/probe_ql810w_lrd_1017.py`.
 
 Media is **62 mm × 5 m continuous DK tape**. The printer reports it as
 `62mm / 2.4"` and IPP reports `roll_current_62x0mm`.
