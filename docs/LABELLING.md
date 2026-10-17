@@ -11,7 +11,7 @@ Related: `docs/TRAPS.md` (the individual gotchas), `docs/TECHNIQUES.md`
 
 ## The printer
 
-**Brother QL-810W at LRD since 2026-10-17, `192.168.11.161` on the IoT VLAN**
+**Brother QL-810W at LRD since 2026-10-17, `192.168.11.161` on the IoT VLAN, a fixed UniFi reservation**
 (UniFi name `BRW08F97E935AB3`). It was at SLN on 192.168.30.252 until then, with
 every job crossing the site-to-site VPN; now the Mini prints to it locally.
 
