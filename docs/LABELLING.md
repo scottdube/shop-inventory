@@ -28,7 +28,7 @@ the printer never initiates to the Mini. Probe: `scripts/probe_ql810w_lrd_1017.p
 First job at LRD: **`QL810W-172`**, 2026-10-17 14:45, template 11 for part 1057
 (the printer itself), through the full InvenTree → `cups_label` → CUPS path.
 Completed in 8 s; the printer showed `processing` mid-job then returned to
-`idle` / `reasons=none`. Before/after check is `scripts/ql810w_state.py`.
+`idle` / `reasons=none`. **Scott confirmed the label clean (QR and text) — move verified end to end.** Before/after check is `scripts/ql810w_state.py`.
 
 Media is **62 mm × 5 m continuous DK tape**. The printer reports it as
 `62mm / 2.4"` and IPP reports `roll_current_62x0mm`.
