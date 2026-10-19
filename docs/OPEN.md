@@ -1401,6 +1401,13 @@ taped drink tumblers; UCab3/UCab4 upper shelves are empty. The worktop is the
 de-facto parking lot. Nothing built yet; `scripts/lrd_loc_tree_1019.py` prints
 the current LRD tree.
 
+**Decided 2026-10-19:** this wall holds electronics parts, bench tools, fasteners
+& hardware, AND house overflow (house overflow stays on the wall but outside
+InvenTree). Scott is also planning a **separate, smaller electronics bench like
+SLN's**, somewhere else in the garage, so this run becomes general storage and
+not the bench. Rejected making this run the bench even though it already has the
+lighting, outlets and drawers: Scott's call, with the reason not yet recorded.
+
 ## Where the walk stands — 2026-08-23, end of day
 
 **Bin wall**
