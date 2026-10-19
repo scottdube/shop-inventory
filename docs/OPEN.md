@@ -1423,6 +1423,40 @@ Scott is fetching use these numbers. The render also shows **5 drawers per bank*
 which agrees with the photos. The InvenTree locations were renamed to
 `Cab1`–`Cab8` the same day to match.
 
+**Cabinet sizes, from order GC-8103 (GarageCabinets.com / Greenberg Casework,
+Brian Vegter, 2025-03-17) — exterior box, W × H × D:**
+
+| What | Qty | Size | Inside |
+|---|---|---|---|
+| Upper 2 Door | 4 | 28 × 48 × 15.5 in | **4 adjustable shelves** each (Brian confirmed 2025-03-18) |
+| Base 2 Door | 1 | 28 × 35 × 22.5 in | 2 adjustable shelves. **Two doors, not one** |
+| Base 5 Drawer | 3 | 28 × 35 × 22.5 in | 5 drawers |
+| Countertop | 2 | 93.75 × 23.69 + 18.75 × 23.69 | 112.5 in run |
+
+Legs 4–6 in, soft-close slides and hinges. **No interior or drawer-box sizes
+exist in any email or design PDF** (four PDFs read, 2025-03 to 2026-10-19); the
+"blueprint drawings" Brian mentions came on paper in the packet. Scott asked
+Brian for them 2026-10-19. The front elevation (`bench-wall-elevation-2026.png`)
+shows each bank as **2 shallow + 3 deep** drawers; scaled off the 28 in width,
+the fronts are about 4 in and 7 in tall. **[ESTIMATE]**: fronts, not boxes.
+Only two drawer sizes exist, so measuring one shallow and one deep drawer
+covers all 15.
+
+**Photos show 3 shelves + floor per upper; the order says 4 shelves.** Either
+one shelf per cabinet was left out at install or the photos misread. Up to four
+loose shelves may be somewhere.
+
+**NUMBERING CONFLICT, found 2026-10-19 after the rename.** The *official*
+product IDs printed on the part labels inside each cabinet (`20.0N` = cabinet N,
+per Brian's 2025-04-08 install notes) and on the 2025 blueprints are:
+**1** countertop, **2 / 4 / 6 / 8** uppers left to right, **3** door base,
+**5 / 7 / 9** drawer banks (`bench-wall-product-ids-2025.png`, from the
+2025-04-09 design PDF with the Id column). The render Scott sent today
+(`bench-wall-installer-render.png`, from the 2026 design tool) numbers them
+1 door base, 2–4 drawers, 5–8 uppers, 9 countertop, and the `Cab1`–`Cab8`
+rename followed that render. **The two schemes disagree on every cabinet**;
+Scott decides which one InvenTree uses.
+
 ## Where the walk stands — 2026-08-23, end of day
 
 **Bin wall**
