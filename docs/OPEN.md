@@ -1442,9 +1442,15 @@ the fronts are about 4 in and 7 in tall. **[ESTIMATE]**: fronts, not boxes.
 Only two drawer sizes exist, so measuring one shallow and one deep drawer
 covers all 15.
 
-**Photos show 3 shelves + floor per upper; the order says 4 shelves.** Either
-one shelf per cabinet was left out at install or the photos misread. Up to four
-loose shelves may be somewhere.
+**Photos show 3 shelves + floor per upper; the order says 4 shelves.** RESOLVED
+2026-10-19 in favor of the order. Scott: **16 adjustable/removable shelves** across
+the four uppers, plus each cabinet's floor. That makes **5 levels per upper**
+(`Cab5-S1` … `S5`, S5 = floor). **Shelf 14 in deep × 26.5 in wide**, measured by Scott.
+The width checks: 28 in outside less two ¾ in sides. Clear height per level is
+≈ 8.5 in if spaced evenly in a 48 in box **[ESTIMATE]**: top/bottom panel and
+shelf thickness assumed ¾ in, not measured. The shelves are adjustable, so set the
+spacing to the bins rather than the bins to the spacing. Drawer sizes still to come
+from Scott.
 
 **NUMBERING CONFLICT, found 2026-10-19 after the rename.** The *official*
 product IDs printed on the part labels inside each cabinet (`20.0N` = cabinet N,
