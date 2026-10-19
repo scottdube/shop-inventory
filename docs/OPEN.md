@@ -1445,9 +1445,8 @@ covers all 15.
 **Drawers MEASURED 2026-10-19 (Scott), one bank, same order line for all three:**
 D1–D2 (top two) **24¼ W × 18½ D × 2¼ H in**; D3–D5 **24¼ × 18½ × 6 in**. The
 footprint checks: a 24¼ in box in a 26.5 in interior leaves ~1⅛ in per side for slides.
-Whether these are box-inside or box-outside sizes wasn't said; ask before cutting an
-insert to fit. Gridfinity, if inside: 14 × 11 units (588 × 462 mm in 616 × 470) **[derived, not
-chosen]**. The 2¼ in drawers take only low bins.
+**These are INSIDE dimensions** (Scott, 2026-10-19). Gridfinity would fit
+14 × 11 units (588 × 462 mm in 616 × 470) **[derived, not chosen]**. The 2¼ in drawers take only low bins.
 
 **Photos show 3 shelves + floor per upper; the order says 4 shelves.** RESOLVED
 2026-10-19 in favor of the order. Scott: **16 adjustable/removable shelves** across
