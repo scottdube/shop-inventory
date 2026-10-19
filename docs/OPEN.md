@@ -1454,8 +1454,21 @@ per Brian's 2025-04-08 install notes) and on the 2025 blueprints are:
 2025-04-09 design PDF with the Id column). The render Scott sent today
 (`bench-wall-installer-render.png`, from the 2026 design tool) numbers them
 1 door base, 2–4 drawers, 5–8 uppers, 9 countertop, and the `Cab1`–`Cab8`
-rename followed that render. **The two schemes disagree on every cabinet**;
-Scott decides which one InvenTree uses.
+rename followed that render. **The two schemes disagree on every cabinet.**
+
+**Decided 2026-10-19, Scott: keep `Cab1`–`Cab8`** and note the label ID in each
+cabinet's description (`scripts/lrd_cab_sticker_ids_1019.py`, verified):
+
+| InvenTree | What | Part-label ID |
+|---|---|---|
+| Cab1 | door base | 3 |
+| Cab2 / Cab3 / Cab4 | drawer banks, left to right | 5 / 7 / 9 |
+| Cab5 / Cab6 / Cab7 / Cab8 | uppers, left to right | 2 / 4 / 6 / 8 |
+| (none) | countertop | 1 |
+
+Rejected renaming a second time to the label IDs: Scott's call. The label
+IDs stay findable in the descriptions for reading the paper blueprints. "Installer's numbers" earlier in
+this section means the 2026 design render, not the labels.
 
 ## Where the walk stands — 2026-08-23, end of day
 
