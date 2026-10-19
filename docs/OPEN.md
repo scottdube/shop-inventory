@@ -1442,6 +1442,13 @@ the fronts are about 4 in and 7 in tall. **[ESTIMATE]**: fronts, not boxes.
 Only two drawer sizes exist, so measuring one shallow and one deep drawer
 covers all 15.
 
+**Drawers MEASURED 2026-10-19 (Scott), one bank, same order line for all three:**
+D1–D2 (top two) **24¼ W × 18½ D × 2¼ H in**; D3–D5 **24¼ × 18½ × 6 in**. The
+footprint checks: a 24¼ in box in a 26.5 in interior leaves ~1⅛ in per side for slides.
+Whether these are box-inside or box-outside sizes wasn't said; ask before cutting an
+insert to fit. Gridfinity, if inside: 14 × 11 units (588 × 462 mm in 616 × 470) **[derived, not
+chosen]**. The 2¼ in drawers take only low bins.
+
 **Photos show 3 shelves + floor per upper; the order says 4 shelves.** RESOLVED
 2026-10-19 in favor of the order. Scott: **16 adjustable/removable shelves** across
 the four uppers, plus each cabinet's floor. That makes **5 levels per upper**
@@ -1449,8 +1456,7 @@ the four uppers, plus each cabinet's floor. That makes **5 levels per upper**
 The width checks: 28 in outside less two ¾ in sides. Clear height per level is
 ≈ 8.5 in if spaced evenly in a 48 in box **[ESTIMATE]**: top/bottom panel and
 shelf thickness assumed ¾ in, not measured. The shelves are adjustable, so set the
-spacing to the bins rather than the bins to the spacing. Drawer sizes still to come
-from Scott.
+spacing to the bins rather than the bins to the spacing. Drawer sizes: see above.
 
 **NUMBERING CONFLICT, found 2026-10-19 after the rename.** The *official*
 product IDs printed on the part labels inside each cabinet (`20.0N` = cabinet N,
