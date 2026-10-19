@@ -1396,7 +1396,7 @@ the prints*: each upper reads as **3 adjustable shelves + floor = 4 levels**
 (pin holes the full height, so spacing is a design lever, not a given), and each
 drawer bank reads as **5 drawers, graduated** (shallow at the top). Current
 contents are largely **house overflow** — paint cans, cleaning aerosols, trash
-bags, a recessed light, patio-heater parts — plus a ToolKit/3D-print box and
+bags, a recessed light, patio-heater parts — plus a "3D print parts" box, a power tool and
 taped drink tumblers; UCab3/UCab4 upper shelves are empty. The worktop is the
 de-facto parking lot. Nothing built yet; `scripts/lrd_loc_tree_1019.py` prints
 the current LRD tree.
