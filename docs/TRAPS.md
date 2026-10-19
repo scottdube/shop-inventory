@@ -1398,6 +1398,15 @@ pathstrings looked wrong only because of a `[:40]` truncation in debug output.
 That one was withdrawn. This one is real, and the difference is that
 `construct_pathstring()` disagrees with the stored value.
 
+**Also seen after a plain `.objects.create()`, 2026-10-19:** 35 LRD bench-wall
+locations were created in one loop (`lrd_bench_wall_levels_1019.py`, pk 627–661).
+In the re-read straight after the loop, **one** row (pk 655, `Cab7-S4`) had
+`pathstring` equal to its bare name and nothing above it. A second read a minute
+later showed it correct, and all 35 passed. The cause wasn't diagnosed. A background
+tree rebuild landing behind the create is a **hypothesis**. Rule: if one row of a batch
+create fails the pathstring check, re-read before "fixing" it. Rerunning the create
+would have hit the clash check, or worse, made duplicates.
+
 ## Record USABLE dimensions — an exterior figure answers a different question
 
 The NewAge cabinets went in as **28 x 14 in**, straight off the manufacturer's

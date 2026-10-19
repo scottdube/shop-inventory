@@ -1448,6 +1448,14 @@ footprint checks: a 24¼ in box in a 26.5 in interior leaves ~1⅛ in per side f
 **These are INSIDE dimensions** (Scott, 2026-10-19). Gridfinity would fit
 14 × 11 units (588 × 462 mm in 616 × 470) **[derived, not chosen]**. The 2¼ in drawers take only low bins.
 
+**BUILT 2026-10-19 (Scott approved all 35):** `Cab2-D1` … `Cab4-D5` (15 drawers) and
+`Cab5-S1` … `Cab8-S5` (20 levels, S5 = cabinet floor), pk 627–661, all
+`structural=False`, verified (`scripts/lrd_bench_wall_levels_1019.py`). Cab8 was
+built even though the draft zoning makes it house overflow. Scott chose all 35, and
+an empty location costs nothing. **Still open:** zoning (what goes where), the drawer
+insert system, and labels. Labels print on request only; the Avery stock at LRD is
+the planned medium.
+
 **Photos show 3 shelves + floor per upper; the order says 4 shelves.** RESOLVED
 2026-10-19 in favor of the order. Scott: **16 adjustable/removable shelves** across
 the four uppers, plus each cabinet's floor. That makes **5 levels per upper**
