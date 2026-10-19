@@ -1389,6 +1389,18 @@ a notebook, and none can be guessed from here.
 Once the locations exist, BinScan walks LRD exactly as it walks the bin wall —
 the site switcher and the placeholder containers are already in place for it.
 
+**2026-10-19, on site.** Scott photographed all four uppers open and asked for a
+storage scheme; he is getting the cabinet **prints** (installer drawings) for
+the dimensions rather than measuring. From the photos, *to be confirmed against
+the prints*: each upper reads as **3 adjustable shelves + floor = 4 levels**
+(pin holes the full height, so spacing is a design lever, not a given), and each
+drawer bank reads as **5 drawers, graduated** (shallow at the top). Current
+contents are largely **house overflow** — paint cans, cleaning aerosols, trash
+bags, a recessed light, patio-heater parts — plus a ToolKit/3D-print box and
+taped drink tumblers; UCab3/UCab4 upper shelves are empty. The worktop is the
+de-facto parking lot. Nothing built yet; `scripts/lrd_loc_tree_1019.py` prints
+the current LRD tree.
+
 ## Where the walk stands — 2026-08-23, end of day
 
 **Bin wall**
