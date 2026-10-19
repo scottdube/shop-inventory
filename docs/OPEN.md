@@ -1342,7 +1342,7 @@ Scott photographed the Florida bench wall 2026-08-22: **four upper wall cabinets
 cabinet at the left, then **three drawer banks**. Carpeted floor, finished room.
 
 **Built to CABINET level only, 2026-08-22.** `LRD/Bench Wall` now holds
-`UCab1`–`UCab4` and `LCab1`–`LCab4`. That much is countable in the photograph —
+`UCab1`–`UCab4` and `LCab1`–`LCab4` (since renamed `Cab1`–`Cab8`, below). That much is countable in the photograph —
 four uppers, one base door cabinet, three drawer banks — and is structure rather
 than quantity. **What is inside them is not built**, because shelf and drawer
 counts cannot be read off a picture and Scott does not recall them. Each
@@ -1355,16 +1355,24 @@ Until the shelves and drawers are enumerated, a part can be filed to the cabinet
 — the same transitional state B1/B2 are in, where the container is known and the
 compartment is not.
 
-**Scott's convention, 2026-08-22 — `Cab` for cabinet, upper and lower:**
+**Convention — the installer's numbers, renamed 2026-10-19** (was `UCab1–4` /
+`LCab1–4`, Scott's 2026-08-22 convention):
 
 ```
 LRD / Bench Wall
-  UCab1 … UCab4          the four upper cabinets, left to right
-  UCab1-S1 … UCab1-Sn    shelves within each, numbered from the TOP down
-  LCab1                  the single-door base cabinet at the left
-  LCab2 … LCab4          the three drawer banks
-  LCab2-D1 … LCab2-Dn    drawers, numbered from the top down
+  Cab1                   the single-door base cabinet at the left   (installer #1)
+  Cab2 … Cab4            the three drawer banks, left to right      (#2–4)
+  Cab2-D1 … Cab2-Dn      drawers, numbered from the TOP down
+  Cab5 … Cab8            the four upper cabinets, left to right     (#5–8)
+  Cab5-S1 … Cab5-Sn      shelves within each, numbered from the TOP down
+                         (#9 is the worktop: not a location)
 ```
+
+Renamed so InvenTree, the installer's render and the prints all share one
+number. Rejected keeping `UCab`/`LCab` and putting the installer number in the
+description: two names for one cabinet is the same failure as two homes for one
+part. It was cheap because all eight held 0 items and had no labels. `Cab`
+stays, so SLN's reserved `C1–C3` still cannot collide.
 
 Numbering from the top matches the bin wall, where `R1` is the top row.
 
@@ -1397,7 +1405,7 @@ the prints*: each upper reads as **3 adjustable shelves + floor = 4 levels**
 drawer bank reads as **5 drawers, graduated** (shallow at the top). Current
 contents are largely **house overflow** — paint cans, cleaning aerosols, trash
 bags, a recessed light, patio-heater parts — plus a "3D print parts" box, a power tool and
-taped drink tumblers; UCab3/UCab4 upper shelves are empty. The worktop is the
+taped drink tumblers; Cab7/Cab8 upper shelves are empty. The worktop is the
 de-facto parking lot. Nothing built yet; `scripts/lrd_loc_tree_1019.py` prints
 the current LRD tree.
 
@@ -1412,8 +1420,8 @@ lighting, outlets and drawers: Scott's call, with the reason not yet recorded.
 from the cabinet company's design): **1** door base cabinet, **2–4** drawer
 banks left to right, **5–8** uppers left to right, **9** the worktop. The prints
 Scott is fetching use these numbers. The render also shows **5 drawers per bank**,
-which agrees with the photos. Today's names map directly: `LCab1–4` = 1–4,
-`UCab1–4` = 5–8.
+which agrees with the photos. The InvenTree locations were renamed to
+`Cab1`–`Cab8` the same day to match.
 
 ## Where the walk stands — 2026-08-23, end of day
 

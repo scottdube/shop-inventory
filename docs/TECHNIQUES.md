@@ -683,7 +683,8 @@ same mistake that produced the two unlocated SHT31 rows in August, and it
 produces a record that says a tool is somewhere nobody put it.
 
 This is not a limitation to be designed around; as of 2026-09-10 the LRD bench
-wall exists as locations (UCab1-4, LCab1-4) and is **completely empty**. Scott:
+wall exists as locations (UCab1-4, LCab1-4; renamed Cab1-Cab8 on
+2026-10-19 to the installer's numbers) and is **completely empty**. Scott:
 *"both ends, probably but we need to set all that up down there still."* So the
 first landings will be `LRD/Receiving` or a box, and that is the correct answer,
 not a placeholder. The cabinet comes later, as another `land`.

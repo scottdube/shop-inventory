@@ -464,10 +464,12 @@ def api_grid(area: str = ""):
                       "large": "large" in desc.lower(),
                       "label": re.sub(r"\s*\[[^\]]*\]\s*", "", desc).strip()[:40]})
     # Grid areas sort by row and column. Everything else sorts by CREATION
-    # ORDER, not alphabetically: LRD's bench wall came out LCab1..4 then
-    # UCab1..4, with the uppers listed below the lowers they physically sit
+    # ORDER, not alphabetically: LRD's bench wall (then LCab1..4 / UCab1..4)
+    # came out with the uppers listed below the lowers they physically sit
     # above. Creation order is the order someone laid the place out, which is
-    # closer to how it is walked than the alphabet is.
+    # closer to how it is walked than the alphabet is. Since the 2026-10-19
+    # rename to the installer's Cab1..Cab8 that order reads Cab5-8 (uppers,
+    # created first) then Cab1-4 -- top row first, like R1 on the bin wall.
     cells.sort(key=lambda x: (x["r"] or 0, x["c"] or 0, x["pk"])
                if x["r"] else (0, 0, x["pk"]))
     tally = {s: sum(1 for c in cells if c["state"] == s)
