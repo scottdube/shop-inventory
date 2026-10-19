@@ -1408,6 +1408,13 @@ SLN's**, somewhere else in the garage, so this run becomes general storage and
 not the bench. Rejected making this run the bench even though it already has the
 lighting, outlets and drawers: Scott's call, with the reason not yet recorded.
 
+**Installer numbering, 2026-10-19** (`docs/lrd/bench-wall-installer-render.png`,
+from the cabinet company's design): **1** door base cabinet, **2–4** drawer
+banks left to right, **5–8** uppers left to right, **9** the worktop. The prints
+Scott is fetching use these numbers. The render also shows **5 drawers per bank**,
+which agrees with the photos. Today's names map directly: `LCab1–4` = 1–4,
+`UCab1–4` = 5–8.
+
 ## Where the walk stands — 2026-08-23, end of day
 
 **Bin wall**
