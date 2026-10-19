@@ -1470,6 +1470,11 @@ Rejected renaming a second time to the label IDs: Scott's call. The label
 IDs stay findable in the descriptions for reading the paper blueprints. "Installer's numbers" earlier in
 this section means the 2026 design render, not the labels.
 
+**Labels on hand at LRD (Scott, 2026-10-19):** he brought Avery sheet labels for
+stickering the cabinets, shelves and drawers. The product number isn't recorded yet;
+get it before laying out a template. The QL-810W is also at LRD (IoT, 192.168.11.161)
+if a location label with a QR code is wanted instead.
+
 ## Where the walk stands — 2026-08-23, end of day
 
 **Bin wall**
