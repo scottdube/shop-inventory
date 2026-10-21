@@ -1494,6 +1494,12 @@ Rejected renaming a second time to the label IDs: Scott's call. The label
 IDs stay findable in the descriptions for reading the paper blueprints. "Installer's numbers" earlier in
 this section means the 2026 design render, not the labels.
 
+**Drawer photos taken 2026-10-21 (Scott, all 15 drawers, right bank first, top
+down).** They live in the PRIVATE `~/code` repo, `docs/lrd-drawer-walk-2026-10-21/`,
+with a start-up brief — not here, because this repo is public and the pictures show
+the inside of the house. Nothing catalogued yet; every drawer location still has
+0 rows.
+
 **Labels on hand at LRD (Scott, 2026-10-19):** he brought Avery sheet labels for
 stickering the cabinets, shelves and drawers. The product number isn't recorded yet;
 get it before laying out a template. The QL-810W is also at LRD (IoT, 192.168.11.161)
