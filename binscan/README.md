@@ -16,6 +16,17 @@ of it entirely — see `../docs/binscan.md` and the TRAPS entry.
 The LaunchAgent is `com.binscan.plist`; it runs
 `uvicorn app:app --host 0.0.0.0 --port 8002` from `~/binscan/venv`.
 
+## InvenTree 1.6 notes
+
+Since 2026-10-21 the Mini runs InvenTree 1.6.1, where stock and part notes are
+`common.Note` rows (`/api/note/`), not a `notes` field. `app.py` detects the
+version structurally (a stock row without a `notes` key) and hydrates `notes`
+onto every stock row it reads, so the rest of the code still sees text. Writes
+go through `note_write()`: PATCH the primary note or POST a new one, verified
+by re-reading. `BINSCAN_HOME` points the app at another state directory (the
+scratch instance used `~/binscan16` on port 8006). Full account:
+`../docs/inventree-16-notes-port.md`.
+
 ## Configuration
 
 Keys come from the environment, loaded from `~/binscan/env` (mode 600, **not in

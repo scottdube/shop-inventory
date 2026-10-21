@@ -2267,7 +2267,12 @@ two PayPal receipts. **No stock rows yet — no container.**
 - [ ] Print a test address label → decide whether DK-11201's minimum comes off.
 - [x] InvenTree upgrade — **in Florida, co-located with the Mini**. DONE
       2026-10-21, 1.5.8. The 1.6 port is its own item (below).
-- [ ] **InvenTree 1.6 port (opened 2026-10-21).** Before any 1.6.x checkout:
+- [x] **InvenTree 1.6 port (opened 2026-10-21). DONE 2026-10-21, live on 1.6.1**
+      — `plugins/notes_compat.py` + the BinScan twin read/write `common.Note`;
+      scratch copy migrated and checked first (2432 notes, 0 lost); live
+      switch 33 s downtime; `upgrade_16x_3_verify.py` VERDICT SUCCESS; rollback
+      point `backups/pre-1.6.1_20261021_1146`. Record:
+      docs/inventree-16-notes-port.md. Original item: Before any 1.6.x checkout:
       move `shop_status`, `tool_tag.py`, `unaccounted.py`, `deploy_po.py`,
       `receive_po.py`, `run_queue.py`, `florida_pack.py`, `sync_stocktake.py`
       and BinScan's `/api/empty` off the `notes` column onto the `common.Note`

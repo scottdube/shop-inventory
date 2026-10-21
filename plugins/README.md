@@ -91,6 +91,16 @@ not numeric. A zero-priced row also loses to a real one — several parts carry 
 $0 replacement line dated *after* the actual purchase. All 460 parts carrying a
 table now parse.
 
+**Since InvenTree 1.6 the notes are not a column.** They live in `common.Note`
+as sanitized HTML, one primary note per object. `notes_compat.py` (same
+directory) is the only thing that touches them: `note_text(obj)` returns the
+text a reader sees (tables back as pipe rows, headings as `## `), and
+`filter_notes(qs, prefix="[ESTIMATE]")` is the query the dashboard uses to
+count the estimate tier. Both work unchanged on 1.5.x, so the plugin does not
+know which version it is on. Decision record and the rejected options:
+`docs/inventree-16-notes-port.md`. Deploy `notes_compat.py` alongside the
+plugin — it is imported from `plugins.notes_compat`, not vendored.
+
 ## Deploying a change
 
     itq push plugins/shop_status/__init__.py <REMOTE>/plugins/shop_status/__init__.py

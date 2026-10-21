@@ -11653,3 +11653,50 @@ hours inside a run of about fifteen tool calls, so it overlapped the 02:05
 enrich on the shared agent Chrome. The one irregular call was an early Chrome
 `javascript_tool` read that came back "connection lost"; that it caused the
 gap is a **hypothesis**. The transcript timestamps can settle it.
+
+## InvenTree 1.6 notes port — what the scratch pass found (2026-10-21)
+
+The port itself is recorded in `docs/inventree-16-notes-port.md`. The traps:
+
+- **An HTML-to-text converter that collapses whitespace eats soft line breaks.**
+  Markdown keeps a single newline inside a paragraph as `\n` in the HTML text
+  node; `re.sub(r"\s+", " ")` turns it into a space and a table row written
+  under a sentence with no blank line becomes part of the sentence. Three of
+  2432 notes, found by the live verify, not by the scratch fidelity pass
+  (which compared markers, and the parser had never counted those rows).
+  Fixed in both converters; **keep `\n` in text nodes outside table cells.**
+- **Port 8003 is not InvenTree.** `com.shopstatus` serves the standalone
+  `ROOT/scripts/status_app.py` there (unversioned, not in this repo, not a
+  notes user). A scratch server that fails to start leaves 8003 answering
+  "Shop Status" HTML to every URL, which reads as a broken API. Scratch
+  InvenTree is 8005, scratch BinScan 8006, live BinScan 8002.
+- **Plugin keys are `shopstatus` and `cupslabel`**, not the directory names;
+  a verify that looks up `shop_status` reports a loaded plugin as missing.
+- **The REST user throttle is 60/second** on 1.5.8 and 1.6.1. A test that
+  reads one Note per stock row in a tight loop gets 429 after the first
+  second. Fetch notes in bulk (`/api/note/?model_type=stockitem&limit=500`,
+  paginated) and only go per-row for a handful.
+- **Stock and Part serializers silently drop `notes` on 1.6.** POST with a
+  `notes` key returns 201 and stores nothing. BinScan strips it and creates
+  the Note afterwards; "created but its note failed" is the error text when
+  the second step fails.
+- **The Mini's BinScan had drifted 130 lines ahead of the repo** since
+  2026-09-06 (DIN kinds, size-pair tokens, SKU/MPN indexing) while the repo
+  had a 2026-10-19 change the Mini lacked. Reconciled before porting; the
+  README's "this directory is the source of truth" was true in intent only.
+  **Diff the deployed file against the repo before editing either.**
+- **`ITQ_SCRATCH=16 itq run …`** targets env16/src16/scratch16/config16.yaml.
+  Without it every script runs against live. Set it in the same command, not
+  the shell, so a later command cannot inherit it.
+- **tool_tag's `TOOL n --` prefix becomes its own paragraph on 1.6** (the
+  helper prepends a block); the prefix regex still matches because it anchors
+  on the text start, but anything that expected the marker and the body on
+  one line would not.
+- **receive_po / deploy_po crash on an unpriced stub PO** (`'NoneType' object
+  has no attribute 'amount'`, TO-ORDER-ALI) identically on both versions —
+  pre-existing, not a port regression, still open.
+- **The switch script's trailing plugin check crashed on a missing
+  `DJANGO_SETTINGS_MODULE`** after a successful upgrade. Cosmetic — the verify
+  script covers it — but a failing last line on a healthy upgrade is exactly
+  the kind of report that gets misread at 1,300 miles. Fixed in the script.
+

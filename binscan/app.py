@@ -352,8 +352,14 @@ class _ToText(HTMLParser):
     def handle_data(self, data):
         if self.in_pre:
             self._emit(data)
+        elif not data.strip():
+            # whitespace between tags is layout; inside a line it is one space
+            joined = "".join(self.cell if self.cell is not None else self.out)
+            if joined and not joined[-1].isspace():
+                self._emit(" ")
         else:
-            self._emit(re.sub(r"[ \t\r\n]+", " ", data))
+            data = re.sub(r"[ \t\r]*\n\s*", "\n", data)  # soft line breaks stay lines
+            self._emit(re.sub(r"[ \t\r]+", " ", data))
 
 
 def html_to_text(h):

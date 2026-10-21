@@ -786,6 +786,12 @@ The rest of the pass:
 Every `/api/assign` write records the row's full **before** state: location,
 quantity, stocktake date and **notes**. Two things need it.
 
+On InvenTree 1.6 (live since 2026-10-21) "notes" in the journal is the text of
+the row's primary `common.Note`, converted from HTML by the app's
+`html_to_text`; the restore path writes it back through `note_write()`. The
+journal rows written before the upgrade hold the old plain-text column and
+restore the same way — `text_to_html` turns them into the note's HTML.
+
 **Undo.** InvenTree's tracking records quantity and location changes but not the
 notes field, and notes are where this catalogue keeps its provenance — the
 `[ESTIMATE]` flag, the purchase date, why a figure is what it is. Stock 514's

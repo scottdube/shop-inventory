@@ -106,3 +106,42 @@ prefix query matches either.
   notes in bulk for list views and per row only for ≤3 rows.
 - `ITQ_SCRATCH=16 itq run …` targets env16/src16/scratch16; without it,
   live.
+- `html_to_text` collapsed the soft line break inside a paragraph to a space.
+  Four legacy notes (parts 40, 551, 557, 568) have a table row written
+  straight under a sentence with no blank line; markdown put both in one
+  `<p>` with a `\n` between, and the collapse joined the row onto the
+  sentence. The live verify caught it (3 of 4 — part 40 has no header row,
+  so the date check never saw it either way). Fixed 2026-10-21 in both
+  converters: newlines in text nodes outside table cells stay newlines,
+  runs of spaces still collapse to one. The shop_status purchase parser
+  never counted those rows on either version (fingerprint unchanged), so
+  this was text fidelity, not a dashboard change.
+
+## Live upgrade, 2026-10-21
+
+- Rollback point `backups/pre-1.6.1_20261021_1146/` (`upgrade_16x_1_rollback_point.py`):
+  DB copy 9.19 MB integrity ok, plugins tarball, config, pre-port BinScan
+  app, `uv` freeze, `notes_before.json` with every non-empty legacy note as
+  text (2432: part 1256, stockitem 973, purchaseorder 182, company 10,
+  build 11).
+- Switch (`upgrade_16x_2_switch.py`): bootout → checkout 1.6.1 → requirements
+  into the existing venv (inventree-brother-plugin 2.0.6 kept) → migrate 13 s
+  → frontend-download 1.6.1 → collectstatic → re-apply the media patch →
+  bootstrap. **Downtime 33 s.** `/api/` 200, version 1.6.1, apiVersion 561.
+- Verify (`upgrade_16x_3_verify.py`): plugins shopstatus/cupslabel/brother
+  loaded; dashboard 200, panel 200, media 401 anonymous, static and /web/
+  200; Note rows per model equal the legacy counts, 0 notes missing; six
+  marker checks 0 mismatches; filter counts 282 / 89 / 1 / 126 / 525 / 973 /
+  1256 unchanged; purchase fingerprint `0965ee95…` unchanged.
+  **VERDICT: SUCCESS** (after the soft-line-break fix above; the first run
+  FAILED one check on exactly those three parts).
+- BinScan deployed to the live service after the verify; `/api/drawer B1`
+  reads 39 rows, 30 counted, 6 estimate — same as before the upgrade. No
+  live write was made through BinScan; the write path was proven on the
+  scratch pair only.
+- Left on the Mini, safe to delete: `src16/` 122 MB, `env16/` 348 MB,
+  `scratch16/` 9.9 MB, `~/binscan16/` 460 KB. Both scratch servers (8005,
+  8006) are stopped. `scratch16/` holds the migrated copy WITH the test
+  writes, so it is not a clean reference — the clean one is the rollback
+  point.
+

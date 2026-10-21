@@ -63,7 +63,7 @@ for a in assets:
     print(" ", a.decode()[:40], "served", s, len(b), "disk", os.path.getsize(on_disk) if os.path.exists(on_disk) else "MISSING", "md5 match" if os.path.exists(on_disk) and hashlib.md5(b).hexdigest()==md5(on_disk) else "MISMATCH")
 print("services:", sh(f"launchctl print gui/{UID} | grep -E 'com.inventree.(server|worker)'", check=False, quiet=True))
 chk = r'''
-import django,os; django.setup()
+import django,os,sys; sys.path.insert(0, os.getcwd()); os.environ.setdefault("DJANGO_SETTINGS_MODULE", "InvenTree.settings"); django.setup()
 from plugin.registry import registry; from plugin.models import PluginConfig
 from InvenTree.version import inventreeVersion
 print("django-side version:", inventreeVersion())

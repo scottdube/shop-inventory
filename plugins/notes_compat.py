@@ -149,7 +149,14 @@ class _ToText(HTMLParser):
                 return
             self._emit(" ")
             return
-        data = re.sub(r"\s+", " ", data)
+        if self.cell is not None:
+            data = re.sub(r"\s+", " ", data)
+        else:
+            # a soft line break inside a paragraph (markdown kept it as "\n") is a
+            # line boundary to our parsers: four legacy notes have a table row
+            # written straight under a sentence, and joining them hid the row
+            data = re.sub(r"[ \t\r\f\v]*\n\s*", "\n", data)
+            data = re.sub(r"[ \t\r\f\v]+", " ", data)
         if self.cell is None and self._at_line_start():
             data = data.lstrip()
         self._emit(data)
