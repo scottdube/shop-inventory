@@ -11699,4 +11699,10 @@ The port itself is recorded in `docs/inventree-16-notes-port.md`. The traps:
   `DJANGO_SETTINGS_MODULE`** after a successful upgrade. Cosmetic — the verify
   script covers it — but a failing last line on a healthy upgrade is exactly
   the kind of report that gets misread at 1,300 miles. Fixed in the script.
+- **1.6 API tokens are HMAC-stored (PR 12850): `GET /api/user/me/token/`
+  now REISSUES the token of that name on every call and invalidates the old
+  one**, because the server can no longer read it back. Existing tokens
+  (BinScan's in `~/binscan/env`) stay valid; any script that "fetches the
+  token" to check it would silently revoke the one BinScan uses. Never call
+  that endpoint from a check; read the env file.
 
