@@ -144,4 +144,8 @@ prefix query matches either.
   8006) are stopped. `scratch16/` holds the migrated copy WITH the test
   writes, so it is not a clean reference — the clean one is the rollback
   point.
+- 2026-10-21, Scott: Sales Orders module switched off (`SALESORDER_ENABLED`
+  False via the ORM, read back over `/api/settings/global/`); there were 0
+  sales orders. Build and Purchase orders stay on; Return and Transfer
+  orders were already off.
 
