@@ -33,6 +33,9 @@ from part.models import Part
 from stock.models import StockItem
 from order.models import PurchaseOrderLineItem
 from build.models import Build, BuildLine
+from plugins.notes_compat import note_text, note_set, note_append, note_prepend, filter_notes  # noqa: E402
+# [ESTIMATE] is a PREFIX; resolve the set once instead of reading every row's note.
+EST_PKS = set(filter_notes(StockItem.objects.all(), prefix="[ESTIMATE]").values_list("pk", flat=True))
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--location", help="restrict to parts stocked under this location name")
@@ -73,7 +76,7 @@ for s in StockItem.objects.select_related("part", "location"):
         free[s.part_id] += q
     if s.stocktake_date:
         counted[s.part_id] = True
-    if (s.notes or "").startswith("[ESTIMATE]"):
+    if s.pk in EST_PKS:
         est[s.part_id] = True
 
 rows = []
@@ -102,8 +105,8 @@ def known_projects():
     easier to answer and much harder to answer wrongly.
     """
     seen = {}
-    for prt in Part.objects.exclude(notes="").exclude(notes__isnull=True).only("pk", "notes"):
-        for line in (prt.notes or "").splitlines():
+    for prt in filter_notes(Part.objects.all(), contains=MARK):
+        for line in note_text(prt).splitlines():
             if MARK in line:
                 what = line.split(MARK, 1)[1].strip().rstrip(".")
                 if what and what != "?":
@@ -125,8 +128,7 @@ if a.answer:
             line = (f"{MARK} ? — Scott could not recall, asked "
                     f"{date.today().isoformat()}. Do not ask again; a repeated "
                     f"unanswerable question trains people to ignore the report.")
-        Part.objects.filter(pk=prt.pk).update(
-            notes=((prt.notes or "").rstrip() + "\n" + line).strip())
+        note_append(prt, line, sep="\n")
         print(f"  #{prt.pk} {prt.name[:44]}\n     {line}")
     sys.exit()
 
@@ -168,7 +170,7 @@ for stem, grp in sorted(groups.items(), key=lambda kv: -max(g[0] for g in kv[1])
       print(f"  ** {len(grp)} '{stem}' parts are short together — likely ONE job **")
   for gap, pk, buy, fr, ins in grp:
     p = Part.objects.get(pk=pk)
-    if MARK in (p.notes or ""):
+    if MARK in note_text(p):
         continue
     inst = f", {ins:g} installed in an assembly" if ins else ""
     print(f"  #{pk:<5} {p.name[:56]}")

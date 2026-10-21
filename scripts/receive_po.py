@@ -37,6 +37,7 @@ django.setup()
 
 from order.models import PurchaseOrder  # noqa: E402
 from stock.models import StockItem, StockLocation  # noqa: E402
+from plugins.notes_compat import note_text, note_set, note_append, note_prepend, filter_notes  # noqa: E402
 
 ap = argparse.ArgumentParser()
 ap.add_argument("reference")
@@ -111,20 +112,20 @@ if not a.commit:
 for ln, sp, pack, pieces, unit, row, before in plan:
     if row:
         row.quantity = before + pieces
-        row.notes = (row.notes or "") + (
-            f"\n\nRECEIVED {pieces:g} on {when} from {po.reference} at ${unit:.4f} each. "
-            f"Merged into this row: once goods are in inventory the shelf answers "
-            f"'how many' in ONE number. {before:g} + {pieces:g} = {before + pieces:g}.")
         row.save()
+        note_append(row, (
+            f"RECEIVED {pieces:g} on {when} from {po.reference} at ${unit:.4f} each. "
+            f"Merged into this row: once goods are in inventory the shelf answers "
+            f"'how many' in ONE number. {before:g} + {pieces:g} = {before + pieces:g}."))
     else:
         row = StockItem.objects.create(
             part=sp.part, location=dest, quantity=pieces,
             # a new row came from exactly one order, so link it; a merged row
             # spans several and keeps the history in its notes instead
             supplier_part=sp, purchase_order=po,
-            purchase_price=unit, purchase_price_currency="USD",
-            notes=(f"RECEIVED {pieces:g} on {when} from {po.reference} at "
-                   f"${unit:.4f} each (line qty {float(ln.quantity):g} x pack {pack:g})."))
+            purchase_price=unit, purchase_price_currency="USD")
+        note_set(row, (f"RECEIVED {pieces:g} on {when} from {po.reference} at "
+                       f"${unit:.4f} each (line qty {float(ln.quantity):g} x pack {pack:g})."))
     row.refresh_from_db()
     assert float(row.quantity) == before + pieces, "quantity did not stick"
     ln.received = ln.quantity

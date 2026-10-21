@@ -11,6 +11,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "InvenTree.settings")
 django.setup()
 from company.models import Company
 from order.models import PurchaseOrder
+from plugins.notes_compat import note_text, note_set, note_append, note_prepend, filter_notes  # noqa: E402
 try:
     from order.status_codes import PurchaseOrderStatus
 except ImportError:
@@ -49,14 +50,14 @@ for ref, title, total, note in CREATE:
     po = PurchaseOrder.objects.create(
         supplier=amazon, supplier_reference=ref,
         reference=f"PO-{next_ref():04d}",
-        description=title[:250],
-        notes=(f"Stub PO from Scott's approved decision queue, executed "
-               f"interactively {date.today().isoformat()}. "
-               + (f"Order total ${total}. " if total else "")
-               + note + " Line items not itemisable from Amazon email; "
-               "reconcile from the order page if cost detail is ever needed."))
+        description=title[:250])
     po.status = PurchaseOrderStatus.PLACED.value
     po.save()
+    note_set(po, (f"Stub PO from Scott's approved decision queue, executed "
+                  f"interactively {date.today().isoformat()}. "
+                  + (f"Order total ${total}. " if total else "")
+                  + note + " Line items not itemisable from Amazon email; "
+                  "reconcile from the order page if cost detail is ever needed."))
     print(f"  created {po.reference}  {ref}  {title[:44]}")
 
 print()
@@ -67,9 +68,8 @@ for ref, why in CANCEL:
     if po.status == PurchaseOrderStatus.CANCELLED.value:
         print(f"  already cancelled {po.reference}"); continue
     po.status = PurchaseOrderStatus.CANCELLED.value
-    po.notes = ((po.notes or "").rstrip() +
-                f"\n\nCANCELLED {date.today().isoformat()} per Scott: {why}.")
     po.save()
+    note_append(po, f"CANCELLED {date.today().isoformat()} per Scott: {why}.")
     print(f"  cancelled {po.reference}  {ref}  ({why.split(' - ')[0]})")
 
 print()

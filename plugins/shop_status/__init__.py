@@ -18,6 +18,17 @@ from django.utils.translation import gettext_lazy as _
 
 from plugin import InvenTreePlugin
 from plugin.mixins import SettingsMixin, UserInterfaceMixin
+try:
+    from plugins.notes_compat import note_text, filter_notes
+except ImportError:  # plugin dir loaded by file path rather than as a package
+    import importlib.util as _ilu
+    import pathlib as _pl
+    _spec = _ilu.spec_from_file_location(
+        'notes_compat', _pl.Path(__file__).resolve().parent.parent / 'notes_compat.py')
+    _nc = _ilu.module_from_spec(_spec)
+    _spec.loader.exec_module(_nc)
+    note_text, filter_notes = _nc.note_text, _nc.filter_notes
+
 
 # Rows shown per section before the "N more" link. The widget scrolls, but
 # what fits without scrolling is what actually gets acted on.
@@ -357,7 +368,10 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
 
     @staticmethod
     def _parse_notes_history(part):
-        """Read the markdown purchase table out of Part.notes.
+        """Read the markdown purchase table out of the part's notes.
+
+        On 1.6 the note is HTML; notes_compat.note_text() hands it back as the
+        pipe-row text this parser was written for.
 
         There is more than one table shape in this database and they disagree
         about column ORDER, so positions cannot be assumed:
@@ -376,7 +390,7 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
         actual purchase, and reporting $0 as the price paid is worse than
         reporting nothing.
         """
-        notes = part.notes or ''
+        notes = note_text(part)   # 1.5 column or 1.6 primary Note, as text
         who = 'unknown'
         m = re.search(r'##\s*Purchase history\s*\(([^)]+)\)', notes)
         if m:
@@ -915,7 +929,7 @@ class ShopStatusPlugin(SettingsMixin, UserInterfaceMixin, InvenTreePlugin):
         # [ESTIMATE] is a PREFIX on StockItem.notes, not a substring anywhere in
         # it, and not on Part.description. Both of those wrong tests have been
         # run here and both returned a confident wrong number.
-        est = StockItem.objects.filter(notes__istartswith='[ESTIMATE]')
+        est = filter_notes(StockItem.objects.all(), prefix='[ESTIMATE]')
 
         recv = StockLocation.objects.filter(name='Receiving')
         unfiled = StockLocation.objects.filter(name__istartswith='Unfiled')

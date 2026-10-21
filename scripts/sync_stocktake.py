@@ -37,6 +37,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "InvenTree.settings")
 django.setup()
 
 from stock.models import StockItem      # noqa: E402
+from plugins.notes_compat import note_text, note_set, note_append, note_prepend, filter_notes  # noqa: E402
 
 MARK = re.compile(r"binscan (\d{4}-\d\d-\d\d): filed into \S+ and COUNTED at "
                   r"([\d.]+) by hand", re.I)
@@ -46,8 +47,8 @@ ap.add_argument("--commit", action="store_true")
 a = ap.parse_args()
 
 todo, mismatched = [], []
-for s in StockItem.objects.filter(notes__icontains="COUNTED at"):
-    m = MARK.search(s.notes or "")
+for s in filter_notes(StockItem.objects.all(), contains="COUNTED at"):
+    m = MARK.search(note_text(s))
     if not m:
         continue
     when, qty = m.group(1), float(m.group(2))

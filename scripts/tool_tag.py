@@ -73,6 +73,7 @@ from company.models import SupplierPart                  # noqa: E402
 from part.models import Part, PartCategory               # noqa: E402
 from stock.models import StockItem, StockLocation        # noqa: E402
 from stock.status_codes import StockHistoryCode, StockStatus  # noqa: E402
+from plugins.notes_compat import note_text, note_set, note_append, note_prepend, filter_notes  # noqa: E402
 
 RACK_PK = 423          # SLN/Machine Shop/Toolholder Rack
 HOLDER_CATS = (44, 84)  # Tooling/Holders, Tooling/Toolholders/BT30
@@ -268,11 +269,10 @@ def retire(tool, reason, status):
     nums = tool_numbers(tool)
     tool.tags.clear()
     note = f"{TODAY} RETIRED ({StockStatus(status).label}) was {','.join(nums) or 'untagged'}: {reason}"
-    tool.notes = ((tool.notes or "") + "\n" + note).strip()
-    tool.save()
+    note_append(tool, note, sep="\n")
     tool.updateQuantity(0)
     chk = StockItem.objects.get(pk=tool.pk)  # must still exist
-    assert float(chk.quantity) == 0 and chk.status == status and note in (chk.notes or ""), "retire did not stick"
+    assert float(chk.quantity) == 0 and chk.status == status and note in note_text(chk), "retire did not stick"
     print(f"OK tool #{chk.pk} retired: {StockStatus(status).label}, qty 0, row kept, numbers {','.join(nums) or '-'} released")
     return nums
 
@@ -334,7 +334,7 @@ def cmd_show(a):
         for g in c.installed_parts.all():
             print(f"      contains #{g.pk} {g.part.name[:60]} qty={g.quantity:g}")
     print(f"   barcode {s.format_barcode()}")
-    print(f"   notes: {(s.notes or '')[:300]!r}")
+    print(f"   notes: {note_text(s)[:300]!r}")
 
 
 def cmd_new(a):
@@ -360,9 +360,8 @@ def cmd_new(a):
         tool.save()
         assert StockItem.objects.get(pk=tool.pk).location_id == RACK_PK
     tool = set_tags(tool, nums)
-    tool.notes = f"TOOL {','.join(nums)} -- {note}. Tool numbers are the tags; the Fusion tool library is the master list."
-    tool.save()
-    assert "TOOL" in StockItem.objects.get(pk=tool.pk).notes
+    note_set(tool, f"TOOL {','.join(nums)} -- {note}. Tool numbers are the tags; the Fusion tool library is the master list.")
+    assert note_text(StockItem.objects.get(pk=tool.pk)).startswith("TOOL")
     print(f"OK tool #{tool.pk} tagged {','.join(nums)} @ {rack.pathstring}")
     if hp:
         fit_holder(tool, hp, note)
@@ -381,9 +380,8 @@ def cmd_set(a):
     # add_tracking_entry wants the StockHistoryCode enum, not its int (crashed 2026-10-08
     # after the tags were already set -- the tags stuck, the history line did not).
     s.add_tracking_entry(StockHistoryCode.EDITED, USER, notes=f"tool number set to {','.join(nums)}")
-    s.notes = f"TOOL {','.join(nums)} -- renumbered {TODAY}. " + (s.notes or "")
-    s.save()
-    assert StockItem.objects.get(pk=s.pk).notes.startswith(f"TOOL {','.join(nums)}")
+    note_prepend(s, f"TOOL {','.join(nums)} -- renumbered {TODAY}.", sep=" ")
+    assert note_text(StockItem.objects.get(pk=s.pk)).startswith(f"TOOL {','.join(nums)}")
     print("OK " + describe(s) + "\nSUCCESS")
 
 
@@ -431,8 +429,7 @@ def cmd_replace(a):
         print(f"OK holder #{h.pk} moved to #{new.pk}")
     retire(old, reason, StockStatus.DESTROYED.value)
     new = set_tags(new, nums)
-    new.notes = f"TOOL {','.join(nums)} -- replaced #{old.pk} on {TODAY} ({reason}). Reprint the label: new QR."
-    new.save()
+    note_set(new, f"TOOL {','.join(nums)} -- replaced #{old.pk} on {TODAY} ({reason}). Reprint the label: new QR.")
     print(describe(StockItem.objects.get(pk=new.pk)) + "\nREPRINT the label for this tool (new QR)\nSUCCESS")
 
 

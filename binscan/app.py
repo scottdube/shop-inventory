@@ -164,7 +164,9 @@ AUTO_CONF = frozenset()
 
 app = FastAPI(title="binscan")
 
-HOME = pathlib.Path.home() / "binscan"
+# BINSCAN_HOME lets a scratch instance (2026-10-21: the 1.6 port test on :8006)
+# keep its own journal instead of appending to the live one.
+HOME = pathlib.Path(os.environ.get("BINSCAN_HOME") or (pathlib.Path.home() / "binscan"))
 LOG = HOME / "log.jsonl"
 SHOTS = HOME / "shots"
 SHOTS.mkdir(exist_ok=True)
@@ -193,7 +195,7 @@ def log_rewrite(rows):
             fh.write(json.dumps(r) + "\n")
 
 
-def it_get(path, **params):
+def _it_get_raw(path, **params):
     if not IT_TOKEN:
         return None
     try:
@@ -236,7 +238,7 @@ def it_patch(path, payload):
         return None, str(e)[:200]
 
 
-def it_post(path, payload):
+def _it_post_raw(path, payload):
     if not IT_TOKEN:
         return None, "no InvenTree token"
     try:
@@ -248,6 +250,303 @@ def it_post(path, payload):
         return r.json(), None
     except Exception as e:
         return None, str(e)[:200]
+
+# ── InvenTree notes: 1.5 column vs 1.6 common.Note ────────────────────────────
+# InvenTree 1.6 (#11971) removed the `notes` column from StockItem and Part and
+# moved the text into a `common.Note` row per object (HTML, one PRIMARY note per
+# object, served at /api/note/). Everything below keeps the rest of this file
+# reading and writing a plain-text `notes` string, on BOTH versions:
+#
+#   reads   it_get("stock/...") hydrates row["notes"] with the primary note's
+#           text (html_to_text) when the server no longer sends one;
+#   creates it_post("stock/"|"part/", {... "notes": text}) strips the key the
+#           1.6 serializer would silently drop, creates the row, then creates
+#           the primary note from the text (text_to_html), verified by re-read;
+#   stamps  api_assign rewrites the primary note BLOCK-wise on 1.6 (see
+#           _restamp_html), so an imported table or bold run is never flattened
+#           to text and re-rendered.
+#
+# The conventions this catalogue queries on are TEXT at the start of the
+# primary note on both versions: "[ESTIMATE]" as the first thing in the first
+# paragraph, "binscan DATE: filed into X and COUNTED at N by hand", "RECEIVED".
+# plugins/notes_compat.py is the ORM twin of this block (same _ToText); this
+# copy exists because BinScan runs in its own venv against the REST API only.
+# Decision record: docs/inventree-16-notes-port.md.
+from html.parser import HTMLParser
+import html as _html
+
+_HEAD = {"h1": "# ", "h2": "## ", "h3": "### ", "h4": "#### ", "h5": "##### ", "h6": "###### "}
+
+
+class _ToText(HTMLParser):
+    """HTML -> the plain text a reader sees, keeping the shapes our parsers key on."""
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.out = []
+        self.row = None          # list of cells while inside <tr>
+        self.cell = None         # list of text pieces while inside <td>/<th>
+        self.in_pre = 0
+        self.thead_rows = 0
+        self.in_thead = False
+        self.li_depth = 0
+
+    def _emit(self, s):
+        if self.cell is not None:
+            self.cell.append(s)
+        else:
+            self.out.append(s)
+
+    def _at_line_start(self):
+        joined = "".join(self.out)
+        return not joined or joined.endswith("\n")
+
+    def handle_starttag(self, tag, attrs):
+        if tag == "br":
+            self._emit("\n")
+        elif tag in _HEAD:
+            if not self._at_line_start():
+                self._emit("\n")
+            self._emit(_HEAD[tag])
+        elif tag == "li":
+            if not self._at_line_start():
+                self._emit("\n")
+            self._emit("- ")
+        elif tag == "tr":
+            self.row = []
+        elif tag in ("td", "th"):
+            self.cell = []
+        elif tag == "thead":
+            self.in_thead = True
+        elif tag == "pre":
+            self.in_pre += 1
+        elif tag == "img":
+            alt = dict(attrs).get("alt") or ""
+            if alt:
+                self._emit(alt)
+        elif tag in ("p", "div", "blockquote", "table", "ul", "ol"):
+            if not self._at_line_start():
+                self._emit("\n")
+
+    def handle_endtag(self, tag):
+        if tag in ("td", "th"):
+            text = "".join(self.cell or []).strip()
+            if self.row is not None:
+                self.row.append(text)
+            self.cell = None
+        elif tag == "tr":
+            cells = self.row or []
+            self.row = None
+            self.out.append("| " + " | ".join(cells) + " |\n")
+            if self.in_thead:
+                self.out.append("|" + "---|" * len(cells) + "\n")
+        elif tag == "thead":
+            self.in_thead = False
+        elif tag == "pre":
+            self.in_pre = max(0, self.in_pre - 1)
+        elif tag in ("p", "div", "blockquote", "table", "ul", "ol") or tag in _HEAD:
+            self._emit("\n\n" if tag in ("p", "div", "blockquote", "table", "ul", "ol") else "\n")
+        elif tag == "li":
+            self._emit("\n")
+
+    def handle_data(self, data):
+        if self.in_pre:
+            self._emit(data)
+        else:
+            self._emit(re.sub(r"[ \t\r\n]+", " ", data))
+
+
+def html_to_text(h):
+    """The text a reader sees for a 1.6 note. '' for None/empty."""
+    if not h:
+        return ""
+    p = _ToText()
+    p.feed(h)
+    p.close()
+    text = "".join(p.out)
+    text = re.sub(r"[ \t]+\n", "\n", text)
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    return text.strip()
+
+
+def text_to_html(text):
+    """Plain text as BinScan writes it -> note HTML. Paragraphs on blank lines,
+    <br> for inner newlines, **x** -> <strong>; everything else escaped."""
+    out = []
+    for para in re.split(r"\n[ \t]*\n", (text or "").strip()):
+        q = para.strip()
+        if not q:
+            continue
+        e = _html.escape(q, quote=False)
+        e = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", e)
+        out.append("<p>" + e.replace("\n", "<br>") + "</p>")
+    return "\n".join(out)
+
+
+_TAG = re.compile(r"<(/?)([a-zA-Z][\w-]*)[^>]*?(/?)>")
+_VOID = {"br", "img", "hr", "input", "col", "wbr"}
+
+
+def html_blocks(h):
+    """Split note HTML into its TOP-LEVEL blocks (each <p>...</p>, <table>...
+    </table>, ...). Bare text between blocks is a block of its own."""
+    blocks, depth, start, pos = [], 0, None, 0
+    for m in _TAG.finditer(h or ""):
+        closing, tag, selfclose = m.group(1) == "/", m.group(2).lower(), bool(m.group(3))
+        if depth == 0 and start is None:
+            gap = h[pos:m.start()].strip()
+            if gap:
+                blocks.append(gap)
+            start = m.start()
+        if tag in _VOID or selfclose:
+            if depth == 0:
+                blocks.append(h[start:m.end()])
+                start, pos = None, m.end()
+            continue
+        depth += -1 if closing else 1
+        if depth <= 0:
+            depth = 0
+            blocks.append(h[start:m.end()])
+            start, pos = None, m.end()
+    tail = h[pos:].strip() if start is None else h[start:].strip()
+    if tail:
+        blocks.append(tail)
+    return blocks
+
+
+_V16 = None
+
+
+def it_v16():
+    """True when the server is InvenTree >= 1.6 (no notes column on stock rows).
+    Probed once from a real row; an unanswered probe is not cached."""
+    global _V16
+    if _V16 is None:
+        rows = _rows(_it_get_raw("stock/", limit=1))
+        if rows:
+            _V16 = "notes" not in rows[0]
+        else:
+            probe = _it_get_raw("note/", limit=1)
+            if probe is None:
+                return False
+            _V16 = True
+    return _V16
+
+
+def _note_rows(model, pk=None):
+    out, offset = [], 0
+    while True:
+        params = {"model_type": model, "limit": 500, "offset": offset}
+        if pk is not None:
+            params["model_id"] = pk
+        data = _it_get_raw("note/", **params)
+        if data is None:
+            return out
+        page = _rows(data)
+        out.extend(page)
+        if not (isinstance(data, dict) and data.get("next")) or not page:
+            return out
+        offset += len(page)
+
+
+def note_row(model, pk):
+    """The PRIMARY common.Note row for one object, or None (1.6 only)."""
+    rows = _note_rows(model, pk)
+    prim = [n for n in rows if n.get("primary")]
+    return (prim or rows or [None])[0]
+
+
+def note_write(model, pk, content_html):
+    """Set the primary note of one object to content_html. Verified by re-read
+    (text equality: the server normalises the HTML). Returns an error or None."""
+    cur = note_row(model, pk)
+    if cur:
+        _b, err = it_patch(f"note/{cur['pk']}/", {"content": content_html})
+    else:
+        _b, err = _it_post_raw("note/", {"model_type": model, "model_id": pk,
+                                         "title": "Note", "primary": True,
+                                         "content": content_html})
+    if err:
+        return err
+    back = note_row(model, pk) or {}
+    if html_to_text(back.get("content")) != html_to_text(content_html):
+        return f"note on {model} {pk} did not verify on re-read"
+    return None
+
+
+def _hydrate(rows):
+    """Give 1.6 stock rows the notes text 1.5 rows carried natively."""
+    rows = [r for r in rows if isinstance(r, dict)]
+    if not rows or not it_v16() or all("notes" in r for r in rows):
+        return
+    if len(rows) <= 3:
+        for r in rows:
+            n = note_row("stockitem", r.get("pk")) or {}
+            r["notes"] = html_to_text(n.get("content"))
+        return
+    bypk = {}
+    for n in _note_rows("stockitem"):
+        if n.get("primary") or n.get("model_id") not in bypk:
+            bypk[n.get("model_id")] = html_to_text(n.get("content"))
+    for r in rows:
+        r["notes"] = bypk.get(r.get("pk"), "")
+
+
+_NOTED = re.compile(r"^(stock|part)/(\d+/)?$")
+
+
+def it_get(path, **params):
+    data = _it_get_raw(path, **params)
+    if data is not None and _NOTED.match(path) and path.startswith("stock/"):
+        _hydrate([data] if isinstance(data, dict) and "pk" in data else _rows(data))
+    return data
+
+
+def it_post(path, payload):
+    """POST, and on 1.6 turn a `notes` text on a new stock row / part into its
+    primary note (the serializer there drops the key without a word)."""
+    m = _NOTED.match(path)
+    if not (m and m.group(2) is None and "notes" in payload and it_v16()):
+        return _it_post_raw(path, payload)
+    text = payload.get("notes") or ""
+    body, err = _it_post_raw(path, {k: v for k, v in payload.items() if k != "notes"})
+    if err or not text.strip():
+        return body, err
+    model = "stockitem" if m.group(1) == "stock" else "part"
+    for row in (body if isinstance(body, list) else [body]):
+        if isinstance(row, dict) and row.get("pk"):
+            nerr = note_write(model, row["pk"], text_to_html(text))
+            if nerr:
+                return None, f"{path} row {row['pk']} created but its note failed: {nerr}"
+    return body, None
+
+
+def _restamp_html(prior_html, note, counted):
+    """1.6 twin of api_assign's paragraph loop, on the note's HTML blocks:
+    drop every leading binscan stamp, drop the McMaster TRANSITIONAL paragraphs,
+    demote an [ESTIMATE] purchase paragraph once a count exists, and put the
+    new stamp first. Untouched blocks are copied byte for byte."""
+    lead = re.compile(r"^(?:\[ESTIMATE\]\s*)?binscan \d{4}-\d\d-\d\d:[^\n]*\n*")
+    stale = ("**DRAWER UNKNOWN", "DRAWER UNKNOWN",
+             "This is a TRANSITIONAL state", "Resolve it by opening the drawer")
+    kept, leading = [], True
+    for blk in html_blocks(prior_html or ""):
+        t = html_to_text(blk).strip()
+        if leading and lead.match(t):
+            while lead.match(t):
+                t = lead.sub("", t, count=1).lstrip()
+            if t:
+                kept.append(text_to_html(t))
+                leading = False
+            continue
+        leading = False
+        if not t or any(t.startswith(m) for m in stale):
+            continue
+        if counted is not None and t.startswith("[ESTIMATE]"):
+            blk = blk.replace("[ESTIMATE]", "PURCHASE HISTORY (superseded by the count above):", 1)
+        kept.append(blk)
+    return "\n".join([text_to_html(note)] + kept)
+
 
 
 def resolve(location_name, part_name):
@@ -841,6 +1140,74 @@ _KINDS = (("nylon-insert", "nyloc"), ("nyloc", "nyloc"), ("locknut", "nyloc"),
 _KIND_RE = [(re.compile(r"\b" + re.escape(w) + r"s?\b"), tag) for w, tag in _KINDS]
 
 
+# A DIN/ISO standard number NAMES THE FORM, and it is often the only place the
+# form appears. Added 2026-09-06 after a bag of M8 hex nuts was filed against
+# M8 x 60 socket head cap screws.
+#
+# The label read perfectly: "PART DESCRIPTION: M8 934-8". DIN 934 IS the hex
+# nut standard. But the word "nut" never appears on that label, so _kinds()
+# returned an empty set, the nut-versus-screw penalty below never fired, and
+# four M8 things scored identically with a screw on top. The same morning,
+# "7380" - the button head standard - was ignored on three other bags.
+#
+# The scoring did not need changing. It needed the vocabulary: once the label
+# yields {"nut"}, the existing -5 for nut-versus-screw does the rest.
+#
+# Only standards confident enough to act on are listed. A wrong entry here is
+# worse than a missing one, because it manufactures agreement out of a number.
+_DIN_KIND = {
+    "912": "socket",    # ISO 4762 - socket head cap screw
+    "4762": "socket",
+    "7380": "button",   # button head socket
+    "7991": "flat",     # countersunk socket head
+    "10642": "flat",
+    "931": "hexhead",   # hex bolt, partial thread
+    "933": "hexhead",   # hex bolt, full thread
+    "4014": "hexhead",
+    "4017": "hexhead",
+    "934": "nut",       # hex nut  <- the one that started this
+    "4032": "nut",
+    "936": "nut",       # thin/jam nut
+    "439": "nut",
+    "1587": "nut",      # cap/acorn nut
+    "6923": "nut",      # flange nut
+    "985": "nyloc",     # prevailing-torque nut, nylon insert
+    "982": "nyloc",
+    "6926": "nyloc",
+    "985a": "nyloc",
+    "125": "washer",    # plain washer
+    "126": "washer",
+    "9021": "washer",   # fender washer
+    "127": "washer",    # spring lock washer
+    "7985": "pan",      # cross-recessed pan head
+    "965": "flat",      # cross-recessed countersunk
+    "84": "fillister",  # slotted cheese head
+    "916": "set",       # set screw, cup point
+    "913": "set",
+    "914": "set",
+    "915": "set",
+}
+
+# "M8 934-8", "DIN934", "ISO 4032", "7380-1" - the number stands alone or is
+# glued to DIN/ISO, and may carry a class suffix after a hyphen.
+_DIN_RE = re.compile(r"\b(?:din|iso)?\s*-?\s*(\d{2,5})(?:-\d+)?\b", re.I)
+
+
+def _din_kinds(t):
+    """Kinds implied by any DIN/ISO standard number in the text.
+
+    Deliberately narrow: only numbers in the table count, so a lot number or a
+    quantity cannot masquerade as a form. "QTY: 100" yields nothing because 100
+    is not a fastener standard.
+    """
+    out = set()
+    for m in _DIN_RE.finditer(t or ""):
+        tag = _DIN_KIND.get(m.group(1).lower())
+        if tag:
+            out.add(tag)
+    return out
+
+
 def _kinds(t):
     """WORD boundaries, not substrings, and this is not fussiness.
 
@@ -855,7 +1222,7 @@ def _kinds(t):
     catalogue says Hex Nut.
     """
     tl = (t or "").lower()
-    return {tag for rx, tag in _KIND_RE if rx.search(tl)}
+    return ({tag for rx, tag in _KIND_RE if rx.search(tl)} | _din_kinds(tl))
 
 
 def _facts(t):
@@ -1002,6 +1369,11 @@ _STOP = {"the", "and", "for", "with", "from", "this", "that", "your", "not",
          "mm", "cm", "in", "of", "to", "by", "or", "a", "an"}
 
 
+# "m4x20" -> m4 / 20 / 20mm. Letters+digits, an x, then digits: the way every
+# fastener bag in this shop is labelled, and the way no catalogue name is.
+_SIZE_PAIR = re.compile(r"^([a-z]+\d+(?:\.\d+)?)x(\d+(?:\.\d+)?)$")
+
+
 def _tokens(text):
     """Distinctive lowercase tokens: what two descriptions of one object share.
 
@@ -1011,8 +1383,25 @@ def _tokens(text):
     letting "fl" and "ipex" stand alone is worth more than keeping "u.fl"
     whole.
     """
-    return {t for t in re.findall(r"[a-z0-9]+", (text or "").lower())
-            if len(t) >= 2 and t not in _STOP}
+    raw = [t for t in re.findall(r"[a-z0-9]+", (text or "").lower())
+           if len(t) >= 2 and t not in _STOP]
+    out = set(raw)
+    for t in raw:
+        m = _SIZE_PAIR.match(t)
+        if m:
+            # A fastener label writes "M4X20"; the catalogue writes "M4 x 0.70
+            # mm Thread, 20mm Long". Tokenising on [a-z0-9]+ alone keeps M4X20
+            # WHOLE, so the most identifying thing on the bag matches nothing
+            # and the score falls back on noise words like "part" and "pack".
+            #
+            # Measured 2026-09-06: q="M4X20" returned NOTHING, while
+            # q="M4 20mm" put the right screw first. Two bags were filed
+            # against a label roll and a catch-all because of this - the top
+            # candidate was wrong and looked as confident as a right one.
+            out.add(m.group(1))                 # m4
+            out.add(m.group(2))                 # 20
+            out.add(m.group(2) + "mm")          # 20mm, as the catalogue writes it
+    return out
 
 
 def _catalogue_index():
@@ -1029,17 +1418,53 @@ def _catalogue_index():
     parts and says almost nothing; "pigtail" appears on one and says
     everything. Weighting by rarity separates them without a hand-tuned list.
     """
+    # IDENTIFIERS ARE INDEXED TOO, not just prose. Added 2026-09-06.
+    #
+    # This indexed name + description only, so a photograph of a bag showing
+    # McMaster's own 92095A188 could not match the part whose IPN IS 92095A188.
+    # The number on the bag - the one string that identifies the thing exactly -
+    # was the one thing the matcher could not see, so it fell back to ranking
+    # words and put a label roll first for a bag of screws.
+    #
+    # An identifier is also the RAREST possible token: IDF gives it a huge
+    # weight, so one exact hit buries every fuzzy name match beneath it. That is
+    # the behaviour wanted - a part number is not a hint, it is the answer.
     rows = _rows(it_get("part/", limit=2000))
+    sku_by_part = collections.defaultdict(list)
+    try:
+        for sp in _rows(it_get("company/part/", limit=2000)):
+            pk = sp.get("part")
+            for key in ("SKU", "MPN"):
+                v = sp.get(key)
+                if v:
+                    sku_by_part[pk].append(str(v))
+    except Exception:
+        pass    # identifiers are a bonus; never let them break the index
+
     docs = []
     df = collections.Counter()
     for r in rows:
-        toks = _tokens(f"{r.get('name') or ''} {r.get('description') or ''}")
+        ids = " ".join(sku_by_part.get(r.get("pk"), []))
+        toks = _tokens(f"{r.get('name') or ''} {r.get('description') or ''} "
+                       f"{r.get('IPN') or ''} {ids}")
         if toks:
             docs.append((r, toks))
             df.update(toks)
     n = len(docs) or 1
     idf = {t: math.log(n / (1 + c)) + 0.25 for t, c in df.items()}
-    return docs, idf
+
+    # EXACT IDENTIFIER lookup. Scoring alone is not enough: a part number is one
+    # token, and score = sum(idf) / sqrt(len(tokens)), so an exact hit on a part
+    # with a long McMaster name scored 1.60 while a FUZZY name match scored 2.63.
+    # The damping punished the only unambiguous evidence on the bag.
+    #
+    # A part number is not a hint, it is the answer, so it short-circuits.
+    ident = {}
+    for r, _t in docs:
+        for v in [r.get("IPN")] + sku_by_part.get(r.get("pk"), []):
+            if v:
+                ident.setdefault(str(v).strip().lower(), []).append(r)
+    return docs, idf, ident
 
 
 def catalogue_matches(reading, limit=6):
@@ -1087,10 +1512,23 @@ def catalogue_search(text, limit=6, floor=0.9):
     want = _tokens(text)
     if not want:
         return []
-    docs, idf = _catalogue_index()
+    docs, idf, ident = _catalogue_index()
 
-    scored = []
-    for row, have in docs:
+    # An exact identifier beats everything. Checked against the RAW text too, so
+    # a hyphenated number survives tokenising.
+    raw = [w.strip().lower() for w in re.split(r"[\s,;/]+", text or "") if w.strip()]
+    exact = []
+    seen_pk = set()
+    for tok in list(want) + raw:
+        for r in ident.get(tok, []):
+            if r["pk"] not in seen_pk:
+                seen_pk.add(r["pk"])
+                exact.append((999.0, [tok], r))
+    if exact:
+        scored = exact
+    else:
+        scored = []
+    for row, have in (() if exact else docs):
         shared = want & have
         if not shared:
             continue
@@ -1787,8 +2225,15 @@ def api_assign(stock: int = Form(...), location: str = Form(...),
     # COUNTED_RE is what reads it back. scripts/sync_stocktake.py mirrors it
     # into the real stocktake_date through the ORM, which the serializer does
     # not gate, so InvenTree's own never-counted reports stay right.
-    patch = {"notes": body_notes}
-    _b, perr = it_patch(f"stock/{stock}/", patch)
+    if it_v16():
+        # 1.6: the text above is what a 1.5 column would hold; the note itself
+        # is HTML and is rewritten block-wise so imported tables survive.
+        cur = note_row("stockitem", stock) or {}
+        perr = note_write("stockitem", stock,
+                          _restamp_html(cur.get("content") or "", note, counted))
+    else:
+        patch = {"notes": body_notes}
+        _b, perr = it_patch(f"stock/{stock}/", patch)
     if perr:
         return JSONResponse({"error": f"moved, but could not stamp the row: {perr}",
                              "moved": True}, 502)
