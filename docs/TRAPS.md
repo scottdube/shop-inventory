@@ -11705,4 +11705,10 @@ The port itself is recorded in `docs/inventree-16-notes-port.md`. The traps:
   (BinScan's in `~/binscan/env`) stay valid; any script that "fetches the
   token" to check it would silently revoke the one BinScan uses. Never call
   that endpoint from a check; read the env file.
+- **`curl http://127.0.0.1:8001/web/` on the Mini returns 500 and always has.**
+  Loopback is not in `trusted_origins` (INVE-E7 in server.err.log), so a
+  localhost probe of the web UI reads as a broken server right after any
+  change. Probe with `-H "Host: 192.168.50.10:8001"` or from the laptop via
+  `inventory.internal`; `/api/` does not care. Cost ten minutes on
+  2026-10-21 chasing a 500 that the Sales-Orders setting had not caused.
 
