@@ -1172,7 +1172,12 @@ in the spindle.
 
 ## Watch
 
-- [ ] **InvenTree update available (noticed 2026-08-23). DO IT IN FLORIDA, not
+- [x] **InvenTree update available (noticed 2026-08-23). DONE 2026-10-21 at LRD:
+      1.5.5 → 1.5.8**, 16 s downtime, every plugin and widget verified after
+      (TRAPS "Upgrading again"). **1.6.x is deliberately NOT taken** — its Notes
+      refactor removes the `notes` column that shop_status, BinScan and the
+      count-evidence tiers depend on; see the new item under Watch. Original note:
+      DO IT IN FLORIDA, not
       from here.** The Mini lives at LRD, so from SLN it is 1,300 miles away and
       an upgrade that goes sideways leaves a broken server nobody can touch.
       This instance also carries a custom `shopstatus` plugin and BinScan
@@ -2260,7 +2265,14 @@ two PayPal receipts. **No stock rows yet — no container.**
       lasers cleanly. Not urgent — but do it before cutting something that
       matters.
 - [ ] Print a test address label → decide whether DK-11201's minimum comes off.
-- [ ] InvenTree upgrade — **in Florida, co-located with the Mini**.
+- [x] InvenTree upgrade — **in Florida, co-located with the Mini**. DONE
+      2026-10-21, 1.5.8. The 1.6 port is its own item (below).
+- [ ] **InvenTree 1.6 port (opened 2026-10-21).** Before any 1.6.x checkout:
+      move `shop_status`, `tool_tag.py`, `unaccounted.py`, `deploy_po.py`,
+      `receive_po.py`, `run_queue.py`, `florida_pack.py`, `sync_stocktake.py`
+      and BinScan's `/api/empty` off the `notes` column onto the `common.Note`
+      model, test against a copy of the DB on a scratch checkout, then upgrade.
+      Details and what was checked: TRAPS "1.6.x is a port, not a checkout".
 
 ## The Jet mill/drill is not in the shop documentation
 

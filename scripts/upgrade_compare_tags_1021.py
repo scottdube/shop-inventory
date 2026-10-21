@@ -1,0 +1,32 @@
+"""Read-only apart from `git fetch`: compare 1.5.5 (installed) with 1.6.1 on the Mini."""
+import subprocess
+ROOT="/Volumes/4TB_Removable/inventree"
+def sh(c):
+    r=subprocess.run(c,shell=True,capture_output=True,text=True,cwd=f"{ROOT}/src")
+    return (r.stdout+r.stderr).strip()
+print("fetch:", sh("git fetch --tags origin 2>&1 | tail -2"))
+print("tag 1.6.1:", sh("git rev-parse --short 1.6.1^{commit}"), " 1.5.8:", sh("git rev-parse --short 1.5.8^{commit}"))
+print("\n== migrations added 1.5.5..1.6.1 ==")
+print(sh("git diff --name-status 1.5.5 1.6.1 -- 'src/backend/InvenTree/*/migrations/*.py' | grep -v __init__"))
+print("\n== migrations added 1.5.5..1.5.8 ==")
+print(sh("git diff --name-status 1.5.5 1.5.8 -- 'src/backend/InvenTree/*/migrations/*.py'"))
+print("\n== requirements.txt diff ==")
+print(sh("git diff 1.5.5 1.6.1 -- src/backend/requirements.txt | grep '^[-+][^-+]'"))
+print("\n== python requires ==", sh("git show 1.6.1:pyproject.toml | grep -i 'requires-python'"))
+print("\n== plugin UI / mixin files changed ==")
+print(sh("git diff --stat 1.5.5 1.6.1 -- src/backend/InvenTree/plugin/base/ui src/backend/InvenTree/plugin/mixins.py src/backend/InvenTree/plugin/base/label src/backend/InvenTree/plugin/registry.py src/backend/InvenTree/plugin/plugin.py | tail -15"))
+print("\n== urls.py upstream change 1.5.5..1.6.1 ==")
+print(sh("git diff --stat 1.5.5 1.6.1 -- src/backend/InvenTree/InvenTree/urls.py"))
+print("\n== does our media patch apply to 1.6.1? ==")
+sh("git diff -- src/backend/InvenTree/InvenTree/urls.py > /tmp/media_patch_1021.diff")
+sh("git show 1.6.1:src/backend/InvenTree/InvenTree/urls.py > /tmp/urls_161.py")
+print(sh("cd /tmp && cp urls_161.py urls_try.py && patch --dry-run urls_try.py < /tmp/media_patch_1021.diff 2>&1 | tail -3"))
+print("\n== our patch ==")
+print(sh("git diff -- src/backend/InvenTree/InvenTree/urls.py"))
+print("\n== token hmac migration ==")
+print(sh("git diff --name-status 1.5.5 1.6.1 -- src/backend/InvenTree/users/migrations/ | cat"))
+for f in sh("git diff --name-only 1.5.5 1.6.1 -- src/backend/InvenTree/users/migrations/").split():
+    print("---", f); print(sh(f"git show 1.6.1:{f} | head -60"))
+print("\n== notes refactor: fields named notes in migrations ==")
+print(sh("git diff 1.5.5 1.6.1 -- 'src/backend/InvenTree/*/migrations/*.py' | grep -n -i \"'notes'\" | head -20"))
+print("\n== frontend-download task still exists ==", sh("git show 1.6.1:tasks.py | grep -n 'def frontend_download' | head -2"))

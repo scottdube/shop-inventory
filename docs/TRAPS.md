@@ -11130,6 +11130,58 @@ Worth having, and the reason not to defer this again: 1.5.2 fixes supplier part
 **`pack_quantity` pricing recalculation**, the trap this shop has paid for more
 than once.
 
+## Upgrading again, 1.5.5 → 1.5.8, done 2026-10-21 at LRD — and why NOT 1.6
+
+Same sequence as above, scripted this time: `scripts/upgrade_158_1_rollback_point.py`
+(DB `.backup` + integrity, plugins tar, config, the media patch as a diff — all
+into `backups/pre-1.5.8_<stamp>/`), `scripts/upgrade_158_2_switch.py` (bootout
+both services, drop the patch, checkout, migrate, `frontend-download`,
+collectstatic, re-apply the patch; the services are re-bootstrapped in a
+`finally`, so a failure half-way leaves a running server on whatever tree is
+checked out), `scripts/upgrade_158_3_verify.py` (Django test client, logged in,
+`HTTP_HOST` set). Downtime was 16 s. 1.5.5→1.5.8: **zero migrations, zero
+requirement changes**, 42 files. `pip install` was skipped because the diff of
+`requirements.txt` between the tags was empty — check that first next time, it
+is the slow step.
+
+**`/web/` returns 500 to `127.0.0.1:8001` and 200 to `192.168.50.10:8001`.** The
+server log says `INVE-E7: ... not in the TRUSTED_ORIGINS`. That is config, not
+the upgrade — probe through the LAN host name, never loopback, or the smoke test
+reports a broken UI that users never see. `/api/` answers 200 on either.
+
+### 1.6.x is a port, not a checkout (measured 2026-10-21 against 1.6.1)
+
+1.6.0 (2026-10-18) lists four breaking changes. One of them matters here: the
+**Notes refactor (#11971) drops the `notes` text column** from Part, StockItem,
+PurchaseOrder, Company (migrations `part.0154_remove_part_notes`,
+`stock.0128_remove_stockitem_notes`, `order.0122`, `company.0081`, `build.0060`)
+and moves the text into a `common.Note` model; `.notes` on the model becomes a
+**property returning a QuerySet**. The data is migrated (`create_notes_batch`,
+non-empty rows only), so nothing is lost — but everything that reads or writes
+the column as a string breaks:
+
+- `plugins/shop_status/__init__.py` — reads `part.notes or ''` for the Amazon
+  purchase table (line ~379) and the `[ESTIMATE]` prefix on `StockItem.notes`
+  (line ~915). The whole count-evidence-tier convention lives in that column.
+- Reusable scripts: `tool_tag.py` (12 uses), `unaccounted.py` (5),
+  `deploy_po.py` (3), `receive_po.py` (2), `run_queue.py` (2),
+  `florida_pack.py`, `sync_stocktake.py`. 329 scripts in all touch `.notes`,
+  most of them one-offs already run.
+- BinScan `/api/empty` stamps `VERIFIED EMPTY <date>` into notes over REST; the
+  serializer field is gone too.
+
+What does NOT break, checked on the tags: the media `urls.py` patch applies
+cleanly to 1.6.1 (`patch --dry-run`); `UserInterfaceMixin` and
+`LabelPrintingMixin` changes are additive (new `route` feature type, error
+logging); the squashed migrations are all `replaces` of ones this DB has
+applied, so Django just marks them; API tokens are kept and flagged
+`token_version=1` (`users.0017`), so BinScan's token survives. Python stays
+3.12.
+
+So the 1.6 upgrade waits for a port of the notes users above, done and tested
+against a copy of the DB. It is winter work with Scott beside the Mini, not an
+evening's checkout. 1.5.x keeps receiving fixes meanwhile.
+
 ## A part with no SKU still needs an identity guard for its image (2026-09-24)
 
 Queue A's guard is "accept an image only when the page carries our identifier
