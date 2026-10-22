@@ -11711,4 +11711,15 @@ The port itself is recorded in `docs/inventree-16-notes-port.md`. The traps:
   change. Probe with `-H "Host: 192.168.50.10:8001"` or from the laptop via
   `inventory.internal`; `/api/` does not care. Cost ten minutes on
   2026-10-21 chasing a 500 that the Sales-Orders setting had not caused.
+- **The Mini's `/tmp/vendor_registry.json` does not survive a reboot.** The
+  2026-10-22 16:40 daytime sweep's `vendor_triage.py` died with
+  `FileNotFoundError` on it — the first sweep after the 1.6.1 upgrade reboot.
+  macOS clears `/tmp` on boot, and the task file's "push it after editing"
+  rule only covers edits, not loss. It is the *good* failure (a crash, not a
+  stale-file false all-clear), but it will recur after every reboot. Fix is
+  one line, from any laptop path:
+  `itq push /Users/scottdube/code/shop-inventory/scripts/vendor_registry.json /tmp/vendor_registry.json`.
+  Not fixed at the root: moving the deployed copy out of `/tmp` means
+  changing the default in `vendor_triage.py` and the task file together,
+  which is a Scott call because the task file is gated.
 
