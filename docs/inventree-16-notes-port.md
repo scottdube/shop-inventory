@@ -117,6 +117,16 @@ prefix query matches either.
   never counted those rows on either version (fingerprint unchanged), so
   this was text fidelity, not a dashboard change.
 
+- **The sweep covered `shop-inventory/scripts` and missed `~/code/scripts`.**
+  The amazon-refund-watch scheduled task's `refund_watch.py` lives there and
+  died on its first post-upgrade run (2026-10-22, `GOING_BACK.search(si.notes)`
+  → "expected string, got QuerySet"). Ported to `note_text()`. The task file's
+  worked example `refund_found_0163_0919.py` still assigns `si.notes` /
+  `.update(notes=...)`: the next landed refund must be recorded with
+  `note_append()` from `plugins.notes_compat`, not by copying that example.
+  ~50 other dated one-offs in `~/code/scripts` still say `.notes`; they already
+  ran and are history, not tools.
+
 ## Live upgrade, 2026-10-21
 
 - Rollback point `backups/pre-1.6.1_20261021_1146/` (`upgrade_16x_1_rollback_point.py`):
