@@ -5437,6 +5437,17 @@ if float(si.quantity) == 100:        # guard: only if the change has NOT applied
 The guard matters more than the backoff. A retry loop around a non-idempotent
 write is a way to apply it several times.
 
+**2026-10-23, a 49-row kit seed hit it twice in a row** and landed 27 rows,
+then 32, before it finished. Each run died at a different row, so the lock was
+the worker's polling, not one long holder. For a bulk seed, the pattern that
+finished in one pass was **one unit = one `transaction.atomic()` block
+(create part, create row, write note), retried with backoff, and idempotent**:
+look up by name and location first, and set the note only if its `[ESTIMATE]`
+prefix is missing. Then verify every row at the destination, not just the rows
+this run wrote. A run that died between create and note would otherwise leave a
+row the next run skips. `scripts/seed_allecin_lrd.py` is the worked example.
+Unloading the worker was not needed.
+
 ## "All" from a person covers what they HANDLED, not what was mentioned
 
 2026-08-26. Scott, asked whether the springs were in B2-R7C1: *"they're all
