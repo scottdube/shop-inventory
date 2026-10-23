@@ -6,6 +6,19 @@ docs and a backlog you cannot read in one place is hiding, not parking.
 Add here when something is deliberately deferred. Delete when done — this is a
 queue, not a log.
 
+## Check at SLN next season (~June 2027)
+
+Things only a person standing at SLN can settle. Scott is at LRD until then, so
+these wait. They are not to be asked about from Florida.
+
+- **Is there an SLN copy of each ALLECIN kit?** Purchase history shows each
+  kit ordered twice, with one of each shipped to LRD. The LRD copies are in
+  Cab2-D3, exploded into values on 2026-10-23. Asked that day, Scott didn't
+  remember an SLN copy. Search the SLN kit drawers (L2-D4/Kits first) for the
+  24-value electrolytic and the 25-value 1/2W resistor kit. If found, explode it
+  the same way (`scripts/seed_allecin_lrd.py`, retargeted). If not, remove the
+  "owned at two sites" line on parts #1 and #6.
+
 ## The dead QL-810W has to be de-modified before it ships back — by Nov 19
 
 The first printer is physically still on the electronics bench with **two wires
