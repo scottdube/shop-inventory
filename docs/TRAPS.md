@@ -11380,6 +11380,33 @@ InvenTree does not know about, and it is one refund away from phantom stock.
 Report those by order number the day they appear. And `[REFUND-CONFIRMED]` on
 a PO whose stock row is unlinked still leaves the row standing — say so.
 
+### Second instance, 17 days later — and the task file still skips the search (2026-10-23)
+
+Same shape, caught earlier. The 2026-10-23 run printed `no open refunds`; the
+blanket `from:return@amazon.com newer_than:30d` sweep found two RMAs from
+2026-10-19/20 (Hollyland Lark M2, order 113-2965388-1706666; PowerDeWise
+wireless lavalier kit, order 113-7875038-0724220). Both matched open POs the
+nightly sweep had auto-created on 2026-10-18 — PO-0265 and PO-0264 — at
+**Placed, nothing received, no stock row**. That is PO-0163 one step earlier:
+a unit going back while its PO sits where a delivery-driven receive would book
+it into stock.
+
+Two things to carry forward:
+
+- **The `amazon-refund-watch` task file routes `no open refunds` straight to
+  the report**, skipping step 2 and with it the blanket sweep. Both times the
+  sweep found something, the watchlist had been empty. The sweep has to run
+  unconditionally; the task file is under `~/.claude/` and the unattended gate
+  refuses edits there, so that change is Scott's.
+- **Write the RMA on the PO the day it appears**, in the words the watcher
+  keys on ("refund not confirmed"), and leave the sentinel alone. Done this
+  time via `notes_compat.note_append` (`scripts/refund_rma_0264_0265_1023.py`);
+  the next `refund_watch.py` run listed both POs. Waiting for the refund email
+  before writing anything — the task's literal step 3 — is what let PO-0163's
+  receive overtake its refund. PO-0264 carries a second line (the wired 3.5 mm
+  lavalier) that is NOT in the return; the note says so, because a reader
+  seeing "return" on the PO would otherwise hold both items back.
+
 ## A storefront-homepage link is a placeholder, and the store's JSON answers it (2026-10-07)
 
 The 10-05 tooling back-fill gave 14 parts a `Part.link` and `SupplierPart.link`
