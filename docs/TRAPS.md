@@ -11193,6 +11193,16 @@ So the 1.6 upgrade waits for a port of the notes users above, done and tested
 against a copy of the DB. It is winter work with Scott beside the Mini, not an
 evening's checkout. 1.5.x keeps receiving fixes meanwhile.
 
+**The PO-import TEMPLATES were not ported (2026-10-23 12:40 sweep).** The port
+covered the reusable scripts; the queue C sweeps build each PO script by copying
+the last one, and every `po_10xx_*.py` before 10-23 passes `notes=` to the
+constructor. On 1.6.1 `Part(notes=...)` dies at once with `AttributeError:
+property 'notes' of 'Part' object has no setter` — before any save, so nothing
+half-writes — and `PurchaseOrder(notes=...)` goes the same way. Copy
+`po_1023_akro_cabinets.py` instead: it writes Part and PO notes through
+`notes_compat.note_set()` after `.save()`, verifies them with `note_text()`, and
+checks `_meta` before giving the line item a `notes` CharField.
+
 ## A part with no SKU still needs an identity guard for its image (2026-09-24)
 
 Queue A's guard is "accept an image only when the page carries our identifier
