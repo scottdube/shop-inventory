@@ -255,7 +255,12 @@ manual slot only if a sheet is already sitting in it; otherwise it pulls plain
 paper from the tray without waiting (job 204, 2026-10-25). With `manual` the
 printer holds the job until a sheet goes in. Snug the slot guides to both
 edges: a loose sheet fed skewed, and the left two columns fit while the right
-two printed low. Print the PDF by queue name
+two printed low.
+
+**Printed 2026-10-25:** all 3 LRD sheets on 8167 through the manual slot at
+-0.5 mm (jobs 205–207); Scott passed sheets 1 and 2 as good. Whether 8167's
+inkjet coating holds toner long-term was not separately reported; if labels
+smudge or lift on the cabinets, that is the 5167 question coming due. Print the PDF by queue name
 (`lp -d Brother_HL_L2405W -o print-scaling=none`); the laptop's default queue
 is the SLN HL-L2360D.
 
