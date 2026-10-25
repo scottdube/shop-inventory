@@ -248,7 +248,14 @@ offset with no scale error.
 8167 sheet went through the MANUAL slot and printed ~0.75 mm HIGH (Scott), so
 the manual slot needs -0.5 mm. `--set lrd` now takes `--feed manual` (default,
 -0.5) or `--feed tray` (-1.25). Labels go through the manual slot; a sheet
-printed with the wrong path's offset lands ~0.75 mm off. Print the PDF by queue name
+printed with the wrong path's offset lands ~0.75 mm off.
+
+**Send label jobs with `-o InputSlot=manual`.** The default `auto` takes the
+manual slot only if a sheet is already sitting in it; otherwise it pulls plain
+paper from the tray without waiting (job 204, 2026-10-25). With `manual` the
+printer holds the job until a sheet goes in. Snug the slot guides to both
+edges: a loose sheet fed skewed, and the left two columns fit while the right
+two printed low. Print the PDF by queue name
 (`lp -d Brother_HL_L2405W -o print-scaling=none`); the laptop's default queue
 is the SLN HL-L2360D.
 
