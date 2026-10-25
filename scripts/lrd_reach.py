@@ -83,6 +83,21 @@ if not control_ok:
 print("   -> sockets work; negatives below are real.\n")
 
 print("=" * 62)
+print("1b. SUBNET -- which network is this Mac on?")
+print("=" * 62)
+# Added 2026-10-25: the 02:00 run read "WireGuard disconnected" as the cause
+# while the Mac sat on the LRD IoT SSID. On site at LRD the tunnel is not the
+# path at all; IoT -> Servers is Block All, so this check outranks step 2.
+en0 = run(["/usr/sbin/ipconfig", "getifaddr", "en0"]).strip()
+on_iot = en0.startswith("192.168.11.")
+print("   en0  %s" % (en0 or "(no address)"))
+if on_iot:
+    print("\n   >> THIS MAC IS ON THE LRD `IoT` SSID (192.168.11.x).")
+    print("   >> IoT -> Servers is Block All; the Mini is unreachable by design.")
+    print("   >> Join the trusted SSID. network-docs known-issues 2026-10-13.")
+print()
+
+print("=" * 62)
 print("2. LOCAL WIREGUARD CLIENT -- is the tunnel even up on this Mac?")
 print("=" * 62)
 nc = run(["/usr/sbin/scutil", "--nc", "list"])
@@ -93,7 +108,9 @@ for line in wg:
     print("   %s" % line.strip())
 connected = [l for l in wg if "(Connected)" in l]
 lrd_down = any("LRD" in l and "(Disconnected)" in l for l in wg)
-if lrd_down:
+if lrd_down and on_iot:
+    print("\n   -> LRD tunnel disconnected; moot while on IoT (see 1b).")
+elif lrd_down:
     print("\n   >> THE LRD TUNNEL IS DISCONNECTED ON THIS LAPTOP.")
     print("   >> This alone explains every timeout below. Connect WireGuard")
     print("   >> (menu bar) before diagnosing anything on the far side.")
@@ -144,6 +161,10 @@ elif reachable:
     print("Mini is reachable. If itq still fails, the problem is above the")
     print("transport -- auth, the venv, or the script itself.")
     sys.exit(0)
+elif on_iot:
+    print("Nothing on the far side answers and this Mac is on the IoT SSID.")
+    print("That alone explains it: join the trusted SSID, then rerun. The")
+    print("WireGuard state above is irrelevant on site at LRD.")
 elif lrd_down:
     print("Nothing on the far side answers AND the local LRD WireGuard client")
     print("is disconnected. Local cause, local fix: connect the tunnel.")
