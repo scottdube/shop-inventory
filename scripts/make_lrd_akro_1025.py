@@ -30,6 +30,7 @@ Also, because the same sheet labels them:
 """
 import argparse
 import os
+import re
 import sys
 
 import django
@@ -105,10 +106,17 @@ for s in (1, 2, 3):
 print(f"{'created' if a.commit else 'would create'} {len(made)} locations: "
       f"{', '.join(made[:6])}{' ...' if len(made) > 6 else ''}")
 
-# Barcodes: every location the LRD sheet prints, i.e. everything under the
-# bench wall and the Akro bins (on a dry run the Akro rows do not exist yet).
-roots = [bench] + ([akro] if akro else [])
-targets = [l for r in roots for l in r.get_descendants(include_self=False)]
+# Barcodes: exactly the names the LRD sheet prints (on a dry run the Akro rows
+# do not exist yet). Filtered by name because the bench wall also holds kit
+# locations ("Kit - ALLECIN ...", inside Cab2-D3) that carry no sheet label.
+PRINTED = re.compile(r"^(Cab[1-8](-[DS][1-5])?|F[0-2](-R\d+C\d+)?)$")
+# RE-READ the roots first. Creating rows in the LRD tree shifts every node's
+# lft/rght, and get_descendants() on the stale in-memory `bench` returned the
+# first 47 Akro rows instead of the bench wall (2026-10-25); the second root
+# then hit those rows again and died on 'Existing barcode found'.
+roots = [StockLocation.objects.get(pk=r.pk) for r in (bench, akro) if r]
+targets = list({l.pk: l for r in roots for l in r.get_descendants(include_self=False)
+                if PRINTED.match(l.name)}.values())
 linked = skipped = collided = 0
 for loc in targets:
     cur = getattr(loc, "barcode_data", "") or ""

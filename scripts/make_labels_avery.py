@@ -95,12 +95,14 @@ def row(group):
 def lrd():
     """LRD: the Cab1-Cab8 bench wall, then Akro cabinets F0 (10124) and F1/F2 (10164).
 
-    Cabinet-level labels first (one per cabinet frame), then each cabinet's
-    levels on rows of their own. 224 slots = 3 sheets, blanks included.
-    Names must exist in InvenTree with barcode_data set, or the QR scans to
-    nothing: make_lrd_akro_1025.py does both.
+    Frame labels first, then each cabinet's levels on rows of their own.
+    No frame label for the lowers Cab1-Cab4 (Scott, 2026-10-25): every drawer
+    and Cab1 shelf label already names its cabinet. The uppers keep theirs
+    because closed doors hide the shelf edges. Names must exist in InvenTree
+    with barcode_data set, or the QR scans to nothing: make_lrd_akro_1025.py
+    does both.
     """
-    out = row([f"Cab{n}" for n in range(1, 9)] + ["F0", "F1", "F2"])
+    out = row([f"Cab{n}" for n in range(5, 9)] + ["F0", "F1", "F2"])
     out += row([f"Cab1-S{s}" for s in range(1, 4)])
     for n in (2, 3, 4):
         out += row([f"Cab{n}-D{d}" for d in range(1, 6)])

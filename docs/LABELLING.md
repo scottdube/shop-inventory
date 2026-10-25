@@ -204,11 +204,17 @@ same plain text, so any phone reads it and BinScan takes it directly.
     itq run scripts/make_labels_avery.py --set lrd     # avery8167_lrd_p1..p3.html
 
 **Avery 8167** is the inkjet twin of 5167: same 1/2 x 1-3/4 die-cut, 80 a sheet,
-so the geometry above is unchanged and only the file names say 8167. One sheet
-of 201 labels across 3 pages, each cabinet starting a fresh row: frame labels
-`Cab1`…`Cab8` + `F0`–`F2`, then `Cab1-S1..S3`, `Cab2..4-D1..D5`,
+so the geometry above is unchanged and only the file names say 8167. 197
+labels across 3 sheets, each cabinet starting a fresh row: frame labels
+`Cab5`…`Cab8` + `F0`–`F2`, then `Cab1-S1..S3`, `Cab2..4-D1..D5`,
 `Cab5..8-S1..S5` (S5 = the cabinet floor), then the Akro drawers `F0-R1C1`…,
 `F1-…`, `F2-…`. Shelf labels go on the **front edge of each shelf** (Scott).
+
+**No frame label on the lowers `Cab1`–`Cab4`** (Scott, 2026-10-25): every
+drawer and Cab1 shelf label already reads `Cab2-D3`, so a frame label says
+nothing new. The uppers keep theirs because a closed door hides the shelf
+edges, and F0–F2 by the same logic (a cabinet you can name before opening).
+`Cab1`–`Cab4` still carry barcode_data, so a hand-made frame label would scan.
 
 **Install the spare upper shelf before labelling an upper.** Each upper has 4
 shelves + floor = S1..S5, but one spare per cabinet was found stacked on another
@@ -219,7 +225,8 @@ renumbers every level below it.
 **The QR only resolves if the name is the location's barcode_data.**
 `link_barcodes.py` links the `X0-R1C1` drawer form and nothing else, so `Cab2-D3`
 or `F1` would print a QR that scans to nothing. `make_lrd_akro_1025.py` links
-every location under `LRD/Bench Wall` and `LRD/Akro Bins`.
+every name the sheet prints under `LRD/Bench Wall` and `LRD/Akro Bins`, by name
+pattern, so the kit locations inside `Cab2-D3` are left alone.
 
 **Why `F` for the LRD Akros:** see that script's docstring — names must be
 unique across both sites because the QR carries only the name.

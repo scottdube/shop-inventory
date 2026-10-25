@@ -11771,3 +11771,22 @@ The port itself is recorded in `docs/inventree-16-notes-port.md`. The traps:
   changing the default in `vendor_triage.py` and the task file together,
   which is a Scott call because the task file is gated.
 
+
+## Creating locations leaves in-memory parents with stale tree bounds (2026-10-25)
+
+`make_lrd_akro_1025.py --commit` created 159 locations under `LRD`, then called
+`bench.get_descendants()` on the `Bench Wall` object it had fetched BEFORE the
+inserts. MPTT descendant queries are `lft`/`rght` ranges, every insert shifts
+those numbers on disk, and the Python object kept the old ones — so the "bench
+wall" query returned the first 47 new Akro rows instead. The second root then
+hit the same rows and `assign_barcode` died on **"Existing barcode found"**,
+which reads like a hash collision and is not one: a clash search across every
+barcode model found nothing holding those hashes.
+
+**Re-read every tree node by pk after any create/move before calling
+`get_descendants()` / `get_children()`**, and de-duplicate targets by pk.
+
+Second half of the same chase: `assign_barcode` / `lookup_barcode` do **not**
+exclude the object itself, so linking the same row twice in one run raises that
+error on the second pass. A row whose `barcode_data` already equals the target
+must be skipped, not re-assigned.
