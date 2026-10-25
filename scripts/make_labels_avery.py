@@ -137,12 +137,16 @@ def main():
     # Printer feed offset, + = right/down. The PDF measures 1:1, so a shift on
     # paper is the printer's, and the fix belongs to that printer, not the grid.
     ap.add_argument("--dx-mm", type=float, default=0.0)
+    # The HL-L2405W's two paper paths feed to different heights (2026-10-25):
+    # the tray printed 1-1.5 mm low (-1.25 fit top and bottom), the manual slot
+    # then printed that sheet 0.75 mm HIGH. Labels go through the manual slot.
+    ap.add_argument("--feed", choices=["manual", "tray"], default="manual",
+                    help="--set lrd only: which HL-L2405W paper path")
     ap.add_argument("--dy-mm", type=float, default=None,
-                    help="default 0; for --set lrd -1.25, the HL-L2405W printed "
-                         "1-1.5 mm low on the 2026-10-25 plain-paper test")
+                    help="overrides --feed; default 0 for non-LRD sets")
     a = ap.parse_args()
     if a.dy_mm is None:
-        a.dy_mm = -1.25 if a.set == "lrd" else 0.0
+        a.dy_mm = {"manual": -0.5, "tray": -1.25}[a.feed] if a.set == "lrd" else 0.0
 
     addrs = []
     if a.set in ("top", "all"):
