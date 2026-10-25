@@ -87,12 +87,36 @@ def addresses(cabs, layout):
             for col in range(1, cols + 1)]
 
 
+def row(group):
+    """Pad a group to whole sheet rows, so each cabinet starts on a fresh row."""
+    return group + [None] * (-len(group) % COLS)
+
+
+def lrd():
+    """LRD: the Cab1-Cab8 bench wall, then Akro cabinets F0 (10124) and F1/F2 (10164).
+
+    Cabinet-level labels first (one per cabinet frame), then each cabinet's
+    levels on rows of their own. 224 slots = 3 sheets, blanks included.
+    Names must exist in InvenTree with barcode_data set, or the QR scans to
+    nothing: make_lrd_akro_1025.py does both.
+    """
+    out = row([f"Cab{n}" for n in range(1, 9)] + ["F0", "F1", "F2"])
+    out += row([f"Cab1-S{s}" for s in range(1, 4)])
+    for n in (2, 3, 4):
+        out += row([f"Cab{n}-D{d}" for d in range(1, 6)])
+    for n in (5, 6, 7, 8):
+        out += row([f"Cab{n}-S{s}" for s in range(1, 6)])
+    out += addresses(["F0"], LAYOUT_24)
+    out += addresses(["F1", "F2"], LAYOUT_64)
+    return out
+
+
 def pages(addrs, qr, guides):
     out = []
     for i in range(0, len(addrs), PER_PAGE):
         chunk = addrs[i:i + PER_PAGE]
         body = [one(a, M_L + (j % COLS) * P_X, M_T + (j // COLS) * P_Y, qr, guides)
-                for j, a in enumerate(chunk)]
+                for j, a in enumerate(chunk) if a]
         out.append(
             f'<svg xmlns="http://www.w3.org/2000/svg" width="{PAGE_W:.0f}" '
             f'height="{PAGE_H:.0f}" viewBox="0 0 {PAGE_W:.0f} {PAGE_H:.0f}">'
@@ -103,8 +127,9 @@ def pages(addrs, qr, guides):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--set", default="top",
-                    choices=["top", "bottom", "col0", "all"],
-                    help="top=A1-A3, bottom=B1-B3, col0=A0/B0")
+                    choices=["top", "bottom", "col0", "all", "lrd"],
+                    help="top=A1-A3, bottom=B1-B3, col0=A0/B0 (all = these three); "
+                         "lrd = LRD Cab1-Cab8 + Akro F0-F2")
     ap.add_argument("--no-qr", action="store_true")
     ap.add_argument("--guides", action="store_true", help="faint label outlines")
     a = ap.parse_args()
@@ -116,18 +141,22 @@ def main():
         addrs += addresses(["B1", "B2", "B3"], LAYOUT_44)
     if a.set in ("col0", "all"):
         addrs += addresses(["A0", "B0"], LAYOUT_24)
+    if a.set == "lrd":
+        addrs += lrd()
+    # 8167 is the inkjet twin of 5167, same die-cut; LRD's pack is 8167.
+    stock = "8167" if a.set == "lrd" else "5167"
 
     ps = pages(addrs, not a.no_qr, a.guides)
     for i, svg in enumerate(ps, 1):
-        pathlib.Path(f"avery5167_{a.set}_p{i}.svg").write_text(svg)
+        pathlib.Path(f"avery{stock}_{a.set}_p{i}.svg").write_text(svg)
         # An HTML wrapper as well, because the sheet gets PRINTED FROM CHROME and
         # a bare SVG is treated as an image: Chrome fits it to the printable area
         # and every label lands a few millimetres off its die-cut. @page pins the
         # media to Letter with zero margin, and the fixed px box holds the sheet
         # at exactly 1:1. Open the .html, not the .svg.
-        pathlib.Path(f"avery5167_{a.set}_p{i}.html").write_text(
+        pathlib.Path(f"avery{stock}_{a.set}_p{i}.html").write_text(
             "<!doctype html><meta charset=utf-8>"
-            f"<title>Avery 5167 — {a.set} sheet {i}</title>"
+            f"<title>Avery {stock} — {a.set} sheet {i}</title>"
             "<style>@page{size:8.5in 11in;margin:0}"
             "html,body{margin:0;padding:0}"
             f"svg{{display:block;width:{PAGE_W:.0f}px;height:{PAGE_H:.0f}px}}"
@@ -135,16 +164,17 @@ def main():
             "svg{box-shadow:0 2px 12px rgba(0,0,0,.25);margin:12px auto}}"
             "</style>" + svg)
 
-    print(f"{len(addrs)} labels -> {len(ps)} sheet(s) of Avery 5167 (80/sheet)")
+    used = sum(1 for x in addrs if x)
+    print(f"{used} labels -> {len(ps)} sheet(s) of Avery {stock} (80/sheet)")
     print(f"  label 1.75 x 0.5 in, QR={'no' if a.no_qr else 'yes'}")
     for i in range(1, len(ps) + 1):
-        print(f"  avery5167_{a.set}_p{i}.html   <- open THIS in Chrome to print")
-        print(f"  avery5167_{a.set}_p{i}.svg")
+        print(f"  avery{stock}_{a.set}_p{i}.html   <- open THIS in Chrome to print")
+        print(f"  avery{stock}_{a.set}_p{i}.svg")
     print("  Chrome: Cmd-P, Margins NONE, Scale 100% (not 'Fit to page'),")
     print("          headers/footers OFF. Print one on plain paper and hold it")
     print("          against a blank Avery sheet before committing a sheet.")
     if len(addrs) % PER_PAGE:
-        print(f"  last sheet uses {len(addrs) % PER_PAGE} of {PER_PAGE} labels")
+        print(f"  last sheet uses {len(addrs) % PER_PAGE} of {PER_PAGE} slots")
 
 
 if __name__ == "__main__":

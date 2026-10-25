@@ -199,6 +199,36 @@ check and was caught by eye; a sheet costs more than the thirty seconds.
 The label carries the ADDRESS only — a place, not contents — plus a QR of the
 same plain text, so any phone reads it and BinScan takes it directly.
 
+### LRD sheet — `--set lrd` (designed 2026-10-25)
+
+    itq run scripts/make_labels_avery.py --set lrd     # avery8167_lrd_p1..p3.html
+
+**Avery 8167** is the inkjet twin of 5167: same 1/2 x 1-3/4 die-cut, 80 a sheet,
+so the geometry above is unchanged and only the file names say 8167. One sheet
+of 201 labels across 3 pages, each cabinet starting a fresh row: frame labels
+`Cab1`…`Cab8` + `F0`–`F2`, then `Cab1-S1..S3`, `Cab2..4-D1..D5`,
+`Cab5..8-S1..S5` (S5 = the cabinet floor), then the Akro drawers `F0-R1C1`…,
+`F1-…`, `F2-…`. Shelf labels go on the **front edge of each shelf** (Scott).
+
+**Install the spare upper shelf before labelling an upper.** Each upper has 4
+shelves + floor = S1..S5, but one spare per cabinet was found stacked on another
+(the "double-thickness" shelves in the photos), so only 3 + floor stand today.
+Labels are numbered top down; sticking them first and inserting the spare later
+renumbers every level below it.
+
+**The QR only resolves if the name is the location's barcode_data.**
+`link_barcodes.py` links the `X0-R1C1` drawer form and nothing else, so `Cab2-D3`
+or `F1` would print a QR that scans to nothing. `make_lrd_akro_1025.py` links
+every location under `LRD/Bench Wall` and `LRD/Akro Bins`.
+
+**Why `F` for the LRD Akros:** see that script's docstring — names must be
+unique across both sites because the QR carries only the name.
+
+**Printer at LRD: Brother HL-L2405W** (Scott, 2026-10-25), a mono laser.
+8167 is sold as INKJET stock. Not yet tested on this printer: on the first real
+sheet, rub the toner with a thumb and check no label lifted in the fuser. If
+either fails, buy 5167 (the laser version) rather than retuning print settings.
+
 Sources live in `labels/`. Rules any new template must follow:
 
 - **Author at 62 mm.** Never narrower, or CUPS will scale it.
