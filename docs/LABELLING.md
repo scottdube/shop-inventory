@@ -240,7 +240,9 @@ either fails, buy 5167 (the laser version) rather than retuning print settings.
 against a blank sheet). The PDF measured exactly 1:1 before it was sent, so the
 shift is the printer's feed and the fix is a nudge, not new geometry:
 `--set lrd` defaults to `--dy-mm -1.25`; other sets stay at 0 because no other
-printer has been tested. Print the PDF by queue name
+printer has been tested. **Confirmed 2026-10-25:** the second plain-paper test
+at -1.25 mm lined up with the die-cuts top AND bottom (Scott), so it is a pure
+offset with no scale error. Print the PDF by queue name
 (`lp -d Brother_HL_L2405W -o print-scaling=none`); the laptop's default queue
 is the SLN HL-L2360D.
 
