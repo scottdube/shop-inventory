@@ -113,11 +113,11 @@ def lrd():
     return out
 
 
-def pages(addrs, qr, guides):
+def pages(addrs, qr, guides, dx=0.0, dy=0.0):
     out = []
     for i in range(0, len(addrs), PER_PAGE):
         chunk = addrs[i:i + PER_PAGE]
-        body = [one(a, M_L + (j % COLS) * P_X, M_T + (j // COLS) * P_Y, qr, guides)
+        body = [one(a, M_L + dx + (j % COLS) * P_X, M_T + dy + (j // COLS) * P_Y, qr, guides)
                 for j, a in enumerate(chunk) if a]
         out.append(
             f'<svg xmlns="http://www.w3.org/2000/svg" width="{PAGE_W:.0f}" '
@@ -134,7 +134,15 @@ def main():
                          "lrd = LRD Cab1-Cab8 + Akro F0-F2")
     ap.add_argument("--no-qr", action="store_true")
     ap.add_argument("--guides", action="store_true", help="faint label outlines")
+    # Printer feed offset, + = right/down. The PDF measures 1:1, so a shift on
+    # paper is the printer's, and the fix belongs to that printer, not the grid.
+    ap.add_argument("--dx-mm", type=float, default=0.0)
+    ap.add_argument("--dy-mm", type=float, default=None,
+                    help="default 0; for --set lrd -1.25, the HL-L2405W printed "
+                         "1-1.5 mm low on the 2026-10-25 plain-paper test")
     a = ap.parse_args()
+    if a.dy_mm is None:
+        a.dy_mm = -1.25 if a.set == "lrd" else 0.0
 
     addrs = []
     if a.set in ("top", "all"):
@@ -148,7 +156,7 @@ def main():
     # 8167 is the inkjet twin of 5167, same die-cut; LRD's pack is 8167.
     stock = "8167" if a.set == "lrd" else "5167"
 
-    ps = pages(addrs, not a.no_qr, a.guides)
+    ps = pages(addrs, not a.no_qr, a.guides, a.dx_mm / 25.4 * IN, a.dy_mm / 25.4 * IN)
     for i, svg in enumerate(ps, 1):
         pathlib.Path(f"avery{stock}_{a.set}_p{i}.svg").write_text(svg)
         # An HTML wrapper as well, because the sheet gets PRINTED FROM CHROME and
@@ -168,7 +176,8 @@ def main():
 
     used = sum(1 for x in addrs if x)
     print(f"{used} labels -> {len(ps)} sheet(s) of Avery {stock} (80/sheet)")
-    print(f"  label 1.75 x 0.5 in, QR={'no' if a.no_qr else 'yes'}")
+    print(f"  label 1.75 x 0.5 in, QR={'no' if a.no_qr else 'yes'}, "
+          f"nudge dx {a.dx_mm:+.2f} dy {a.dy_mm:+.2f} mm")
     for i in range(1, len(ps) + 1):
         print(f"  avery{stock}_{a.set}_p{i}.html   <- open THIS in Chrome to print")
         print(f"  avery{stock}_{a.set}_p{i}.svg")

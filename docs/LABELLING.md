@@ -236,6 +236,14 @@ unique across both sites because the QR carries only the name.
 sheet, rub the toner with a thumb and check no label lifted in the fuser. If
 either fails, buy 5167 (the laser version) rather than retuning print settings.
 
+**The HL-L2405W prints ~1–1.5 mm LOW** (plain-paper test 2026-10-25, Scott, held
+against a blank sheet). The PDF measured exactly 1:1 before it was sent, so the
+shift is the printer's feed and the fix is a nudge, not new geometry:
+`--set lrd` defaults to `--dy-mm -1.25`; other sets stay at 0 because no other
+printer has been tested. Print the PDF by queue name
+(`lp -d Brother_HL_L2405W -o print-scaling=none`); the laptop's default queue
+is the SLN HL-L2360D.
+
 Sources live in `labels/`. Rules any new template must follow:
 
 - **Author at 62 mm.** Never narrower, or CUPS will scale it.
