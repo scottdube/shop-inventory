@@ -5448,6 +5448,17 @@ this run wrote. A run that died between create and note would otherwise leave a
 row the next run skips. `scripts/seed_allecin_lrd.py` is the worked example.
 Unloading the worker was not needed.
 
+**2026-10-27 22:40, the queue C PO template is NOT atomic.** The
+`po_*.py` shape (copied from `po_1027_1640_akrobins_30220.py`) saves the PO,
+then writes the note, then the line, as separate statements. The lock hit at
+the note: **PO-0273 landed with no note and no line**, and a plain re-run would
+have stopped at its own duplicate guard, leaving a PLACED order with nothing on
+it. Fixed in that run with a `--resume` flag that adopts the existing PO only if
+it has zero lines (`scripts/po_1027_2240_sterilite_6qt.py`). The durable fix is
+to wrap PO + note + line in one `transaction.atomic()` in the next template
+copy — not done here because a sweep is not the place to change the template
+every later sweep copies.
+
 ## "All" from a person covers what they HANDLED, not what was mentioned
 
 2026-08-26. Scott, asked whether the springs were in B2-R7C1: *"they're all
