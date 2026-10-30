@@ -260,7 +260,15 @@ two printed low.
 **Printed 2026-10-25:** all 3 LRD sheets on 8167 through the manual slot at
 -0.5 mm (jobs 205–207, sheet 3 reprinted as 208 after skewing); Scott passed all three
 as good. **2 of 5 manual-slot feeds skewed**, so budget a spare sheet
-per run and check each one before the next goes in. Whether 8167's
+per run and check each one before the next goes in.
+
+**Reprinting a few labels onto a part-used sheet (2026-10-30, F0 row 1):** place
+the reprint on a row that is blank *as the sheet will be loaded*. Sheet 3's blank
+rows were 16–20, so job 209 went to row 16; Scott fed the sheet turned 180° to
+put the blanks at the top, and row 16 then landed on used labels. Ask which way
+up the sheet goes in, or put the row at whichever end Scott feeds first. Jobs
+210 (row 1, skewed) and 211 (row 2, square) followed; a limp part-used sheet
+skews more readily, so snug the guides. Whether 8167's
 inkjet coating holds toner long-term was not separately reported; if labels
 smudge or lift on the cabinets, that is the 5167 question coming due. Print the PDF by queue name
 (`lp -d Brother_HL_L2405W -o print-scaling=none`); the laptop's default queue
