@@ -11801,3 +11801,21 @@ Second half of the same chase: `assign_barcode` / `lookup_barcode` do **not**
 exclude the object itself, so linking the same row twice in one run raises that
 error on the second pass. A row whose `barcode_data` already equals the target
 must be skipped, not re-assigned.
+
+## Some Amazon supplier parts are keyed by brand SKU, not ASIN (2026-10-30)
+
+A reorder check that looks up `SupplierPart.SKU == <ASIN>` can come back empty
+for a part we already own. The zip bags (parts 849/850/851) have Amazon supplier
+parts #558/#559/#560 with SKUs `JINYONBAG-2x2`, `JINYONBAG-2x3`, `Aubeco-3x4`;
+**the ASIN lives only on `Part.link`** (`/dp/B09N32PLTN`). The first dry run of
+`po_1030_0205_zipbags.py` asserted "no Amazon supplier part" for an item that
+had been on the shelf since September. That would have looked like a new
+product and put it on the "uncertain" list, or led to a duplicate part.
+
+**Before you call an Amazon order line "new", search the ASIN in `SupplierPart.SKU`,
+`SupplierPart.link`, `Part.link`, `Part.IPN` and `Part.description`.** That's
+dedup rule (c) in the task file, applied to every field rather than one.
+
+Related: `receive_po.py`'s pack guard keys on the word "pack" in the SKU, so
+these brand SKUs get past it while `pack_quantity` is still 1 (the 400-bag
+question is on the decision queue).
