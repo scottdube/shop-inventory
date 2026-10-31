@@ -11819,3 +11819,21 @@ dedup rule (c) in the task file, applied to every field rather than one.
 Related: `receive_po.py`'s pack guard keys on the word "pack" in the SKU, so
 these brand SKUs get past it while `pack_quantity` is still 1 (the 400-bag
 question is on the decision queue).
+
+## `trip.py mark` on an unfiled tool records Receiving as its home
+
+2026-10-31. The Hollyland Lark M2 mic kit (PO-0266, stock 1183) arrived at LRD
+as a commuting tool with **no home chosen yet** — Scott: *"the mic kit has no
+home yet its on the bench here at lrd it will be a commuter tool though"*.
+`mark` captures the CURRENT location as the return address, so marking it now
+writes `home = LRD/Receiving`, a staging dock.
+
+Marked anyway, because an unmarked commuter is missing from `trip.py pack LRD`
+in June — the worse failure. The note on the mark says home is not chosen.
+**When it is filed, `land` it there and re-run `mark`**: `mark` overwrites
+`home` with the current location (it prints "already marked" but still writes).
+
+Same day: the three LRD Akro cabinets (PO-0268/0269, now F0/F1/F2) went through
+`deploy_po.py`, not `receive_po.py`. The SLN pair on PO-0142 (Aug) still sits as
+a 2-piece stock row at `SLN/Bin Wall` — booked before the 2026-10-08 deploy rule,
+not a precedent to copy.
