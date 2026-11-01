@@ -11214,6 +11214,11 @@ half-writes — and `PurchaseOrder(notes=...)` goes the same way. Copy
 `notes_compat.note_set()` after `.save()`, verifies them with `note_text()`, and
 checks `_meta` before giving the line item a `notes` CharField.
 
+`ali_import.py` was a reusable script the port also missed — it died the same
+way on its first 1.6 run (2026-11-01 08:40, PO create inside `transaction.atomic`,
+so nothing half-wrote; its SupplierPart create sits outside the atomic and did
+land, harmlessly). Ported the same day. Any importer not run since 10-23 is suspect.
+
 ## A part with no SKU still needs an identity guard for its image (2026-09-24)
 
 Queue A's guard is "accept an image only when the page carries our identifier

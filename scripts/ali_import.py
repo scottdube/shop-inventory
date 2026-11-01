@@ -35,6 +35,7 @@ from company.models import Company, SupplierPart           # noqa: E402
 from order.models import PurchaseOrder                     # noqa: E402
 from order.status_codes import PurchaseOrderStatus         # noqa: E402
 from part.models import Part                               # noqa: E402
+from plugins.notes_compat import note_set, note_text       # noqa: E402
 
 COMMIT = "--commit" in sys.argv
 
@@ -95,33 +96,76 @@ ORDERS = [
         subtotal=Decimal("0.99"), total=Decimal("0.99"),
         retires=None,
     ),
+    # Read 2026-11-01 08:40 sweep from the order-details page. Two identical
+    # 100-pc orders 21 min apart, both still paid/Processing three days on;
+    # whether both are intended is still open on aliexpress-signed-out-1029.
+    # Total - subtotal (24.83) is shipping+tax, not on the line.
+    dict(
+        order="8215070970595753",
+        seller="Si Tai&SH IC accessories Store",
+        placed=date(2026, 10, 29), eta=date(2026, 11, 13),
+        read=date(2026, 11, 1),
+        part_pk=418,
+        sku="8215070970595753/SiTai GC9A01 1.28in round",   # created below
+        title=("TFT Display 1.28 Inch TFT LCD Display Module Round RGB 240*240 "
+               "GC9A01 Driver 4 Wire SPI Interface 240x240 PCB For Arduino"),
+        variant=None,
+        unit=Decimal("2.62"), qty=Decimal("100"),
+        subtotal=Decimal("262.00"), total=Decimal("286.83"),
+        retires=None,
+    ),
+    dict(
+        order="8216011577385753",
+        seller="Si Tai&SH IC accessories Store",
+        placed=date(2026, 10, 29), eta=date(2026, 11, 13),
+        read=date(2026, 11, 1),
+        part_pk=418,
+        sku="8215070970595753/SiTai GC9A01 1.28in round",   # same SupplierPart
+        title=("TFT Display 1.28 Inch TFT LCD Display Module Round RGB 240*240 "
+               "GC9A01 Driver 4 Wire SPI Interface 240x240 PCB For Arduino"),
+        variant=None,
+        unit=Decimal("2.62"), qty=Decimal("100"),
+        subtotal=Decimal("262.00"), total=Decimal("286.83"),
+        retires=None,
+    ),
 ]
 
-NEW_SKU = "8214467898875753/TG820 GC9A01 1.28in round"
-
-
-def ensure_supplier_part():
-    """Part 418's existing AliExpress SupplierParts are a different listing
-    (order 8203108944..., variants 'Circular plate' / 'Module no Touch'), so
-    neither can be claimed as this product without guessing. One new one covers
-    both of today's orders; the differing prices live on the PO lines, which is
-    where price belongs."""
-    sp = SupplierPart.objects.filter(supplier=ALI, SKU=NEW_SKU).first()
-    if sp:
-        print(f"  supplier part exists: pk={sp.pk}")
-        return sp
-    if not COMMIT:
-        print(f"  DRY RUN would create SupplierPart {NEW_SKU!r} on part 418")
-        return None
-    sp = SupplierPart.objects.create(
-        part=Part.objects.get(pk=418), supplier=ALI, SKU=NEW_SKU,
+# Part 418's older AliExpress SupplierParts are different listings (order
+# 8203108944..., variants 'Circular plate' / 'Module no Touch'), so none can be
+# claimed as a new seller's product without guessing. One new SupplierPart per
+# seller; differing prices live on the PO lines, which is where price belongs.
+NEW_SUPPLIER_PARTS = [
+    dict(
+        sku="8214467898875753/TG820 GC9A01 1.28in round",
         description=("1.28in round GC9A01 240x240 IPS SPI TFT. Bought 2026-08-28 "
                      "from two AliExpress sellers at once: Ali-TG820 Home Goods "
                      "Store ($5.01 x6) and Advanced Tech ($0.99 x1). SKU is an "
                      "order-line string, the house AliExpress form."),
+    ),
+    dict(
+        sku="8215070970595753/SiTai GC9A01 1.28in round",
+        description=("1.28in round GC9A01 240x240 SPI TFT. Bought 2026-10-29 from "
+                     "Si Tai&SH IC accessories Store, $2.62 x100 on each of orders "
+                     "8215070970595753 and 8216011577385753. SKU is an "
+                     "order-line string, the house AliExpress form."),
+    ),
+]
+
+
+def ensure_supplier_part(new):
+    sp = SupplierPart.objects.filter(supplier=ALI, SKU=new["sku"]).first()
+    if sp:
+        print(f"  supplier part exists: pk={sp.pk} {new['sku']!r}")
+        return sp
+    if not COMMIT:
+        print(f"  DRY RUN would create SupplierPart {new['sku']!r} on part 418")
+        return None
+    sp = SupplierPart.objects.create(
+        part=Part.objects.get(pk=418), supplier=ALI, SKU=new["sku"],
+        description=new["description"],
     )
     sp.refresh_from_db()
-    assert sp.pk and sp.SKU == NEW_SKU, "supplier part write did not stick"
+    assert sp.pk and sp.SKU == new["sku"], "supplier part write did not stick"
     print(f"  CREATED SupplierPart pk={sp.pk} {sp.SKU!r}")
     return sp
 
@@ -130,8 +174,9 @@ def main():
     print(f"{'COMMIT' if COMMIT else 'DRY RUN'} - AliExpress import, "
           f"{len(ORDERS)} order(s)\n")
 
-    print("SupplierPart for part 418:")
-    ensure_supplier_part()
+    print("SupplierParts for part 418:")
+    for new in NEW_SUPPLIER_PARTS:
+        ensure_supplier_part(new)
     print()
 
     created = []
@@ -150,9 +195,9 @@ def main():
         shipping = o["total"] - o["subtotal"]
         note = (f"AliExpress order {ref}. Seller: {o['seller']}. "
                 f"Item price {o['unit']} x{o['qty']} read verbatim from the "
-                f"order-details page 2026-08-28. Subtotal {o['subtotal']}, "
-                f"order total {o['total']}"
-                + (f" (includes {shipping} shipping, NOT on the line)."
+                f"order-details page {o.get('read', date(2026, 8, 28))}. "
+                f"Subtotal {o['subtotal']}, order total {o['total']}"
+                + (f" (includes {shipping} shipping/tax, NOT on the line)."
                    if shipping else " (no shipping added)."))
 
         if not COMMIT:
@@ -160,6 +205,12 @@ def main():
                   f"{o['unit']} x{o['qty']}  eta {o['eta']}")
             continue
 
+        # InvenTree 1.6 moved notes to common.Note rows: `notes=` on the model
+        # is a read-only property now, so the text goes through notes_compat
+        # and the item title rides in the PO note, not on the line.
+        note += (f"\n\nItem: {o['title']}"
+                 + (f" | variant: {o['variant']}" if o["variant"] else "")
+                 + "\n\nPLACED, not received.")
         with transaction.atomic():
             po = PurchaseOrder.objects.create(
                 reference=PurchaseOrder.generate_reference(),
@@ -168,21 +219,20 @@ def main():
                 description=f"AliExpress {ref} - {o['seller']}"[:250],
                 target_date=o["eta"],
                 issue_date=o["placed"],
-                notes=note,
             )
             line = po.lines.create(
                 part=sp,
                 quantity=o["qty"],
                 purchase_price=o["unit"],
                 purchase_price_currency="USD",
-                notes=(f"{o['title']}"
-                       + (f" | variant: {o['variant']}" if o["variant"] else "")),
             )
             po.status = PurchaseOrderStatus.PLACED.value
             po.save()
+            note_set(po, note)
 
         po.refresh_from_db()
         line.refresh_from_db()
+        assert note_text(po).startswith("AliExpress order"), "PO note did not stick"
         assert po.supplier_reference == ref, "supplier_reference did not stick"
         assert po.status == PurchaseOrderStatus.PLACED.value, "status did not stick"
         assert line.quantity == o["qty"], "quantity did not stick"
