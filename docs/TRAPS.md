@@ -11842,3 +11842,26 @@ Same day: the three LRD Akro cabinets (PO-0268/0269, now F0/F1/F2) went through
 `deploy_po.py`, not `receive_po.py`. The SLN pair on PO-0142 (Aug) still sits as
 a 2-piece stock row at `SLN/Bin Wall` — booked before the 2026-10-08 deploy rule,
 not a precedent to copy.
+
+## On site at LRD, the SLN WireGuard client hides the Mini (2026-11-01)
+
+12:40 daytime sweep: `itq` died twice with `scp: Connection closed`. Laptop on
+**Trusted-LRD `192.168.0.6`** (the right subnet, not IoT), LRD WireGuard
+`(Disconnected)` (normal on site), **SLN WireGuard `(Connected)`** with a
+default route on `utun14`. Far gateway `192.168.50.1:443` open; Mini 22/8001/5900
+all time out. On 2026-10-25 the same laptop at the same address reached the Mini
+on 22 with no SLN tunnel up.
+
+**What this probably means (not tested: traceroute is gated):** the SLN client is
+a full tunnel, so `192.168.50.x` leaves via SLN sourced `192.168.3.3`, and LRD's
+only VPN → Servers allow admits `10.7.0.0/24` (the LRD WG pool) — the same
+"gateway answers, host dark" signature the Info Orbs hotspot test hit on
+2026-10-19. The SLN client is how Scott reaches `ssh nuc` (SLN's 8123 rule admits
+`192.168.3.0/24` only), so connecting it for SLN work silently kills every
+scheduled InvenTree run. **Fix: disconnect `WireGuard-Server-SLN` while on site.**
+
+**`lrd_reach.py` gave the wrong remedy:** its verdict said "connect the LRD
+tunnel", because it treats a disconnected LRD client as the cause regardless of
+subnet. On Trusted-LRD that client is not the path; the connected SLN one is the
+fault. The script needs a branch: on `192.168.0.x`, LRD-disconnected is normal
+and SLN-connected is the finding.
