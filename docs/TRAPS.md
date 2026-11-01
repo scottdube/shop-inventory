@@ -11865,3 +11865,15 @@ tunnel", because it treats a disconnected LRD client as the cause regardless of
 subnet. On Trusted-LRD that client is not the path; the connected SLN one is the
 fault. The script needs a branch: on `192.168.0.x`, LRD-disconnected is normal
 and SLN-connected is the finding.
+
+## A case-insensitive rename rewrites file names inside descriptions (2026-11-01)
+
+Renaming `LRD/Bench Wall` to `Countertop Wall`, the dry run's
+`re.sub("bench[ -]wall", ..., flags=re.I)` also changed the render path
+`docs/lrd/bench-wall-installer-render.png` inside the location description, a
+link that would then point at nothing. It also lowercased the path segment
+("LRD/countertop wall"). **Rename with exact strings (`str.replace` on
+`"LRD/Bench Wall"`), and read the dry run's "new:" lines before `--commit`.**
+The same script nearly cut the 695-char description down with `[:250]`: the
+location description field is not capped at 250, so do not assume it is.
+

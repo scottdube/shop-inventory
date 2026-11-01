@@ -1355,6 +1355,12 @@ tidying.
 
 ## LRD layout — decide on site, not from here
 
+**Renamed 2026-11-01 (Scott):** the work top is the **countertop** and the
+run is `LRD/Countertop Wall` (pk 524, was `Bench Wall`;
+`scripts/countertop_rename_1101.py`). "Bench" at LRD now means only the new
+electronics bench, laid out like SLN's. The dated entries below keep the old
+name as it was said then.
+
 Scott photographed the Florida bench wall 2026-08-22: **four upper wall cabinets**
 (two doors each) over a base run with a **black worktop** — one tall single-door
 cabinet at the left, then **three drawer banks**. Carpeted floor, finished room.

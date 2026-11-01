@@ -225,7 +225,7 @@ renumbers every level below it.
 **The QR only resolves if the name is the location's barcode_data.**
 `link_barcodes.py` links the `X0-R1C1` drawer form and nothing else, so `Cab2-D3`
 or `F1` would print a QR that scans to nothing. `make_lrd_akro_1025.py` links
-every name the sheet prints under `LRD/Bench Wall` and `LRD/Akro Bins`, by name
+every name the sheet prints under `LRD/Countertop Wall` and `LRD/Akro Bins`, by name
 pattern, so the kit locations inside `Cab2-D3` are left alone.
 
 **Why `F` for the LRD Akros:** see that script's docstring — names must be
