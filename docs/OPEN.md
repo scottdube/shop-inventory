@@ -23,9 +23,6 @@ built out.
 - [ ] **LRD electronics bench arrives ~2026-11-14**, with the same drawer scheme
       as the SLN bench (Scott). Create its drawer locations when it is
       assembled, then file the bench-type rows there rather than into F bins.
-- [ ] **Stock 796, 10× HoT Info Orbs PCB v1.1, still at SLN/Florida Staging.**
-      Scott only confirmed the boxes and the scanner, so it was not landed. Did
-      it come down?
 
 ## Check at SLN next season (~June 2027)
 

@@ -7,7 +7,7 @@ django.setup()
 from order.models import PurchaseOrder
 from stock.models import StockItem, StockLocation
 
-for ref in ["PO-0142", "PO-0266", "PO-0267", "PO-0268", "PO-0269"]:
+for ref in ["PO-0264", "PO-0265"]:
     po = PurchaseOrder.objects.get(reference=ref)
     print(f"\n{ref} status={po.status} {po.description[:70]}")
     for ln in po.lines.all():
