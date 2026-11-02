@@ -30,6 +30,9 @@ PLAN = {  # stock pk -> F1 cell
     # Not from the 10-11 carry: 5 of 8 came down 2026-08-17 and sat at the bare
     # LRD root. Added when Scott pulled them out with this batch.
     64: "F1-R2C2",
+    # Also unfiled at the LRD root since earlier carries (found 2026-11-02).
+    66: "F1-R2C3",    # 4-ch logic level converter x13
+    78: "F1-R1C3",    # AITRIP Supermini ESP32-S3 x2
     1094: "F1-R3C1",
     234: "F1-R4C1",
     1088: "F1-R5C1", 1087: "F1-R5C2", 1076: "F1-R5C2", 1073: "F1-R5C3", 1074: "F1-R5C3",
