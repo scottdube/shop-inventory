@@ -228,8 +228,20 @@ or `F1` would print a QR that scans to nothing. `make_lrd_akro_1025.py` links
 every name the sheet prints under `LRD/Countertop Wall` and `LRD/Akro Bins`, by name
 pattern, so the kit locations inside `Cab2-D3` are left alone.
 
-**Why `F` for the LRD Akros:** see that script's docstring — names must be
-unique across both sites because the QR carries only the name.
+**Mirrored names (Scott, 2026-11-02): the same place has the same name at both
+sites where possible**, above all the red bins and the bench drawers, so a name
+is muscle memory at either bench. The site lives in the PATH (`SLN/...` vs
+`LRD/...`), and the printed TEXT on a label is the bare name at both sites.
+Barcodes can't repeat, so **an LRD location whose name also exists elsewhere
+carries `LRD:<name>` in its QR and `barcode_data`**. SLN keeps its bare-name
+QRs, because they are already printed and stuck. `link_barcodes.py` and
+`trip.py land LRD:<name>` both follow this; `florida.py` reads names as SLN.
+
+Rejected: unique names per site (LRD RB-29.., or a prefix in the text). That
+was the earlier rule, and it costs Scott the one thing the names are for.
+
+The LRD Akros are `F0–F2` from before this rule and stay that way: they are a
+different cabinet from SLN's A/B, so a shared name would be a false twin.
 
 **Printer at LRD: Brother HL-L2405W** (Scott, 2026-10-25), a mono laser.
 8167 is sold as INKJET stock. Not yet tested on this printer: on the first real

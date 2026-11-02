@@ -1804,6 +1804,11 @@ MPTT.
 
 ## Location names are not unique, and every lookup took the first match
 
+**Since 2026-11-02 duplicates are deliberate** (RB-01 and the bench drawers are
+mirrored between sites for muscle memory; convention in `LABELLING.md`). A bare
+`.get(name=)` will now raise or pick the wrong site: scope by `pathstring`
+prefix, or take `SITE:NAME`.
+
 `Receiving` exists at both SLN and LRD. InvenTree does not enforce unique
 location names — no `unique=True`, no `unique_together` — and BinScan resolved
 locations with `name=<x>` then took `[0]`, in six places including every write

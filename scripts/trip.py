@@ -27,7 +27,7 @@ that is correct. The cabinet comes later, as another `land`.
     itq run scripts/trip.py list
     itq run scripts/trip.py mark 797 "source meter, no second one at LRD"
     itq run scripts/trip.py pack SLN              # the list you carry
-    itq run scripts/trip.py land 797 Receiving
+    itq run scripts/trip.py land 797 LRD:Receiving    # SITE:NAME for mirrored names
     itq run scripts/trip.py land 797 home         # the April return
 
 Metadata shape, on StockItem.metadata — mirrors florida.py on purpose:
@@ -214,6 +214,16 @@ def cmd_land(pk, locname):
         if not loc:
             print(f'✗ home location {m["home"]} no longer exists')
             sys.exit(1)
+    elif ':' in locname:
+        # SITE:NAME, the form an LRD twin's QR carries (LRD:RB-03). Names are
+        # mirrored between sites on purpose, so a bare name can match twice.
+        site, nm = locname.split(':', 1)
+        hits = list(StockLocation.objects.filter(
+            name__iexact=nm, pathstring__istartswith=site + '/'))
+        if len(hits) != 1:
+            print(f'✗ {locname!r} matches {len(hits)} locations')
+            sys.exit(1)
+        loc = hits[0]
     else:
         hits = list(StockLocation.objects.filter(
             Q(name__iexact=locname) | Q(pathstring__iexact=locname)))
@@ -223,7 +233,8 @@ def cmd_land(pk, locname):
             print(f'✗ no location matching {locname!r}')
             sys.exit(1)
         if len(hits) > 1:
-            print(f'✗ {locname!r} matches {len(hits)} locations — be specific:')
+            print(f'✗ {locname!r} matches {len(hits)} locations — be specific '
+                  f'(SITE:NAME, e.g. LRD:{locname}, or the full path):')
             for h in hits[:12]:
                 print(f'    {h.pk}  {h.pathstring}')
             sys.exit(1)
