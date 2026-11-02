@@ -11909,4 +11909,4 @@ merged INTO 22 and deactivated too. Nobody reactivated 22, so the part holding
 the stock (279) and the Voice Assistant BOM line read inactive, with a stale
 "DUPLICATE of #362" description. When the two descriptions point at each other,
 the survivor is the one with stock and BOM lines. Check:
-`Part.objects.filter(active=False)` with stock > 0 found 22 and 470 (Waveshare 1.28 in round LCD, not yet examined).
+`Part.objects.filter(active=False)` with stock > 0 found 22 and 470 (Waveshare 1.28 in round LCD, not yet examined). **22 reactivated 2026-11-02** (`max98357_lrd_1102.py`).
