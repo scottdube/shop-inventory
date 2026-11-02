@@ -27,6 +27,9 @@ from stock.models import StockItem, StockLocation  # noqa: E402
 PLAN = {  # stock pk -> F1 cell
     280: "F1-R1C1", 878: "F1-R1C2",
     1075: "F1-R2C1",
+    # Not from the 10-11 carry: 5 of 8 came down 2026-08-17 and sat at the bare
+    # LRD root. Added when Scott pulled them out with this batch.
+    64: "F1-R2C2",
     1094: "F1-R3C1",
     234: "F1-R4C1",
     1088: "F1-R5C1", 1087: "F1-R5C2", 1076: "F1-R5C2", 1073: "F1-R5C3", 1074: "F1-R5C3",
@@ -39,6 +42,8 @@ a = ap.parse_args()
 todo = {k: v for k, v in PLAN.items() if not a.only or k in a.only}
 
 rec = StockLocation.objects.get(pathstring="LRD/Receiving")
+# Rows may also come from the bare LRD root, where pre-Receiving carries landed.
+sources = {rec.pk, StockLocation.objects.get(name="LRD", parent=None).pk}
 cells = {c: StockLocation.objects.get(pathstring=f"LRD/Akro Bins/F1/{c}") for c in set(todo.values())}
 user = get_user_model().objects.filter(is_superuser=True).order_by("pk").first()
 
@@ -58,12 +63,12 @@ for pk, c in todo.items():
         problems.append(f"{pk} is a commuter")
     elif s.location_id == cells[c].pk:
         tag = "already there"
-    elif s.location_id != rec.pk:
-        tag = f"NOT in Receiving ({where})"
+    elif s.location_id not in sources:
+        tag = f"NOT in Receiving or LRD root ({where})"
         problems.append(f"{pk} is at {where}")
     print(f"{c:8} {pk:5} {s.quantity:>6g}  {s.part.name[:52]:52} {tag}")
     if a.commit and not tag:
-        s.move(cells[c], "Filed from LRD/Receiving into F1 (AKRO-FILL-PLAN v2)", user)
+        s.move(cells[c], f"Filed from {where} into F1 (AKRO-FILL-PLAN v2)", user)
         moved += 1
 
 for p in problems:
