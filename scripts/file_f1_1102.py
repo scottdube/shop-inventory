@@ -25,7 +25,9 @@ from django.contrib.auth import get_user_model  # noqa: E402
 from stock.models import StockItem, StockLocation  # noqa: E402
 
 PLAN = {  # stock pk -> F1 cell
-    280: "F1-R1C1", 878: "F1-R1C2",
+    # 280 (ESP32-S3 44-pin) is NOT here: it is on a voice-assistant build (Scott,
+    # 2026-11-02) and stays with that project. F1-R1C1 went to the Nanos.
+    878: "F1-R1C2",
     1075: "F1-R2C1",
     # Not from the 10-11 carry: 5 of 8 came down 2026-08-17 and sat at the bare
     # LRD root. Added when Scott pulled them out with this batch.
