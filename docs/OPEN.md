@@ -6,6 +6,27 @@ docs and a backlog you cannot read in one place is hiding, not parking.
 Add here when something is deliberately deferred. Delete when done — this is a
 queue, not a log.
 
+## LRD: file the 10-11 carry out of Receiving (opened 2026-11-02)
+
+The carry was landed late. On 2026-11-02 all 64 rows of FL-01, FL-02 and the
+loose Einstar/QL-810W moved to `LRD/Receiving` with
+`scripts/land_fl_boxes_1102.py`. TO-0001/TO-0002 were completed by InvenTree, so
+the stock history links to them, and commuter trip logs were written. Physically
+everything is unpacked into **temporary spots** (Scott) while the LRD storage is
+built out.
+
+- [ ] **Fill Akro bins F0/F1/F2**: labeled and ready (Scott, 2026-11-02). They
+      exist as `LRD/Akro Bins/F*/F*-RxCy`, all VERIFIED EMPTY 2026-10-25. Move
+      each row out of Receiving as Scott names its cell: commuters via
+      `trip.py land <pk> <cell>`, everything else by a plain move. **Never place
+      a row from the plan alone.**
+- [ ] **LRD electronics bench arrives ~2026-11-14**, with the same drawer scheme
+      as the SLN bench (Scott). Create its drawer locations when it is
+      assembled, then file the bench-type rows there rather than into F bins.
+- [ ] **Stock 796, 10× HoT Info Orbs PCB v1.1, still at SLN/Florida Staging.**
+      Scott only confirmed the boxes and the scanner, so it was not landed. Did
+      it come down?
+
 ## Check at SLN next season (~June 2027)
 
 Things only a person standing at SLN can settle. Scott is at LRD until then, so
