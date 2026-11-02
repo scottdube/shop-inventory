@@ -62,7 +62,7 @@ def attach(model_type, model_id, path, comment, user):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--file', required=True)
-    ap.add_argument('--loc', help='stock location name')
+    ap.add_argument('--loc', help='stock location full path, or a name that is unique')
     ap.add_argument('--part', type=int, action='append', default=[],
                     help='part pk (repeatable)')
     ap.add_argument('--stockitem', type=int, action='append', default=[],
@@ -77,7 +77,14 @@ def main():
     user = get_user_model().objects.filter(is_superuser=True).first()
 
     if args.loc:
-        loc = StockLocation.objects.get(name=args.loc)
+        # Mirrored names (RB-01 exists at SLN and LRD): a full path is exact; a
+        # bare name must be unique or this refuses rather than guess a site.
+        if '/' in args.loc:
+            loc = StockLocation.objects.get(pathstring=args.loc)
+        else:
+            hits = list(StockLocation.objects.filter(name=args.loc))
+            assert len(hits) == 1, f'{args.loc} is ambiguous - pass the full path: {[h.pathstring for h in hits]}'
+            loc = hits[0]
         print(f'{loc.name} (pk {loc.pk})')
         attach('stocklocation', loc.pk, args.file, args.comment, user)
 
