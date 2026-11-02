@@ -28,8 +28,9 @@ built out.
       ASSEMBLED" from the descriptions, then file the bench-type rows and the
       six RB kits (AKRO-FILL-PLAN).
 - [ ] **LRD bench label sheet** (`make_labels_avery.py --set lrd-bench`, 34
-      labels, one 8167): plain-paper test sent 2026-11-02 as job 212 (manual
-      slot, -0.5 mm). Waiting on Scott's fit check, then the real sheet.
+      labels, one 8167): plain-paper test 2026-11-02 job 213 from the TRAY at
+      -1.25 mm (212, manual slot, cancelled). Waiting on Scott's fit check,
+      then the real sheet, also from the tray.
 
 ## Check at SLN next season (~June 2027)
 

@@ -229,7 +229,7 @@ SLN's.
 
 Printed to PDF on the laptop with headless Chrome
 (`--headless=new --no-pdf-header-footer --print-to-pdf=…`): MediaBox 612×792,
-Letter at 1:1, then `lp -d Brother_HL_L2405W -o print-scaling=none -o InputSlot=manual`.
+Letter at 1:1, then `lp -d Brother_HL_L2405W -o print-scaling=none -o InputSlot=main`.
 
 **Install the spare upper shelf before labelling an upper.** Each upper has 4
 shelves + floor = S1..S5, but one spare per cabinet was found stacked on another
@@ -277,7 +277,13 @@ the manual slot needs -0.5 mm. `--set lrd` now takes `--feed manual` (default,
 -0.5) or `--feed tray` (-1.25). Labels go through the manual slot; a sheet
 printed with the wrong path's offset lands ~0.75 mm off.
 
-**Send label jobs with `-o InputSlot=manual`.** The default `auto` takes the
+**Since 2026-11-02 label sheets go through the TRAY** (Scott: the manual
+slot "comes out crooked more often than not"; 2 of 5 skewed on 10-25). The
+default `--feed` is now `tray` (-1.25 mm, the offset proven on 10-25), sent with
+`-o InputSlot=main`. Load the 8167 sheet in the tray on its own, or the next
+plain sheet gets the labels. The paragraph below stays for the manual slot.
+
+**Send manual-slot jobs with `-o InputSlot=manual`.** The default `auto` takes the
 manual slot only if a sheet is already sitting in it; otherwise it pulls plain
 paper from the tray without waiting (job 204, 2026-10-25). With `manual` the
 printer holds the job until a sheet goes in. Snug the slot guides to both

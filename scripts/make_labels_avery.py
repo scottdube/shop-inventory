@@ -157,8 +157,9 @@ def main():
     ap.add_argument("--dx-mm", type=float, default=0.0)
     # The HL-L2405W's two paper paths feed to different heights (2026-10-25):
     # the tray printed 1-1.5 mm low (-1.25 fit top and bottom), the manual slot
-    # then printed that sheet 0.75 mm HIGH. Labels go through the manual slot.
-    ap.add_argument("--feed", choices=["manual", "tray"], default="manual",
+    # then printed that sheet 0.75 mm HIGH. Labels go through the TRAY since
+    # 2026-11-02 (Scott): the manual slot "comes out crooked more often than not".
+    ap.add_argument("--feed", choices=["manual", "tray"], default="tray",
                     help="--set lrd*: which HL-L2405W paper path")
     ap.add_argument("--dy-mm", type=float, default=None,
                     help="overrides --feed; default 0 for non-LRD sets")
