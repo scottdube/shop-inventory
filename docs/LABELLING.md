@@ -230,6 +230,8 @@ SLN's.
 Printed to PDF on the laptop with headless Chrome
 (`--headless=new --no-pdf-header-footer --print-to-pdf=…`): MediaBox 612×792,
 Letter at 1:1, then `lp -d Brother_HL_L2405W -o print-scaling=none -o InputSlot=main`.
+**Printed 2026-11-02:** plain-paper test job 213 from the tray lined up (Scott);
+real 8167 sheet job 214, tray, -1.25 mm.
 
 **Install the spare upper shelf before labelling an upper.** Each upper has 4
 shelves + floor = S1..S5, but one spare per cabinet was found stacked on another
