@@ -11882,3 +11882,22 @@ link that would then point at nothing. It also lowercased the path segment
 The same script nearly cut the 695-char description down with `[:250]`: the
 location description field is not capped at 250, so do not assume it is.
 
+
+## `StockItem(notes=...)` raises on 1.6: notes are `common.Note` rows (2026-11-02)
+
+`StockItem(part=..., notes="...")` dies with `property 'notes' of 'StockItem'
+object has no setter`. Since the 1.6 upgrade, `notes` is a read-only property
+returning a queryset of `common.Note` rows (`InvenTreeNoteMixin`). Write a note
+with `Note.objects.create(content_object=s, title=..., content=..., primary=True)`;
+read it with `[n.content for n in s.notes]`.
+
+**Many older scripts still pass `notes=` or test `s.notes.startswith("[ESTIMATE]")`**
+(add_allied_8126, accept_l2d2_counts, approved_0824, amazon_tooling_1004, ...).
+They predate the upgrade and will crash if rerun. Fix each one when it is next
+needed; rewriting them blind isn't worth it. The `[ESTIMATE]` marker now lives at
+the start of the primary Note's `content`.
+
+It bit `swap_meet_diodes_1102.py` halfway: the new part had already saved
+when the stock row raised. The rerun reuses the part rather than making a
+second one. Scripts that create a part and then stock should be able to rerun
+safely for this reason.
