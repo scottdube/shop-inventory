@@ -11901,3 +11901,12 @@ It bit `swap_meet_diodes_1102.py` halfway: the new part had already saved
 when the stock row raised. The rerun reuses the part rather than making a
 second one. Scripts that create a part and then stock should be able to rerun
 safely for this reason.
+
+## A merge survivor can be left inactive (found 2026-11-02)
+
+Part 22 (MAX98357) was first deactivated as a duplicate of 362; later 362 was
+merged INTO 22 and deactivated too. Nobody reactivated 22, so the part holding
+the stock (279) and the Voice Assistant BOM line read inactive, with a stale
+"DUPLICATE of #362" description. When the two descriptions point at each other,
+the survivor is the one with stock and BOM lines. Check:
+`Part.objects.filter(active=False)` with stock > 0 found 22 and 470 (Waveshare 1.28 in round LCD, not yet examined).
