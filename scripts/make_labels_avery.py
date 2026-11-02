@@ -60,6 +60,9 @@ def qr_rects(data, size, x, y):
 
 
 def one(addr, x, y, qr=True, guides=False):
+    # addr is a name, or (text, qr data) when they differ: an LRD twin prints
+    # its bare name and carries LRD:<name> in the QR (mirrored names, LABELLING.md).
+    addr, data = addr if isinstance(addr, tuple) else (addr, addr)
     parts = []
     if guides:
         parts.append(f'<rect x="{x:.2f}" y="{y:.2f}" width="{L_W:.2f}" '
@@ -72,7 +75,7 @@ def one(addr, x, y, qr=True, guides=False):
         # game for scan reliability. The white label stock is its quiet zone.
         qpad = L_H * 0.06
         q = L_H - 2 * qpad
-        parts.append(f'<g fill="#000">{qr_rects(addr, q, x + qpad, y + qpad)}</g>')
+        parts.append(f'<g fill="#000">{qr_rects(data, q, x + qpad, y + qpad)}</g>')
         tx = x + qpad + q + pad * 1.2
     fs = L_H * 0.44
     parts.append(
@@ -113,6 +116,20 @@ def lrd():
     return out
 
 
+def lrd_bench():
+    """LRD electronics bench: red bins RB-01..RB-24 (the 24-pack, PO-0272) and the
+    BL/BR pedestal drawers, the SAME names as SLN's bench (Scott, 2026-11-02,
+    muscle memory). Same text as SLN, QR = LRD:<name> because barcodes can't
+    repeat. No frame labels: every label already names its rack or pedestal.
+    make_lrd_bench_1102.py creates the locations and their barcodes.
+    """
+    twin = lambda n: (n, f"LRD:{n}")
+    out = row([twin(f"RB-{n:02d}") for n in range(1, 25)])
+    for ped in ("BL", "BR"):
+        out += row([twin(f"{ped}-D{d}") for d in range(1, 6)])
+    return out
+
+
 def pages(addrs, qr, guides, dx=0.0, dy=0.0):
     out = []
     for i in range(0, len(addrs), PER_PAGE):
@@ -129,9 +146,10 @@ def pages(addrs, qr, guides, dx=0.0, dy=0.0):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--set", default="top",
-                    choices=["top", "bottom", "col0", "all", "lrd"],
+                    choices=["top", "bottom", "col0", "all", "lrd", "lrd-bench"],
                     help="top=A1-A3, bottom=B1-B3, col0=A0/B0 (all = these three); "
-                         "lrd = LRD Cab1-Cab8 + Akro F0-F2")
+                         "lrd = LRD Cab1-Cab8 + Akro F0-F2; "
+                         "lrd-bench = LRD red bins + BL/BR drawers")
     ap.add_argument("--no-qr", action="store_true")
     ap.add_argument("--guides", action="store_true", help="faint label outlines")
     # Printer feed offset, + = right/down. The PDF measures 1:1, so a shift on
@@ -141,12 +159,12 @@ def main():
     # the tray printed 1-1.5 mm low (-1.25 fit top and bottom), the manual slot
     # then printed that sheet 0.75 mm HIGH. Labels go through the manual slot.
     ap.add_argument("--feed", choices=["manual", "tray"], default="manual",
-                    help="--set lrd only: which HL-L2405W paper path")
+                    help="--set lrd*: which HL-L2405W paper path")
     ap.add_argument("--dy-mm", type=float, default=None,
                     help="overrides --feed; default 0 for non-LRD sets")
     a = ap.parse_args()
     if a.dy_mm is None:
-        a.dy_mm = {"manual": -0.5, "tray": -1.25}[a.feed] if a.set == "lrd" else 0.0
+        a.dy_mm = {"manual": -0.5, "tray": -1.25}[a.feed] if a.set.startswith("lrd") else 0.0
 
     addrs = []
     if a.set in ("top", "all"):
@@ -157,8 +175,10 @@ def main():
         addrs += addresses(["A0", "B0"], LAYOUT_24)
     if a.set == "lrd":
         addrs += lrd()
+    if a.set == "lrd-bench":
+        addrs += lrd_bench()
     # 8167 is the inkjet twin of 5167, same die-cut; LRD's pack is 8167.
-    stock = "8167" if a.set == "lrd" else "5167"
+    stock = "8167" if a.set.startswith("lrd") else "5167"
 
     ps = pages(addrs, not a.no_qr, a.guides, a.dx_mm / 25.4 * IN, a.dy_mm / 25.4 * IN)
     for i, svg in enumerate(ps, 1):

@@ -21,8 +21,15 @@ built out.
       `trip.py land <pk> <cell>`, everything else by a plain move. **Never place
       a row from the plan alone.**
 - [ ] **LRD electronics bench arrives ~2026-11-14**, with the same drawer scheme
-      as the SLN bench (Scott). Create its drawer locations when it is
-      assembled, then file the bench-type rows there rather than into F bins.
+      as the SLN bench (Scott). **Locations created 2026-11-02** ahead of it
+      (`make_lrd_bench_1102.py`): `LRD/Electronics Bench/` Red Bins RB-01..RB-24
+      + BL/BR pedestals D1..D5, same names as SLN, QRs `LRD:<name>`. On
+      assembly: check each pedestal really has 5 drawers, drop "NOT YET
+      ASSEMBLED" from the descriptions, then file the bench-type rows and the
+      six RB kits (AKRO-FILL-PLAN).
+- [ ] **LRD bench label sheet** (`make_labels_avery.py --set lrd-bench`, 34
+      labels, one 8167): plain-paper test sent 2026-11-02 as job 212 (manual
+      slot, -0.5 mm). Waiting on Scott's fit check, then the real sheet.
 
 ## Check at SLN next season (~June 2027)
 

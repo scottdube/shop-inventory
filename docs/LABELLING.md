@@ -216,6 +216,21 @@ nothing new. The uppers keep theirs because a closed door hides the shelf
 edges, and F0–F2 by the same logic (a cabinet you can name before opening).
 `Cab1`–`Cab4` still carry barcode_data, so a hand-made frame label would scan.
 
+### LRD bench sheet — `--set lrd-bench` (2026-11-02)
+
+    itq run scripts/make_labels_avery.py --set lrd-bench   # avery8167_lrd-bench_p1.html
+
+34 labels on one 8167: `RB-01`…`RB-24`, then `BL-D1..D5` and `BR-D1..D5`, each
+on fresh rows. **Same text as SLN's; every QR carries `LRD:<name>`** (mirrored
+names, below). Locations made by `make_lrd_bench_1102.py`. Same HL-L2405W
+offsets as `--set lrd` (any `lrd*` set takes `--feed`). `LRD:RB-01` is still a
+version-1 (21×21) QR in alphanumeric mode, so the modules are no smaller than
+SLN's.
+
+Printed to PDF on the laptop with headless Chrome
+(`--headless=new --no-pdf-header-footer --print-to-pdf=…`): MediaBox 612×792,
+Letter at 1:1, then `lp -d Brother_HL_L2405W -o print-scaling=none -o InputSlot=manual`.
+
 **Install the spare upper shelf before labelling an upper.** Each upper has 4
 shelves + floor = S1..S5, but one spare per cabinet was found stacked on another
 (the "double-thickness" shelves in the photos), so only 3 + floor stand today.

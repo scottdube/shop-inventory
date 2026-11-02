@@ -15,9 +15,13 @@ from stock.models import StockItem, StockLocation
 # opened. Treating it as "declared" made eleven unopened bins read as finished.
 BOILERPLATE = "Red bin. Holds ONE project's kit OR free storage - never both."
 
-rack = StockLocation.objects.filter(name__iexact="Red Bins").first()
+# Both sites have a "Red Bins" rack (mirrored names, 2026-11-02), so name the
+# site: `itq run scripts/rb_state.py LRD`. SLN by default.
+site = (sys.argv[1] if len(sys.argv) > 1 else "SLN").upper()
+rack = StockLocation.objects.filter(name__iexact="Red Bins",
+                                    pathstring__istartswith=site + "/").first()
 if rack is None:
-    sys.exit("no location named 'Red Bins'")
+    sys.exit(f"no location named 'Red Bins' under {site}/")
 print(f"RACK: {rack.pathstring}  #{rack.pk}")
 if rack.description:
     print(f"  {rack.description}")
