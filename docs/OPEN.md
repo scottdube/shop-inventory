@@ -2372,6 +2372,9 @@ two PayPal receipts. **No stock rows yet — no container.**
         "a matched pair gets cross-linked").
       TRAPS ~5281 records a "looked consumable" heuristic that misfiled
       things, so the candidate list goes to Scott before any write.
+      **Draft written 2026-11-04: `docs/consumable-flag-draft.md`.** It
+      lists 90 yes, 43 in four groups for Scott to decide, and 20 no.
+      Waiting on his answers; nothing has been written.
 
 ## The Jet mill/drill is not in the shop documentation
 
