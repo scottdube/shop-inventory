@@ -11927,3 +11927,11 @@ undo needed `splitStock()` to peel the real strips back off
 filing it has the thing in hand. Ask "do you have these in front of you?", not
 "should these go too?". And merge new stock onto an existing row only once that
 row is confirmed physical; until then give the new stock its own row.
+
+**Same day, second half:** Scott then placed the 330R/470R: *"I think they might
+be part of the G1000 project."* Their own notes had said so all along ("FOR R9
+AND R10, THE 2-LED GROUPS", "FOR R15") and the Sim G1000 BOM carries both. I
+read the rows' history but not their notes before calling them strays and then
+before marking them "do not re-ask". **Read a row's notes before naming what it
+is to Scott** — a row split off for a build says which build. The 1k x4 is the
+only one with no stated purpose.
