@@ -2368,6 +2368,22 @@ two PayPal receipts. **No stock rows yet — no container.**
       missed, 0 stray. **Gap:** nothing sets the flag on NEW parts. The next
       filament import or solder order lands unflagged unless the importer
       (`bambu-import`, `receive_po.py` part creation) is taught the rule.
+- [ ] **Soldering tools filed as consumables (found 2026-11-04,
+      `scripts/section3_tools_1104.py`).** Section 3 of consumable-flag-draft.md
+      lists 20 parts: 16 tools and 4 components, all under `Consumables/Solder`
+      or `Tools/Consumables`, all `component=True` (the importer default).
+      **None of the 16 tools is in the Equipment tree**, where tools owned one
+      of and never consumed belong (bambu-import.md). Only 3 have a stock row:
+      the FR-301 (Electronics Bench), the FX-951 (RB-13) and the insert removal
+      tool (AT-D1). For the other 13, "do we own one?" answers no, from the
+      importer, not from a count. Two are **duplicates of Equipment parts, both
+      at stock 0**: ATTEN ST-862D #445 = #91 (Equipment/Soldering), and WG-026
+      leads #309 = #85 (Equipment/Test Equipment). Brush #1490 is on open
+      PO-0288, not received. The 4 components (2 switches, a proto shield, a
+      breadboard kit) belong in Switches / Prototyping. Proposed: merge the
+      two duplicates, move the tools to Equipment/Soldering, Test Equipment
+      or Hand Tools, and clear `component`. **Stock rows only from Scott's
+      say-so: never invent a count.**
 - [x] **Mark consumables with the Part `consumable` flag (Scott, 2026-11-04:
       "we should work towards that").** On 1.6.4 the flag finally shows on
       the part page (#13120). On 2026-11-04 **0 of 1492 parts** had it set.
