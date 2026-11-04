@@ -2359,7 +2359,16 @@ two PayPal receipts. **No stock rows yet — no container.**
       reads 39 rows as before. Rollback point
       `backups/pre-1.6.4_20261104_1458`. `/web/` at 127.0.0.1 is still 500
       (TRAPS, always has been); 200 at the site host.
-- [ ] **Mark consumables with the Part `consumable` flag (Scott, 2026-11-04:
+- [x] **DONE 2026-11-04: 108 parts flagged**, Scott: "Yes, as drafted".
+      That is section 1 (90), group A wear parts (11), group C wire (6) and
+      the practice kit. Group B (inserts, connectors, fuses, feet) and the
+      applicator bottle stay unflagged, which settles that fasteners are not
+      consumables here. `scripts/consumable_flag_1104.py`; the list was
+      diffed against the draft before writing; re-read shows 108 flagged, 0
+      missed, 0 stray. **Gap:** nothing sets the flag on NEW parts. The next
+      filament import or solder order lands unflagged unless the importer
+      (`bambu-import`, `receive_po.py` part creation) is taught the rule.
+- [x] **Mark consumables with the Part `consumable` flag (Scott, 2026-11-04:
       "we should work towards that").** On 1.6.4 the flag finally shows on
       the part page (#13120). On 2026-11-04 **0 of 1492 parts** had it set.
       Before flagging anything, agree what counts. The shop already uses the

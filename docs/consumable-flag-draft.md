@@ -1,5 +1,9 @@
 # Consumable flag — draft for Scott (2026-11-04)
 
+> **APPLIED 2026-11-04 as drafted** (Scott): Section 1, group A, group C and the practice kit are
+> flagged, 108 parts. Group B and the applicator bottle are not flagged. Script:
+> `scripts/consumable_flag_1104.py`. This file is now the record of what was decided.
+
 The Part `consumable` flag is set on **0 of 1492** parts. This is the list to set it on.
 **Nothing has been written.** Mark this file up, or just answer the four questions in Section 2,
 and a script sets exactly what is agreed.
