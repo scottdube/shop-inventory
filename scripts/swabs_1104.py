@@ -1,6 +1,6 @@
 """Add the precision-tip cotton swabs, which the 11-02 daytime sweep skipped as "personal"
 (Amazon files the listing under Personal Care, "for Makeup"). Scott 2026-11-04: they are a
-shop item, bought twice: 2026-06-17 (SLN; that order number was not captured, an Amazon
+shop item, bought twice: 2026-06-17 (SLN, 114-9386877-1192256, filled in after the run; first an Amazon
 checkpoint stopped the browser) and 2026-11-02, the third line of 113-8879085-9694659 =
 PO-0288, delivered to LRD 2026-11-03.
 
@@ -21,7 +21,7 @@ from part.models import Part, PartCategory
 from plugins.notes_compat import note_set, note_append, note_text
 
 ASIN, CAT, PRICE = "B0BT8VZ3GQ", 56, "9.99"
-NAME = "Cotton Swabs Precision Tip Double-Pointed (pack 1000)"
+NAME = "Cotton Swabs Precision Tip Double-Pointed (1000 ct)"  # not "pack 1000": receive_po.py refuses a pack-1 SKU whose name says pack
 DESC = "orig: Precision Tip Cotton Swabs/Double Pointed Cotton Buds for Makeup 1000pcs"
 KW = "cotton swabs, swabs, q-tips, precision tip, pointed swab, cleaning, flux cleanup, IPA, consumable"
 NOTE = ("Precision-tip, double-pointed cotton swabs, 1000 per pack. Stock counts PACKS, not swabs "

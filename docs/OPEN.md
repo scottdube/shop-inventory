@@ -2407,12 +2407,12 @@ two PayPal receipts. **No stock rows yet — no container.**
             with the new `receive_po.py --part`. **PO-0288 stays open for the
             Kimwipes #1489, which have not arrived** (Scott: separate item).
       All 14 owned tools now have a stock row (`scripts/tool_stock_1104b.py`).
-- [ ] **Cotton swabs #1508 (added 2026-11-04, `scripts/swabs_1104.py`).** Two packs of
-      1000 were bought, one on 2026-06-17 to SLN and one on 2026-11-02 to LRD. The LRD
-      pack is now line 3 of PO-0288. It is not received: waiting on the LRD spot, then
-      `receive_po.py PO-0288 --part 1508`. The SLN pack's location is unknown.
-      **Kimwipes:** Amazon shows them DELIVERED 2026-11-03 in the swab package, which
-      contradicts the earlier "no". Ask before receiving.
+- [x] **Cotton swabs #1508 (added 2026-11-04, `scripts/swabs_1104.py`).** The LRD pack
+      and the Kimwipes are both on the LRD countertop (Scott). PO-0288 was received there and
+      CLOSED. The part was renamed "(1000 ct)" because `receive_po.py` refuses a pack-1 SKU
+      whose name says "pack". The June pack is Amazon 114-9386877-1192256, shipped to SLN,
+      with no PO; that order also carried Brady M21-750-499 labels.
+  - [ ] SLN swab pack: location unknown, no stock row.
 - [ ] **Sweep "personal-care" skip drops shop consumables** (TRAPS 2026-11-04). The
       fix would be to list skipped personal lines for Scott instead of discarding
       them silently. It lives in the scheduled-task prompts, so it needs Scott's OK.
