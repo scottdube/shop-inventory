@@ -2349,8 +2349,29 @@ two PayPal receipts. **No stock rows yet — no container.**
       - **Not checked:** whether the migration moves every existing history
         row into the audit log. Do it the 1.6 way: count tracking rows per
         item, migrate a scratch copy, compare the counts.
-      Wait for 1.7.1 or later in any case. 1.6.4 (same line, security and bug
-      fixes only) is the upgrade to take now.
+      Wait for 1.7.1 or later in any case.
+- [x] **InvenTree 1.6.1 → 1.6.4. DONE 2026-11-04, Scott at LRD.**
+      `upgrade_164_{1,2,3}`; no migrations, media patch re-applied untouched
+      (upstream `urls.py` unchanged), 4 package bumps (brotli, certifi, pypdf,
+      setuptools). Downtime 24 s. Verify **SUCCESS**: 15 plugins loaded, every
+      count and all 2615 Note contents byte-identical to the rollback point,
+      notes filters and purchase fingerprint `1eb9ca2d` unchanged; BinScan B1
+      reads 39 rows as before. Rollback point
+      `backups/pre-1.6.4_20261104_1458`. `/web/` at 127.0.0.1 is still 500
+      (TRAPS, always has been); 200 at the site host.
+- [ ] **Mark consumables with the Part `consumable` flag (Scott, 2026-11-04:
+      "we should work towards that").** On 1.6.4 the flag finally shows on
+      the part page (#13120). On 2026-11-04 **0 of 1492 parts** had it set.
+      Before flagging anything, agree what counts. The shop already uses the
+      word three ways:
+      - the two `Consumables` category trees (73 flat + 12 under `Shop/`,
+        a shadow-root pair, see resistor-trees-2026-09-08.md);
+      - `florida.py` treats consumables as one-way goods (packed, used,
+        gone), as against `trip.py` tools, which go back and forth;
+      - things fitted to a tool, such as nozzles, inserts and burs (TECHNIQUES,
+        "a matched pair gets cross-linked").
+      TRAPS ~5281 records a "looked consumable" heuristic that misfiled
+      things, so the candidate list goes to Scott before any write.
 
 ## The Jet mill/drill is not in the shop documentation
 
