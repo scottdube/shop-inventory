@@ -11935,3 +11935,8 @@ read the rows' history but not their notes before calling them strays and then
 before marking them "do not re-ask". **Read a row's notes before naming what it
 is to Scott** — a row split off for a build says which build. The 1k x4 is the
 only one with no stated purpose.
+
+**And the 1k x4 had a purpose too:** it is the AC Wall Adapter kit's 1k
+(BO-0018), listed in `~/code/docs/lrd-drawer-walk-2026-10-21/AKRO-FILL-PLAN.md`.
+Rows in LRD/Receiving after the 11-02 carry are kit rows waiting for a red bin
+— check that plan before calling any of them a stray.
