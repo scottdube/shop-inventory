@@ -11910,3 +11910,20 @@ the stock (279) and the Voice Assistant BOM line read inactive, with a stale
 "DUPLICATE of #362" description. When the two descriptions point at each other,
 the survivor is the one with stock and BOM lines. Check:
 `Part.objects.filter(active=False)` with stock > 0 found 22 and 470 (Waveshare 1.28 in round LCD, not yet examined). **22 reactivated 2026-11-02** (`max98357_lrd_1102.py`).
+
+## A Receiving row is a claim, not goods in hand (2026-11-04)
+
+Filing the swap-meet metal-film strips into F1-R3C7, I offered to sweep in
+"strays" recorded in LRD/Receiving (1k x4, 330R x2, 470R x1) and Scott said
+yes. They were EAONE Florida-bag splits that transfer order 1 booked into
+Receiving on 11-02. Scott, after the move: *"I don't see those anywhere. I don't
+even remember that."* The yes was to a description of rows, not to parts on the
+bench, and the move put a record into a drawer the parts were never in. Worse,
+the swap-meet strips had been `add_stock()`ed onto two of those rows, so the
+undo needed `splitStock()` to peel the real strips back off
+(`swap_meet_1027_unmove_strays.py`).
+
+**Rule:** only fold a recorded row into a physical put-away when the person
+filing it has the thing in hand. Ask "do you have these in front of you?", not
+"should these go too?". And merge new stock onto an existing row only once that
+row is confirmed physical; until then give the new stock its own row.
