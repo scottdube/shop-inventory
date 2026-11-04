@@ -2330,6 +2330,27 @@ two PayPal receipts. **No stock rows yet — no container.**
       and BinScan's `/api/empty` off the `notes` column onto the `common.Note`
       model, test against a copy of the DB on a scratch checkout, then upgrade.
       Details and what was checked: TRAPS "1.6.x is a port, not a checkout".
+- [ ] **InvenTree 1.7.x: a port, not a checkout (opened 2026-11-04).** 1.7.0
+      shipped 2026-11-03. The release notes flag only "Pricing role"
+      (#13034), but `api_version.py` v566 (#13101) carries a second, larger
+      break: **the `StockItemTracking` model is gone; stock history moves into
+      the new audit log**, `/api/stock/track/` is removed, `tracking_items`
+      leaves the StockItem API, and `copy_history` leaves duplicate.
+      Checked against our code on 2026-11-04:
+      - Pricing: no use anywhere (grep for the models, endpoints and
+        `pricing_min/max`, 0 hits). It matters only to a non-superuser, who
+        loses pricing until they are given the new "pricing" role (the
+        migration copies "part" role permissions over).
+      - Tracking: `add_tracking_entry(code, user, notes=)` still exists in
+        1.7.0 and now writes to the audit log, so `tool_tag.py` and the ~40
+        dated one-offs that call it keep working. The only direct
+        `StockItemTracking.objects` user is `~/code/scripts/verify_1198_history_0919.py`,
+        a one-off that has already run. Neither plugin nor BinScan reads history.
+      - **Not checked:** whether the migration moves every existing history
+        row into the audit log. Do it the 1.6 way: count tracking rows per
+        item, migrate a scratch copy, compare the counts.
+      Wait for 1.7.1 or later in any case. 1.6.4 (same line, security and bug
+      fixes only) is the upgrade to take now.
 
 ## The Jet mill/drill is not in the shop documentation
 
