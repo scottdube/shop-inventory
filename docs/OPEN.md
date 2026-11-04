@@ -2407,6 +2407,15 @@ two PayPal receipts. **No stock rows yet — no container.**
             with the new `receive_po.py --part`. **PO-0288 stays open for the
             Kimwipes #1489, which have not arrived** (Scott: separate item).
       All 14 owned tools now have a stock row (`scripts/tool_stock_1104b.py`).
+- [ ] **Cotton swabs #1508 (added 2026-11-04, `scripts/swabs_1104.py`).** Two packs of
+      1000 were bought, one on 2026-06-17 to SLN and one on 2026-11-02 to LRD. The LRD
+      pack is now line 3 of PO-0288. It is not received: waiting on the LRD spot, then
+      `receive_po.py PO-0288 --part 1508`. The SLN pack's location is unknown.
+      **Kimwipes:** Amazon shows them DELIVERED 2026-11-03 in the swab package, which
+      contradicts the earlier "no". Ask before receiving.
+- [ ] **Sweep "personal-care" skip drops shop consumables** (TRAPS 2026-11-04). The
+      fix would be to list skipped personal lines for Scott instead of discarding
+      them silently. It lives in the scheduled-task prompts, so it needs Scott's OK.
 - [x] **Mark consumables with the Part `consumable` flag (Scott, 2026-11-04:
       "we should work towards that").** On 1.6.4 the flag finally shows on
       the part page (#13120). On 2026-11-04 **0 of 1492 parts** had it set.

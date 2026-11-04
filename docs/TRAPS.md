@@ -11940,3 +11940,15 @@ only one with no stated purpose.
 (BO-0018), listed in `~/code/docs/lrd-drawer-walk-2026-10-21/AKRO-FILL-PLAN.md`.
 Rows in LRD/Receiving after the 11-02 carry are kit rows waiting for a red bin
 — check that plan before calling any of them a stray.
+
+## "Personal care" is Amazon's category, not the shop's (2026-11-04)
+
+The sweeps' rule "medical/pharmacy/personal-care: OUT, do not transcribe" dropped
+a shop consumable. The third line of PO-0288 (113-8879085-9694659) was precision-tip
+cotton swabs, listed "for Makeup" and filed by Amazon under Personal Care. The 11-02
+sweep skipped it, so the swabs never existed in InvenTree. Scott asked "did I miss
+those?" two days later. Added by hand as part #1508 (`scripts/swabs_1104.py`).
+**The same trap catches gloves, isopropyl, tweezers and cotton buds.** The skip
+leaves only "skipped (personal), order <n>" in the commit message. Before
+concluding a shop item was never bought, grep `git log` for "skipped (personal)".
+Changing the rule in the scheduled-task prompts is Scott's call (OPEN.md).
