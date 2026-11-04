@@ -2394,8 +2394,19 @@ two PayPal receipts. **No stock rows yet — no container.**
       was carried onto #309. The other 14 tools went to Equipment/Soldering
       (11) and Equipment/Hand Tools (3); switches to `Switches`, proto shield
       and breadboard to `Prototyping`; `component` cleared on all 16 tools.
-      **Still open: 13 tools have no stock row.** Waiting on Scott to say
-      which he owns and where; none was created.
+      **Stock, same day (Scott located them; `scripts/tool_stock_1104.py`,
+      SUCCESS):** 8 rows at qty 1 (SLN Electronics Bench, BL-D1, BL-D3; LRD
+      Countertop Wall for the FH-300 stand and the STREBITO mat, both moving
+      to the new LRD bench). The Kaisi mat was bought twice and Scott placed
+      one. The helping hands #364 and the desk magnifier #209 were **scrapped**:
+      `active=False` with a `SCRAPPED 2026-11-04 (Scott).` prefix, which is not
+      the `MERGED into` prefix. **Still open, waiting on Scott:**
+      - [ ] Solder pot #407, "ws bottom shelf sln": WS1-S6 or WS2-S6?
+      - [ ] WG-026 leads #309, "test equip lrd": there is no LRD test-equipment
+            location.
+      - [ ] Brush #1490 is at LRD Cab2-D2, but PO-0288 also carries the Kimwipes
+            #1489. `receive_po.py` receives the whole order to one place, so
+            it needs the Kimwipes' status first.
 - [x] **Mark consumables with the Part `consumable` flag (Scott, 2026-11-04:
       "we should work towards that").** On 1.6.4 the flag finally shows on
       the part page (#13120). On 2026-11-04 **0 of 1492 parts** had it set.
