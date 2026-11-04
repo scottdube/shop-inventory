@@ -2368,7 +2368,7 @@ two PayPal receipts. **No stock rows yet — no container.**
       missed, 0 stray. **Gap:** nothing sets the flag on NEW parts. The next
       filament import or solder order lands unflagged unless the importer
       (`bambu-import`, `receive_po.py` part creation) is taught the rule.
-- [ ] **Soldering tools filed as consumables (found 2026-11-04,
+- [x] **Soldering tools filed as consumables (found 2026-11-04,
       `scripts/section3_tools_1104.py`).** Section 3 of consumable-flag-draft.md
       lists 20 parts: 16 tools and 4 components, all under `Consumables/Solder`
       or `Tools/Consumables`, all `component=True` (the importer default).
@@ -2384,6 +2384,18 @@ two PayPal receipts. **No stock rows yet — no container.**
       two duplicates, move the tools to Equipment/Soldering, Test Equipment
       or Hand Tools, and clear `component`. **Stock rows only from Scott's
       say-so: never invent a count.**
+      **DONE 2026-11-04 (Scott: "Yes, move them"),
+      `scripts/move_section3_tools_1104.py`, VERDICT SUCCESS.** The merge went
+      the OTHER way from the proposal's wording: the Amazon imports #445 and
+      #309 survive, because they carry the supplier part, the IPN and the
+      purchase history, and the merge rule refuses to retire a part with a
+      supplier part. They took the Equipment records' names and categories;
+      #91 and #85 are retired (MERGED prefix), and #85's ASIN-recovery note
+      was carried onto #309. The other 14 tools went to Equipment/Soldering
+      (11) and Equipment/Hand Tools (3); switches to `Switches`, proto shield
+      and breadboard to `Prototyping`; `component` cleared on all 16 tools.
+      **Still open: 13 tools have no stock row.** Waiting on Scott to say
+      which he owns and where; none was created.
 - [x] **Mark consumables with the Part `consumable` flag (Scott, 2026-11-04:
       "we should work towards that").** On 1.6.4 the flag finally shows on
       the part page (#13120). On 2026-11-04 **0 of 1492 parts** had it set.
