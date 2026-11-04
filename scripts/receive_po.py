@@ -44,6 +44,8 @@ ap.add_argument("reference")
 ap.add_argument("--to", required=True, help="destination StockLocation name")
 ap.add_argument("--commit", action="store_true")
 ap.add_argument("--date", default=None, help="receive date, default today")
+ap.add_argument("--part", type=int, action="append", default=None,
+                help="receive only lines for this Part pk (repeatable); the rest stay outstanding and the order stays open. Added 2026-11-04: PO-0288's brush arrived, its Kimwipes did not.")
 a = ap.parse_args()
 
 po = PurchaseOrder.objects.get(reference=a.reference)
@@ -71,6 +73,9 @@ print(f"destination: {dest.pathstring}\n")
 
 plan, warn = [], []
 for ln in po.lines.all():
+    if a.part and ln.part.part_id not in a.part:
+        print(f"  - skipped (not --part): {ln.part.part.name[:48]}")
+        continue
     outstanding = float(ln.quantity) - float(ln.received)
     if outstanding <= 0:
         print(f"  = line already received in full: {ln.part.part.name[:48]}")

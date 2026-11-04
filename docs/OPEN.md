@@ -2401,12 +2401,12 @@ two PayPal receipts. **No stock rows yet — no container.**
       one. The helping hands #364 and the desk magnifier #209 were **scrapped**:
       `active=False` with a `SCRAPPED 2026-11-04 (Scott).` prefix, which is not
       the `MERGED into` prefix. **Still open, waiting on Scott:**
-      - [ ] Solder pot #407, "ws bottom shelf sln": WS1-S6 or WS2-S6?
-      - [ ] WG-026 leads #309, "test equip lrd": there is no LRD test-equipment
-            location.
-      - [ ] Brush #1490 is at LRD Cab2-D2, but PO-0288 also carries the Kimwipes
-            #1489. `receive_po.py` receives the whole order to one place, so
-            it needs the Kimwipes' status first.
+      - [x] Solder pot #407 is on SLN/Storage/WS1/WS1-S6 ("wire shelves 1 bottom").
+      - [x] WG-026 leads #309 are in LRD Cab4-D4.
+      - [x] Brush #1490 was received into LRD Cab2-D2, 10 pieces (supplier pack 10),
+            with the new `receive_po.py --part`. **PO-0288 stays open for the
+            Kimwipes #1489, which have not arrived** (Scott: separate item).
+      All 14 owned tools now have a stock row (`scripts/tool_stock_1104b.py`).
 - [x] **Mark consumables with the Part `consumable` flag (Scott, 2026-11-04:
       "we should work towards that").** On 1.6.4 the flag finally shows on
       the part page (#13120). On 2026-11-04 **0 of 1492 parts** had it set.
