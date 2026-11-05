@@ -15,6 +15,14 @@ together with solder or iron finds only #314. It was probably recorded as #314
 in the 11-04 pass (`tool_stock_1104.py`) because that was the only iron listing.
 #314 was moved to LRD by `move_iron_314_lrd.py`.
 
+Scott thinks it came from AliExpress. Searched 2026-11-05 and **not found**:
+InvenTree's 44 AliExpress supplier parts hold no battery iron (the only iron
+item is #731, a T12 controller kit). In Gmail, AliExpress transaction mail
+mentioning soldering goes back to 2021 and shows only the Sept 2023 T12
+controller kit ($10.85, disputed and returned). Not searched yet: the
+AliExpress order history itself (needs a browser sign-in), mail before 2021,
+and other senders (Amazon, Banggood, Temu).
+
 - [ ] Identify the battery iron (brand/model or order) and stock it in
       SLN/Electronics Bench/BL/BL-D3. Scott did not know it offhand, so **don't
       re-ask**: take it from the next SLN drawer walk or an order sweep.
