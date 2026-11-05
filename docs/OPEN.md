@@ -6,7 +6,12 @@ docs and a backlog you cannot read in one place is hiding, not parking.
 Add here when something is deliberately deferred. Delete when done — this is a
 queue, not a log.
 
-## SLN BL-D3: battery soldering iron has no record (opened 2026-11-05)
+## SLN BL-D3: battery soldering iron has no record (opened 2026-11-05, CLOSED same day)
+
+**Closed:** Scott says it is the iron he built from the T12 kit, following an
+Instructables article, to run on a Milwaukee battery. #731 was renamed "T12
+Cordless Soldering Iron (DIY kit build, Milwaukee battery)" and stocked x1 in
+BL-D3 at $22.99 net, as stock 1273, by `stock_t12_cordless_bld3.py`.
 
 Scott, 2026-11-05: #314 (the $27.99 2018 corded station) is at LRD, and the
 iron that is actually in SLN BL-D3 is **a battery-operated one**. No part
@@ -35,7 +40,7 @@ kit, the battery iron came from somewhere other than AliExpress (Amazon,
 Banggood or Temu, or mail before 2021). The CNC Kitchen T12 tip set (#854)
 fits the kit either way.
 
-- [ ] Identify the battery iron (brand/model or order) and stock it in
+- [x] Identify the battery iron (brand/model or order) and stock it in
       SLN/Electronics Bench/BL/BL-D3. Scott did not know it offhand, so **don't
       re-ask**: take it from the next SLN drawer walk or an order sweep.
 
