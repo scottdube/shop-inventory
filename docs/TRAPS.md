@@ -11952,3 +11952,20 @@ those?" two days later. Added by hand as part #1508 (`scripts/swabs_1104.py`).
 leaves only "skipped (personal), order <n>" in the commit message. Before
 concluding a shop item was never bought, grep `git log` for "skipped (personal)".
 Changing the rule in the scheduled-task prompts is Scott's call (OPEN.md).
+
+## A Subscribe & Save auto-delivery sends no "Ordered:" mail (2026-11-05)
+
+Amazon order 113-7950422-1929002 (Amazon Basics AAA 36-pack, S&S every 6 months)
+was placed 2026-10-19 and left exactly two emails: a 10-25 "Delivery estimate
+update: Batteries" from `no-reply@amazon.com` and an 11-05 "Shipped 1 item:
+Batteries". **No "Ordered:" confirmation at all** — searched by order number.
+So a sweep that keys on "Ordered:" subjects never sees an S&S order; it surfaces
+only when it ships, two-plus weeks later, and only if something reads shipping
+mail. The 16:40 sweep caught it by cross-checking the Amazon order-history page
+against `po_check.py`, which is the check that works.
+
+This one was correctly NOT imported: Scott's 2026-09-23 ruling, "we dont need a
+record of batteries" (`scripts/void_battery_pos.py` cancelled PO-0161 for the same
+product). **The blind spot is real for any S&S item that IS shop stock**
+(isopropyl, gloves, wipes). Cheapest guard: each sweep batch-`po_check`s the
+order numbers on the first order-history page.
