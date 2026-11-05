@@ -18,10 +18,22 @@ in the 11-04 pass (`tool_stock_1104.py`) because that was the only iron listing.
 Scott thinks it came from AliExpress. Searched 2026-11-05 and **not found**:
 InvenTree's 44 AliExpress supplier parts hold no battery iron (the only iron
 item is #731, a T12 controller kit). In Gmail, AliExpress transaction mail
-mentioning soldering goes back to 2021 and shows only the Sept 2023 T12
-controller kit ($10.85, disputed and returned). Not searched yet: the
-AliExpress order history itself (needs a browser sign-in), mail before 2021,
-and other senders (Amazon, Banggood, Temu).
+mentioning soldering goes back to 2021 and shows only the T12 controller kit.
+
+**Scott's AliExpress order history ("soldering iron", all dates), screenshot
+2026-11-05:** only two orders, both from the HANLEI Store and both for #731, the
+T12 DIY station kit:
+- 2023-09-27: the ABS shell, $10.85. This was a **partial refund of $2.05,
+  not a return**, so the shell was kept. The "return your item" mail had read
+  like a return.
+- 2023-10-08: the kit (Red LED version), $14.19.
+
+#731 has **no stock row**, so the kit is unlocated. **The iron in BL-D3 may be
+this kit**: a T12 handle on a cord, in the black ABS box, powered by a 24 V DC
+brick, which is easy to remember as "battery". Not confirmed. If it isn't the
+kit, the battery iron came from somewhere other than AliExpress (Amazon,
+Banggood or Temu, or mail before 2021). The CNC Kitchen T12 tip set (#854)
+fits the kit either way.
 
 - [ ] Identify the battery iron (brand/model or order) and stock it in
       SLN/Electronics Bench/BL/BL-D3. Scott did not know it offhand, so **don't
