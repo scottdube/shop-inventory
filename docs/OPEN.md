@@ -6,6 +6,19 @@ docs and a backlog you cannot read in one place is hiding, not parking.
 Add here when something is deliberately deferred. Delete when done — this is a
 queue, not a log.
 
+## SLN BL-D3: battery soldering iron has no record (opened 2026-11-05)
+
+Scott, 2026-11-05: #314 (the $27.99 2018 corded station) is at LRD, and the
+iron that is actually in SLN BL-D3 is **a battery-operated one**. No part
+exists for it: a name search for cordless, battery, USB, portable or wireless
+together with solder or iron finds only #314. It was probably recorded as #314
+in the 11-04 pass (`tool_stock_1104.py`) because that was the only iron listing.
+#314 was moved to LRD by `move_iron_314_lrd.py`.
+
+- [ ] Identify the battery iron (brand/model or order) and stock it in
+      SLN/Electronics Bench/BL/BL-D3. Scott did not know it offhand, so **don't
+      re-ask**: take it from the next SLN drawer walk or an order sweep.
+
 ## LRD: file the 10-11 carry out of Receiving (opened 2026-11-02)
 
 The carry was landed late. On 2026-11-02 all 64 rows of FL-01, FL-02 and the
