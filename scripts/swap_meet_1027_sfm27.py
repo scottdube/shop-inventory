@@ -33,7 +33,7 @@ from stock.models import StockItem, StockLocation  # noqa: E402
 
 commit = "--commit" in sys.argv
 SRC = "HOT club swap meet 2026-10-27, $0 (Scott, entered 2026-11-06)."
-LOC = "LRD/Akro Bins/F1/F1-R2C7"
+LOC = "LRD/Akro Bins/F1/F1-R2C7"  # moved to F1-R3C8 by move_sfm27_1106.py: R2C7 was full
 
 ITEMS = [
     dict(key="sfm27", src="/tmp/hot-1106-sfm27.jpg", crop=(0.21, 0.59, 0.69, 0.85), qty=3,
