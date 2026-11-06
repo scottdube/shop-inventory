@@ -11969,3 +11969,12 @@ record of batteries" (`scripts/void_battery_pos.py` cancelled PO-0161 for the sa
 product). **The blind spot is real for any S&S item that IS shop stock**
 (isopropyl, gloves, wipes). Cheapest guard: each sweep batch-`po_check`s the
 order numbers on the first order-history page.
+
+## The swap-meet template cuts descriptions at 250 chars, mid-sentence (2026-11-06)
+
+`swap_meet_*.py` writes `description=it["desc"][:250]` (the field's limit). Both
+buzzer modules (#1516, #1517) came out ending in "...a steady " because the
+"not tested" sentence was appended last and fell off the end. Nothing failed; the
+full text survives only in the part's Source note. **Keep `desc` under 250, or put
+the sentence that matters first** — the tail is what gets cut. `buzzer_test_1106.py`
+rewrote #1517 whole and asserts `len <= 250`.
