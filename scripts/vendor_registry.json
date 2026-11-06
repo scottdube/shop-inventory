@@ -18,14 +18,16 @@
    "jlcpcb.com",
    "lcsc.com",
    "precisebits.com",
-   "walmart.com"
+   "walmart.com",
+   "hakkousa.com"
   ],
   "not_actually_swept": {
    "_comment": "Domains that stay in 'known' (skip: the VENDOR question is settled or queued, do not re-ask it) but whose orders section 3 does NOT sweep, so nothing imports them. The old blanket 'already swept' label here produced the same journal contradiction four runs in a row (procedure-gap-aliexpress). The label must tell the truth even while the policy is undecided.",
    "seeed.cc": "known, NOT swept: order emails carry numbers only, no line items (decision seeed-orders-no-po)",
    "jlcpcb.com": "known, NOT swept: no email-minable line items; parts entered by hand",
    "lcsc.com": "known, NOT swept: no email-minable line items",
-   "precisebits.com": "known, NOT swept: line items live in PDF attachments only"
+   "precisebits.com": "known, NOT swept: line items live in PDF attachments only",
+   "hakkousa.com": "known, NOT swept: vendor approved by Scott 2026-11-05 (company #42 American Hakko Products). The confirmation mail from websupport@hakkousa.com IS itemised (name, SKU, price), but no parser exists; PO-0289 was entered by hand"
   }
  },
  "suppress": {
