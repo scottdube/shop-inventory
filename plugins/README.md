@@ -109,3 +109,17 @@ plugin — it is imported from `plugins.notes_compat`, not vendored.
 
 Then VERIFY the served file matches disk — see TRAPS.md. A `kill -HUP` is not
 enough and fails in a way that looks like success.
+
+### receiving
+
+    R=/Volumes/4TB_Removable/inventree/src/src/backend/InvenTree/plugins/receiving
+    itq push plugins/receiving/__init__.py $R/__init__.py     # and match.py engine.py returns.py views.py
+    ssh mini 'launchctl kickstart -k gui/$(id -u)/com.inventree.server'
+
+`receiving` exposes HTTP views (`/plugin/receiving/ping/` …). They exist only
+while the GLOBAL setting `ENABLE_PLUGINS_URL` is True (`scripts/set_plugins_url.py`)
+and the PluginConfig is active (`scripts/activate_plugin.py receiving`); both
+need a restart to take effect. A 404 on `/ping/` after a deploy means one of
+those, not a code error. `activate_plugin.py` prints `registry sees it: False`
+from its own process even when the server has it — the curl of `/ping/` is the
+proof, not that line. BinScan's token lives in `~/binscan/env` (no dot).
