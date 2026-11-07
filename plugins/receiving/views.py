@@ -85,21 +85,35 @@ class MatchView(_View):
 class PlanView(_View):
     def post(self, request):
         d = request.data
-        lines = {int(k): v for k, v in (d.get("lines") or {}).items()}
-        return self.guard(engine.plan, int(d["po"]), lines=lines, site=d.get("site") or None)
+
+        def run():  # payload errors inside the guard too: a missing key is a 400, not a 500
+            lines = {int(k): v for k, v in (d.get("lines") or {}).items()}
+            return engine.plan(int(d["po"]), lines=lines, site=d.get("site") or None)
+        return self.guard(run)
 
 
 class CommitView(_View):
     def post(self, request):
-        return self.guard(engine.commit, request.data["plan"])
+        return self.guard(lambda: engine.commit(request.data["plan"]))
 
 
 class UndoView(_View):
     def post(self, request):
-        return self.guard(engine.undo, request.data["receipt"])
+        return self.guard(lambda: engine.undo(request.data["receipt"]))
 
 
 class PendingView(_View):
     def get(self, request):
         site = request.query_params.get("site") or None
         return self.guard(lambda: {"items": engine.pending(site)})
+
+
+class GoingBackView(_View):
+    def post(self, request):
+        def run():
+            import datetime
+            from order.models import PurchaseOrder
+            po = PurchaseOrder.objects.get(pk=int(request.data["po"]))
+            return returns.requested(po.supplier_reference, str(datetime.date.today()),
+                                     reason="marked from the receive card", event="requested")
+        return self.guard(run)

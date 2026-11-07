@@ -51,4 +51,5 @@ class ReceivingPlugin(UrlsMixin, InvenTreePlugin):
             path("commit/", v.CommitView.as_view(), name="commit"),
             path("undo/", v.UndoView.as_view(), name="undo"),
             path("pending/", v.PendingView.as_view(), name="pending"),
+            path("going-back/", v.GoingBackView.as_view(), name="going-back"),
         ]
