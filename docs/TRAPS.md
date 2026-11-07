@@ -15,6 +15,15 @@ resolved interpreter binary; stage outputs internally so network tools never
 touch `/Volumes`. **Verify with `launchctl kickstart -k`, never by waiting for
 the schedule** — and never trust a missing log.
 
+Consequence, 2026-11-06: anything BinScan needs from the InvenTree interpreter
+must be reached over HTTP. The receiving engine is an InvenTree **plugin**
+(`plugins/receiving/`, views under `/plugin/receiving/…`) for that reason, not
+a subprocess. Plugin URLs mount only when the GLOBAL setting
+`ENABLE_PLUGINS_URL` is True (it is a `common.InvenTreeSetting` row, not
+config.yaml; `scripts/set_plugins_url.py`) AND the PluginConfig is active
+AND the server was restarted after both. A 404 on `/plugin/receiving/ping/`
+after a deploy is one of those three, never a code error.
+
 ### mount_smbfs can't use Finder's keychain entry
 Finder's saved SMB credential is access-controlled to Finder's auth agent. A
 launchd job falls back to anonymous and gets rejected — but looks healthy as
@@ -429,6 +438,14 @@ Orders get held, cancelled after confirmation, refunded after delivery, and
 returned. An automated PO pipeline must leave everything in Placed until a
 human confirms physical arrival, and a review pass must catch
 refunds/returns or they become phantom stock (or phantom open POs).
+
+**Returns are automatic since 2026-11-06.** The morning `amazon-refund-watch`
+task calls `scripts/returns.py` for every return mail; it removes a stock row
+only when the row is Quarantined with `[GOING-BACK]` and otherwise writes
+`[NEEDS-DECISION] <question>` on the PO and stops. If a refunded order is
+still PLACED, look for that token in its note before suspecting the task —
+and a `[NEEDS-DECISION]` note is answered by editing the PO note (delete the
+token, state the answer), after which the next run re-processes the mail.
 
 ### Amazon truncates the product title in the email BODY, not just the subject
 Chasing the origin of four timing pulleys on 2026-08-21, the order confirmation,
