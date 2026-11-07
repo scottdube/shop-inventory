@@ -42,7 +42,13 @@ class ReceivingPlugin(UrlsMixin, InvenTreePlugin):
     AUTHOR = "Scott Dube"
 
     def setup_urls(self):
-        views = _sibling("views")
+        v = _sibling("views")
         return [
-            path("ping/", views.PingView.as_view(), name="ping"),
+            path("ping/", v.PingView.as_view(), name="ping"),
+            path("open/", v.OpenView.as_view(), name="open"),
+            path("match/", v.MatchView.as_view(), name="match"),
+            path("plan/", v.PlanView.as_view(), name="plan"),
+            path("commit/", v.CommitView.as_view(), name="commit"),
+            path("undo/", v.UndoView.as_view(), name="undo"),
+            path("pending/", v.PendingView.as_view(), name="pending"),
         ]
