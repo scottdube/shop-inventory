@@ -54,15 +54,20 @@ new function.
   If a part NAME says "10 pack" while its quantity counts pieces, the name is
   the bug.
 
-  **RECEIVE WITH THE SCRIPT — it does both halves:**
+  **RECEIVE THROUGH THE ENGINE — it does both halves.** From the phone:
+  `http://binscan.internal/receive` (docs/binscan.md "Receiving a box"). From a
+  session:
 
   ```
   itq run scripts/receive_po.py PO-0146 --to RB-14           # dry run
   itq run scripts/receive_po.py PO-0146 --to RB-14 --commit
   ```
 
-  It honours `pack_quantity`, merges into the existing row, refuses to run when a
-  SKU says "pack" and `pack_quantity` says 1 — and **closes the order**.
+  Both doors call `plugins/receiving/engine.py`: it honours `pack_quantity`,
+  merges into the existing row, refuses when a SKU says "pack" and
+  `pack_quantity` says 1 — and **closes the order**. Returns are automatic
+  (`scripts/returns.py`, driven by the morning refund task); a refund it could
+  not settle is a `[NEEDS-DECISION]` note on the PO.
 
   **Both halves matter and each was got wrong once, on the same day.**
   InvenTree's own `receive_line_item()` ignores `pack_quantity` and books the

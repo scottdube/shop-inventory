@@ -28,6 +28,8 @@ from fastapi import FastAPI, File, Form, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse, Response
 
 import providers
+import receiving as rcv
+from receive_page import RECEIVE_PAGE
 
 INVENTREE = os.environ.get("INVENTREE_URL", "http://127.0.0.1:8001")
 IT_TOKEN = os.environ.get("INVENTREE_TOKEN", "")
@@ -4282,6 +4284,123 @@ def index():
     return HTMLResponse(PAGE, headers={
         "Cache-Control": "no-store, no-cache, must-revalidate",
         "Pragma": "no-cache"})
+
+
+# ---- /receive: PO receiving from the phone (docs/binscan.md "Receiving") ----
+
+@app.get("/receive", response_class=HTMLResponse)
+def receive_page():
+    return HTMLResponse(RECEIVE_PAGE, headers={
+        "Cache-Control": "no-store, no-cache, must-revalidate", "Pragma": "no-cache"})
+
+
+@app.get("/api/receive/open")
+def api_receive_open(site: str = ""):
+    d, err = rcv.plugin_get("open/", site=site or None)
+    if err:
+        return JSONResponse({"error": err, "orders": []}, status_code=502)
+    return d
+
+
+@app.post("/api/receive/match")
+async def api_receive_match(text: str = Form(""), site: str = Form(""),
+                            photo: UploadFile | None = File(None)):
+    label, label_error, shot = None, None, None
+    if photo is not None:
+        img = await photo.read()
+        media = photo.content_type or "image/jpeg"
+        if media not in ("image/jpeg", "image/png", "image/webp", "image/gif"):
+            label_error = f"unsupported image type {media}"
+        else:
+            shot = f"receive-{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}.jpg"
+            (SHOTS / shot).write_bytes(img)
+            try:
+                label = providers.read_label("anthropic", img, media)
+            except Exception as e:  # noqa: BLE001 - degrade to the text field (spec §7)
+                label_error = str(e)[:160]
+    ev = rcv.evidence_text(text, label)
+    site = site or rcv.site_from_label(label) or ""
+    if not ev.strip():
+        return JSONResponse({"error": "nothing to match: no readable text and nothing typed"}, status_code=400)
+    d, err = rcv.plugin_post("match/", {"text": ev, "site": site or None})
+    if err:
+        return JSONResponse({"error": err}, status_code=502)
+    d.update({"label": {k: v for k, v in (label or {}).items() if k != "raw"} if label else None,
+              "label_error": label_error, "site": site or None, "shot": shot})
+    log_append({"id": uuid.uuid4().hex[:8], "kind": "receive-match",
+                "at": datetime.datetime.now().isoformat(timespec="seconds"),
+                "text": ev, "shot": shot, "label": label, "verdict": d.get("verdict"),
+                "results": [{"reference": r.get("reference"), "po": r.get("po"), "score": r.get("score"),
+                             "decisive": r.get("decisive")} for r in d.get("results", [])]})
+    return d
+
+
+@app.post("/api/receive/plan")
+async def api_receive_plan(payload: dict):
+    d, err = rcv.plugin_post("plan/", payload)
+    if err:
+        return JSONResponse({"error": err}, status_code=502)
+    return d
+
+
+@app.post("/api/receive/commit")
+async def api_receive_commit(payload: dict):
+    if not WRITES_ON:
+        return JSONResponse({"error": "writes are off (BINSCAN_WRITES)"}, status_code=403)
+    d, err = rcv.plugin_post("commit/", payload)
+    if err:
+        return JSONResponse({"error": err}, status_code=502)
+    log_append({"id": uuid.uuid4().hex[:8], "kind": "receive",
+                "at": datetime.datetime.now().isoformat(timespec="seconds"),
+                "plan": payload.get("plan"), "receipt": d})
+    return d
+
+
+@app.post("/api/receive/undo")
+async def api_receive_undo(payload: dict):
+    if not WRITES_ON:
+        return JSONResponse({"error": "writes are off (BINSCAN_WRITES)"}, status_code=403)
+    d, err = rcv.plugin_post("undo/", payload)
+    if err:
+        return JSONResponse({"error": err}, status_code=502)
+    log_append({"id": uuid.uuid4().hex[:8], "kind": "receive-undo",
+                "at": datetime.datetime.now().isoformat(timespec="seconds"),
+                "receipt": payload.get("receipt"), "result": d})
+    return d
+
+
+@app.post("/api/receive/going-back")
+async def api_receive_going_back(payload: dict):
+    """The receive card's 'going back' button: spec §5's requested branch by hand."""
+    if not WRITES_ON:
+        return JSONResponse({"error": "writes are off (BINSCAN_WRITES)"}, status_code=403)
+    d, err = rcv.plugin_post("going-back/", payload)
+    if err:
+        return JSONResponse({"error": err}, status_code=502)
+    log_append({"id": uuid.uuid4().hex[:8], "kind": "receive-going-back",
+                "at": datetime.datetime.now().isoformat(timespec="seconds"), "po": payload.get("po"), "result": d})
+    return d
+
+
+@app.post("/api/receive/unsettled")
+async def api_receive_unsettled(payload: dict):
+    log_append({"id": uuid.uuid4().hex[:8], "kind": "receive-unsettled",
+                "at": datetime.datetime.now().isoformat(timespec="seconds"),
+                "text": payload.get("text"), "results": payload.get("results")})
+    return {"ok": True}
+
+
+@app.get("/api/receive/pending")
+def api_receive_pending(site: str = ""):
+    d, err = rcv.plugin_get("pending/", site=site or None)
+    items = list((d or {}).get("items") or [])
+    seen = set()
+    for r in reversed(log_read()):
+        if r.get("kind") == "receive-unsettled" and r.get("text") not in seen:
+            seen.add(r.get("text"))
+            items.append({"kind": "unsettled", "id": r.get("id"), "at": r.get("at"),
+                          "text": r.get("text"), "results": r.get("results")})
+    return {"items": items[:40], "error": err}
 
 
 @app.get("/healthz")

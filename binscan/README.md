@@ -9,8 +9,10 @@ of it entirely — see `../docs/binscan.md` and the TRAPS entry.
 
 ## Deploy
 
-    itq push binscan/app.py       /Users/scottdube/binscan/app.py
-    itq push binscan/providers.py /Users/scottdube/binscan/providers.py
+    itq push binscan/app.py          /Users/scottdube/binscan/app.py
+    itq push binscan/providers.py    /Users/scottdube/binscan/providers.py
+    itq push binscan/receiving.py    /Users/scottdube/binscan/receiving.py
+    itq push binscan/receive_page.py /Users/scottdube/binscan/receive_page.py
     launchctl kickstart -k gui/$(id -u)/com.binscan
 
 The LaunchAgent is `com.binscan.plist`; it runs

@@ -250,3 +250,50 @@ def identify(provider, img_bytes, media, cabinet):
     out["provider"] = provider
     out["model"] = model
     return out
+
+
+# ---------------------------------------------------------------- labels ---
+LABEL_SYSTEM = """You READ TEXT from a photograph of a shipping label, packing slip,
+Amazon bag tag, or a part in its packaging. You transcribe; you never guess.
+
+Return ONLY a JSON object:
+{"orders": [], "tracking": [], "skus": [], "words": [], "ship_to": ""}
+
+- orders: order numbers exactly as printed (Amazon looks like 113-8469851-5845865;
+  other vendors use a plain run of digits). If any character is unreadable write ?
+  in its place. NEVER complete a number, NEVER guess a digit.
+- tracking: tracking numbers (TBA..., 1Z..., long USPS digit runs), same rule.
+- skus: ASINs (B0 followed by 8 characters) and vendor part numbers printed on the item.
+- words: the product words you can read - brand, item name, size, count - as short
+  strings, one per line of print. Not addresses, not legal text.
+- ship_to: the city/state line of the delivery address if printed, else "".
+Transcribe, never correct. Empty lists are the right answer when nothing is readable."""
+
+
+def _parse_label(text):
+    """_parse() is the estimate parser (bucket/count) and raises on non-JSON;
+    a label reply that is not JSON means 'nothing readable', not an error."""
+    empty = {"orders": [], "tracking": [], "skus": [], "words": [], "ship_to": ""}
+    text = (text or "").strip()
+    text = re.sub(r"^```(?:json)?|```$", "", text, flags=re.M).strip()
+    m = re.search(r"\{.*\}", text, re.S)
+    if not m:
+        return empty
+    try:
+        d = json.loads(m.group(0))
+    except ValueError:
+        return empty
+    if not isinstance(d, dict):
+        return empty
+    out = {k: _strlist(d.get(k)) for k in ("orders", "tracking", "skus", "words")}
+    out["ship_to"] = str(d.get("ship_to") or "").strip()
+    return out
+
+
+def read_label(provider, img_bytes, media):
+    """Transcribe a label photo. The MATCHING happens in the receiving plugin;
+    this returns strings only, with the raw reply for the journal."""
+    raw, model = _run(provider, img_bytes, media, LABEL_SYSTEM, "Transcribe this label.")
+    d = _parse_label(raw)
+    d["raw"], d["model"] = raw, model
+    return d
