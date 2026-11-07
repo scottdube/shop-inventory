@@ -6,6 +6,17 @@ docs and a backlog you cannot read in one place is hiding, not parking.
 Add here when something is deliberately deferred. Delete when done — this is a
 queue, not a log.
 
+## Receive matcher: confidence floor is provisional (opened 2026-11-06)
+
+`plugins/receiving/match.py` ships with `WORD_FLOOR = 0.5`, `WORD_RATIO = 2.0`,
+guessed (the plan said 1.0; the synthetic fixture needed 0.5 to pass, which is
+itself the reason a real set is required). Spec §8 says the floor is set from
+a fixture set of real photos Scott shoots during the first week (labels, slips,
+bags), each tagged with its true PO, scored definite / several / none.
+Fixtures go in `binscan/fixtures/receive/<date>-<n>.jpg` + `.json`
+(`{"truth": "PO-xxxx"}`); `scripts/test_receive_match.py` grows a loop over
+them. Close when the floor has been measured against at least ten photos.
+
 ## SLN BL-D3: battery soldering iron has no record (opened 2026-11-05, CLOSED same day)
 
 **Closed:** Scott says it is the iron he built from the T12 kit, following an

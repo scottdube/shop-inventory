@@ -1016,3 +1016,38 @@ Three deliberate limits on that script:
 
 Re-runnable and idempotent: the second pass reported *0 set, 15 already
 correct*.
+
+## Receiving a box — `/receive` (added 2026-11-06)
+
+`http://binscan.internal/receive` (= 192.168.50.10). Camera first, text under it.
+Shoot the label, slip, bag tag or the part; or type / dictate a few words. The
+model transcribes strings only; `plugins/receiving/match.py` inside InvenTree
+matches them to open orders (order number or its last 7 digits, ASIN/SKU, a
+tracking number in the PO note are decisive; words are IDF-ranked).
+
+Three outcomes: one card; several cards (date · …last7 · supplier · lines ·
+thumbnail — tap the one in your hand); or every open order at this site plus
+"no PO for this" (the by-hand filepart flow). A decisive hit on a received or
+RETURNED order is shown with `[!!] already … a second delivery?`.
+
+The card: packs editable (0 = leave outstanding), pieces and price per piece
+shown, destination prefilled and its source named (`default_location`,
+`existing_stock`, `category`, `receiving`), Receiving always one tap. **All here**
+books it through the engine (`plan` → `commit`), never the REST receive
+endpoint: pieces = packs × `pack_quantity_native`, merges into the row at that
+location, and closes the order when nothing is outstanding. **Undo** for 10
+minutes. Every match, receive and undo is a `log.jsonl` row (`receive-match`,
+`receive`, `receive-undo`, `receive-unsettled`, `receive-going-back`).
+
+Pending tab: `[NEEDS-DECISION]` questions the returns automation parked,
+orders > 3 days past `target_date` with nothing received, and matches you
+closed without choosing.
+
+**Home-screen icon:** Safari → the URL → Share → *Add to Home Screen*. The
+page sets `apple-mobile-web-app-capable`, so it opens without browser chrome.
+**Siri:** Shortcuts app → + → *Open URLs* → `http://192.168.50.10:8002/receive`
+→ name it "receive a box".
+
+Engine and HTTP views: `plugins/receiving/` (hosted inside InvenTree because a
+LaunchAgent cannot execute anything under `/Volumes/*`, see TRAPS). Client:
+`binscan/receiving.py`. Page: `binscan/receive_page.py`.

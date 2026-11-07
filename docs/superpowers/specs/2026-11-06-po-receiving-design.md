@@ -29,8 +29,8 @@ be told again.
 ## 1. One engine, two doors
 
 `scripts/receive_po.py` keeps its command line and becomes a thin wrapper over
-a new module `scripts/receiving.py` (lives beside it, runs under the InvenTree
-Python via `itq`). The module exposes:
+a new module `plugins/receiving/engine.py` (runs inside InvenTree; see the
+amendment below). The module exposes:
 
 - `plan(po_ref, lines)` → what would be booked: per line the pieces (quantity ×
   `pack_quantity_native`), unit price, the stock row it would MERGE into or
@@ -43,10 +43,12 @@ Python via `itq`). The module exposes:
 
 `scripts/returns.py` has the same shape for the way out (§5).
 
-BinScan calls both through a subprocess running the InvenTree interpreter with
-JSON on stdin/stdout. BinScan already runs on the Mini next to InvenTree; this
-keeps the REST API out of the receive path (the API's receive endpoint creates
-a fresh row and does not close the order, the two halves that were got wrong).
+BinScan calls both over HTTP: the engine is hosted as the InvenTree plugin
+`receiving` (`plugins/receiving/`, views under `/plugin/receiving/…`, token
+auth). **Amended 2026-11-06** — the subprocess design cannot work because
+BinScan is a LaunchAgent and TCC refuses launchd children any execution under
+`/Volumes/*` (TRAPS.md). The REST receive endpoint is still not used; the plugin
+views run the engine's own `plan`/`commit`.
 
 ## 2. The receive page
 
@@ -171,9 +173,11 @@ buttons that call the matching engine action:
 - open POs past `target_date` by more than 3 days with nothing received, as
   "did this arrive?" cards that open the receive card directly.
 
-Pending state is a small JSON file beside `log.jsonl`, not InvenTree
-metadata (the metadata endpoint refuses a token client, documented in
-binscan.md).
+**Amended 2026-11-06:** the second and third sources are derived from the
+database by the plugin's `/pending/` view (a `[NEEDS-DECISION]` token in the
+PO note; PLACED orders > 3 days past `target_date` with nothing received), so
+nothing is stored twice. Only the first source (an unsettled match) is
+BinScan-local, as a `receive-unsettled` row in `log.jsonl`.
 
 ## 7. Error handling
 
