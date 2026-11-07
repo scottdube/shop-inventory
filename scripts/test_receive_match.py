@@ -79,3 +79,12 @@ print("=== transcription with ? never completes a number ===")
 r = m.score("113-846985?-5845865", CARDS)
 assert not r or r[0]["decisive"] == ["last7 5845865"], r[:1]
 print("\nALL OK")
+
+print("=== real snapshot: the 1x7 socket is on several open POs ===")
+snap = json.load(open(HERE / "binscan/fixtures/receive/pos-2026-11-06.json"))
+opens = [c for c in snap if not c["closed"]]
+r = m.score("1x7 female header socket", opens)
+assert m.verdict(r) == "several", [(x["reference"], x["score"]) for x in r[:4]]
+r = m.score("113-8469851-5845865", snap)
+assert r and r[0]["reference"] == "PO-0291" and m.verdict(r) == "one"
+print("\nALL OK (snapshot)")
