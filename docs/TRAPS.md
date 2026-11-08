@@ -11995,3 +11995,39 @@ buzzer modules (#1516, #1517) came out ending in "...a steady " because the
 full text survives only in the part's Source note. **Keep `desc` under 250, or put
 the sentence that matters first** — the tail is what gets cut. `buzzer_test_1106.py`
 rewrote #1517 whole and asserts `len <= 250`.
+
+## Parallel `itq run` writes lock each other out (2026-11-08)
+
+Three `returns.py refunded` dry-runs fired in one response; one died with
+`sqlite3.OperationalError: database is locked` inside `note_prepend` (the
+`siblings.update(primary=False)` in `common.Note.save`). Same cause as "Do not
+run write scripts while somebody is walking" — one SQLite writer — but this
+time the competitor was *this session*. A dry run still writes inside its
+transaction before rolling back, so "it's only a dry run" does not make it a
+reader. **Run write scripts one at a time, even dry runs.** The failed one
+reran clean alone.
+
+## `refund_watch.py` only watches POs already marked Returned (2026-11-08)
+
+The watchlist showed one open item (PO-0259). The `from:return@amazon.com
+newer_than:30d` sweep found two more refunds the same day — PO-0280 (10k
+resistors, 113-0677667-6017021) and PO-0282 (100 µF caps, 113-5723051-9981849)
+— that the watchlist never listed, because their PO status was still PLACED or
+COMPLETE: nobody had told InvenTree a return was under way. The watchlist is
+built from *recorded* intent; the mailbox is the only source for returns
+started on the phone. **The sender sweep is not a supplement to the
+watchlist, it is the primary search.** Every refund in it gets dry-run through
+`returns.py` whether or not the watchlist names the order.
+
+## `returns.py` compares the refund against the pre-tax line total (2026-11-08)
+
+All three refunds today parked as `pending`: $12.69 vs $11.86 ordered, $5.77
+vs $5.39, $6.41 vs $11.98. The first two are exactly the line × 1.07 — Florida
+sales tax; the mail says Quantity: 1 and the line is quantity 1, so they are
+whole-order refunds. The third is $11.98 ÷ 2 × 1.07: one of two pieces, which
+is a genuine question. The amount check has no tax model, so **every full
+refund on a taxed order will come up pending** and Scott answers a question the
+mail already answered. Not fixed here — the fix belongs in
+`plugins/receiving/returns.py` (compare against line × (1 + tax) with a
+tolerance, or read the quantity from the mail), with a test, not in the
+morning task.
