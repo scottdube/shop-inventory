@@ -2768,12 +2768,13 @@ Security symbols, so **`mount_smbfs -N` cannot read any keychain item**, and
 `nsmb.conf` has no password keyword any more. Both the August trap entry's
 mechanism and its fix were wrong (TRAPS, corrected).
 
-What is left: the NAS leg has to stop mounting. rclone 1.75 on the Mini has
-the `smb` backend. **Scott:** `ssh -t mini rclone config` → `n`, name `nas`,
-type `smb`, host `192.168.1.200`, user `sdube`, password typed at the prompt
-(stored obscured in `rclone.conf`, 0600, same as the Drive token). **Then the
-script change** (item 4): NAS leg = `rclone copy` + `rclone delete --min-age`
-to `nas:home/inventree/`, verified from gui/501 before the kickstart.
+**Remote `nas` created by Scott 2026-11-09 ~09:40** (`ssh -t mini
+/opt/homebrew/bin/rclone config`; a bare `rclone` is not on the PATH of a
+non-login SSH shell). Verified 09:45 from SSH and from a gui/501 one-shot
+agent: `rclone lsd nas:home` lists Drive/archive/inventree, and
+`nas:home/inventree` holds copies through 2026-10-17 — the Finder-era trail.
+**Still to do (item 4):** the script's NAS leg becomes `rclone copy` +
+`rclone delete --min-age` to `nas:home/inventree/`, then a kickstart.
 
 Housekeeping: the useless "NAS backup (mount_smbfs)" keychain items on the
 Mini and the laptop can be deleted
