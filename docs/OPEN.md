@@ -2714,9 +2714,9 @@ their price suggests.
 ## Backup: what is left open after the 2026-09-12 and 2026-11-09 FAILs
 
 The 09-12 FAIL was closed by hand that morning; the 11-09 FAIL is diagnosed
-(TRAPS "The backup FAIL of 2026-11-09") and **both legs are still broken as of
-2026-11-09**: Drive is throttled, the NAS leg never worked unattended. Both
-fixes need Scott (a Google client_id; the NAS password).
+(TRAPS "The backup FAIL of 2026-11-09"). **Both legs restored 2026-11-09
+09:28** — the NAS leg for the first time ever unattended, via rclone's smb
+backend. Drive still rides the shared client_id (item 2).
 
 ### 1. The nightly archive is a full 721 MB tar.gz, and it grows
 
@@ -2780,19 +2780,31 @@ Housekeeping: the useless "NAS backup (mount_smbfs)" keychain items on the
 Mini and the laptop can be deleted
 (`security delete-internet-password -l "NAS backup (mount_smbfs)"`).
 
-### 4. Script changes queued from the 11-09 diagnosis (not applied — live system, Scott's go)
+### 4. Script changes from the 11-09 diagnosis — DEPLOYED 09:17, run OK
 
-- rclone: `--log-file ~/Library/Logs/inventree/rclone.log`; log the elapsed
-  time; on `TimeoutExpired` log the tail of that file, since the exception
-  text carries nothing.
-- NAS: replace `existing_mount()` + `mount_smbfs` with `rclone copy` /
-  `rclone delete --min-age 14d` against the `nas:` smb remote (item 3). No
-  mount means no Finder mount to borrow and no false "healthy".
-- Alerting: a leg dead N nights in a row deserves a DEGRADED mail. Today only
-  a both-legs night mails, and 23 nights went by unnoticed.
+Deployed 2026-11-09 09:16 (previous version kept as
+`~/.inventree/backup_inventree.py.bak-2026-11-09`), kickstarted 09:17:
+
+    gdrive: uploaded in 265s
+    NAS: copied -> nas:home/inventree in 325s
+    status: OK  2026-11-09_0917  off-site: gdrive, NAS      (launchd exit 0)
+
+NAS leg now `rclone copy` to `nas:home/inventree/` + count-based prune
+(`rclone_prune`, newest 14 by name — it deleted the 10-04 copy, listing is
+14 files). Both rclone legs keep `~/Library/Logs/inventree/rclone.log` and
+log their duration; the failure mail points at that log. Drive uploaded at
+3.7 MiB/s with zero rate-limit lines today, so the 11-09 03:17 stall was the
+shared quota being busy at that hour, which will recur until item 2 is done.
+
+Still open from this diagnosis:
+- **Item 2** (own Google client_id) — Scott, after a run is settled, never
+  mid-upload.
+- **DEGRADED alert:** a single leg failing N nights in a row still mails
+  nothing. The log now says why each leg failed, but someone has to read it.
 - Mini housekeeping: orphan `python3 -` PID 45483 at 99.7 % CPU since
-  2026-10-17 15:12 (TRAPS, "Found while there"). Kill or identify — Scott's
-  call.
+  2026-10-17 15:12. Kill or identify — Scott's call.
+- Delete the useless "NAS backup (mount_smbfs)" keychain items (Mini and
+  laptop).
 
 ## Does the Amazon import have a gap? — ONE MISS, NOT YET A PATTERN
 

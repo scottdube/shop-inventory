@@ -9075,6 +9075,14 @@ sudo. `security dump-keychain -a` over SSH prints no ACLs.
   `--log-file ~/Library/Logs/inventree/rclone.log` so the next stall explains
   itself.
 
+### Outcome
+
+Deployed 09:16, kickstarted 09:17: `gdrive: uploaded in 265s`, `NAS: copied ->
+nas:home/inventree in 325s`, `OK ... off-site: gdrive, NAS`, launchd exit 0.
+The first unattended NAS copy in the job's history. Watching it taught one
+more small trap: a "wait for `=== done ===`" check on the log tail matched
+the *previous* run's marker — anchor on this run's header line first.
+
 ### Found while there
 
 PID 45483 on the Mini: `/Library/Developer/CommandLineTools/…/Python -`
