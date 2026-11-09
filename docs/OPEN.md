@@ -2711,11 +2711,12 @@ chain breaker and **5 connecting links**, neither catalogued — and without a
 master link a chain cannot be closed into a loop, so those matter more than
 their price suggests.
 
-## Backup: three things left open after the 2026-09-12 FAIL
+## Backup: what is left open after the 2026-09-12 and 2026-11-09 FAILs
 
-The FAIL itself is closed — both off-site legs were restored by hand that
-morning, and `docs/TRAPS.md` carries the diagnosis. What follows is what was
-NOT fixed.
+The 09-12 FAIL was closed by hand that morning; the 11-09 FAIL is diagnosed
+(TRAPS "The backup FAIL of 2026-11-09") and **both legs are still broken as of
+2026-11-09**: Drive is throttled, the NAS leg never worked unattended. Both
+fixes need Scott (a Google client_id; the NAS password).
 
 ### 1. The nightly archive is a full 721 MB tar.gz, and it grows
 
@@ -2738,31 +2739,54 @@ Constraint worth carrying in: whatever replaces it must keep the property the
 current job has, that a verdict file answers *am I protected off-site* in one
 line a human can read.
 
-### 2. rclone's shared Google Drive client_id retires during 2026 — DATED
+### 2. rclone's shared Google Drive client_id — NOW THROTTLING (was: DATED)
 
     NOTICE: gdrive: This remote uses rclone's shared Google Drive client_id,
     which is being retired and will stop working during 2026.
 
-Nothing has broken. When it does, the gdrive leg dies and the only remaining
-off-site path is the NAS — which is the leg that already failed once. **Both
-legs have a known failure mode and no third exists.**
+2026-11-09: it is no longer a future problem. `rclone -vv` on a 50 MB probe
+logged `RATE_LIMIT_EXCEEDED` on `projects/202264815644` (rclone's shared
+project, `defaultPerMinutePerProject`), a 100 MB probe did not finish in
+8 min 49 s on a 43 Mbps uplink, and the nightly 988 MB upload hit the 5400 s
+timeout on 11-09 — that was the FAIL. Diagnosis: TRAPS "The backup FAIL of
+2026-11-09".
 
-Needs Scott's Google account: https://rclone.org/drive/#making-your-own-client-id
+Needs Scott's Google account: create a client_id per
+https://rclone.org/drive/#making-your-own-client-id, then on the Mini
+`rclone config update gdrive client_id <id> client_secret <secret>`,
+`rclone config reconnect gdrive:`, then `launchctl kickstart
+gui/501/com.inventree.backup` and read the gdrive line.
 
-### 3. The NAS keychain hypothesis is untested
+### 3. The NAS keychain hypothesis — FALSIFIED 2026-11-09; the leg never worked unattended
 
-`mount_smbfs` was rejected at 03:17 on 09-12 with the credential present and
-valid. The standing hypothesis is that the login keychain was locked or
-unreachable to the launchd job in the dark-wake window. **It has not been
-tested and must not be written down as the cause.**
+The prescribed test ran (one-shot agent in gui/501, 08:31 EST): the login
+keychain was unlocked (`no-timeout`) and `mount_smbfs -N` was still rejected.
+Then the log settled it: **all 61 "NAS: copied" lines name `/Volumes/home`**,
+Finder's mount point, and the script's own `~/.inventree/nasmnt` appears zero
+times. Every success was borrowed from a Finder mount Scott had open; it
+dropped on 10-17 and the leg has failed every night since (23 nights to
+11-09), silently, because Drive carried each night. 09-12 was the same fault.
 
-The test is one line, and it runs when the fault next fires rather than now:
-log `security show-keychain-info` immediately before the mount attempt. Locked
-and unlocked are distinguishable there.
+Fix needs the password, so it is Scott's: give `/sbin/mount_smbfs` access to
+the `192.168.1.200` item (Keychain Access on the Mini → Access Control), or
+create a second item with `security add-internet-password -a sdube -s
+192.168.1.200 -r "smb " -l "NAS backup (mount_smbfs)" -T /sbin/mount_smbfs -w`
+(prompts; nothing stored in the script). **Verify with the share unmounted**,
+via the gui/501 probe and then a kickstart whose NAS line says `nasmnt`.
 
-Diagnosis capacity was improved on 09-12 so the *gdrive* leg is no longer mute
-(`-v` added; its `--stats` flags had been decorative, since rclone emits stats
-at INFO and defaults to NOTICE). **The NAS leg has had no such treatment.**
+### 4. Script changes queued from the 11-09 diagnosis (not applied — live system, Scott's go)
+
+- rclone: `--log-file ~/Library/Logs/inventree/rclone.log`; log the elapsed
+  time; on `TimeoutExpired` log the tail of that file, since the exception
+  text carries nothing.
+- NAS: log which mount was used. Reusing a Finder mount must print as
+  "reused Finder mount at /Volumes/home — unattended path NOT exercised", so
+  the log stops reading as healthy when it is borrowing.
+- Alerting: a leg dead N nights in a row deserves a DEGRADED mail. Today only
+  a both-legs night mails, and 23 nights went by unnoticed.
+- Mini housekeeping: orphan `python3 -` PID 45483 at 99.7 % CPU since
+  2026-10-17 15:12 (TRAPS, "Found while there"). Kill or identify — Scott's
+  call.
 
 ## Does the Amazon import have a gap? — ONE MISS, NOT YET A PATTERN
 

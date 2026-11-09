@@ -30,6 +30,9 @@ launchd job falls back to anonymous and gets rejected — but looks healthy as
 long as a Finder mount happens to be open. Test unattended paths by
 **unmounting first**. Fix: auto-mount via Login Items, or extend the keychain
 item's ACL to `/sbin/mount_smbfs`.
+**Confirmed the hard way 2026-11-09:** 61 of 61 NAS backup successes rode a
+Finder mount; the script's own mount never once worked. See "The backup FAIL
+of 2026-11-09" below.
 
 ## InvenTree
 
@@ -8962,6 +8965,106 @@ fine.
 Nothing has broken yet. When it does, the gdrive leg dies silently and the
 only remaining off-site path is the NAS — which is the one that is already
 broken. Fix: create an own client_id per https://rclone.org/drive/#making-your-own-client-id
+
+## The backup FAIL of 2026-11-09 — the NAS leg never once worked unattended
+
+Verdict mail at 04:47: `FAIL 2026-11-09_0317 NO OFF-SITE COPY`, both legs down
+the same night. Read it as 09-12 taught: **this run**. The archive was fine
+(`snapshot ok - 1511 parts`, 988.4 MB on the 4TB) and Drive holds every night
+through 11-08, so the exposure was one day. Diagnosed 2026-11-09 08:20–08:50 EST.
+
+### NAS: 61 of 61 successes went through a Finder mount; the script's own mount has failed every time it was tried
+
+    $ grep 'NAS: copied' backup.log | sed 's/.*-> //' | sort | uniq -c
+         61 /Volumes/home/inventree
+
+`/Volumes/home` is where Finder mounts the share. When the script mounts for
+itself it uses `~/.inventree/nasmnt`, and that path appears **zero** times in a
+log that starts 2026-08-16. The `existing_mount()` branch did all the work.
+
+- Last success 10-17_0317, failure every night from 10-18 — 23 nights. The
+  Finder mount dropped sometime on 10-17 and nothing remounted it. No alarm,
+  because Drive carried the night and only a both-legs failure mails.
+- **The 09-12 "keychain locked in the dark-wake window" hypothesis is
+  falsified.** From the backup job's own context (a one-shot agent
+  `launchctl bootstrap gui/501`'d from SSH, 08:31 EST):
+  `security show-keychain-info login.keychain-db` → `no-timeout`, unlocked;
+  `mount_smbfs -N //sdube@192.168.1.200/home` → rc 77 `Authentication error`;
+  `smbutil view -N` → same. Unlocked, daytime, still rejected.
+- The laptop (192.168.0.6, macOS 27.0.1, its own keychain entry from 2025-07)
+  ran `smbutil view -N //sdube@192.168.1.200` successfully in the same minute.
+  The NAS accepts the account; it rejects what the Mini sends.
+- The Mini's item (login keychain, `acct=sdube srvr=192.168.1.200 ptcl=smb`,
+  created and last modified 2026-08-16 16:38) is Finder's "Network Password".
+  `security find-internet-password -w` from gui/501 blocked on a keychain
+  access dialog: the item's ACL admits Finder's agents, not arbitrary tools.
+  **This is the entry at the top of this file — "mount_smbfs can't use
+  Finder's keychain entry" — written in August and never fixed.** The leg
+  looked healthy because Scott's Finder mount was open.
+- `open smb://sdube@192.168.1.200/home` from gui/501 raised NetAuthAgent's
+  Connect dialog and did not mount in 15 s. That matches Scott on 09-12 ("it
+  already had the pw, just needed to be told to connect"): Finder's path needs
+  a click, so it cannot be the unattended path either.
+
+**Cause:** the unattended path has no credential it is allowed to read. Every
+"NAS: copied" was borrowed from a Finder mount. Why that mount dropped on 10-17
+is unknown and does not matter — the design never survived its absence, and
+09-12 was the same fault with a shorter outage.
+
+**Fix (needs the password, so Scott's):** let `/sbin/mount_smbfs` read the
+credential. Either Keychain Access on the Mini → login → item `192.168.1.200`
+→ Access Control → add `/sbin/mount_smbfs`; or a second item the script owns,
+`security add-internet-password -a sdube -s 192.168.1.200 -r "smb " -l "NAS
+backup (mount_smbfs)" -T /sbin/mount_smbfs -w` (prompts for the password;
+nothing lands in the script or this repo). Then **verify with the share
+unmounted**: the gui/501 one-shot probe above, then `launchctl kickstart
+gui/501/com.inventree.backup` and read the NAS line for `nasmnt`, not
+`/Volumes/home`.
+
+Diagnostic notes, so the next person skips the dead ends: `launchctl asuser`
+needs root; `launchctl bootstrap gui/501 <plist>` as the user works from SSH
+and is how to run something in the job's context. The probes left dialogs on
+the Mini's screen (SecurityAgent keychain prompt, NetAuthAgent Connect);
+killed 08:52. `osascript … System Events` over SSH hangs on Automation TCC —
+don't. `/dev/bpf*` is root-only on the Mini, so no packet capture without
+sudo. `security dump-keychain -a` over SSH prints no ACLs.
+
+### Drive: rclone's shared client_id is being rate-limited; the uplink is fine
+
+- `-v` was added 09-12, but `capture_output=True` keeps rclone's output in
+  memory, the script logs `stderr[:120]` only on a non-zero exit, and on a
+  timeout the `TimeoutExpired` message — which carries none of it — is the
+  whole log line. rclone's reasons were discarded on both FAIL nights.
+- Measured 08:40–08:47: `networkQuality` uplink 43 Mbps; `curl` 20 MB to
+  speed.cloudflare.com at 4.36 MB/s. A 100 MB `rclone copyto -v` had not
+  finished after 8 min 49 s (killed). A 50 MB run with `-vv --log-file` showed
+  why:
+
+      RATE_LIMIT_EXCEEDED  drive.googleapis.com/default
+      quota_limit defaultPerMinutePerProject = 840000 /min
+      consumer projects/202264815644
+      pacer: Rate limited, increasing sleep to 16.5s
+
+  then 3.85 MiB/s once admitted — 988 MB is ~4.3 min at that rate.
+  `projects/202264815644` is rclone's shared Google Cloud project: one
+  per-minute quota shared with every rclone user using the default client_id.
+- So 5400 s was never a bandwidth problem. It is pacer back-off against a
+  shared quota, multiplied by `--retries 5 --low-level-retries 20`. OPEN item
+  2 ("client_id retires during 2026") is already biting as throttling.
+- **Fix (Scott's Google account):** own client_id per
+  https://rclone.org/drive/#making-your-own-client-id, then
+  `rclone config update gdrive client_id … client_secret …` and
+  `rclone config reconnect gdrive:`. The script should also pass
+  `--log-file ~/Library/Logs/inventree/rclone.log` so the next stall explains
+  itself.
+
+### Found while there
+
+PID 45483 on the Mini: `/Library/Developer/CommandLineTools/…/Python -`
+(python3 running a script fed on stdin), parent launchd (orphaned), started
+Sat Oct 17 15:12:20, **99.7 % CPU for 22 days**, no sockets, no files open but
+`/dev/urandom`, cwd `/Users/scottdube`. Not the NAS cause — it touches no
+network — but it is burning a core. Not killed; Scott's call.
 
 ## The naming rule hides every pack count from the pack audit (2026-09-13)
 
