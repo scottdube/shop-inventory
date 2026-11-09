@@ -460,6 +460,27 @@ still PLACED, look for that token in its note before suspecting the task —
 and a `[NEEDS-DECISION]` note is answered by editing the PO note (delete the
 token, state the answer), after which the next run re-processes the mail.
 
+### Amazon refunds the sales tax; the PO line is pre-tax
+Found 2026-11-09 on PO-0280 and PO-0282, both "returned to Amazon" per Scott
+and both still PLACED. The refund mail says $5.77; the line says $5.39; the
+difference is Florida's 7% ($0.38). `returns.refunded()` compared the two for
+equality, so **every Florida return parked as `[NEEDS-DECISION]`**, and the
+morning task re-sent the same mail daily, so the identical question stacked
+three deep on each note. Fixed the same day: a refund that is a line (or the
+order) plus 0–10% is a clean match (`_covers`), the tax is written into the
+`[REFUND-CONFIRMED]` line, the same question is parked once, and a refund that
+settles the order takes its parked question off the note.
+
+**"Delete the token and the next run re-processes" only works when the
+re-run can succeed.** For an amount the engine cannot read (PO-0282: Amazon
+refunded QUANTITY 1 of a 2-unit line, $6.41 of $11.98+tax) the re-run asks
+the same question again forever. That case is closed by hand, in the engine's
+vocabulary: `scripts/close_po282_returned_1109.py` is the worked example
+(received stays 0, status RETURNED, `[REFUND-CONFIRMED]` with the quantity
+caveat, a dated line saying who said what). Read the return-request mail for
+`Quantity:` before believing an order "all went back" — the request is what
+Scott typed into Amazon, and it said 1.
+
 ### Amazon truncates the product title in the email BODY, not just the subject
 Chasing the origin of four timing pulleys on 2026-08-21, the order confirmation,
 the shipping confirmation and the seller-feedback request all render the item as

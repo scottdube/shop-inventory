@@ -84,6 +84,36 @@ try:
     assert not r["ok"] and "16.99" in r["pending"] and "33.98" in r["pending"], r
     po.refresh_from_db(); assert po.status == 20 and "[NEEDS-DECISION]" in note_text(po)
 
+    print("=== refund = line + FL tax (7%) on a 1-line order: whole order RETURNED, tax noted ===")
+    po = mk_po("113-0000000-1000006", qty=1, price=5.39)
+    r = R.refunded(po.supplier_reference, 5.77, TODAY)  # $5.39 + $0.38 tax, PO-0280's real numbers
+    assert r["ok"] and r["action"] == "returned", r
+    po.refresh_from_db()
+    assert po.status == 60 and "[REFUND-CONFIRMED] $5.77 on " + TODAY in note_text(po) and "$0.38 tax" in note_text(po), note_text(po)
+
+    print("=== refund = one line + tax on a 2-line order picks that line, order stays PLACED ===")
+    po = mk_po("113-0000000-1000007", qty=1, price=16.99, lines=2)
+    ln_b = po.lines.order_by("pk").last(); ln_b.purchase_price = 5.39; ln_b.save()
+    r = R.refunded(po.supplier_reference, 5.77, TODAY)
+    assert r["ok"] and r["action"] == "returned", r
+    po.refresh_from_db(); ln_b.refresh_from_db()
+    assert po.status == 20 and "returned" in (ln_b.notes or "").lower(), (po.status, ln_b.notes)
+
+    print("=== refund above tax ceiling is still a question ===")
+    po = mk_po("113-0000000-1000008", qty=1, price=5.39)
+    r = R.refunded(po.supplier_reference, 6.41, TODAY)
+    assert not r["ok"] and r["pending"], r
+
+    print("=== the same question is parked ONCE across repeated runs ===")
+    before = note_text(po)
+    r = R.refunded(po.supplier_reference, 6.41, TODAY)
+    assert not r["ok"] and note_text(po) == before and note_text(po).count("[NEEDS-DECISION]") == 1, note_text(po)
+
+    print("=== a later clean refund settles the order and takes the parked question off the note ===")
+    r = R.refunded(po.supplier_reference, 5.77, TODAY)
+    po.refresh_from_db()
+    assert r["ok"] and po.status == 60 and "[NEEDS-DECISION]" not in note_text(po) and "Ships to The Villages" in note_text(po), note_text(po)
+
     print("=== UNCLEAN: two POs share the order number ===")
     po_a = mk_po("113-0000000-1000005"); po_b = mk_po("113-0000000-1000005")
     r = R.refunded("113-0000000-1000005", 16.99, TODAY)

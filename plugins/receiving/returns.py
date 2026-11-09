@@ -60,8 +60,22 @@ def _rows_for(po):
 
 
 def _decide(po, question):
-    note_prepend(po, f"{NEEDS_DECISION} {question}")
+    """Park the question on the PO once. The morning task re-sends every refund
+    mail until the order settles, so an unanswered question came back three
+    times on PO-0280/0282 (2026-11-06..09). Same text already there: no write."""
+    line = f"{NEEDS_DECISION} {question}"
+    if line not in (note_text(po) or ""):
+        note_prepend(po, line)
     return _res(False, "pending", po, pending=question)
+
+
+TAX_CEILING = Decimal("1.10")  # FL (The Villages) is 7%; NH is 0%. Anything up to 10% reads as tax.
+
+
+def _covers(subtotal, amount):
+    """True when `amount` is `subtotal` plus 0..10% sales tax. Amazon refunds
+    the tax with the item; the order lines carry the pre-tax price."""
+    return subtotal > 0 and subtotal <= amount <= (subtotal * TAX_CEILING).quantize(Decimal("0.01"))
 
 
 def requested(order, when, reason="", event="requested"):
@@ -102,14 +116,16 @@ def refunded(order, amount, when):
     totals = {ln.pk: (Decimal(str(ln.purchase_price.amount)) * Decimal(str(ln.quantity))).quantize(Decimal("0.01"))
               for ln in lines if ln.purchase_price}
     whole = sum(totals.values(), Decimal(0))
-    if amount == whole:
+    one_line = [ln for ln in lines if _covers(totals.get(ln.pk, Decimal(0)), amount)]
+    if _covers(whole, amount):
         target = lines
-    elif [k for k, v in totals.items() if v == amount] and len(lines) > 1:
-        target = [ln for ln in lines if totals.get(ln.pk) == amount]
+    elif len(one_line) == 1 and len(lines) > 1:
+        target = one_line
     else:
         return _decide(po, f"refund ${amount} against ${whole} ordered "
                            f"({', '.join(f'{ln.part.part.name[:30]} ${totals.get(ln.pk, 0)}' for ln in lines)}): "
                            f"one of {len(lines)} lines returned, part of one, or all?")
+    tax = amount - sum((totals.get(ln.pk, Decimal(0)) for ln in target), Decimal(0))
 
     received = [ln for ln in target if float(ln.received) > 0]
     rows = _rows_for(po) if received else []
@@ -138,6 +154,10 @@ def refunded(order, amount, when):
             po.refresh_from_db()
             if po.status != RETURNED:
                 raise RuntimeError("order status did not change to RETURNED")
-        note_append(po, f"{REFUND_CONFIRMED} ${amount} on {when} (Amazon refund mail).")
+        parked = note_text(po) or ""
+        if NEEDS_DECISION in parked:  # the question this refund answers comes off the note
+            note_set(po, "\n\n".join(p for p in parked.split("\n\n") if not p.strip().startswith(NEEDS_DECISION)))
+        note_append(po, f"{REFUND_CONFIRMED} ${amount} on {when} (Amazon refund mail"
+                        + (f"; ${amount - tax} line + ${tax} tax" if tax else "") + ").")
     push = f"Refund ${amount} booked: {po.reference} RETURNED, {len(rows)} stock row(s) removed. {WEB}/purchasing/purchase-order/{po.pk}"
     return _res(True, "returned", po, push=push, detail=[f"removed stock {r.pk}" for r in rows])

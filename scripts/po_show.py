@@ -21,22 +21,25 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "InvenTree.settings")
 django.setup()
 
 from order.models import PurchaseOrder  # noqa: E402
+from plugins.notes_compat import note_text  # noqa: E402
 
 
 def show(po):
     print(f"{po.reference}  supplier_ref={po.supplier_reference!r}  "
           f"status={po.get_status_display()}  supplier={po.supplier.name}")
     print(f"  issue_date={po.issue_date}  complete_date={po.complete_date}")
-    if po.notes:
-        print(f"  notes: {po.notes.strip()[:400]}")
+    pn = note_text(po) or ""
+    if pn.strip():
+        print(f"  notes: {pn.strip()[:600]}")
     for ln in po.lines.all().order_by("pk"):
         part = ln.part.part.full_name if ln.part else "(no supplier part)"
         sku = ln.part.SKU if ln.part else "-"
         print(f"  line {ln.pk}: qty={ln.quantity} received={ln.received} "
               f"price={ln.purchase_price} SKU={sku}")
         print(f"    part: {part}")
-        if ln.notes:
-            print(f"    notes: {ln.notes.strip()[:300]}")
+        lnn = ln.notes if isinstance(ln.notes, str) else (note_text(ln) or "")
+        if lnn.strip():
+            print(f"    notes: {lnn.strip()[:300]}")
     print()
 
 
