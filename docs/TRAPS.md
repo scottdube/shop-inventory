@@ -24,15 +24,25 @@ config.yaml; `scripts/set_plugins_url.py`) AND the PluginConfig is active
 AND the server was restarted after both. A 404 on `/plugin/receiving/ping/`
 after a deploy is one of those three, never a code error.
 
-### mount_smbfs can't use Finder's keychain entry
-Finder's saved SMB credential is access-controlled to Finder's auth agent. A
-launchd job falls back to anonymous and gets rejected — but looks healthy as
-long as a Finder mount happens to be open. Test unattended paths by
-**unmounting first**. Fix: auto-mount via Login Items, or extend the keychain
-item's ACL to `/sbin/mount_smbfs`.
-**Confirmed the hard way 2026-11-09:** 61 of 61 NAS backup successes rode a
-Finder mount; the script's own mount never once worked. See "The backup FAIL
-of 2026-11-09" below.
+### mount_smbfs -N never reads the keychain at all (corrected 2026-11-09)
+The August version of this entry said Finder's saved SMB credential was
+ACL-locked to Finder's agent and that extending the ACL to `/sbin/mount_smbfs`
+would fix it. **Wrong mechanism.** Measured 2026-11-09: `mount_smbfs` imports
+nothing from Security.framework and neither does `SMBClient.framework`
+(`dyld_info -imports` shows only GSS/Kerberos symbols); the man page says `-N`
+takes its password from `nsmb.conf` or nowhere, and the current `nsmb.conf(5)`
+has no password keyword left. So `-N` with no `nsmb.conf` tries a GSS
+credential (the `GSSCred` XPC line in the log), finds none, and the NAS
+rejects. A keychain item with a perfect ACL (created 2026-11-09 as "NAS backup
+(mount_smbfs)") changed nothing — still rc 77. The item is dead weight; delete
+it when convenient, on the Mini and on the laptop where it was first typed by
+mistake.
+
+What is still true: a launchd job looks healthy as long as a Finder mount is
+open, so **test unattended paths with the share unmounted**. Fix: don't mount
+at all — rclone's `smb` backend (present in the Mini's rclone 1.75) with the
+password obscured in `rclone.conf`, same posture as the Drive token. See "The
+backup FAIL of 2026-11-09".
 
 ## InvenTree
 
@@ -9011,15 +9021,22 @@ log that starts 2026-08-16. The `existing_mount()` branch did all the work.
 is unknown and does not matter — the design never survived its absence, and
 09-12 was the same fault with a shorter outage.
 
-**Fix (needs the password, so Scott's):** let `/sbin/mount_smbfs` read the
-credential. Either Keychain Access on the Mini → login → item `192.168.1.200`
-→ Access Control → add `/sbin/mount_smbfs`; or a second item the script owns,
-`security add-internet-password -a sdube -s 192.168.1.200 -r "smb " -l "NAS
-backup (mount_smbfs)" -T /sbin/mount_smbfs -w` (prompts for the password;
-nothing lands in the script or this repo). Then **verify with the share
-unmounted**: the gui/501 one-shot probe above, then `launchctl kickstart
-gui/501/com.inventree.backup` and read the NAS line for `nasmnt`, not
-`/Volumes/home`.
+**Fix attempted 09:01, failed, and it taught the real mechanism:** Scott
+created a keychain item with `-T /sbin/mount_smbfs` (the `security` write
+needs `security unlock-keychain` first over SSH, or it dies with "User
+interaction is not allowed"). The gui/501 probe still got rc 77. Then
+`dyld_info -imports` on `SMBClient.framework` showed no Security.framework
+symbols at all: **`mount_smbfs -N` never consults the keychain**; the keychain
+lookup order (Finder's item first) was a red herring. The documented `-N`
+source, `nsmb.conf`, no longer has a password keyword.
+
+**Fix (Scott's, one interactive `rclone config` over `ssh -t mini`):** an
+rclone `smb` remote `nas` (host 192.168.1.200, user sdube, password typed at
+rclone's prompt and stored obscured in `rclone.conf`, mode 0600 — the same
+posture the Drive token already has). The script's NAS leg becomes
+`rclone copy staged nas:home/inventree/` plus `rclone delete --min-age` for
+the prune, no mount, no Finder, no keychain. Verify from gui/501 with
+`rclone lsd nas:home`, then `launchctl kickstart gui/501/com.inventree.backup`.
 
 Diagnostic notes, so the next person skips the dead ends: `launchctl asuser`
 needs root; `launchctl bootstrap gui/501 <plist>` as the user works from SSH

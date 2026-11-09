@@ -2757,31 +2757,36 @@ https://rclone.org/drive/#making-your-own-client-id, then on the Mini
 `rclone config reconnect gdrive:`, then `launchctl kickstart
 gui/501/com.inventree.backup` and read the gdrive line.
 
-### 3. The NAS keychain hypothesis — FALSIFIED 2026-11-09; the leg never worked unattended
+### 3. The NAS leg — keychain hypothesis FALSIFIED twice 2026-11-09; move it to rclone smb
 
-The prescribed test ran (one-shot agent in gui/501, 08:31 EST): the login
-keychain was unlocked (`no-timeout`) and `mount_smbfs -N` was still rejected.
-Then the log settled it: **all 61 "NAS: copied" lines name `/Volumes/home`**,
-Finder's mount point, and the script's own `~/.inventree/nasmnt` appears zero
-times. Every success was borrowed from a Finder mount Scott had open; it
-dropped on 10-17 and the leg has failed every night since (23 nights to
-11-09), silently, because Drive carried each night. 09-12 was the same fault.
+Morning: the prescribed gui/501 test showed the login keychain unlocked and
+`mount_smbfs -N` still rejected, and the log showed all 61 "NAS: copied"
+lines name `/Volumes/home` (Finder's mount) — the script's own mount never
+worked. Then a keychain item with an ACL admitting `/sbin/mount_smbfs` was
+created and the probe still failed: `SMBClient.framework` imports no
+Security symbols, so **`mount_smbfs -N` cannot read any keychain item**, and
+`nsmb.conf` has no password keyword any more. Both the August trap entry's
+mechanism and its fix were wrong (TRAPS, corrected).
 
-Fix needs the password, so it is Scott's: give `/sbin/mount_smbfs` access to
-the `192.168.1.200` item (Keychain Access on the Mini → Access Control), or
-create a second item with `security add-internet-password -a sdube -s
-192.168.1.200 -r "smb " -l "NAS backup (mount_smbfs)" -T /sbin/mount_smbfs -w`
-(prompts; nothing stored in the script). **Verify with the share unmounted**,
-via the gui/501 probe and then a kickstart whose NAS line says `nasmnt`.
+What is left: the NAS leg has to stop mounting. rclone 1.75 on the Mini has
+the `smb` backend. **Scott:** `ssh -t mini rclone config` → `n`, name `nas`,
+type `smb`, host `192.168.1.200`, user `sdube`, password typed at the prompt
+(stored obscured in `rclone.conf`, 0600, same as the Drive token). **Then the
+script change** (item 4): NAS leg = `rclone copy` + `rclone delete --min-age`
+to `nas:home/inventree/`, verified from gui/501 before the kickstart.
+
+Housekeeping: the useless "NAS backup (mount_smbfs)" keychain items on the
+Mini and the laptop can be deleted
+(`security delete-internet-password -l "NAS backup (mount_smbfs)"`).
 
 ### 4. Script changes queued from the 11-09 diagnosis (not applied — live system, Scott's go)
 
 - rclone: `--log-file ~/Library/Logs/inventree/rclone.log`; log the elapsed
   time; on `TimeoutExpired` log the tail of that file, since the exception
   text carries nothing.
-- NAS: log which mount was used. Reusing a Finder mount must print as
-  "reused Finder mount at /Volumes/home — unattended path NOT exercised", so
-  the log stops reading as healthy when it is borrowing.
+- NAS: replace `existing_mount()` + `mount_smbfs` with `rclone copy` /
+  `rclone delete --min-age 14d` against the `nas:` smb remote (item 3). No
+  mount means no Finder mount to borrow and no false "healthy".
 - Alerting: a leg dead N nights in a row deserves a DEGRADED mail. Today only
   a both-legs night mails, and 23 nights went by unnoticed.
 - Mini housekeeping: orphan `python3 -` PID 45483 at 99.7 % CPU since
