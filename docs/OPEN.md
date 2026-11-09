@@ -2798,7 +2798,10 @@ shared quota being busy at that hour, which will recur until item 2 is done.
 
 Still open from this diagnosis:
 - **Item 2** (own Google client_id) — Scott, after a run is settled, never
-  mid-upload.
+  mid-upload. Not a one-liner: `ssh -t mini /opt/homebrew/bin/rclone config`
+  → edit gdrive → paste id and secret → auto config **n** → on the laptop run
+  the `rclone authorize` line it prints → paste the token back. (A 09:32
+  attempt with placeholders left `client_id = YOUR_ID`; reverted 09:33.)
 - **DEGRADED alert:** a single leg failing N nights in a row still mails
   nothing. The log now says why each leg failed, but someone has to read it.
 - Mini housekeeping: orphan `python3 -` PID 45483 at 99.7 % CPU since

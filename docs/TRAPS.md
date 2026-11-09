@@ -9075,6 +9075,20 @@ sudo. `security dump-keychain -a` over SSH prints no ACLs.
   `--log-file ~/Library/Logs/inventree/rclone.log` so the next stall explains
   itself.
 
+### A command with placeholders gets pasted as written (09:32)
+
+The closing report handed Scott `rclone config update gdrive client_id YOUR_ID
+client_secret YOUR_SECRET && rclone config reconnect gdrive:` in a Run-button
+block. He ran it. The remote then carried `client_id = YOUR_ID`, and the
+reconnect sat on the Mini waiting for an OAuth code at a localhost URL nobody
+could open. Tonight's Drive leg would have died at token refresh. Reverted at
+09:33 by stripping the two lines (config backed up alongside); `rclone lsd
+gdrive:` rc 0 on the old token. Two rules: a command block given to Scott
+contains nothing to fill in — if a value is needed, ask for it first; and the
+Drive re-auth is NOT a one-liner over SSH: it is the interactive
+`rclone config` edit with "auto config? n", pasting the token that
+`rclone authorize drive <id> <secret>` prints on the laptop.
+
 ### Outcome
 
 Deployed 09:16, kickstarted 09:17: `gdrive: uploaded in 265s`, `NAS: copied ->
