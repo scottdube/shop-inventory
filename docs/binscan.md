@@ -1032,7 +1032,12 @@ RETURNED order is shown with `[!!] already … a second delivery?`.
 
 The card: packs editable (0 = leave outstanding), pieces and price per piece
 shown, destination prefilled and its source named (`default_location`,
-`existing_stock`, `category`, `receiving`), Receiving always one tap. **All here**
+`existing_stock`, `category`, `receiving`), Receiving always one tap. **choose…**
+opens a filtered list scoped to the site (type `orb`, `F1-R5`, `RB-14`; named
+tubs and drawers are listed on their own, grid bins only once you type), and
+All here is greyed while the list is open — since 2026-11-08, when the picker
+was a native `<select>` of ~600 full paths and Scott tapped All here before he
+had found the tub. **All here**
 books it through the engine (`plan` → `commit`), never the REST receive
 endpoint: pieces = packs × `pack_quantity_native`, merges into the row at that
 location, and closes the order when nothing is outstanding. **Undo** for 10

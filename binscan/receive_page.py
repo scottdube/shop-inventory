@@ -25,7 +25,10 @@ button.warn{background:#b7791f}
 img.thumb{width:56px;height:56px;object-fit:cover;border-radius:8px;background:#222}
 #msg{min-height:24px}
 .tabs{display:flex;gap:8px}.tabs button{flex:1;background:#333}.tabs button.on{background:#2b6cb0}
-select{font:inherit;padding:8px;border-radius:8px;background:#1b1b1b;color:#eee;border:1px solid #444;max-width:100%}
+.picker{border:1px solid #444;border-radius:10px;margin:8px 0;background:#161616}
+.picker .loc{padding:12px;border-top:1px solid #2a2a2a;cursor:pointer}.picker .loc:first-child{border-top:0}
+.picker .loc b{display:block}.picker .loc .muted{font-size:13px}
+.picker .head{padding:8px;display:flex;gap:8px;align-items:center}
 </style></head><body>
 <div class="tabs"><button id="tabR" class="on" onclick="tab('R')">Receive</button><button id="tabP" onclick="tab('P')">Pending <span id="pcount"></span></button></div>
 <div id="R">
@@ -81,13 +84,27 @@ function renderPlan(){const p=PLAN;const other=p.site&&SITE&&p.site!==SITE?'<div
   if(p.warnings.length)h+='<div class="bad">[XX] '+p.warnings.map(esc).join('<br>')+'<br><span class="muted">fix the supplier part first; receiving now would book the pack price per piece</span></div>';
   p.lines.forEach((l,i)=>{h+='<div class="line"><div>'+esc(l.name)+' <span class="muted">'+esc(l.sku)+'</span></div><div class="row"><input type="number" min="0" step="any" value="'+l.packs+'" onchange="setPacks('+i+',this.value)"> <span class="muted">of '+l.outstanding+' packs × '+l.pack+' = <b>'+(l.packs*l.pack)+'</b> pieces @ $'+l.unit+'</span></div>'+
     '<div class="row"><span class="muted">to</span> <b>'+esc(l.dest.path)+'</b> <span class="muted">('+esc(l.dest.source)+(l.merge_into?', merges into '+l.before:', new row')+')</span></div>'+
-    '<div class="row"><button class="chip" onclick="toReceiving('+i+')">Receiving</button><button class="chip" onclick="pick('+i+')">choose…</button><span id="pick'+i+'"></span></div></div>'});
-  h+=p.lines.length?'<button class="big" '+(p.warnings.length?'disabled':'')+' onclick="commit()">All here</button>':'<div class="muted">[OK] nothing outstanding on this order</div>';
+    '<div class="row"><button class="chip" onclick="toReceiving('+i+')">Receiving</button><button class="chip" onclick="pick('+i+')">choose…</button></div><div id="pick'+i+'"></div></div>'});
+  h+=p.lines.length?'<button class="big" id="allHere" '+(p.warnings.length?'disabled':'')+' onclick="commit()">All here</button>':'<div class="muted">[OK] nothing outstanding on this order</div>';
   h+='</div>';$('out').innerHTML=h}
 async function replan(){const lines={};PLAN.lines.forEach(l=>{lines[l.line]={packs:l.packs,dest:l.dest.pk}});try{PLAN=await jpost('/api/receive/plan',{po:PLAN.po,lines:lines,site:SITE})}catch(e){msg('[XX] '+esc(e.message),'bad')};renderPlan()}
 function setPacks(i,v){PLAN.lines[i].packs=parseFloat(v)||0;replan()}
 function toReceiving(i){PLAN.lines[i].dest={pk:(PLAN.site||SITE)==='SLN'?472:473,path:'Receiving',source:'chosen'};replan()}
-async function pick(i){const r=await fetch('/api/drawers');const g=await r.json();let s='<select onchange="PLAN.lines['+i+'].dest={pk:parseInt(this.value),path:this.selectedOptions[0].text,source:\'chosen\'};replan()"><option>pick a drawer…</option>';g.forEach(grp=>{s+='<optgroup label="'+esc(grp.group)+'">'+grp.items.map(it=>'<option value="'+it.pk+'">'+esc(grp.group+'/'+it.name)+'</option>').join('')+'</optgroup>'});$('pick'+i).innerHTML=s+'</select>'}
+let DRAWERS=null;const GRID=/^[A-Z]+\d+-[A-Z]\d+(C\d+)?$/;
+async function pick(i){if(!DRAWERS){const r=await fetch('/api/drawers');DRAWERS=await r.json()}
+  // A list you can tap, not a <select>: on the phone a select is a wheel of 600 full-path rows.
+  $('pick'+i).innerHTML='<div class="picker"><div class="head"><input type="text" id="pf'+i+'" placeholder="filter: orb, F1-R5, RB-14…" oninput="pickList('+i+')"><button class="chip" onclick="closePick('+i+')">cancel</button></div><div id="pl'+i+'"></div></div>';
+  const ah=$('allHere');if(ah)ah.disabled=true;   // the mis-tap of 2026-11-08: the picker sat right above All here
+  pickList(i)}
+function pickList(i){const site=PLAN.site||SITE||'';const f=($('pf'+i).value||'').trim().toLowerCase();const named=[],grid=[];
+  DRAWERS.forEach(g=>{if(site&&!(g.group===site||g.group.startsWith(site+'/')))return;g.items.forEach(it=>{const path=g.group+'/'+it.name;
+    if(f&&!path.toLowerCase().includes(f))return;(GRID.test(it.name)?grid:named).push({pk:it.pk,name:it.name,group:g.group,path:path})})});
+  let rows=named.concat(f?grid:[]);let note='';
+  if(!f&&grid.length)note='<div class="loc muted">'+grid.length+' bins hidden - type part of a bin name (F1-R5…) to see them</div>';
+  if(rows.length>60){note='<div class="loc muted">'+(rows.length-60)+' more - narrow the filter</div>';rows=rows.slice(0,60)}
+  $('pl'+i).innerHTML=rows.map(r=>'<div class="loc" onclick="chooseLoc('+i+','+r.pk+','+JSON.stringify(r.path).replace(/"/g,'&quot;')+')"><b>'+esc(r.name)+'</b><span class="muted">'+esc(r.group)+'</span></div>').join('')+note||'<div class="loc muted">nothing matches</div>'}
+function closePick(i){$('pick'+i).innerHTML='';const ah=$('allHere');if(ah&&!PLAN.warnings.length)ah.disabled=false}
+function chooseLoc(i,pk,path){PLAN.lines[i].dest={pk:pk,path:path,source:'chosen'};replan()}
 async function commit(){const keep=PLAN.lines.filter(l=>l.packs>0);if(!keep.length){msg('[??] every line is 0 - nothing to book');return}
   msg('[..] booking…');let rc;try{rc=await jpost('/api/receive/commit',{plan:Object.assign({},PLAN,{lines:keep})})}catch(e){msg('[XX] '+esc(e.message)+' - nothing booked','bad');return}
   RECEIPT=rc;msg('[OK] booked','ok');

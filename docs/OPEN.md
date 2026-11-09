@@ -17,6 +17,10 @@ Fixtures go in `binscan/fixtures/receive/<date>-<n>.jpg` + `.json`
 (`{"truth": "PO-xxxx"}`); `scripts/test_receive_match.py` grows a loop over
 them. Close when the floor has been measured against at least ten photos.
 
+First real data point, 2026-11-08: the single word `Header` typed by hand
+scored below the floor (four open LRD orders share it), so the page fell to
+the all-orders list. Correct behaviour for a one-word query; not a fixture.
+
 ## SLN BL-D3: battery soldering iron has no record (opened 2026-11-05, CLOSED same day)
 
 **Closed:** Scott says it is the iron he built from the T12 kit, following an
