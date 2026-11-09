@@ -12151,3 +12151,22 @@ mail already answered. Not fixed here — the fix belongs in
 `plugins/receiving/returns.py` (compare against line × (1 + tax) with a
 tolerance, or read the quantity from the mail), with a test, not in the
 morning task.
+
+## `returns.py` re-asks a pending question on every run (2026-11-09)
+
+The 2026-11-09 refund watch re-ran `refunded --commit` on the same three
+orders and got `pending` again, not `already`. `refund_po_detail.py` then
+showed **three identical `[NEEDS-DECISION]` lines on each of PO-0259, PO-0280
+and PO-0282**. Cause, read from the plugin: `_decide()` calls `note_prepend`
+unconditionally, and `refunded()` returns `already` only when
+`[REFUND-CONFIRMED]` is already on the note — a parked question is not a
+recorded answer, so the daily task will stamp one more copy every morning
+until Scott answers. Two commit runs are known (11-08, 11-09); where the third
+copy came from is not established (a dry run that leaked, or yesterday's
+locked-and-rerun call, are the candidates). **Fix belongs in the plugin:**
+`_decide` should return `pending` without writing when the identical question
+is already the first line of the note, and the amount check needs the tax
+tolerance from the entry above. Until then the morning task should treat
+`pending` on an order that already carries the question as "still waiting",
+not as news. Duplicate lines left in place; they are notes, and the task
+writes notes only through `returns.py`.
