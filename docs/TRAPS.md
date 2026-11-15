@@ -8555,6 +8555,11 @@ point-in-time snapshot should look like, and is itself a check.
 
 Scratch directory deleted afterwards.
 
+**Drive leg was never pruned (found 2026-11-15).** `rclone_prune()` (2026-11-09) was wired into the NAS leg only, so
+`gdrive:InvenTreeBackups/` grew to 94 archives / 65.6 GB, and the SLN NAS's Active Backup stored each one a second
+time. `scripts/backup_drive_prune.py` added the same prune to the Drive leg and cut it to 14. **When a new leg or
+prune is added, grep every leg for it: one leg having it says nothing about the others.**
+
 ## A failure alert cannot be sent by a job that never runs
 
 Scott, 2026-09-06: *"is there an email alert if a backup fails?"* There was
