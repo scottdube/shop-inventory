@@ -2365,6 +2365,17 @@ two PayPal receipts. **No stock rows yet — no container.**
       picked up bare-handed, and these are 400 V.
 - [ ] Measure the heatsink TO-220 hole spacing, then file to B3-R5C3.
 - [ ] RB-26 … RB-28 — never opened. (RB-18 … RB-24 walked 2026-08-25; see the table at the top of this file.)
+- [ ] **1/8in (3 mm) acrylic was bought at both sites but never catalogued**
+      (found 2026-11-18 from Gmail; InvenTree holds only the 1/16in part 1083).
+      Not in InvenTree because they predate it. Need a count from Scott before
+      any stock row; nothing created yet.
+      - SLN: American Acrylics #8235 (2023-09-03), 12x24in, 1 each of White 7328
+        1/8in, White Translucent 2447 1/8in, Black Matte 2025M 1/8in, and
+        Acrylite clear 1/10in (2.5 mm).
+      - SLN: Amazon 113-1501126-2369044 (2025-12-16), KINLINK 12x12in clear
+        CAST 1/8in, 4-pack, $20.99.
+      - LRD: Amazon 113-1666820-1665016 (2026-02-19), 18x24in 1/8in Black
+        Translucent, 2-pack, $39.99.
 - [ ] Verify the acrylic is **cast, not extruded** (part #1083, L1-D3). The
       listing says cast but that is seller copy, and it decides whether it
       lasers cleanly. Not urgent — but do it before cutting something that
