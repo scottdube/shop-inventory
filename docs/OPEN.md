@@ -2367,6 +2367,8 @@ two PayPal receipts. **No stock rows yet — no container.**
 - [ ] RB-26 … RB-28 — never opened. (RB-18 … RB-24 walked 2026-08-25; see the table at the top of this file.)
 - [ ] **1/8in (3 mm) acrylic was bought at both sites but never catalogued**
       (found 2026-11-18 from Gmail; InvenTree holds only the 1/16in part 1083).
+      Gmail shows NO return or refund for either Amazon order (checked
+      2026-11-18; the only plexiglass return is the Art3d PET, PO-0029).
       Not in InvenTree because they predate it. Need a count from Scott before
       any stock row; nothing created yet.
       - SLN: American Acrylics #8235 (2023-09-03), 12x24in, 1 each of White 7328
