@@ -1860,6 +1860,14 @@ mirrored between sites for muscle memory; convention in `LABELLING.md`). A bare
 `.get(name=)` will now raise or pick the wrong site: scope by `pathstring`
 prefix, or take `SITE:NAME`.
 
+**`florida.py` still had one until 2026-11-21**: `add`/`drop` did
+`StockLocation.objects.get(name=locname)`, so earmarking anything in RB-12
+(mirrored at LRD) would have crashed with MultipleObjectsReturned. Found while
+earmarking the rat-ratgdo bin; it now takes `SLN:RB-12` and refuses an
+ambiguous bare name with both paths listed. Its `.first()` on part+location is
+a second hazard: SLN RB-12 has two SHT31 rows, one at qty 0, so earmark by
+stock pk when a bin holds split rows.
+
 `Receiving` exists at both SLN and LRD. InvenTree does not enforce unique
 location names — no `unique=True`, no `unique_together` — and BinScan resolved
 locations with `name=<x>` then took `[0]`, in six places including every write

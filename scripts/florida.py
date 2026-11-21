@@ -33,6 +33,29 @@ from stock.models import StockItem, StockLocation  # noqa: E402
 KEY = 'florida'
 
 
+def _loc(locname):
+    """Resolve a location the way trip.py does.
+
+    Names are mirrored between sites on purpose (RB-12 exists at SLN and LRD),
+    so a bare .get(name=) raised MultipleObjectsReturned here - found
+    2026-11-21 earmarking the rat-ratgdo bin. Take SITE:NAME (SLN:RB-12) or a
+    bare name that matches exactly once.
+    """
+    if ':' in locname:
+        site, nm = locname.split(':', 1)
+        hits = list(StockLocation.objects.filter(
+            name__iexact=nm, pathstring__istartswith=site + '/'))
+    else:
+        hits = list(StockLocation.objects.filter(name__iexact=locname))
+    if len(hits) != 1:
+        print(f'{locname!r} matches {len(hits)} locations - use SITE:NAME, '
+              f'e.g. SLN:{locname}')
+        for h in hits[:12]:
+            print(f'    {h.pk}  {h.pathstring}')
+        sys.exit(1)
+    return hits[0]
+
+
 def _items():
     """Every stock item carrying an earmark, plus anything already in a box."""
     out = []
@@ -78,7 +101,7 @@ def cmd_list():
 
 
 def cmd_add(part_pk, locname, qty, why):
-    loc = StockLocation.objects.get(name=locname)
+    loc = _loc(locname)
     s = StockItem.objects.filter(part_id=int(part_pk), location=loc).first()
     if not s:
         print(f'no stock of part {part_pk} in {locname}')
@@ -99,7 +122,7 @@ def cmd_add(part_pk, locname, qty, why):
 
 
 def cmd_drop(part_pk, locname):
-    loc = StockLocation.objects.get(name=locname)
+    loc = _loc(locname)
     s = StockItem.objects.filter(part_id=int(part_pk), location=loc).first()
     meta = s.metadata or {}
     if KEY in meta:
